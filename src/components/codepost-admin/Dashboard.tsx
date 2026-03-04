@@ -10,6 +10,7 @@ import {
   DashboardOutlined,
   RiseOutlined,
   ApiOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -44,6 +45,8 @@ import APIIframe from './APIIframe';
 import ActivityFeed from './ActivityFeed';
 import MaintenanceBannerPanel from './MaintenanceBannerPanel';
 import DeployCalendar from './DeployCalendar';
+import AIUsageDashboard from '../core/AIUsageDashboard';
+import { AIUsageService } from '../../services/aiUsage';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
@@ -53,7 +56,16 @@ import { UserIO } from '../../services/user';
 const { Title, Text } = Typography;
 const { Content, Sider } = Layout;
 
-type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users' | 'Activity' | 'Deploy Calendar' | 'API';
+type TabType =
+  | 'Overview'
+  | 'Organizations'
+  | 'Courses'
+  | 'Admins'
+  | 'Users'
+  | 'Activity'
+  | 'Deploy Calendar'
+  | 'API'
+  | 'AI Usage';
 
 export interface AdminData {
   id: number;
@@ -491,6 +503,14 @@ const Dashboard = () => {
         return <DeployCalendar />;
       case 'API':
         return <APIIframe />;
+      case 'AI Usage':
+        return (
+          <AIUsageDashboard
+            fetchUsage={AIUsageService.getPlatformUsage}
+            title="Platform AI Usage"
+            breakdownLabel="Organization"
+          />
+        );
       default:
         return null; // Should fall back to overview if needed, but currentTab limits logic
     }
@@ -572,6 +592,11 @@ const Dashboard = () => {
                 key: 'API',
                 icon: <ApiOutlined />,
                 label: 'API',
+              },
+              {
+                key: 'AI Usage',
+                icon: <RobotOutlined />,
+                label: 'AI Usage',
               },
             ]}
           />

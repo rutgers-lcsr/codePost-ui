@@ -32,7 +32,11 @@ apis/TokenVerifyApi.ts
 apis/UsersApi.ts
 apis/WebhooksApi.ts
 apis/index.ts
+docs/AIUsageBreakdown.md
+docs/AIUsageBucket.md
+docs/AIUsageSummary.md
 docs/ActivateCipResponse.md
+docs/AiCoursePolicyEnum.md
 docs/AiProviderEnum.md
 docs/Assignment.md
 docs/AssignmentClone.md
@@ -103,6 +107,7 @@ docs/FileExecutionRequest.md
 docs/FilesApi.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
+docs/GranularityEnum.md
 docs/HandleValidationResponse.md
 docs/HealthCheck.md
 docs/ImpersonateApi.md
@@ -122,6 +127,7 @@ docs/NotebookCellExecutionRequest.md
 docs/NotebookExecutionRequest.md
 docs/NullEnum.md
 docs/Organization.md
+docs/OrganizationAISettings.md
 docs/OrganizationsApi.md
 docs/OttApi.md
 docs/OverallEnum.md
@@ -147,6 +153,7 @@ docs/PatchedEnvironmentRunRequest.md
 docs/PatchedFile.md
 docs/PatchedMaintenanceBanner.md
 docs/PatchedOrganization.md
+docs/PatchedOrganizationAISettingsUpdate.md
 docs/PatchedRubricCategory.md
 docs/PatchedRubricComment.md
 docs/PatchedSection.md

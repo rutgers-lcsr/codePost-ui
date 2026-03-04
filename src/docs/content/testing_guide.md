@@ -7,7 +7,7 @@ It is written to match the current backend parser behavior.
 ## Where to find testing in the UI
 
 1. Go to **Admin Console > Assignments > Environment**.
-2. Select an assignment from **Environment Setup**.
+2. Select an assignment from **Environment & Tests**.
 3. Select a **Test Category** (or create one).
 4. Open the **Test Script** editor.
 5. Use **Code**, **Split Preview**, or **Builder** view.
@@ -22,7 +22,7 @@ It is written to match the current backend parser behavior.
 6. Save category and verify generated test cases.
 
 > [!IMPORTANT]
-> You can only create tests after an assignment environment exists in **Environment Setup**. An environment is usually created automatically when you upload assignment files. The assignment language determines how the script is parsed, so set that first.
+> You can only create tests after an assignment environment exists in **Environment & Tests**. An environment is usually created automatically when you upload assignment files. The assignment language determines how the script is parsed, so set that first.
 
 > [!TIP]
 > Save early and often while writing tests. The parser syncs test cases from your script.

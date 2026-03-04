@@ -2,6 +2,166 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+ * Usage breakdown by a dimension (course, assignment, provider, model).
+ * @export
+ * @interface AIUsageBreakdown
+ */
+export interface AIUsageBreakdown {
+  /**
+   * ID of the entity (course or assignment)
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  id: number | null;
+  /**
+   * Name/label for this breakdown item
+   * @type {string}
+   * @memberof AIUsageBreakdown
+   */
+  name: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  totalTokens: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  inputTokens: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  outputTokens: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  estimatedCost: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  requestCount: number;
+}
+/**
+ * A single time bucket in usage aggregation.
+ * @export
+ * @interface AIUsageBucket
+ */
+export interface AIUsageBucket {
+  /**
+   * Start of the time bucket
+   * @type {string}
+   * @memberof AIUsageBucket
+   */
+  period: string;
+  /**
+   * Total tokens used in this bucket
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  totalTokens: number;
+  /**
+   * Total input tokens in this bucket
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  inputTokens: number;
+  /**
+   * Total output tokens in this bucket
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  outputTokens: number;
+  /**
+   * Total estimated cost in USD
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  estimatedCost: number;
+  /**
+   * Number of API calls in this bucket
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  requestCount: number;
+}
+/**
+ * Aggregated usage summary with time-series data and breakdowns.
+ * @export
+ * @interface AIUsageSummary
+ */
+export interface AIUsageSummary {
+  /**
+   * Grand total tokens in the range
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  totalTokens: number;
+  /**
+   * Grand total input tokens
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  inputTokens: number;
+  /**
+   * Grand total output tokens
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  outputTokens: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  estimatedCost: number;
+  /**
+   * Total number of requests
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  requestCount: number;
+  /**
+   * Usage data bucketed by time
+   * @type {Array<AIUsageBucket>}
+   * @memberof AIUsageSummary
+   */
+  timeSeries: Array<AIUsageBucket>;
+  /**
+   * Usage breakdown by dimension
+   * @type {Array<AIUsageBreakdown>}
+   * @memberof AIUsageSummary
+   */
+  breakdown: Array<AIUsageBreakdown>;
+  /**
+   *
+   * @type {GranularityEnum}
+   * @memberof AIUsageSummary
+   */
+  granularity: GranularityEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof AIUsageSummary
+   */
+  startDate: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AIUsageSummary
+   */
+  endDate: string;
+}
+
+/**
  *
  * @export
  * @interface ActivateCipResponse
@@ -14,6 +174,19 @@ export interface ActivateCipResponse {
    */
   success: boolean;
 }
+/**
+ * * `all` - All courses
+ * * `selected` - Selected courses only
+ * * `none` - Disabled
+ * @export
+ * @enum {string}
+ */
+export enum AiCoursePolicyEnum {
+  All = 'all',
+  Selected = 'selected',
+  None = 'none',
+}
+
 /**
  * * `gemini` - Google Gemini
  * * `openai` - OpenAI
@@ -1530,6 +1703,12 @@ export interface CourseAISettings {
    * @type {boolean}
    * @memberof CourseAISettings
    */
+  aiUseOwnSettings?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CourseAISettings
+   */
   readonly aiEnabled: boolean;
   /**
    *
@@ -1537,6 +1716,12 @@ export interface CourseAISettings {
    * @memberof CourseAISettings
    */
   readonly aiCommentsEnabled: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CourseAISettings
+   */
+  readonly orgAiAvailable: boolean;
 }
 
 /**
@@ -2648,6 +2833,19 @@ export interface GenerateOTTResponse {
   expiresAt: string;
 }
 /**
+ * * `hourly` - hourly
+ * * `daily` - daily
+ * * `monthly` - monthly
+ * @export
+ * @enum {string}
+ */
+export enum GranularityEnum {
+  Hourly = 'hourly',
+  Daily = 'daily',
+  Monthly = 'monthly',
+}
+
+/**
  *
  * @export
  * @interface HandleValidationResponse
@@ -3117,6 +3315,91 @@ export interface Organization {
    */
   sendWelcomeEmail?: boolean;
 }
+/**
+ * Serializer for organization-level AI configuration.
+ * @export
+ * @interface OrganizationAISettings
+ */
+export interface OrganizationAISettings {
+  /**
+   *
+   * @type {number}
+   * @memberof OrganizationAISettings
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof OrganizationAISettings
+   */
+  aiProvider?: OrganizationAISettingsAiProviderEnum | null;
+  /**
+   *
+   * @type {string}
+   * @memberof OrganizationAISettings
+   */
+  aiApiKey?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof OrganizationAISettings
+   */
+  aiBaseUrl?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof OrganizationAISettings
+   */
+  aiModel?: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  aiDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  aiCommentsDisabled?: boolean;
+  /**
+   *
+   * @type {AiCoursePolicyEnum}
+   * @memberof OrganizationAISettings
+   */
+  aiCoursePolicy?: AiCoursePolicyEnum;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof OrganizationAISettings
+   */
+  readonly aiEnabledCourseIds: Array<number>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  readonly aiEnabled: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  readonly aiCommentsEnabled: boolean;
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum OrganizationAISettingsAiProviderEnum {
+  Gemini = 'gemini',
+  Openai = 'openai',
+  Ollama = 'ollama',
+  Custom = 'custom',
+}
+
 /**
  * * `ok` - ok
  * * `degraded` - degraded
@@ -4041,6 +4324,12 @@ export interface PatchedCourseAISettings {
    * @type {boolean}
    * @memberof PatchedCourseAISettings
    */
+  aiUseOwnSettings?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
   readonly aiEnabled?: boolean;
   /**
    *
@@ -4048,6 +4337,12 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   readonly aiCommentsEnabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly orgAiAvailable?: boolean;
 }
 
 /**
@@ -4530,6 +4825,73 @@ export interface PatchedOrganization {
    */
   sendWelcomeEmail?: boolean;
 }
+/**
+ * Serializer for updating organization AI settings including enabled courses.
+ * @export
+ * @interface PatchedOrganizationAISettingsUpdate
+ */
+export interface PatchedOrganizationAISettingsUpdate {
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiProvider?: PatchedOrganizationAISettingsUpdateAiProviderEnum | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiApiKey?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiBaseUrl?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiModel?: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiCommentsDisabled?: boolean;
+  /**
+   *
+   * @type {AiCoursePolicyEnum}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiCoursePolicy?: AiCoursePolicyEnum;
+  /**
+   * List of course IDs to enable for org AI (used when aiCoursePolicy is 'selected')
+   * @type {Array<number>}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiEnabledCourseIds?: Array<number>;
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum PatchedOrganizationAISettingsUpdateAiProviderEnum {
+  Gemini = 'gemini',
+  Openai = 'openai',
+  Ollama = 'ollama',
+  Custom = 'custom',
+}
+
 /**
  *
  * @export

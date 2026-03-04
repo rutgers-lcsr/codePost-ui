@@ -12,6 +12,26 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 ---
 
+## [3.2.0] — AI Settings & Usage Analytics
+
+### Added
+
+- **Organization AI Settings card** — org admins can configure AI provider, API key, model, and course access policy from the Organization Dashboard.
+- **Course AI inheritance UI** — course settings show org AI availability banner and toggle for using org vs own key.
+- **AI Usage Dashboard** — reusable dashboard component with request/token/cost stat cards, time-series charts (recharts), and breakdown tables.
+- **Course AI Usage card** — per-course usage analytics below AI settings in Course Settings.
+- **Organization AI Usage tab** — aggregated usage across all courses in the Organization Dashboard.
+- **Platform AI Usage tab** — system-wide analytics for superusers in the codePost Admin dashboard.
+- **AI Settings & Usage docs page** — new documentation at `/docs/ai-guide` covering configuration, inheritance, and analytics.
+
+### Changed
+
+- Updated `AIUsageService` to wrap all new org/course/platform AI usage and settings endpoints.
+- Updated docs config to include the new AI guide in the Reference section.
+- Updated Organization Guide and Features docs to reference the new AI guide.
+
+---
+
 ## [3.1.1]
 
 ### Added

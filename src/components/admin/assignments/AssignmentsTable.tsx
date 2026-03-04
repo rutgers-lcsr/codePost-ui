@@ -534,85 +534,13 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     const encodedName = encodeForLink(assignment.name);
 
     // --- Actions Menu ---
-    const menuItems = [
-      /*
-      {
-        key: '1',
-        label: (
-          <Link to={`${baseURL}/rubrics/${encodedName}`}>
-            <OrderedListOutlined /> &nbsp; Edit rubric
-          </Link>
-        ),
-      },
-      */
 
+    const configItems = [
       {
-        key: '2',
+        key: 'settings',
         label: (
-          <Link to={`${baseURL}/${encodedName}/download/grades`}>
-            {!fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />} &nbsp; Download grades
-          </Link>
-        ),
-      },
-      {
-        key: '3',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/stats`}>
-            <BarChartOutlined /> &nbsp; View stats
-          </Link>
-        ),
-      },
-      ...(assignment.allowRegradeRequests
-        ? [
-            {
-              key: '3.1',
-              label: (
-                <Link to={`${baseURL}/${encodedName}/regrades`}>
-                  <MessageOutlined /> &nbsp; View Regrades
-                </Link>
-              ),
-            },
-          ]
-        : []),
-      {
-        key: '4',
-        label: (
-          <span>
-            <UploadOutlined /> &nbsp; Upload submissions
-          </span>
-        ),
-        children: [
-          {
-            key: '0.1',
-            label: (
-              <Link to={`${baseURL}/${encodedName}/upload/single`}>
-                <FileOutlined /> &nbsp; Single submission
-              </Link>
-            ),
-          },
-          {
-            key: '0.2',
-            label: (
-              <Link to={`${baseURL}/${encodedName}/upload/multiple`}>
-                <FolderOutlined /> &nbsp; Multiple submissions
-              </Link>
-            ),
-          },
-          {
-            key: '0.3',
-            label: (
-              <Link to={`${baseURL}/${encodedName}/upload/import`}>
-                <ImportOutlined /> &nbsp; Import
-              </Link>
-            ),
-          },
-        ],
-      },
-      {
-        key: '5',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/bulk-edit`}>
-            <EditOutlined /> &nbsp; Bulk edit
+          <Link to={`${baseURL}/${encodedName}/settings`}>
+            <SettingOutlined /> &nbsp; Settings
           </Link>
         ),
       },
@@ -624,29 +552,72 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Link>
         ),
       },
-      /*
       {
-        key: '6',
+        key: 'bulk-edit',
         label: (
-          <Link to={`${baseURL}/${encodedName}/settings`}>
-            <SettingOutlined /> &nbsp; Settings
+          <Link to={`${baseURL}/${encodedName}/bulk-edit`}>
+            <EditOutlined /> &nbsp; Bulk edit
           </Link>
         ),
       },
-      */
+    ];
 
+    const uploadItems = [
       {
-        type: 'divider' as const,
-      },
-      {
-        key: '7',
+        key: '0.1',
         label: (
-          <Link to={`${baseURL}/${encodedName}/delete`}>
-            <DeleteOutlined /> &nbsp; Delete assignment
+          <Link to={`${baseURL}/${encodedName}/upload/single`}>
+            <FileOutlined /> &nbsp; Single submission
           </Link>
         ),
-        danger: true,
       },
+      {
+        key: '0.2',
+        label: (
+          <Link to={`${baseURL}/${encodedName}/upload/multiple`}>
+            <FolderOutlined /> &nbsp; Multiple submissions
+          </Link>
+        ),
+      },
+      {
+        key: '0.3',
+        label: (
+          <Link to={`${baseURL}/${encodedName}/upload/import`}>
+            <ImportOutlined /> &nbsp; Import
+          </Link>
+        ),
+      },
+    ];
+
+    const dataItems = [
+      {
+        key: 'stats',
+        label: (
+          <Link to={`${baseURL}/${encodedName}/stats`}>
+            <BarChartOutlined /> &nbsp; View stats
+          </Link>
+        ),
+      },
+      {
+        key: 'download',
+        label: (
+          <Link to={`${baseURL}/${encodedName}/download/grades`}>
+            {!fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />} &nbsp; Download grades
+          </Link>
+        ),
+      },
+      ...(assignment.allowRegradeRequests
+        ? [
+            {
+              key: 'regrades',
+              label: (
+                <Link to={`${baseURL}/${encodedName}/regrades`}>
+                  <MessageOutlined /> &nbsp; View Regrades
+                </Link>
+              ),
+            },
+          ]
+        : []),
     ];
 
     // --- Helpers ---
@@ -807,31 +778,44 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       ),
       actions: (
         <Space>
-          <Tooltip title="Environment Setup">
-            <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-              <Button shape="circle" icon={<FileDoneOutlined />} />
-            </Link>
+          <Tooltip title="Configure assignment">
+            <Dropdown menu={{ items: configItems }} trigger={['click']}>
+              <Button shape="circle" icon={<SettingOutlined />} />
+            </Dropdown>
           </Tooltip>
           <Tooltip title="Edit rubric">
             <Link to={`${baseURL}/rubrics/${encodedName}`}>
               <Button shape="circle" icon={<OrderedListOutlined />} />
             </Link>
           </Tooltip>
-          <Tooltip title="Settings">
-            <Link to={`${baseURL}/${encodedName}/settings`}>
-              <Button shape="circle" icon={<SettingOutlined />} />
+          <Tooltip title="Environment & Tests">
+            <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+              <Button shape="circle" icon={<FileDoneOutlined />} />
             </Link>
           </Tooltip>
-          <Tooltip title={assignment.feedbackReleased ? 'Unrelease Feedback' : 'Release Feedback'}>
+          <Tooltip title="Manage submissions">
+            <Dropdown menu={{ items: uploadItems }} trigger={['click']}>
+              <Button shape="circle" icon={<UploadOutlined />} />
+            </Dropdown>
+          </Tooltip>
+          <Tooltip title={assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}>
             <Button
               shape="circle"
               icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
               onClick={() => toggleSubmissionsReleased(assignment)}
+              danger={assignment.feedbackReleased}
             />
           </Tooltip>
-          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-            <Button shape="circle" icon={<MenuOutlined />} />
-          </Dropdown>
+          <Tooltip title="Analyze grades & stats">
+            <Dropdown menu={{ items: dataItems }} trigger={['click']}>
+              <Button shape="circle" icon={<BarChartOutlined />} />
+            </Dropdown>
+          </Tooltip>
+          <Tooltip title="Delete assignment">
+            <Link to={`${baseURL}/${encodedName}/delete`}>
+              <Button shape="circle" danger icon={<DeleteOutlined />} />
+            </Link>
+          </Tooltip>
         </Space>
       ),
     };

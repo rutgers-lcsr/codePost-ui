@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
 import { docRoutes } from './DocsConfig';
 import { getDocByPath } from './DocsLoader';
-import { Typography, Alert, Breadcrumb, Divider } from 'antd';
+import { Image, Typography, Alert, Breadcrumb, Divider } from 'antd';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -24,7 +24,6 @@ import {
 import DocsTOC, { TOCItem } from './DocsTOC';
 import useWindowSize from '../core/useWindowSize';
 import LanguageScriptSelector from './LanguageScriptSelector';
-
 const { Title, Text } = Typography;
 const SCRIPT_FORMAT_SELECTOR_TOKEN = '[[SCRIPT_FORMAT_SELECTOR]]';
 
@@ -254,11 +253,21 @@ const DocsContent: React.FC = () => {
           </div>
         );
       })(),
-    a: ({ node, children, href, ...props }: any) => (
-      <a href={href} className="text-link" {...props}>
-        {children}
-      </a>
-    ),
+    a: ({ node, children, href, ...props }: any) => {
+      const isInternal = href && href.startsWith('/docs');
+      if (isInternal) {
+        return (
+          <Link to={href} className="text-link">
+            {children}
+          </Link>
+        );
+      }
+      return (
+        <a href={href} className="text-link" target="_blank" rel="noopener noreferrer" {...props}>
+          {children}
+        </a>
+      );
+    },
     li: ({ node, children, ...props }: any) => (
       <li
         style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
@@ -461,14 +470,70 @@ const DocsContent: React.FC = () => {
         </code>
       );
     },
+    table: ({ node, children, ...props }: any) => (
+      <div
+        style={{
+          overflowX: 'auto',
+          marginBottom: '24px',
+          borderRadius: '8px',
+          border: `1px solid ${colors.neutralBorder}`,
+        }}
+      >
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px',
+          }}
+          {...props}
+        >
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ node, children, ...props }: any) => (
+      <thead style={{ backgroundColor: colors.neutralBackground }} {...props}>
+        {children}
+      </thead>
+    ),
+    tbody: ({ node, children, ...props }: any) => <tbody {...props}>{children}</tbody>,
+    tr: ({ node, children, ...props }: any) => (
+      <tr style={{ borderBottom: `1px solid ${colors.neutralBorder}` }} {...props}>
+        {children}
+      </tr>
+    ),
+    th: ({ node, children, ...props }: any) => (
+      <th
+        style={{
+          padding: '12px 16px',
+          fontWeight: 600,
+          textAlign: 'left',
+          color: colors.neutralTitle,
+        }}
+        {...props}
+      >
+        {renderWithHighlight(children)}
+      </th>
+    ),
+    td: ({ node, children, ...props }: any) => (
+      <td
+        style={{
+          padding: '12px 16px',
+          color: colors.neutralMainText,
+        }}
+        {...props}
+      >
+        {renderWithHighlight(children)}
+      </td>
+    ),
     img: ({ node, ...props }: any) => (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0' }}>
-        <img
+        <Image
           alt={props.alt || ''}
           style={{
             maxWidth: '100%',
             borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            boxShadow: '0 4px 12px rgba(22, 11, 11, 0.1)',
             border: `1px solid ${colors.neutralBorder}`,
           }}
           {...props}

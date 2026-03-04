@@ -61,6 +61,13 @@ export const docRoutes: DocRoute[] = [
     category: 'Instructor Workflows',
   },
   {
+    key: 'instructor-sections',
+    path: 'instructor-sections',
+    title: 'Managing Sections',
+    fileName: 'instructor_sections.md',
+    category: 'Instructor Workflows',
+  },
+  {
     key: 'instructor-assignment-workflow',
     path: 'instructor-assignment-workflow',
     title: 'Assignment Workflow',
@@ -107,6 +114,13 @@ export const docRoutes: DocRoute[] = [
     path: 'features',
     title: 'Features',
     fileName: 'features.md',
+    category: 'Reference',
+  },
+  {
+    key: 'ai-guide',
+    path: 'ai-guide',
+    title: 'AI Settings & Usage',
+    fileName: 'ai_guide.md',
     category: 'Reference',
   },
   {

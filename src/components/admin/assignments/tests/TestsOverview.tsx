@@ -99,7 +99,7 @@ const TestsOverview = (props: IProps) => {
     <TableDetail
       loadComplete={true}
       pagination={uniqueAssignments.length < 10 ? false : undefined}
-      title={<div className="display-flex align-items-center">Environment Setup</div>}
+      title={<div className="display-flex align-items-center">Environment & Tests</div>}
       isEmpty={data.length === 0}
       emptyNode={
         <Empty
@@ -114,7 +114,7 @@ const TestsOverview = (props: IProps) => {
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Environment Setup' }]} />}
+      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Environment & Tests' }]} />}
     />
   );
 };

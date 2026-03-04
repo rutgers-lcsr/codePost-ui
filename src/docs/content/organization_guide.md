@@ -67,3 +67,16 @@ You can configure SSO to allow users to log in with your university or corporate
 - **Google Workspace:** Google OAuth integration.
 
 Enable **SSO Activation** to automatically activate new users who log in via SSO.
+
+### AI Settings
+
+Organization admins can configure a shared AI provider and API key that courses can inherit, centralizing AI management and cost tracking.
+
+1. Go to the **AI Settings** tab in the Organization Dashboard.
+2. Select a **Provider** (Gemini, OpenAI, Ollama, or Custom) and enter your **API Key**.
+3. Set the **Course Access Policy** to control which courses can use the shared key:
+   - **All courses** — every course inherits automatically.
+   - **Selected courses** — only courses you explicitly add.
+   - **Disabled** — courses must use their own keys.
+
+See the [AI Settings & Usage Guide](/docs/ai-guide) for full details on configuration, inheritance, and usage tracking.

@@ -272,7 +272,7 @@ export const TestingSetup = (props: IProps) => {
           />
         }
         goBack={null}
-        title={`${props.currentAssignment.name} | Environment Setup`}
+        title={`${props.currentAssignment.name} | Environment & Tests`}
         actions={actions}
         content={content}
       />

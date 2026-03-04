@@ -55,7 +55,7 @@ export const AssignmentTests = (props: IProps) => {
   const breadcrumbs = [
     ...(props.breadcrumbs ? props.breadcrumbs : []),
     {
-      title: <Link to={baseUrl}>Environment Setup</Link>,
+      title: <Link to={baseUrl}>Environment & Tests</Link>,
     },
   ];
 

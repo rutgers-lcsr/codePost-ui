@@ -5,9 +5,10 @@ This page is the instructor home base for codePost docs. If you are setting up a
 ## Start here (recommended order)
 
 1. [Course Setup & Roster](/docs/instructor-course-setup)
-2. [Assignment Workflow](/docs/instructor-assignment-workflow)
-3. [Environment & Testing Ops](/docs/instructor-environment-testing)
-4. [Grading, Release & Exports](/docs/instructor-grading-publishing)
+2. [Managing Sections](/docs/instructor-sections)
+3. [Assignment Workflow](/docs/instructor-assignment-workflow)
+4. [Environment & Testing Ops](/docs/instructor-environment-testing)
+5. [Grading, Release & Exports](/docs/instructor-grading-publishing)
 
 ## What each page covers
 
@@ -16,6 +17,13 @@ This page is the instructor home base for codePost docs. If you are setting up a
 - Create courses and configure defaults
 - Add students/graders/admins
 - Use invite codes and section organization
+
+### Managing Sections
+
+- Create and delete sections
+- Add students individually, by pasted list, or via CSV bulk import
+- Assign graders as section leaders
+- Reassign students across sections
 
 ### Assignment Workflow
 

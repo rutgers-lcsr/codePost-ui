@@ -2,7 +2,7 @@
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 (current)
 
 ---
 
@@ -12,7 +12,31 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - UX refinements for grading and test authoring pages.
 - Performance and reliability improvements.
 
-## v3.1.1 — Current Release
+## v3.2.0 — AI Settings & Usage Analytics
+
+> **Highlight**: Organization-level AI configuration, per-course inheritance, and comprehensive usage tracking with cost estimates.
+
+### New: Organization-Level AI Settings
+
+Organization admins can now configure a shared AI provider and API key from the **Organization Dashboard > AI Settings** tab. A course access policy controls which courses can inherit the org's key — choose from **All courses**, **Selected courses**, or **Disabled**. This eliminates the need for every course admin to manage their own API key.
+
+### New: Course AI Inheritance
+
+Courses can now inherit AI settings from their organization instead of configuring their own. When org AI is available, the Course Settings page shows a banner and a toggle to switch between the org's shared key and a course-specific key.
+
+### New: AI Usage Dashboard
+
+AI usage is now tracked automatically for every AI call (comment generation and test generation). Usage dashboards are available at three levels:
+
+- **Course level** — in Course Settings, below AI configuration.
+- **Organization level** — in the Organization Dashboard's AI Usage tab.
+- **Platform level** — in the codePost Admin dashboard for superusers.
+
+Each dashboard shows total requests, token counts, estimated costs, time-series charts, and breakdowns by assignment, course, or organization. Date range and granularity (hourly, daily, monthly) are configurable.
+
+See the [AI Settings & Usage Guide](/docs/ai-guide) for full details.
+
+## v3.1.1 — Quality of Life Improvements & Bug Fixes
 
 - User-facing changelog page — you're reading it!
 - Improved notebook editor loading for notebook-based assignments.

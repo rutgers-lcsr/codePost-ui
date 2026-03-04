@@ -128,13 +128,15 @@ Instructors retain full control over the AI environment:
 >
 > ![AI Features configuration in Course Settings](/assets/docs/instructor_ai_settings.png)
 
+For organization-level AI configuration, per-course inheritance, and usage analytics, see the [AI Settings & Usage Guide](/docs/ai-guide).
+
 ### Autograding and Tests Generation
 
 codePost can automatically generate test cases and autograding scripts based on your assignment specifications. This feature uses AI to analyze your assignment description, provided code, and any sample tests you have to create comprehensive test suites.
 
 To enable AI-generated tests:
 
-1. Go to **Admin Console > Environment Setup**.
+1. Go to **Admin Console > Environment & Tests**.
 2. Ensure the **Target File** is set for your assignment.
 3. Open a test category and click **Generate (AI)** in the Test Script editor.
 4. Review the generated script and adjust as needed.
@@ -160,7 +162,7 @@ codePost supports script-based autograding that lets instructors define tests di
 ### Where to find it
 
 1. Go to **Admin Console > Assignments > Environment**.
-2. Select an assignment in **Environment Setup**.
+2. Select an assignment in **Environment & Tests**.
 3. Select a **Test Category** or create a new one.
 4. Use the **Test Script** editor (Code, Split Preview, or Builder).
 

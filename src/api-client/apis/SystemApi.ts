@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AIUsageSummary,
   MaintenanceBannerResponse,
   PatchedMaintenanceBanner,
   SystemActivityResponse,
@@ -27,6 +28,13 @@ export interface ActivityRetrieveRequest {
   page?: number;
   pageSize?: number;
   search?: string;
+  startDate?: string;
+}
+
+export interface AiUsageRetrieveRequest {
+  endDate?: string;
+  granularity?: AiUsageRetrieveGranularityEnum;
+  organizationId?: number;
   startDate?: string;
 }
 
@@ -114,6 +122,79 @@ export class SystemApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<SystemActivityResponse> {
     const response = await this.activityRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * GET /system/aiUsage/ — Platform-wide AI usage analytics. Superuser only. Supports granularity, date range, and org breakdown.
+   */
+  async aiUsageRetrieveRaw(
+    requestParameters: AiUsageRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIUsageSummary>> {
+    const queryParameters: any = {};
+
+    if (requestParameters['endDate'] != null) {
+      queryParameters['endDate'] = requestParameters['endDate'];
+    }
+
+    if (requestParameters['granularity'] != null) {
+      queryParameters['granularity'] = requestParameters['granularity'];
+    }
+
+    if (requestParameters['organizationId'] != null) {
+      queryParameters['organizationId'] = requestParameters['organizationId'];
+    }
+
+    if (requestParameters['startDate'] != null) {
+      queryParameters['startDate'] = requestParameters['startDate'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/system/aiUsage/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET /system/aiUsage/ — Platform-wide AI usage analytics. Superuser only. Supports granularity, date range, and org breakdown.
+   */
+  async aiUsageRetrieve(
+    requestParameters: AiUsageRetrieveRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIUsageSummary> {
+    const response = await this.aiUsageRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -280,4 +361,14 @@ export class SystemApi extends runtime.BaseAPI {
     const response = await this.healthRetrieveRaw(initOverrides);
     return await response.value();
   }
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum AiUsageRetrieveGranularityEnum {
+  Daily = 'daily',
+  Hourly = 'hourly',
+  Monthly = 'monthly',
 }

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Layout, Menu, theme, Typography } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { DashboardOutlined, SettingOutlined, TeamOutlined, BookOutlined } from '@ant-design/icons';
+import { DashboardOutlined, SettingOutlined, TeamOutlined, BookOutlined, RobotOutlined } from '@ant-design/icons';
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
 import type { UserType } from '../../types/models';
@@ -12,6 +12,8 @@ import OrgSettings from './OrgSettings';
 import OrgOverview from './OrgOverview';
 import OrgCourses from './OrgCourses';
 import OrgUsers from './OrgUsers';
+import OrgAIUsage from './OrgAIUsage';
+import OrgAISettingsCard from './OrgAISettingsCard';
 
 const { Content, Sider } = Layout;
 
@@ -43,6 +45,8 @@ const OrgDashboard: React.FC<IProps> = (props) => {
     if (path.includes('/settings')) return 'settings';
     if (path.includes('/courses')) return 'courses';
     if (path.includes('/users')) return 'users';
+    if (path.includes('/ai-usage')) return 'ai-usage';
+    if (path.includes('/ai-settings')) return 'ai-settings';
     return 'overview';
   };
 
@@ -147,6 +151,16 @@ const OrgDashboard: React.FC<IProps> = (props) => {
                 icon: <SettingOutlined />,
                 label: 'Settings',
               },
+              {
+                key: 'ai-settings',
+                icon: <RobotOutlined />,
+                label: 'AI Settings',
+              },
+              {
+                key: 'ai-usage',
+                icon: <RobotOutlined />,
+                label: 'AI Usage',
+              },
             ]}
           />
         </nav>
@@ -186,6 +200,20 @@ const OrgDashboard: React.FC<IProps> = (props) => {
               }
             />
             <Route path="/settings" element={<OrgSettings user={props.user} />} />
+            <Route
+              path="/ai-settings"
+              element={
+                props.user.organization ? (
+                  <OrgAISettingsCard orgId={props.user.organization} courses={courses} />
+                ) : (
+                  <div>Loading...</div>
+                )
+              }
+            />
+            <Route
+              path="/ai-usage"
+              element={props.user.organization ? <OrgAIUsage orgId={props.user.organization} /> : <div>Loading...</div>}
+            />
           </Routes>
         </Content>
       </Layout>

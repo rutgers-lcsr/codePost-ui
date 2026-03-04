@@ -14,7 +14,29 @@
  */
 
 import * as runtime from '../runtime';
-import type { Organization, PatchedOrganization } from '../models/index';
+import type {
+  AIUsageSummary,
+  Organization,
+  OrganizationAISettings,
+  PatchedOrganization,
+  PatchedOrganizationAISettingsUpdate,
+} from '../models/index';
+
+export interface AiSettingsPartialUpdateRequest {
+  id: number;
+  patchedOrganizationAISettingsUpdate?: PatchedOrganizationAISettingsUpdate;
+}
+
+export interface AiSettingsRetrieveRequest {
+  id: number;
+}
+
+export interface AiUsageRetrieveRequest {
+  id: number;
+  endDate?: string;
+  granularity?: AiUsageRetrieveGranularityEnum;
+  startDate?: string;
+}
 
 export interface AnalyticsRetrieveRequest {
   id: number;
@@ -75,6 +97,216 @@ export interface VerifyUserCreateRequest {
  *
  */
 export class OrganizationsApi extends runtime.BaseAPI {
+  /**
+   * GET: Return the organization\'s AI configuration. PATCH: Update the organization\'s AI configuration. Only accessible by Org Staff or superuser.
+   */
+  async aiSettingsPartialUpdateRaw(
+    requestParameters: AiSettingsPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<OrganizationAISettings>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiSettingsPartialUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/aiSettings/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['patchedOrganizationAISettingsUpdate'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET: Return the organization\'s AI configuration. PATCH: Update the organization\'s AI configuration. Only accessible by Org Staff or superuser.
+   */
+  async aiSettingsPartialUpdate(
+    requestParameters: AiSettingsPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<OrganizationAISettings> {
+    const response = await this.aiSettingsPartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * GET: Return the organization\'s AI configuration. PATCH: Update the organization\'s AI configuration. Only accessible by Org Staff or superuser.
+   */
+  async aiSettingsRetrieveRaw(
+    requestParameters: AiSettingsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<OrganizationAISettings>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiSettingsRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/aiSettings/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET: Return the organization\'s AI configuration. PATCH: Update the organization\'s AI configuration. Only accessible by Org Staff or superuser.
+   */
+  async aiSettingsRetrieve(
+    requestParameters: AiSettingsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<OrganizationAISettings> {
+    const response = await this.aiSettingsRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns AI usage analytics for the organization. Includes time-series data and per-course breakdown. Only accessible by Org Staff or superuser.
+   */
+  async aiUsageRetrieveRaw(
+    requestParameters: AiUsageRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIUsageSummary>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiUsageRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['endDate'] != null) {
+      queryParameters['endDate'] = requestParameters['endDate'];
+    }
+
+    if (requestParameters['granularity'] != null) {
+      queryParameters['granularity'] = requestParameters['granularity'];
+    }
+
+    if (requestParameters['startDate'] != null) {
+      queryParameters['startDate'] = requestParameters['startDate'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/aiUsage/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns AI usage analytics for the organization. Includes time-series data and per-course breakdown. Only accessible by Org Staff or superuser.
+   */
+  async aiUsageRetrieve(
+    requestParameters: AiUsageRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIUsageSummary> {
+    const response = await this.aiUsageRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
   /**
    * Returns analytics for the organization.
    */
@@ -962,4 +1194,14 @@ export class OrganizationsApi extends runtime.BaseAPI {
     const response = await this.verifyUserCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum AiUsageRetrieveGranularityEnum {
+  Daily = 'daily',
+  Hourly = 'hourly',
+  Monthly = 'monthly',
 }

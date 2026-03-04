@@ -56,6 +56,7 @@ const DeleteAssignmentDialog: React.FC<IProps> = ({ isVisible, onCancel, onDelet
       open={isVisible}
       title={`Delete assignment: ${assignmentName}`}
       okText="Delete"
+      onCancel={onCancel}
       footer={[
         <CPButton cpType="secondary" key="back" onClick={onCancel}>
           Cancel
