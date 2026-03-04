@@ -22,7 +22,7 @@ import type { ActivateCipResponse } from '../models/index';
 export class TmpScriptApi extends runtime.BaseAPI {
   /**
    */
-  async scriptCreateRaw(
+  async createRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<runtime.ApiResponse<ActivateCipResponse>> {
     const queryParameters: any = {};
@@ -66,8 +66,8 @@ export class TmpScriptApi extends runtime.BaseAPI {
 
   /**
    */
-  async scriptCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivateCipResponse> {
-    const response = await this.scriptCreateRaw(initOverrides);
+  async create(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ActivateCipResponse> {
+    const response = await this.createRaw(initOverrides);
     return await response.value();
   }
 }

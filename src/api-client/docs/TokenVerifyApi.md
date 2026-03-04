@@ -2,13 +2,13 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                             | HTTP request            | Description |
-| -------------------------------------------------- | ----------------------- | ----------- |
-| [**verifyCreate**](TokenVerifyApi.md#verifycreate) | **POST** /token-verify/ |             |
+| Method                                 | HTTP request            | Description |
+| -------------------------------------- | ----------------------- | ----------- |
+| [**create**](TokenVerifyApi.md#create) | **POST** /token-verify/ |             |
 
-## verifyCreate
+## create
 
-> TokenVerify verifyCreate(tokenVerify)
+> TokenVerify create(tokenVerify)
 
 Takes a token and indicates if it is valid. This view provides no information about a token\&#39;s fitness for a particular use.
 
@@ -19,7 +19,7 @@ import {
   Configuration,
   TokenVerifyApi,
 } from '';
-import type { VerifyCreateRequest } from '';
+import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -28,10 +28,10 @@ async function example() {
   const body = {
     // TokenVerify
     tokenVerify: ...,
-  } satisfies VerifyCreateRequest;
+  } satisfies CreateRequest;
 
   try {
-    const data = await api.verifyCreate(body);
+    const data = await api.create(body);
     console.log(data);
   } catch (error) {
     console.error(error);

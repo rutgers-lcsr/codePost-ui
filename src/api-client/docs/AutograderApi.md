@@ -2,35 +2,35 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                                                                      | HTTP request                                                          | Description |
-| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ----------- |
-| [**environmentsBuildPartialUpdate**](AutograderApi.md#environmentsbuildpartialupdate)       | **PATCH** /autograder/environments/{id}/build/                        |             |
-| [**environmentsBuildStatusRetrieve**](AutograderApi.md#environmentsbuildstatusretrieve)     | **GET** /autograder/environments/{id}/build_status/                   |             |
-| [**environmentsCleanupCreate**](AutograderApi.md#environmentscleanupcreate)                 | **POST** /autograder/environments/{environment_id}/cleanup/           |             |
-| [**environmentsConvertToManualCreate**](AutograderApi.md#environmentsconverttomanualcreate) | **POST** /autograder/environments/{environment_id}/convert-to-manual/ |             |
-| [**environmentsCreate**](AutograderApi.md#environmentscreate)                               | **POST** /autograder/environments/                                    |             |
-| [**environmentsDestroy**](AutograderApi.md#environmentsdestroy)                             | **DELETE** /autograder/environments/{id}/                             |             |
-| [**environmentsDockerfileRetrieve**](AutograderApi.md#environmentsdockerfileretrieve)       | **GET** /autograder/environments/{id}/dockerfile/                     |             |
-| [**environmentsEjectRetrieve**](AutograderApi.md#environmentsejectretrieve)                 | **GET** /autograder/environments/{id}/eject/                          |             |
-| [**environmentsList**](AutograderApi.md#environmentslist)                                   | **GET** /autograder/environments/                                     |             |
-| [**environmentsPartialUpdate**](AutograderApi.md#environmentspartialupdate)                 | **PATCH** /autograder/environments/{id}/                              |             |
-| [**environmentsPreviewCreate**](AutograderApi.md#environmentspreviewcreate)                 | **POST** /autograder/environments/{id}/preview/                       |             |
-| [**environmentsRetrieve**](AutograderApi.md#environmentsretrieve)                           | **GET** /autograder/environments/{id}/                                |             |
-| [**environmentsRollbackCreate**](AutograderApi.md#environmentsrollbackcreate)               | **POST** /autograder/environments/{environment_id}/rollback/          |             |
-| [**environmentsRunAllPartialUpdate**](AutograderApi.md#environmentsrunallpartialupdate)     | **PATCH** /autograder/environments/{id}/runAll/                       |             |
-| [**environmentsRunPartialUpdate**](AutograderApi.md#environmentsrunpartialupdate)           | **PATCH** /autograder/environments/{id}/run/                          |             |
-| [**environmentsStatusRetrieve**](AutograderApi.md#environmentsstatusretrieve)               | **GET** /autograder/environments/{environment_id}/status/             |             |
-| [**environmentsUpdate**](AutograderApi.md#environmentsupdate)                               | **PUT** /autograder/environments/{id}/                                |             |
-| [**executeCodeCreate**](AutograderApi.md#executecodecreate)                                 | **POST** /autograder/execute/code/                                    |             |
-| [**executeFileAsyncCreate**](AutograderApi.md#executefileasynccreate)                       | **POST** /autograder/execute/file/async/                              |             |
-| [**executeFileCacheCheckRetrieve**](AutograderApi.md#executefilecachecheckretrieve)         | **GET** /autograder/execute/file/cache/check/                         |             |
-| [**executeFileCreate**](AutograderApi.md#executefilecreate)                                 | **POST** /autograder/execute/file/                                    |             |
-| [**executeFileStreamingCreate**](AutograderApi.md#executefilestreamingcreate)               | **POST** /autograder/execute/file/streaming/                          |             |
-| [**executeNotebookCellCreate**](AutograderApi.md#executenotebookcellcreate)                 | **POST** /autograder/execute/notebook-cell/                           |             |
-| [**executeNotebookCreate**](AutograderApi.md#executenotebookcreate)                         | **POST** /autograder/execute/notebook/                                |             |
-| [**shellMetricsRetrieve**](AutograderApi.md#shellmetricsretrieve)                           | **GET** /autograder/shell/metrics/                                    |             |
-| [**tasksRetrieve**](AutograderApi.md#tasksretrieve)                                         | **GET** /autograder/tasks/{id}/                                       |             |
-| [**v2RunCreate**](AutograderApi.md#v2runcreate)                                             | **POST** /autograder/v2/run/                                          |             |
+| Method                                                                                      | HTTP request                                                         | Description |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------- |
+| [**environmentsBuildPartialUpdate**](AutograderApi.md#environmentsbuildpartialupdate)       | **PATCH** /autograder/environments/{id}/build/                       |             |
+| [**environmentsBuildStatusRetrieve**](AutograderApi.md#environmentsbuildstatusretrieve)     | **GET** /autograder/environments/{id}/build_status/                  |             |
+| [**environmentsCleanupCreate**](AutograderApi.md#environmentscleanupcreate)                 | **POST** /autograder/environments/{environmentId}/cleanup/           |             |
+| [**environmentsConvertToManualCreate**](AutograderApi.md#environmentsconverttomanualcreate) | **POST** /autograder/environments/{environmentId}/convert-to-manual/ |             |
+| [**environmentsCreate**](AutograderApi.md#environmentscreate)                               | **POST** /autograder/environments/                                   |             |
+| [**environmentsDestroy**](AutograderApi.md#environmentsdestroy)                             | **DELETE** /autograder/environments/{id}/                            |             |
+| [**environmentsDockerfileRetrieve**](AutograderApi.md#environmentsdockerfileretrieve)       | **GET** /autograder/environments/{id}/dockerfile/                    |             |
+| [**environmentsEjectRetrieve**](AutograderApi.md#environmentsejectretrieve)                 | **GET** /autograder/environments/{id}/eject/                         |             |
+| [**environmentsList**](AutograderApi.md#environmentslist)                                   | **GET** /autograder/environments/                                    |             |
+| [**environmentsPartialUpdate**](AutograderApi.md#environmentspartialupdate)                 | **PATCH** /autograder/environments/{id}/                             |             |
+| [**environmentsPreviewCreate**](AutograderApi.md#environmentspreviewcreate)                 | **POST** /autograder/environments/{id}/preview/                      |             |
+| [**environmentsRetrieve**](AutograderApi.md#environmentsretrieve)                           | **GET** /autograder/environments/{id}/                               |             |
+| [**environmentsRollbackCreate**](AutograderApi.md#environmentsrollbackcreate)               | **POST** /autograder/environments/{environmentId}/rollback/          |             |
+| [**environmentsRunAllPartialUpdate**](AutograderApi.md#environmentsrunallpartialupdate)     | **PATCH** /autograder/environments/{id}/runAll/                      |             |
+| [**environmentsRunPartialUpdate**](AutograderApi.md#environmentsrunpartialupdate)           | **PATCH** /autograder/environments/{id}/run/                         |             |
+| [**environmentsStatusRetrieve**](AutograderApi.md#environmentsstatusretrieve)               | **GET** /autograder/environments/{environmentId}/status/             |             |
+| [**environmentsUpdate**](AutograderApi.md#environmentsupdate)                               | **PUT** /autograder/environments/{id}/                               |             |
+| [**executeCodeCreate**](AutograderApi.md#executecodecreate)                                 | **POST** /autograder/execute/code/                                   |             |
+| [**executeFileAsyncCreate**](AutograderApi.md#executefileasynccreate)                       | **POST** /autograder/execute/file/async/                             |             |
+| [**executeFileCacheCheckRetrieve**](AutograderApi.md#executefilecachecheckretrieve)         | **GET** /autograder/execute/file/cache/check/                        |             |
+| [**executeFileCreate**](AutograderApi.md#executefilecreate)                                 | **POST** /autograder/execute/file/                                   |             |
+| [**executeFileStreamingCreate**](AutograderApi.md#executefilestreamingcreate)               | **POST** /autograder/execute/file/streaming/                         |             |
+| [**executeNotebookCellCreate**](AutograderApi.md#executenotebookcellcreate)                 | **POST** /autograder/execute/notebook-cell/                          |             |
+| [**executeNotebookCreate**](AutograderApi.md#executenotebookcreate)                         | **POST** /autograder/execute/notebook/                               |             |
+| [**shellMetricsRetrieve**](AutograderApi.md#shellmetricsretrieve)                           | **GET** /autograder/shell/metrics/                                   |             |
+| [**tasksRetrieve**](AutograderApi.md#tasksretrieve)                                         | **GET** /autograder/tasks/{id}/                                      |             |
+| [**v2RunCreate**](AutograderApi.md#v2runcreate)                                             | **POST** /autograder/v2/run/                                         |             |
 
 ## environmentsBuildPartialUpdate
 
@@ -1071,7 +1071,7 @@ example().catch(console.error);
 
 > EnvironmentRunResponse environmentsRunPartialUpdate(id, patchedEnvironmentRunRequest)
 
-list: Return a list of all the testFiles.
+Run tests for a submission using the modern TestService architecture. Dispatches run_test_task which calls TestService.run_suite().
 
 ### Example
 

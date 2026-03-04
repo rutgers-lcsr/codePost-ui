@@ -87,7 +87,8 @@ const OrgDashboard: React.FC<IProps> = (props) => {
     if (getSelectedKey() === 'users') {
       fetchUsers();
     }
-  }, [getSelectedKey(), fetchUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, fetchUsers]);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

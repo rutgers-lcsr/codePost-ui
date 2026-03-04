@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import {
   BookOutlined,
+  CalendarOutlined,
   CheckCircleOutlined,
   CrownOutlined,
   GlobalOutlined,
@@ -42,6 +43,7 @@ import UsersTable from './UsersTable';
 import APIIframe from './APIIframe';
 import ActivityFeed from './ActivityFeed';
 import MaintenanceBannerPanel from './MaintenanceBannerPanel';
+import DeployCalendar from './DeployCalendar';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
@@ -51,7 +53,7 @@ import { UserIO } from '../../services/user';
 const { Title, Text } = Typography;
 const { Content, Sider } = Layout;
 
-type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users' | 'Activity' | 'API';
+type TabType = 'Overview' | 'Organizations' | 'Courses' | 'Admins' | 'Users' | 'Activity' | 'Deploy Calendar' | 'API';
 
 export interface AdminData {
   id: number;
@@ -228,7 +230,7 @@ const Dashboard = () => {
     return (
       <div style={{ padding: '24px' }}>
         {/* Header */}
-        <div style={{ marginBottom: '46px' }}>
+        <div style={{ marginBottom: '24px' }}>
           <Title level={2} style={{ marginBottom: '8px' }}>
             Admin Dashboard
           </Title>
@@ -299,7 +301,7 @@ const Dashboard = () => {
 
         {/* Stats Cards Row 2 */}
         <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Total Unique Users"
@@ -313,7 +315,7 @@ const Dashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Course Admins"
@@ -327,7 +329,7 @@ const Dashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Platform Admins"
@@ -341,7 +343,7 @@ const Dashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Users with Grader Role"
@@ -355,7 +357,7 @@ const Dashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Sections"
@@ -369,7 +371,7 @@ const Dashboard = () => {
             </Card>
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={8}>
             <Card>
               <Statistic
                 title="Inactive Users"
@@ -485,6 +487,8 @@ const Dashboard = () => {
         return <UsersTable rosters={rosters} organizations={organizations} users={users} onRefresh={fetchData} />;
       case 'Activity':
         return <ActivityFeed />;
+      case 'Deploy Calendar':
+        return <DeployCalendar />;
       case 'API':
         return <APIIframe />;
       default:
@@ -558,6 +562,11 @@ const Dashboard = () => {
                 key: 'Activity',
                 icon: <RiseOutlined />,
                 label: 'Activity',
+              },
+              {
+                key: 'Deploy Calendar',
+                icon: <CalendarOutlined />,
+                label: 'Deploy Calendar',
               },
               {
                 key: 'API',

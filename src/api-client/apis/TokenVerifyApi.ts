@@ -16,7 +16,7 @@
 import * as runtime from '../runtime';
 import type { TokenVerify } from '../models/index';
 
-export interface VerifyCreateRequest {
+export interface CreateRequest {
   tokenVerify: TokenVerify;
 }
 
@@ -27,14 +27,14 @@ export class TokenVerifyApi extends runtime.BaseAPI {
   /**
    * Takes a token and indicates if it is valid.  This view provides no information about a token\'s fitness for a particular use.
    */
-  async verifyCreateRaw(
-    requestParameters: VerifyCreateRequest,
+  async createRaw(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<runtime.ApiResponse<TokenVerify>> {
     if (requestParameters['tokenVerify'] == null) {
       throw new runtime.RequiredError(
         'tokenVerify',
-        'Required parameter "tokenVerify" was null or undefined when calling verifyCreate().',
+        'Required parameter "tokenVerify" was null or undefined when calling create().',
       );
     }
 
@@ -63,11 +63,11 @@ export class TokenVerifyApi extends runtime.BaseAPI {
   /**
    * Takes a token and indicates if it is valid.  This view provides no information about a token\'s fitness for a particular use.
    */
-  async verifyCreate(
-    requestParameters: VerifyCreateRequest,
+  async create(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<TokenVerify> {
-    const response = await this.verifyCreateRaw(requestParameters, initOverrides);
+    const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }
 }

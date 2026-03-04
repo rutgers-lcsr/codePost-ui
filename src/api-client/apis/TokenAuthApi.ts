@@ -16,7 +16,7 @@
 import * as runtime from '../runtime';
 import type { JWT } from '../models/index';
 
-export interface AuthCreateRequest {
+export interface CreateRequest {
   jWT: JWT;
 }
 
@@ -27,15 +27,12 @@ export class TokenAuthApi extends runtime.BaseAPI {
   /**
    * Takes a set of user credentials and returns a sliding JSON web token to prove the authentication of those credentials.
    */
-  async authCreateRaw(
-    requestParameters: AuthCreateRequest,
+  async createRaw(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<runtime.ApiResponse<JWT>> {
     if (requestParameters['jWT'] == null) {
-      throw new runtime.RequiredError(
-        'jWT',
-        'Required parameter "jWT" was null or undefined when calling authCreate().',
-      );
+      throw new runtime.RequiredError('jWT', 'Required parameter "jWT" was null or undefined when calling create().');
     }
 
     const queryParameters: any = {};
@@ -63,11 +60,11 @@ export class TokenAuthApi extends runtime.BaseAPI {
   /**
    * Takes a set of user credentials and returns a sliding JSON web token to prove the authentication of those credentials.
    */
-  async authCreate(
-    requestParameters: AuthCreateRequest,
+  async create(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<JWT> {
-    const response = await this.authCreateRaw(requestParameters, initOverrides);
+    const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }
 }

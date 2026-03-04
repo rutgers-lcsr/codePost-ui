@@ -9,6 +9,7 @@ apis/CourseFilesApi.ts
 apis/CoursesApi.ts
 apis/DashboardApi.ts
 apis/FilesApi.ts
+apis/ImpersonateApi.ts
 apis/LogsApi.ts
 apis/OrganizationsApi.ts
 apis/OttApi.ts
@@ -39,6 +40,7 @@ docs/AssignmentDataSet.md
 docs/AssignmentDataSetCreate.md
 docs/AssignmentDataSetUpdate.md
 docs/AssignmentDataSetsApi.md
+docs/AssignmentDeadline.md
 docs/AssignmentDownloadResponse.md
 docs/AssignmentFile.md
 docs/AssignmentFileSummary.md
@@ -57,6 +59,7 @@ docs/AutograderApi.md
 docs/BeforeStudentUploadResponse.md
 docs/BuildTypeEnum.md
 docs/CacheCheckResponse.md
+docs/CeleryCheck.md
 docs/CheckSSOAvailabilityResponse.md
 docs/CheckStatusNewAdminUserResponse.md
 docs/CodeExecutionRequest.md
@@ -75,6 +78,7 @@ docs/CourseStudentCaptions.md
 docs/CoursesApi.md
 docs/DashboardApi.md
 docs/DashboardStats.md
+docs/DiskCheck.md
 docs/EmailPasswordResetRequest.md
 docs/EmailPasswordResetResponse.md
 docs/EmailRegistrationRequest.md
@@ -100,6 +104,8 @@ docs/FilesApi.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/HandleValidationResponse.md
+docs/HealthCheck.md
+docs/ImpersonateApi.md
 docs/JWT.md
 docs/JwtOttResponse.md
 docs/LanguageEnum.md
@@ -109,6 +115,8 @@ docs/LogErrorRequest.md
 docs/LogHappinessRequest.md
 docs/LogSuccessResponse.md
 docs/LogsApi.md
+docs/MaintenanceBannerResponse.md
+docs/MigrationCheck.md
 docs/ModelFile.md
 docs/NotebookCellExecutionRequest.md
 docs/NotebookExecutionRequest.md
@@ -116,6 +124,7 @@ docs/NullEnum.md
 docs/Organization.md
 docs/OrganizationsApi.md
 docs/OttApi.md
+docs/OverallEnum.md
 docs/PaginatedSectionList.md
 docs/PaginatedSubmissionHistoryList.md
 docs/PaginatedSubmissionList.md
@@ -127,6 +136,7 @@ docs/PatchedAssignmentFile.md
 docs/PatchedComment.md
 docs/PatchedCommentTemplate.md
 docs/PatchedCourse.md
+docs/PatchedCourseAISettings.md
 docs/PatchedCourseFile.md
 docs/PatchedCourseRosterMap.md
 docs/PatchedCourseStudentCaptions.md
@@ -135,6 +145,7 @@ docs/PatchedEnvironmentBuildRequest.md
 docs/PatchedEnvironmentRunAllRequest.md
 docs/PatchedEnvironmentRunRequest.md
 docs/PatchedFile.md
+docs/PatchedMaintenanceBanner.md
 docs/PatchedOrganization.md
 docs/PatchedRubricCategory.md
 docs/PatchedRubricComment.md
@@ -160,9 +171,10 @@ docs/Section.md
 docs/SectionsApi.md
 docs/SetCredentialsRequest.md
 docs/SetCredentialsResponse.md
+docs/SeverityEnum.md
 docs/ShellMetricsResponse.md
 docs/ShellMetricsSession.md
-docs/StatusEnum.md
+docs/StatusDfeEnum.md
 docs/StudentSubmission.md
 docs/Submission.md
 docs/SubmissionCheckPermissionResponse.md
@@ -183,6 +195,7 @@ docs/SystemActivityResponse.md
 docs/SystemApi.md
 docs/SystemHealthResponse.md
 docs/TaskStatusResponse.md
+docs/TaskStatusResponseStatusEnum.md
 docs/TestCase.md
 docs/TestCaseRunRequest.md
 docs/TestCaseRunResponse.md

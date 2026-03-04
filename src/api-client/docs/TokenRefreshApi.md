@@ -2,13 +2,13 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                                | HTTP request             | Description |
-| ----------------------------------------------------- | ------------------------ | ----------- |
-| [**refreshCreate**](TokenRefreshApi.md#refreshcreate) | **POST** /token-refresh/ |             |
+| Method                                  | HTTP request             | Description |
+| --------------------------------------- | ------------------------ | ----------- |
+| [**create**](TokenRefreshApi.md#create) | **POST** /token-refresh/ |             |
 
-## refreshCreate
+## create
 
-> TokenRefreshSliding refreshCreate(tokenRefreshSliding)
+> TokenRefreshSliding create(tokenRefreshSliding)
 
 Takes a sliding JSON web token and returns a new, refreshed version if the token\&#39;s refresh period has not expired.
 
@@ -19,7 +19,7 @@ import {
   Configuration,
   TokenRefreshApi,
 } from '';
-import type { RefreshCreateRequest } from '';
+import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -28,10 +28,10 @@ async function example() {
   const body = {
     // TokenRefreshSliding
     tokenRefreshSliding: ...,
-  } satisfies RefreshCreateRequest;
+  } satisfies CreateRequest;
 
   try {
-    const data = await api.refreshCreate(body);
+    const data = await api.create(body);
     console.log(data);
   } catch (error) {
     console.error(error);

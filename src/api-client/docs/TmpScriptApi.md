@@ -2,19 +2,19 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                           | HTTP request          | Description |
-| ------------------------------------------------ | --------------------- | ----------- |
-| [**scriptCreate**](TmpScriptApi.md#scriptcreate) | **POST** /tmp-script/ |             |
+| Method                               | HTTP request          | Description |
+| ------------------------------------ | --------------------- | ----------- |
+| [**create**](TmpScriptApi.md#create) | **POST** /tmp-script/ |             |
 
-## scriptCreate
+## create
 
-> ActivateCipResponse scriptCreate()
+> ActivateCipResponse create()
 
 ### Example
 
 ```ts
 import { Configuration, TmpScriptApi } from '';
-import type { ScriptCreateRequest } from '';
+import type { CreateRequest } from '';
 
 async function example() {
   console.log('🚀 Testing  SDK...');
@@ -32,7 +32,7 @@ async function example() {
   const api = new TmpScriptApi(config);
 
   try {
-    const data = await api.scriptCreate();
+    const data = await api.create();
     console.log(data);
   } catch (error) {
     console.error(error);

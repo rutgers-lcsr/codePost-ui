@@ -43,7 +43,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setAiCommentsEnabled(settings.aiCommentsEnabled ?? settings.aiEnabled ?? false);
         setAiCommentsDisabled(settings.aiCommentsDisabled || false);
         setIsConfigured(!!settings.aiProvider); // We know it's configured if provider is set
-        setProvider((settings.aiProvider as AIProvider) || undefined);
+        setProvider((settings.aiProvider as AIProvider | undefined) || undefined);
         setBaseUrl(settings.aiBaseUrl || '');
         setModel(settings.aiModel || '');
       } catch (error) {
