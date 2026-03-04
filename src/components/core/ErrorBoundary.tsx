@@ -3,9 +3,9 @@ import * as React from 'react';
 
 import { FileType, getFileContent } from '../../utils/file';
 
-import { Logger } from '../../utils/logger';
+import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
 
-import { Result, Button, Collapse, Typography, Space, Card, theme, Divider } from 'antd';
+import { Result, Button, Collapse, Typography, Space, Card, theme, Divider, Modal } from 'antd';
 import {
   ReloadOutlined,
   MailOutlined,
@@ -13,6 +13,8 @@ import {
   FileTextOutlined,
   CodeOutlined,
   GlobalOutlined,
+  CameraOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons';
 
 const { Text, Paragraph, Title } = Typography;
@@ -26,10 +28,16 @@ interface IErrorBoundaryProps {
   file?: FileType;
 }
 
+type DiagnosticConsentState = 'pending' | 'previewing-screenshot' | 'accepted' | 'declined';
+
 interface IErrorBoundaryState {
   error?: Error;
   errorInfo?: React.ErrorInfo;
   url?: string;
+  /** Controls the consent UI for sending diagnostic details */
+  diagnosticConsent?: DiagnosticConsentState;
+  /** Full error payload assembled at crash time, sent only on consent */
+  pendingPayload?: { error: string; errorDetail: string; url: string; screenshot?: string };
 }
 
 // Helper component for development debug info
@@ -558,43 +566,45 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
       _screenshotTimer = null;
     }
 
-    const basePayload = {
+    // ── Always send: bare error string only (no identifying info) ──
+    Logger.errorMinimal(error.toString());
+
+    // Assemble the full diagnostic payload but do NOT send it yet
+    const fullPayload = {
       error: error.toString(),
       errorDetail: JSON.stringify(
         {
-          // ── Error ──────────────────────────────────────────────────────────
           name: error.name,
           message: error.message,
           stack: error.stack,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           cause: (error as any).cause ?? null,
-
-          // ── React context ──────────────────────────────────────────────────
           componentStack: errorInfo.componentStack,
           boundaryType: this.props.type,
           submissionId: this.props.submissionID ?? null,
           fileId: this.props.file?.id ?? null,
           fileName: this.props.file?.name ?? null,
-
-          // ── Browser & environment ──────────────────────────────────────────
           timestamp: new Date().toISOString(),
           ...gatherBrowserContext(),
-
-          // ── Recent console errors / warnings before crash ──────────────────
           recentConsoleLogs: [...recentConsoleLogs],
         },
         null,
         2,
       ),
       url: window.location.href,
-      // Attach the most recent cached screenshot (captured every 30s before the crash)
       screenshot: _lastScreenshot ?? undefined,
     };
 
-    console.error('ErrorBoundary caught an error:', basePayload);
+    console.error('ErrorBoundary caught an error:', error.toString());
 
-    // Single send with all data including cached screenshot
-    Logger.errorFull(basePayload);
+    // If user previously consented, send everything immediately
+    if (getDiagnosticConsent() === 'accepted') {
+      Logger.errorFull(fullPayload);
+      this.setState({ diagnosticConsent: 'accepted' });
+    } else {
+      // Store payload and wait for consent
+      this.setState({ diagnosticConsent: 'pending', pendingPayload: fullPayload });
+    }
   }
 
   private handleRefresh = () => {
@@ -604,6 +614,118 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
   private handleGoHome = () => {
     window.location.href = '/';
   };
+
+  private handlePreviewScreenshot = () => {
+    this.setState({ diagnosticConsent: 'previewing-screenshot' });
+  };
+
+  private handleDiagnosticConsent = () => {
+    setDiagnosticConsent('accepted');
+    this.setState({ diagnosticConsent: 'accepted' });
+    const payload = this.state.pendingPayload;
+    if (payload) {
+      Logger.errorFull(payload);
+    }
+  };
+
+  private handleDiagnosticDecline = () => {
+    setDiagnosticConsent('declined');
+    this.setState({ diagnosticConsent: 'declined' });
+    Logger.clearQueue();
+  };
+
+  private renderDiagnosticConsent() {
+    const { diagnosticConsent } = this.state;
+    if (!diagnosticConsent || diagnosticConsent === 'declined') return null;
+
+    if (diagnosticConsent === 'accepted') {
+      return (
+        <Card
+          size="small"
+          style={{
+            marginTop: '16px',
+            maxWidth: '500px',
+            border: '1px solid #b7eb8f',
+            background: '#f6ffed',
+          }}
+        >
+          <Space>
+            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            <Text>Diagnostic details sent. Thank you for helping us improve codePost!</Text>
+          </Space>
+        </Card>
+      );
+    }
+
+    return (
+      <>
+        <Card
+          size="small"
+          style={{
+            marginTop: '16px',
+            maxWidth: '500px',
+            border: '1px solid #91caff',
+            background: '#e6f4ff',
+          }}
+        >
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <Space>
+              <BugOutlined style={{ color: '#1677ff' }} />
+              <Text strong>Help us fix this</Text>
+            </Space>
+            <Text>
+              Would you like to share diagnostic details with the codePost team? This includes a screenshot of what you
+              were seeing, your browser info, and technical error details. No personal data is shared beyond what is
+              visible on screen.
+            </Text>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Your preference will be remembered for future errors.
+            </Text>
+            <Space style={{ marginTop: '4px' }}>
+              <Button type="primary" size="small" icon={<BugOutlined />} onClick={this.handleDiagnosticConsent}>
+                Share Diagnostics
+              </Button>
+              {_lastScreenshot && (
+                <Button size="small" icon={<CameraOutlined />} onClick={this.handlePreviewScreenshot}>
+                  Preview Screenshot
+                </Button>
+              )}
+              <Button size="small" onClick={this.handleDiagnosticDecline}>
+                No Thanks
+              </Button>
+            </Space>
+          </Space>
+        </Card>
+        <Modal
+          open={diagnosticConsent === 'previewing-screenshot'}
+          title="Screenshot Preview"
+          onOk={this.handleDiagnosticConsent}
+          onCancel={() => this.setState({ diagnosticConsent: 'pending' })}
+          okText="Share Diagnostics"
+          cancelText="Back"
+          width={720}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Text type="secondary">
+              This is the screenshot that will be included with the diagnostic report. It shows what was on screen
+              shortly before the error occurred.
+            </Text>
+            {_lastScreenshot && (
+              <img
+                src={_lastScreenshot}
+                alt="Screenshot preview"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: '1px solid #d9d9d9',
+                }}
+              />
+            )}
+          </Space>
+        </Modal>
+      </>
+    );
+  }
 
   public render() {
     if (this.state.error) {
@@ -635,6 +757,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 </Button>,
               ]}
             />
+            {this.renderDiagnosticConsent()}
             {showTroubleshooting && <TroubleshootingCard />}
             <DebugInfoPanel
               error={this.state.error}
@@ -676,6 +799,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               </Button>,
             ]}
           />
+          {this.renderDiagnosticConsent()}
           {showTroubleshooting && <TroubleshootingCard />}
           <DebugInfoPanel
             error={this.state.error}

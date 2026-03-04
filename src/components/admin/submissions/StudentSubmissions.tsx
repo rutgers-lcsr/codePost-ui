@@ -182,7 +182,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                   dataIndex: assignment.name,
                   key: assignment.name,
                   sorter: (a: any, b: any) => {
-                    return sortFunction(a[assignment.name], b[assignment.name]);
+                    return sortFunction(a[`${assignment.name}_sort`], b[`${assignment.name}_sort`]);
                   },
                   align: aligner,
                   className: 'student-table',
@@ -255,10 +255,13 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                       ? submission.grade + '/' + assignment.points
                       : submission.grade;
                   toRet[assignment.name] = <Typography.Text strong>{gradeText}</Typography.Text>;
+                  toRet[`${assignment.name}_sort`] = submission.grade ?? 0;
                 } else if (submission) {
                   toRet[assignment.name] = <Typography.Text strong>Unfinalized</Typography.Text>;
+                  toRet[`${assignment.name}_sort`] = 'Unfinalized';
                 } else {
                   toRet[assignment.name] = '--';
+                  toRet[`${assignment.name}_sort`] = '--';
                 }
               }
               return toRet;

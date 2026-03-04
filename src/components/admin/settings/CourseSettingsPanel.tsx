@@ -18,6 +18,7 @@ import CPAdminDetail from '../other/CPAdminDetail';
 import { Course } from '../../../api-client';
 import InputNumberOrNull from './InputNumberOrNull';
 import AISettingsCard from './AISettingsCard';
+import CourseAIUsageCard from './CourseAIUsageCard';
 
 import { timezones } from '../other/timezones';
 
@@ -238,6 +239,9 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
       {/* AI Settings - Prominent position after Course Identity */}
       <AISettingsCard courseId={thisCourse.id} />
+
+      {/* AI Usage Analytics */}
+      <CourseAIUsageCard courseId={thisCourse.id} />
 
       {/* Toggle Settings */}
       <Card

@@ -7,6 +7,7 @@ All URIs are relative to _http://localhost_
 | [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate)                   | **PATCH** /courses/{id}/addToRoster/          |             |
 | [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
 | [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
+| [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
 | [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/     |             |
 | [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/       |             |
 | [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/         |             |
@@ -233,6 +234,86 @@ example().catch(console.error);
 ### Return type
 
 [**CourseAISettings**](CourseAISettings.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiUsageRetrieve
+
+> AIUsageSummary aiUsageRetrieve(id, endDate, granularity, startDate)
+
+Returns AI usage analytics for the course. Includes time-series data and per-assignment breakdown. Only accessible by course admins.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { AiUsageRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // string | End date (ISO 8601) (optional)
+    endDate: endDate_example,
+    // 'daily' | 'hourly' | 'monthly' | Time bucket granularity: \'hourly\', \'daily\', or \'monthly\' (optional)
+    granularity: granularity_example,
+    // string | Start date (ISO 8601) (optional)
+    startDate: startDate_example,
+  } satisfies AiUsageRetrieveRequest;
+
+  try {
+    const data = await api.aiUsageRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name            | Type                         | Description                                                                            | Notes                                                               |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **id**          | `number`                     | A unique integer value identifying this course.                                        | [Defaults to `undefined`]                                           |
+| **endDate**     | `string`                     | End date (ISO 8601)                                                                    | [Optional] [Defaults to `undefined`]                                |
+| **granularity** | `daily`, `hourly`, `monthly` | Time bucket granularity: \&#39;hourly\&#39;, \&#39;daily\&#39;, or \&#39;monthly\&#39; | [Optional] [Defaults to `undefined`] [Enum: daily, hourly, monthly] |
+| **startDate**   | `string`                     | Start date (ISO 8601)                                                                  | [Optional] [Defaults to `undefined`]                                |
+
+### Return type
+
+[**AIUsageSummary**](AIUsageSummary.md)
 
 ### Authorization
 

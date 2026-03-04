@@ -4,6 +4,9 @@ All URIs are relative to _http://localhost_
 
 | Method                                                                     | HTTP request                                      | Description |
 | -------------------------------------------------------------------------- | ------------------------------------------------- | ----------- |
+| [**aiSettingsPartialUpdate**](OrganizationsApi.md#aisettingspartialupdate) | **PATCH** /organizations/{id}/aiSettings/         |             |
+| [**aiSettingsRetrieve**](OrganizationsApi.md#aisettingsretrieve)           | **GET** /organizations/{id}/aiSettings/           |             |
+| [**aiUsageRetrieve**](OrganizationsApi.md#aiusageretrieve)                 | **GET** /organizations/{id}/aiUsage/              |             |
 | [**analyticsRetrieve**](OrganizationsApi.md#analyticsretrieve)             | **GET** /organizations/{id}/analytics/            |             |
 | [**create**](OrganizationsApi.md#create)                                   | **POST** /organizations/                          |             |
 | [**demoteStaffCreate**](OrganizationsApi.md#demotestaffcreate)             | **POST** /organizations/{id}/demote_staff/        |             |
@@ -17,6 +20,234 @@ All URIs are relative to _http://localhost_
 | [**update**](OrganizationsApi.md#update)                                   | **PUT** /organizations/{id}/                      |             |
 | [**usersRetrieve**](OrganizationsApi.md#usersretrieve)                     | **GET** /organizations/{id}/users/                |             |
 | [**verifyUserCreate**](OrganizationsApi.md#verifyusercreate)               | **POST** /organizations/{id}/verify_user/         |             |
+
+## aiSettingsPartialUpdate
+
+> OrganizationAISettings aiSettingsPartialUpdate(id, patchedOrganizationAISettingsUpdate)
+
+GET: Return the organization\&#39;s AI configuration. PATCH: Update the organization\&#39;s AI configuration. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OrganizationsApi,
+} from '';
+import type { AiSettingsPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+    // PatchedOrganizationAISettingsUpdate (optional)
+    patchedOrganizationAISettingsUpdate: ...,
+  } satisfies AiSettingsPartialUpdateRequest;
+
+  try {
+    const data = await api.aiSettingsPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                                    | Type                                                                          | Description                                           | Notes                     |
+| --------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                                  | `number`                                                                      | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| **patchedOrganizationAISettingsUpdate** | [PatchedOrganizationAISettingsUpdate](PatchedOrganizationAISettingsUpdate.md) |                                                       | [Optional]                |
+
+### Return type
+
+[**OrganizationAISettings**](OrganizationAISettings.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiSettingsRetrieve
+
+> OrganizationAISettings aiSettingsRetrieve(id)
+
+GET: Return the organization\&#39;s AI configuration. PATCH: Update the organization\&#39;s AI configuration. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import { Configuration, OrganizationsApi } from '';
+import type { AiSettingsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+  } satisfies AiSettingsRetrieveRequest;
+
+  try {
+    const data = await api.aiSettingsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                           | Notes                     |
+| ------ | -------- | ----------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+
+### Return type
+
+[**OrganizationAISettings**](OrganizationAISettings.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiUsageRetrieve
+
+> AIUsageSummary aiUsageRetrieve(id, endDate, granularity, startDate)
+
+Returns AI usage analytics for the organization. Includes time-series data and per-course breakdown. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import { Configuration, OrganizationsApi } from '';
+import type { AiUsageRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+    // string | End date (ISO 8601) (optional)
+    endDate: endDate_example,
+    // 'daily' | 'hourly' | 'monthly' | Time bucket granularity: \'hourly\', \'daily\', or \'monthly\' (optional)
+    granularity: granularity_example,
+    // string | Start date (ISO 8601) (optional)
+    startDate: startDate_example,
+  } satisfies AiUsageRetrieveRequest;
+
+  try {
+    const data = await api.aiUsageRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name            | Type                         | Description                                                                            | Notes                                                               |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **id**          | `number`                     | A unique integer value identifying this organization.                                  | [Defaults to `undefined`]                                           |
+| **endDate**     | `string`                     | End date (ISO 8601)                                                                    | [Optional] [Defaults to `undefined`]                                |
+| **granularity** | `daily`, `hourly`, `monthly` | Time bucket granularity: \&#39;hourly\&#39;, \&#39;daily\&#39;, or \&#39;monthly\&#39; | [Optional] [Defaults to `undefined`] [Enum: daily, hourly, monthly] |
+| **startDate**   | `string`                     | Start date (ISO 8601)                                                                  | [Optional] [Defaults to `undefined`]                                |
+
+### Return type
+
+[**AIUsageSummary**](AIUsageSummary.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 ## analyticsRetrieve
 

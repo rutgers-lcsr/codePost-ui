@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AIUsageSummary,
   Course,
   CourseAISettings,
   CourseRoster,
@@ -38,11 +39,18 @@ export interface AddToRosterPartialUpdateRequest {
 
 export interface AiSettingsPartialUpdateRequest {
   id: number;
-  patchedCourseAISettings?: Omit<PatchedCourseAISettings, 'id' | 'aiEnabled' | 'aiCommentsEnabled'>;
+  patchedCourseAISettings?: Omit<PatchedCourseAISettings, 'id' | 'aiEnabled' | 'aiCommentsEnabled' | 'orgAiAvailable'>;
 }
 
 export interface AiSettingsRetrieveRequest {
   id: number;
+}
+
+export interface AiUsageRetrieveRequest {
+  id: number;
+  endDate?: string;
+  granularity?: AiUsageRetrieveGranularityEnum;
+  startDate?: string;
 }
 
 export interface ChangeInviteCodePartialUpdateRequest {
@@ -350,6 +358,83 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CourseAISettings> {
     const response = await this.aiSettingsRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns AI usage analytics for the course. Includes time-series data and per-assignment breakdown. Only accessible by course admins.
+   */
+  async aiUsageRetrieveRaw(
+    requestParameters: AiUsageRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIUsageSummary>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiUsageRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['endDate'] != null) {
+      queryParameters['endDate'] = requestParameters['endDate'];
+    }
+
+    if (requestParameters['granularity'] != null) {
+      queryParameters['granularity'] = requestParameters['granularity'];
+    }
+
+    if (requestParameters['startDate'] != null) {
+      queryParameters['startDate'] = requestParameters['startDate'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/courses/{id}/aiUsage/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns AI usage analytics for the course. Includes time-series data and per-assignment breakdown. Only accessible by course admins.
+   */
+  async aiUsageRetrieve(
+    requestParameters: AiUsageRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIUsageSummary> {
+    const response = await this.aiUsageRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -1547,4 +1632,14 @@ export class CoursesApi extends runtime.BaseAPI {
     const response = await this.updateRaw(requestParameters, initOverrides);
     return await response.value();
   }
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum AiUsageRetrieveGranularityEnum {
+  Daily = 'daily',
+  Hourly = 'hourly',
+  Monthly = 'monthly',
 }

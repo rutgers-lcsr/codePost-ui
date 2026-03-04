@@ -13,7 +13,9 @@ Serializer for course AI configuration. Admin-only access.
 | `aiModel`            | string  |
 | `aiDisabled`         | boolean |
 | `aiCommentsDisabled` | boolean |
+| `aiUseOwnSettings`   | boolean |
 | `aiEnabled`          | boolean |
 | `aiCommentsEnabled`  | boolean |
+| `orgAiAvailable`     | boolean |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

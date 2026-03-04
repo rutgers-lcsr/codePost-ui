@@ -93,7 +93,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
             },
             {
               key: 'assignments/environment',
-              label: <Link to={`${courseBaseURL}/assignments/environment`}>Environment Setup</Link>,
+              label: <Link to={`${courseBaseURL}/assignments/environment`}>Environment & Tests</Link>,
             },
             // TODO: Re-enable plagiarism at some point
             // {

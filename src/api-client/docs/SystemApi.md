@@ -5,6 +5,7 @@ All URIs are relative to _http://localhost_
 | Method                                                      | HTTP request              | Description |
 | ----------------------------------------------------------- | ------------------------- | ----------- |
 | [**activityRetrieve**](SystemApi.md#activityretrieve)       | **GET** /system/activity/ |             |
+| [**aiUsageRetrieve**](SystemApi.md#aiusageretrieve)         | **GET** /system/aiUsage/  |             |
 | [**bannerPartialUpdate**](SystemApi.md#bannerpartialupdate) | **PATCH** /system/banner/ |             |
 | [**bannerRetrieve**](SystemApi.md#bannerretrieve)           | **GET** /system/banner/   |             |
 | [**healthRetrieve**](SystemApi.md#healthretrieve)           | **GET** /system/health/   |             |
@@ -75,6 +76,86 @@ example().catch(console.error);
 ### Return type
 
 [**SystemActivityResponse**](SystemActivityResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiUsageRetrieve
+
+> AIUsageSummary aiUsageRetrieve(endDate, granularity, organizationId, startDate)
+
+GET /system/aiUsage/ — Platform-wide AI usage analytics. Superuser only. Supports granularity, date range, and org breakdown.
+
+### Example
+
+```ts
+import { Configuration, SystemApi } from '';
+import type { AiUsageRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SystemApi(config);
+
+  const body = {
+    // string | End date (ISO 8601) (optional)
+    endDate: endDate_example,
+    // 'daily' | 'hourly' | 'monthly' | Time bucket granularity: \'hourly\', \'daily\', or \'monthly\' (optional)
+    granularity: granularity_example,
+    // number | Filter to a specific organization ID (optional)
+    organizationId: 56,
+    // string | Start date (ISO 8601) (optional)
+    startDate: startDate_example,
+  } satisfies AiUsageRetrieveRequest;
+
+  try {
+    const data = await api.aiUsageRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name               | Type                         | Description                                                                            | Notes                                                               |
+| ------------------ | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **endDate**        | `string`                     | End date (ISO 8601)                                                                    | [Optional] [Defaults to `undefined`]                                |
+| **granularity**    | `daily`, `hourly`, `monthly` | Time bucket granularity: \&#39;hourly\&#39;, \&#39;daily\&#39;, or \&#39;monthly\&#39; | [Optional] [Defaults to `undefined`] [Enum: daily, hourly, monthly] |
+| **organizationId** | `number`                     | Filter to a specific organization ID                                                   | [Optional] [Defaults to `undefined`]                                |
+| **startDate**      | `string`                     | Start date (ISO 8601)                                                                  | [Optional] [Defaults to `undefined`]                                |
+
+### Return type
+
+[**AIUsageSummary**](AIUsageSummary.md)
 
 ### Authorization
 

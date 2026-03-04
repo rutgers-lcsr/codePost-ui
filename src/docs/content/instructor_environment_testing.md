@@ -13,7 +13,7 @@ It is execution infrastructure, not scoring policy by itself.
 
 ## Environment setup checklist
 
-1. Go to **Assignments > Environment Setup**.
+1. Go to **Assignments > Environment & Tests**.
 2. Choose assignment language.
 3. Configure build/run behavior (auto-detect or manual).
 4. Attach required datasets/resources.

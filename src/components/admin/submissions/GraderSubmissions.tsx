@@ -104,18 +104,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
       return -1;
     } else if (typeof b === 'number') {
       return 1;
-    } else if (a === 'Unfinalized' && b === '--') {
-      return -1;
-    } else if (a === '--' && b === 'Unfinalized') {
-      return 1;
-    } else if (typeof a === 'object' && typeof b === 'object') {
-      try {
-        return b.props.children.props.children - a.props.children.props.children;
-      } catch {
-        return 0;
-      }
     }
-
     return 0;
   }, []);
 
@@ -213,7 +202,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                   dataIndex: assignment.name,
                   key: assignment.name,
                   sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
-                    return sortFunction(a[assignment.name], b[assignment.name]);
+                    return sortFunction(a[`${assignment.name}_sort`], b[`${assignment.name}_sort`]);
                   },
                   align: aligner,
                   className: 'student-table',
@@ -276,8 +265,10 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                       </span>
                     </Link>
                   );
+                  toRet[`${assignment.name}_sort`] = uniqueGraded.length;
                 } else {
                   toRet[assignment.name] = <span style={{ color: '#999' }}>--</span>;
+                  toRet[`${assignment.name}_sort`] = -1;
                 }
               }
               return toRet;

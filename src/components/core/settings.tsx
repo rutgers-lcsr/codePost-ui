@@ -17,6 +17,7 @@ import { registrationApi, usersApi } from '../../api-client/clients';
 import type { RequestAPITokenCreateRequest } from '../../api-client/apis/UsersApi';
 
 import { normalizeUser } from '../../utils/normalizeUser';
+import { getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
 
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 
@@ -37,6 +38,7 @@ interface IState {
   errorMessage: string;
   askedToReset: boolean;
   loading: boolean;
+  diagnosticConsent: boolean;
 }
 
 interface IProps {
@@ -52,6 +54,7 @@ class Settings extends Component<IProps, IState> {
       errorMessage: '',
       askedToReset: false,
       loading: false,
+      diagnosticConsent: getDiagnosticConsent() === 'accepted',
     };
   }
 
@@ -87,6 +90,11 @@ class Settings extends Component<IProps, IState> {
           message.error('Failed to update settings');
         });
     });
+  };
+
+  public updateDiagnosticConsent = (enabled: boolean) => {
+    setDiagnosticConsent(enabled ? 'accepted' : 'declined');
+    this.setState({ diagnosticConsent: enabled });
   };
 
   public copyKeyToClipboard = () => {
@@ -268,6 +276,26 @@ class Settings extends Component<IProps, IState> {
               aria-label="Enable product tips"
               checked={user.showProductTips}
               onChange={this.updateShowProductTips.bind(this, !user.showProductTips)}
+            />
+          </div>
+        </div>
+        <br />
+        <br />
+        <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+          <div style={{ flexGrow: 1 }}>
+            <Typography.Title level={2}>Share diagnostic data</Typography.Title>
+            Allow codePost to collect diagnostic information (such as error details, browser context, and screenshots)
+            when something goes wrong. This helps us identify and fix issues faster.
+          </div>
+          <div style={{ paddingLeft: 40 }}>
+            <label htmlFor="diagnostic-consent-switch" className="sr-only">
+              Share diagnostic data
+            </label>
+            <Switch
+              id="diagnostic-consent-switch"
+              aria-label="Share diagnostic data"
+              checked={this.state.diagnosticConsent}
+              onChange={this.updateDiagnosticConsent.bind(this, !this.state.diagnosticConsent)}
             />
           </div>
         </div>

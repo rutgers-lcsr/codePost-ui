@@ -6,9 +6,10 @@ Welcome to the codePost docs. This site is organized by role and workflow, with 
 
 1. [Instructor Overview](/docs/instructor)
 2. [Course Setup & Roster](/docs/instructor-course-setup)
-3. [Assignment Workflow](/docs/instructor-assignment-workflow)
-4. [Environment & Testing Ops](/docs/instructor-environment-testing)
-5. [Grading, Release & Exports](/docs/instructor-grading-publishing)
+3. [Managing Sections](/docs/instructor-sections)
+4. [Assignment Workflow](/docs/instructor-assignment-workflow)
+5. [Environment & Testing Ops](/docs/instructor-environment-testing)
+6. [Grading, Release & Exports](/docs/instructor-grading-publishing)
 
 ## Role guides
 

@@ -42,6 +42,7 @@ Go to **Roster** and choose the role tab:
 
 ## Related docs
 
+- [Managing Sections](/docs/instructor-sections)
 - [Assignment Workflow](/docs/instructor-assignment-workflow)
 - [Grader Guide](/docs/grader)
 - [Organization Admin Guide](/docs/organization)
