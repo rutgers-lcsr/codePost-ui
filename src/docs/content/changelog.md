@@ -19,6 +19,8 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - Fixed an issue where API tokens could not be generated.
 - Tests now check syntax of code before saving to prevent syntax errors in test cases.
 - Tests now check if target file exists before executing test scripts that reference files.
+- Add CSV imports for sections.
+- Improved UI for code console.
 
 ### Change: Test and Execution Workflow Improvements
 
