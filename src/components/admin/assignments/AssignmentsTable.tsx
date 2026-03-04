@@ -19,7 +19,6 @@ import {
   FolderOutlined,
   ImportOutlined,
   MailOutlined,
-  MenuOutlined,
   MessageOutlined,
   OrderedListOutlined,
   QuestionCircleOutlined,
