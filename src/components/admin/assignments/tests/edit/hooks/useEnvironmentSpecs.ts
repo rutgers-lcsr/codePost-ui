@@ -47,6 +47,17 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
   const [buildDockerfile, setBuildDockerfile] = useState<string>('');
 
   const lastEnvIdRef = useRef<number | null>(null);
+  const buildPollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up build polling on unmount
+  useEffect(() => {
+    return () => {
+      if (buildPollIntervalRef.current) {
+        clearInterval(buildPollIntervalRef.current);
+        buildPollIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   // Ref to hold current state for async operations to avoid stale closures
   const stateRef = useRef<EnvironmentState>({
@@ -189,11 +200,18 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
         });
         // Poll for completion
         let pollCount = 0;
-        const pollInterval = setInterval(async () => {
+        // Clear any existing poll before starting a new one
+        if (buildPollIntervalRef.current) {
+          clearInterval(buildPollIntervalRef.current);
+        }
+        buildPollIntervalRef.current = setInterval(async () => {
           try {
             const status = await autograderApi.environmentsBuildStatusRetrieve({ id: newEnvironment.id });
             if (!status.inProgress) {
-              clearInterval(pollInterval);
+              if (buildPollIntervalRef.current) {
+                clearInterval(buildPollIntervalRef.current);
+                buildPollIntervalRef.current = null;
+              }
               setBuildInProgress(false);
               setBuildIsSuccess(status.isSuccess);
               setBuildLogs(status.logs || '');
@@ -211,16 +229,19 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
             }
 
             pollCount++;
-            if (pollCount > 1800) {
-              // 30 minutes timeout
-              clearInterval(pollInterval);
+            if (pollCount > 600) {
+              // 30 minutes timeout (at 3s intervals)
+              if (buildPollIntervalRef.current) {
+                clearInterval(buildPollIntervalRef.current);
+                buildPollIntervalRef.current = null;
+              }
               setBuildInProgress(false);
               message.error('Build status check timed out (build may still be running).');
             }
           } catch (err) {
             console.error('Polling error', err);
           }
-        }, 1000);
+        }, 3000);
       } catch (err: unknown) {
         message.error('Failed to trigger build: ' + String(err));
         setBuildInProgress(false);

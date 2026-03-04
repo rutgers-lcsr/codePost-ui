@@ -35,7 +35,7 @@ enum MODAL_STATUS {
 const RunAllTests = (props: IProps) => {
   // ******************************************** State Variables ************************************
   // Run all specific
-  const [progress, setProgress] = useState('{}');
+  const [progress, setProgress] = useState<any>(null);
   const [sendEmail, setSendEmail] = useState(true);
 
   // Page state
@@ -45,9 +45,7 @@ const RunAllTests = (props: IProps) => {
   const testCases = Object.values(props.testCasesByCategory).flat();
   const hasSubmissions = props.numSubmissions > 0;
   const hasTestCases = testCases.length > 0;
-  const notTooBig = props.numSubmissions < 800; // disable run all for really big courses -- takes forever
-  const notCodeInPlace = props.assignment.course !== 925; // disable for code in place
-  const canRun = hasSubmissions && hasTestCases && props.numSubmissions && notTooBig && notCodeInPlace;
+  const canRun = hasSubmissions && hasTestCases && props.numSubmissions;
   // ******************************************** State functions ************************************
 
   //   Callback for run progress
@@ -58,12 +56,12 @@ const RunAllTests = (props: IProps) => {
   //   Callback for run finish
   const finishCallback = () => {
     setModalStatus(MODAL_STATUS.None);
-    setProgress('{}');
+    setProgress(null);
   };
 
   const onCloseRunAll = () => {
     setModalStatus(MODAL_STATUS.None);
-    setProgress('{}');
+    setProgress(null);
   };
 
   //   On initial run all click
@@ -107,7 +105,7 @@ const RunAllTests = (props: IProps) => {
         Run all tests
       </Button>
       <RunAllProgressModal
-        visible={modalStatus === MODAL_STATUS.RunAll}
+        open={modalStatus === MODAL_STATUS.RunAll}
         onCancel={onCloseRunAll}
         cases={testCases}
         raw={progress}
@@ -115,12 +113,14 @@ const RunAllTests = (props: IProps) => {
       />
       <Modal
         open={modalStatus === MODAL_STATUS.PendingRunAll}
-        onCancel={setModalStatus.bind({}, MODAL_STATUS.None)}
+        onCancel={() => setModalStatus(MODAL_STATUS.None)}
         onOk={onConfirm}
         okText="Run"
-        title="Confirm Run All Tests"
+        okButtonProps={{ danger: true }}
+        title="Run all tests"
       >
         <div style={{ fontSize: 16 }}>
+          <div style={{ marginBottom: 15 }}>Test run on edited files will be rerun and results will be overwritten</div>
           {hasExternalTests() && (
             <div style={{ fontSize: 14, marginBottom: 15, color: 'orange' }}>
               WARNING: You have some tests with type 'external'. External tests are to be set using the API, and will

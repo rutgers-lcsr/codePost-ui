@@ -2,13 +2,12 @@
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
-  DownOutlined,
-  EyeOutlined,
+  FileTextOutlined,
   LoadingOutlined,
   PlayCircleOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Button, Dropdown, message, Tag, Tooltip } from 'antd';
+import { Button, message, Tag, Tooltip } from 'antd';
 import React, { useState } from 'react';
 import { useFileExecutionAsync } from '../../../hooks/useFileExecutionAsync';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
@@ -155,16 +154,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     return date.toLocaleDateString();
   };
 
-  const menuItems = [];
-
-  if (result || isExecuting || error) {
-    menuItems.push({
-      key: 'view-logs',
-      icon: <EyeOutlined />,
-      label: 'View Execution Logs',
-      onClick: () => setModalVisible(true),
-    });
-  }
+  const hasLogs = !!(result || isExecuting || error);
 
   return (
     <>
@@ -178,8 +168,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
               onClick={() => handleExecute(false)}
               disabled={disabled || !isExecutable || isExecuting}
               style={{
-                borderTopRightRadius: menuItems.length > 0 ? 0 : undefined,
-                borderBottomRightRadius: menuItems.length > 0 ? 0 : undefined,
                 backgroundColor: colors.actionGreen,
                 borderColor: colors.actionGreen,
               }}
@@ -187,26 +175,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
               Run
             </Button>
           </Tooltip>
-          {menuItems.length > 0 && (
-            <Dropdown menu={{ items: menuItems }} trigger={['click']} disabled={disabled || isExecuting}>
-              <Button
-                type="primary"
-                size="middle"
-                onClick={(e) => e.preventDefault()}
-                style={{
-                  borderTopLeftRadius: 0,
-                  borderBottomLeftRadius: 0,
-                  marginLeft: '-1px',
-                  paddingLeft: '8px',
-                  paddingRight: '8px',
-                  backgroundColor: colors.actionGreen,
-                  borderColor: colors.actionGreen,
-                }}
-              >
-                <DownOutlined />
-              </Button>
-            </Dropdown>
-          )}
 
           {canWrite && !isExecuting && isExecutable && (
             <Tooltip title="Force Run (Ignore Cache)">
@@ -223,6 +191,21 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
                         color: consoleTheme.buttonSecondaryColor,
                       }
                     : {}),
+                }}
+              />
+            </Tooltip>
+          )}
+
+          {hasLogs && !isExecuting && (
+            <Tooltip title="View Execution Logs">
+              <Button
+                type="text"
+                size="small"
+                icon={<FileTextOutlined />}
+                onClick={() => setModalVisible(true)}
+                style={{
+                  marginLeft: '4px',
+                  color: isDarkTheme ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)',
                 }}
               />
             </Tooltip>
@@ -261,7 +244,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
       </div>
 
       <FileExecutionModal
-        visible={modalVisible}
+        open={modalVisible}
         onClose={() => setModalVisible(false)}
         result={result}
         isExecuting={isExecuting}

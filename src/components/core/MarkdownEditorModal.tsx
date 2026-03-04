@@ -9,7 +9,7 @@ interface IMarkdownEditorModalProps {
   startText: string;
   onCancel: () => void;
   onSave: (text: string) => void;
-  visible: boolean;
+  open: boolean;
   placeholder?: string;
 }
 
@@ -18,7 +18,7 @@ const MarkdownEditorModal: React.FC<IMarkdownEditorModalProps> = ({
   startText,
   onCancel,
   onSave,
-  visible,
+  open,
   placeholder = 'Write in markdown...',
 }) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
@@ -26,10 +26,10 @@ const MarkdownEditorModal: React.FC<IMarkdownEditorModalProps> = ({
 
   // Sync state if startText changes when reopening
   React.useEffect(() => {
-    if (visible) {
+    if (open) {
       setText(startText);
     }
-  }, [visible, startText]);
+  }, [open, startText]);
 
   const handleSave = () => {
     onSave(text);
@@ -46,7 +46,7 @@ const MarkdownEditorModal: React.FC<IMarkdownEditorModalProps> = ({
 
   return (
     <Modal
-      open={visible}
+      open={open}
       title={<span style={{ color: consoleTheme.text }}>{title}</span>}
       onCancel={onCancel}
       footer={footer}

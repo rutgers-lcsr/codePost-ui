@@ -300,32 +300,47 @@ class SectionDetailPanel extends Component<IProps, IState> {
       content = submissionsTable;
     } else {
       content = (
-        <Tabs defaultActiveKey="1">
-          <Tabs.TabPane tab="Overview" key="1">
-            {this.props.assignment.allowStudentUpload && (
-              <div style={{ width: '100%', height: 35 }}>
-                <div style={{ float: 'right' }}>
-                  <SubmissionInfoModal />
-                </div>
-              </div>
-            )}
-            {submissionsTable}
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Test results" key="2">
-            <div style={{ width: '100%', height: 35 }}>
-              <div style={{ float: 'right' }}>
-                <AutograderInfoModal />
-              </div>
-            </div>
-            <TestingSummary
-              currentAssignment={this.props.assignment}
-              submissions={filteredSubmissions}
-              fullSubmissionsLoadComplete={!this.state.isLoading}
-              isAdmin={false}
-              tableOnly={true}
-            />
-          </Tabs.TabPane>
-        </Tabs>
+        <Tabs
+          defaultActiveKey="1"
+          items={[
+            {
+              key: '1',
+              label: 'Overview',
+              children: (
+                <>
+                  {this.props.assignment.allowStudentUpload && (
+                    <div style={{ width: '100%', height: 35 }}>
+                      <div style={{ float: 'right' }}>
+                        <SubmissionInfoModal />
+                      </div>
+                    </div>
+                  )}
+                  {submissionsTable}
+                </>
+              ),
+            },
+            {
+              key: '2',
+              label: 'Test results',
+              children: (
+                <>
+                  <div style={{ width: '100%', height: 35 }}>
+                    <div style={{ float: 'right' }}>
+                      <AutograderInfoModal />
+                    </div>
+                  </div>
+                  <TestingSummary
+                    currentAssignment={this.props.assignment}
+                    submissions={filteredSubmissions}
+                    fullSubmissionsLoadComplete={!this.state.isLoading}
+                    isAdmin={false}
+                    tableOnly={true}
+                  />
+                </>
+              ),
+            },
+          ]}
+        />
       );
     }
 

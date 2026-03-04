@@ -95,7 +95,12 @@ export const CodeWindow = (props: IProps) => {
         options={{
           automaticLayout: true,
           minimap: { enabled: false },
-          scrollBeyondLastLine: false,
+          scrollBeyondLastLine: true,
+          wordWrap: 'off',
+          scrollbar: {
+            horizontal: 'visible',
+            handleMouseWheel: true,
+          },
           readOnly: !(props.onSave || props.onChange) || isSaving,
         }}
         value={props.onSave ? editedCode : props.code}

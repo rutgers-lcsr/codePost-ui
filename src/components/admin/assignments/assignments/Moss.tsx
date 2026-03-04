@@ -439,7 +439,7 @@ const Moss = (props: IMossProps) => {
   // Should be refactored to use Form once this feature is built out
   const action = submit ? (
     <div style={{ padding: '40px 100px 0px 100px' }}>
-      <FileExploror visible={fileExplorerVisible} toggleVisible={toggleFileExplorerVisible} files={fileTemplates} />
+      <FileExploror open={fileExplorerVisible} toggleVisible={toggleFileExplorerVisible} files={fileTemplates} />
       <div>
         <Typography.Title level={3}>Select an assignment</Typography.Title>
         <Select

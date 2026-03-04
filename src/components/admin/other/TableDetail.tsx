@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 import { Input, Table } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
+import { ColumnProps } from 'antd/es/table';
 import React, { useCallback, useMemo, useState } from 'react';
 import Highlighter from 'react-highlight-words';
 
@@ -50,7 +50,6 @@ interface IProps {
 
 const MIN_ROWS = 10;
 const MANY_ROWS = 50;
-const DEFAULT_SORT_ORDER: 'ascend' | 'descend' = 'ascend';
 const HIGHLIGHT_BACKGROUND_COLOR = '#5CBB8B';
 const SEARCH_PLACEHOLDER = 'Search...';
 const SEARCH_INPUT_WIDTH = 300;
@@ -171,7 +170,6 @@ const TableDetail: React.FC<IProps> = ({
       }
 
       return {
-        defaultSortOrder: DEFAULT_SORT_ORDER,
         render: renderFunction,
       };
     },
@@ -223,7 +221,8 @@ const TableDetail: React.FC<IProps> = ({
     return {
       showSizeChanger: true,
       pageSizeOptions: PAGE_SIZE_OPTIONS,
-      position: filteredData.length > MANY_ROWS ? 'both' : 'bottom',
+      position:
+        filteredData.length > MANY_ROWS ? ['topRight' as const, 'bottomRight' as const] : ['bottomRight' as const],
       pageSize,
       onShowSizeChange: (_current: number, size: number) => setPageSize(size),
       onChange: (_page: number, size: number) => setPageSize(size),

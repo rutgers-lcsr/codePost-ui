@@ -1097,7 +1097,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             </Button>
             {selectedAssignment && (
               <LateSubmissionModal
-                visible={lateSubmissionModalVisible}
+                open={lateSubmissionModalVisible}
                 assignment={selectedAssignment as AssignmentStudentType}
                 onCancel={closeLateSubmissionModal}
                 onOk={handleUpload}

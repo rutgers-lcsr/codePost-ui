@@ -20,7 +20,6 @@ import { Course } from '../../api-client';
 import CPButton from '../core/CPButton';
 
 import { createDemoCourse } from '../utils/DemoCourse';
-import { CODE_DEMO } from '../../routes';
 
 /**********************************************************************************************************************/
 
@@ -81,13 +80,6 @@ interface IProps {
 const AdminOnboardingSelector = (props: IProps) => {
   const [loading, setLoading] = React.useState(false);
 
-  // call prop function onClick which triggers tour
-  const tour1 = (
-    <CPButton cpType="primary" block href={`${CODE_DEMO}/`}>
-      Annotate some code!
-    </CPButton>
-  );
-
   const handleDemoCourse = () => {
     setLoading(true);
     if (!props.demoCourseExists) {
@@ -101,13 +93,11 @@ const AdminOnboardingSelector = (props: IProps) => {
       setLoading(false);
       props.onDemoCreate();
     }
-
-    // call prop function which triggers tour here
   };
 
-  const tour2 = (
+  const demoCourse = (
     <CPButton cpType="secondary" block onClick={handleDemoCourse} loading={loading}>
-      Take a spin through a demo course
+      Explore a demo course
     </CPButton>
   );
 
@@ -115,11 +105,21 @@ const AdminOnboardingSelector = (props: IProps) => {
     <div style={{ textAlign: 'center', fontWeight: 500 }}>(This may take a minute. Please don't refresh the page.)</div>
   ) : null;
 
-  const message = `Want to learn how codePost works in less
-     than 5 minutes? Choose from one of the options below.`;
+  const docsLink = (
+    <CPButton cpType="primary" block href="/docs/getting-started" target="_blank">
+      Read the Getting Started guide
+    </CPButton>
+  );
 
-  const footer = `If you want to get started by exploring on your own, you can always activate these tutorials
-      by typing "intro tutorials" into the chat box on the bottom right of this screen`;
+  const message = (
+    <span>
+      Welcome! You don't have any courses yet. Get up and running quickly with our{' '}
+      <a href="/docs/getting-started" target="_blank" rel="noopener noreferrer">
+        documentation
+      </a>
+      , or explore a demo course to see codePost in action.
+    </span>
+  );
 
   return (
     <OnboardingSelector
@@ -128,11 +128,11 @@ const AdminOnboardingSelector = (props: IProps) => {
           Welcome to the codePost Admin Console! <SmileTwoTone twoToneColor={colors.brandPrimary} />
         </span>
       }
-      options={[tour1, tour2, hangTight]}
+      options={[docsLink, demoCourse, hangTight]}
       open={props.open}
       onCancel={props.onCancel}
       message={message}
-      footer={footer}
+      footer=""
       footerButtons={null}
     />
   );

@@ -179,6 +179,7 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         title: 'Grader',
         dataIndex: 'grader',
         key: 'primary',
+        defaultSortOrder: 'ascend' as const,
         sorter: (a: any, b: any) => a.key.localeCompare(b.key),
         renderForSearch: (searchText: string) => {
           return (_: string, record: any) => {

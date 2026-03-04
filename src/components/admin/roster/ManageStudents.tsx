@@ -193,6 +193,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         title: 'Student',
         dataIndex: 'student',
         key: 'primary',
+        defaultSortOrder: 'ascend' as const,
         sorter: (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key),
         renderForSearch: renderStudentCell,
       },

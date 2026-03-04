@@ -106,9 +106,10 @@ const TestResultsTable = (props: IProps) => {
   };
 
   const onSummaryTypeChange = (e: any) => {
-    // @ts-expect-error: legacy-ts-ignore
-    const newType: SUMMARY_TYPE = SUMMARY_TYPE[e.target.value];
-    setSummaryType(newType);
+    const newType = SUMMARY_TYPE[e.target.value as keyof typeof SUMMARY_TYPE];
+    if (newType !== undefined) {
+      setSummaryType(newType);
+    }
   };
 
   const actions = (
@@ -128,8 +129,8 @@ const TestResultsTable = (props: IProps) => {
 
   const detail = (
     <ResultDetail
-      visible={showDetail}
-      onCancel={setShowDetail.bind({}, false)}
+      open={showDetail}
+      onCancel={() => setShowDetail(false)}
       testsBySubmission={props.testsBySubmission}
       submissions={props.submissions}
       casesByCategory={props.testCasesByCategory}
@@ -164,7 +165,7 @@ const TestResultsTable = (props: IProps) => {
                   <CaretRightOutlined /> Run tests
                 </>
               ),
-              onClick: props.runSubmission.bind({}, submission),
+              onClick: () => props.runSubmission(submission),
             },
             {
               key: 'submission',
@@ -173,7 +174,7 @@ const TestResultsTable = (props: IProps) => {
                   <CodeOutlined /> Open submission
                 </>
               ),
-              onClick: openSubmission.bind({}, submission.id),
+              onClick: () => openSubmission(submission.id),
             },
           ];
 
@@ -226,7 +227,7 @@ const TestResultsTable = (props: IProps) => {
             toRet[category.name] = (
               <div
                 className="text-link"
-                onClick={openDetail.bind({}, category, undefined, undefined, submission)}
+                onClick={() => openDetail(category, undefined, undefined, submission)}
               >{`${categoryPassed} / ${categoryTotal}`}</div>
             );
 
@@ -238,7 +239,7 @@ const TestResultsTable = (props: IProps) => {
 
           if (Object.keys(props.testCasesByCategory).length > 0) {
             toRet['summary'] = (
-              <div className="text-link" onClick={openDetail.bind({}, undefined, undefined, undefined, submission)}>
+              <div className="text-link" onClick={() => openDetail(undefined, undefined, undefined, submission)}>
                 {summaryString}
               </div>
             );
@@ -287,14 +288,14 @@ const TestResultsTable = (props: IProps) => {
                 notRun += thisNotRun;
                 return {
                   description: (
-                    <span className="text-link" onClick={openDetail.bind({}, category, testCase, undefined, undefined)}>
+                    <span className="text-link" onClick={() => openDetail(category, testCase, undefined, undefined)}>
                       {testCase.description}
                     </span>
                   ),
                   passed: (
                     <div
                       className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Passed, undefined)}
+                      onClick={() => openDetail(category, testCase, RESULT_STATUS.Passed, undefined)}
                     >
                       {passedByCase[testCase.id].length}
                     </div>
@@ -302,7 +303,7 @@ const TestResultsTable = (props: IProps) => {
                   failed: (
                     <div
                       className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Failed, undefined)}
+                      onClick={() => openDetail(category, testCase, RESULT_STATUS.Failed, undefined)}
                     >
                       {failedByCase[testCase.id].length}
                     </div>
@@ -310,7 +311,7 @@ const TestResultsTable = (props: IProps) => {
                   error: (
                     <div
                       className="text-link"
-                      onClick={openDetail.bind({}, category, testCase, RESULT_STATUS.Error, undefined)}
+                      onClick={() => openDetail(category, testCase, RESULT_STATUS.Error, undefined)}
                     >
                       {errorByCase[testCase.id].length}
                     </div>
@@ -339,7 +340,7 @@ const TestResultsTable = (props: IProps) => {
 
           return {
             description: (
-              <span className="text-link" onClick={openDetail.bind({}, category, undefined, undefined, undefined)}>
+              <span className="text-link" onClick={() => openDetail(category, undefined, undefined, undefined)}>
                 {category.name}
               </span>
             ),
@@ -347,7 +348,7 @@ const TestResultsTable = (props: IProps) => {
             passed: (
               <div
                 className="text-link"
-                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Passed, undefined)}
+                onClick={() => openDetail(category, undefined, RESULT_STATUS.Passed, undefined)}
               >
                 {`${Math.floor((passed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
@@ -355,7 +356,7 @@ const TestResultsTable = (props: IProps) => {
             failed: (
               <div
                 className="text-link"
-                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Failed, undefined)}
+                onClick={() => openDetail(category, undefined, RESULT_STATUS.Failed, undefined)}
               >
                 {`${Math.floor((failed / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>
@@ -364,7 +365,7 @@ const TestResultsTable = (props: IProps) => {
             error: (
               <div
                 className="text-link"
-                onClick={openDetail.bind({}, category, undefined, RESULT_STATUS.Error, undefined)}
+                onClick={() => openDetail(category, undefined, RESULT_STATUS.Error, undefined)}
               >
                 {`${Math.floor((error / Math.max(1, props.submissions.length * numTests)) * 100)}%`}
               </div>

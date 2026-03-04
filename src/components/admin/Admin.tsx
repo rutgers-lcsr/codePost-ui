@@ -148,9 +148,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
   // Initialize state based on props (mimicking constructor)
   useEffect(() => {
     const showCIPModal = !props.user.hasCredentials;
-    const showOnboarding =
-      Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding') ||
-      props.initialCourses.length === 0;
+    const hasOnboardingParam = Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding');
+    const hasDismissed = localStorage.getItem('cp_onboarding_dismissed') === '1';
+    const showOnboarding = hasOnboardingParam || (props.initialCourses.length === 0 && !hasDismissed);
 
     queueMicrotask(() => {
       setOnboardingModalVisible(showOnboarding && !showCIPModal);
@@ -317,6 +317,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     showFrequentlyUsedRubricComments: result.showFrequentlyUsedRubricComments ?? false,
     allowLateUploads: result.allowLateUploads ?? false,
     nudgeMode: result.nudgeMode ?? false,
+    runFilesOnSubmit: result.runFilesOnSubmit ?? true,
     runTestsOnSubmit: result.runTestsOnSubmit ?? true,
     testsAffectGrade: result.testsAffectGrade ?? true,
 
@@ -580,6 +581,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
   };
 
   const closeModal = () => {
+    localStorage.setItem('cp_onboarding_dismissed', '1');
     setOnboardingModalVisible(false);
     navigate(location.pathname);
   };

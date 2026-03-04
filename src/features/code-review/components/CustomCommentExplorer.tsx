@@ -21,7 +21,7 @@ interface IProps {
   assignment: AssignmentType;
   rubricComments: RubricCommentType[];
   rubricCategories: RubricCategoryType[];
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
 }
 
@@ -134,7 +134,7 @@ const CustomCommentExplorer = (props: IProps) => {
   return (
     <Modal
       onCancel={onCancel}
-      open={props.visible}
+      open={props.open}
       width={900}
       title="Custom comment explorer"
       footer={[

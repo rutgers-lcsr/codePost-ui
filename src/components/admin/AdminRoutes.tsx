@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { lazy } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Lazy-loaded route components
 const ManageAssignments = lazy(() => import('./assignments/ManageAssignments'));
@@ -8,7 +8,6 @@ const RosterManager = lazy(() => import('./roster/RosterManager'));
 const CourseSettingsPanel = lazy(() => import('./settings/CourseSettingsPanel'));
 const WebhooksPanel = lazy(() => import('./settings/WebhooksPanel'));
 const SubmissionsManager = lazy(() => import('./submissions/SubmissionsManager'));
-const VideoModal = lazy(() => import('../landing/VideoModal'));
 import ErrorBoundary from '../core/ErrorBoundary';
 
 /* types */
@@ -100,8 +99,6 @@ interface AdminRoutesProps {
 }
 
 const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
-  const navigate = useNavigate();
-
   return (
     <ErrorBoundary type="app">
       <Routes>
@@ -196,7 +193,7 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
           path="settings"
           element={<CourseSettingsPanel currentCourse={props.course} updateSettings={props.updateSettings} />}
         />
-        <Route path="video" element={<VideoModal open={true} onCancel={() => navigate('/admin')} />} />
+        <Route path="video" element={<Navigate to="/docs" replace />} />
       </Routes>
     </ErrorBoundary>
   );

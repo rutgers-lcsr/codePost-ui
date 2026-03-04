@@ -145,6 +145,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       studentsCanSeeGraders: values.studentsCanSeeGraders,
       gradersCanEditSubmissions: values.gradersCanEditSubmissions,
       aiSystemPrompt: values.aiSystemPrompt || '',
+      runFilesOnSubmit: values.runFilesOnSubmit,
       runTestsOnSubmit: values.runTestsOnSubmit,
       testsAffectGrade: values.testsAffectGrade,
     };
@@ -241,7 +242,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
   return (
     <CollectionCreateForm
       form={form}
-      visible={true}
+      open={true}
       isLoading={isLoading}
       onSave={handleCreate}
       onCancel={handleCancel}
@@ -262,7 +263,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
 interface IFormProps {
   form: FormInstance<IFormValues>;
-  visible: boolean;
+  open: boolean;
   isLoading: boolean;
   onCancel: () => void;
   onSave: (templates: AssignmentFileType[]) => void;
@@ -300,6 +301,7 @@ interface IFormValues {
   lateDeductions: number[];
   aiSystemPrompt: string;
   gradersCanEditSubmissions: boolean;
+  runFilesOnSubmit: boolean;
   runTestsOnSubmit: boolean;
   testsAffectGrade: boolean;
 }
@@ -307,7 +309,7 @@ interface IFormValues {
 const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const {
     form,
-    visible,
+    open,
     isLoading,
     onCancel,
     onSave,
@@ -333,7 +335,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
   // Sync state when assignment changes or modal opens
   React.useEffect(() => {
-    if (visible) {
+    if (open) {
       setExplanation(assignment.explanation);
       setExplanationPreview(false);
 
@@ -345,6 +347,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
         studentsCanSeeGraders: assignment.studentsCanSeeGraders,
         gradersCanEditSubmissions: assignment.gradersCanEditSubmissions,
+        runFilesOnSubmit: assignment.runFilesOnSubmit ?? true,
         runTestsOnSubmit: assignment.runTestsOnSubmit ?? true,
         testsAffectGrade: assignment.testsAffectGrade ?? true,
         commentFeedback: assignment.commentFeedback,
@@ -375,7 +378,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
           : dayjs(dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss')),
       });
     }
-  }, [visible, assignment, form, timezone]);
+  }, [open, assignment, form, timezone]);
 
   React.useEffect(() => {
     setTemplates(initialAssignmentFiles);
@@ -430,7 +433,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
   return (
     <Modal
-      open={visible}
+      open={open}
       title="Update assignment settings"
       okText="Save"
       cancelText="Cancel"
@@ -803,8 +806,24 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                   <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
                   <h3>Autograder Settings</h3>
                   <Form.Item
+                    name="runFilesOnSubmit"
+                    label="Execute files on submit"
+                    extra={
+                      <div>
+                        When enabled, submission files will be automatically executed and their output cached when
+                        students submit. This pre-warms execution results for faster test evaluation and code review.
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.runFilesOnSubmit ?? true}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+                  <Form.Item
                     name="runTestsOnSubmit"
-                    label="Run on submit"
+                    label="Run tests on submit"
                     extra={
                       <div>
                         When enabled, the autograder will automatically run tests against student submissions when they

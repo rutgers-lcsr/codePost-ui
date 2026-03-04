@@ -302,7 +302,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         scroll={{ x: 'max-content' }}
       />
       <NewCourseDialog
-        visible={showCreateDialog}
+        open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         onSuccess={() => {
           setShowCreateDialog(false);

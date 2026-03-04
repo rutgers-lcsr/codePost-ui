@@ -459,7 +459,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
       />
 
       <NewUserDialog
-        visible={showCreateDialog}
+        open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         onSuccess={() => {
           setShowCreateDialog(false);
@@ -469,7 +469,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
       />
 
       <EditUserDialog
-        visible={showEditDialog}
+        open={showEditDialog}
         user={editingUser}
         onClose={() => {
           setShowEditDialog(false);

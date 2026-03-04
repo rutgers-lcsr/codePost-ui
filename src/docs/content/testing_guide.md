@@ -99,7 +99,7 @@ Return patterns are shown directly inside each language script example above.
 
 ## Troubleshooting checklist
 
-If preview shows no tests or fewer tests than expected:
+#### If preview shows no tests or fewer tests than expected:
 
 1. Confirm assignment **Environment Language** is correct.
 2. Check syntax against this guide's exact pattern.
@@ -107,17 +107,24 @@ If preview shows no tests or fewer tests than expected:
 4. Ensure your script is saved in the category.
 5. Re-open Split Preview after edits.
 
-If totals look wrong:
+#### If totals look wrong:
 
 1. Search for tests missing `points`.
 2. Look for syntax errors that stop pattern matching.
 3. Check if renamed/removed tests were intentionally changed.
+
+#### If tests are failing unexpectedly:
+
+1. Is the students code causing exceptions that the test doesn't handle?
+2. Look for syntax issues in the test script that could cause parsing errors.
+3. Check if the test timeout is too short for the execution.
 
 ## Tips
 
 - Use **Split Preview** to verify parsing and points.
 - Set the **Target File** so helpers/AI suggestions use the right context.
 - Start with Builder view if you want scaffolding, then refine in Code view.
+- Globals can be defined outside test functions for shared setup, but be mindful of test isolation and side effects. Make sure these are static and do not rely on mutable state that could cause tests to interfere with each other.
 
 ## Best Practices
 
@@ -125,6 +132,7 @@ If totals look wrong:
 
 - Tests should not depend on each other.
 - Do not assume `Test A` runs before `Test B`.
+- Don't mutate shared state in globals between `Test A` and `Test B`, outcomes may be non-deterministic.
 
 ### Resource Cleanup
 

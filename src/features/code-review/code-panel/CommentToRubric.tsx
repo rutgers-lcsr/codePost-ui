@@ -13,7 +13,7 @@ export interface IProps {
   initialText: string;
   initialPointDelta: number;
   rubricCategories: RubricCategory[];
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
 }
 
@@ -45,7 +45,7 @@ const CommentToRubric = (props: IProps) => {
 
   return (
     <Modal
-      open={props.visible}
+      open={props.open}
       title="Create a rubric comment"
       onCancel={props.onCancel}
       onOk={makeRubricComment}

@@ -8,7 +8,7 @@ import Editor from '@monaco-editor/react';
 /* codePost imports */
 
 interface IRegradeInstructionsModalProps {
-  visible: boolean;
+  open: boolean;
   instructions: string;
   cancel: any;
   save: any;
@@ -40,26 +40,35 @@ const RegradeInstructionsModal = (props: IRegradeInstructionsModalProps) => {
   return (
     <Modal
       onCancel={props.cancel}
-      open={props.visible}
+      open={props.open}
       title="Student Instructions for Regrade Requests"
       footer={[cancelButton, saveButton]}
     >
-      <Tabs defaultActiveKey="1">
-        <Tabs.TabPane key="1" tab="Write">
-          <Editor
-            height="500px"
-            language="markdown"
-            value={instructions}
-            onChange={onChange}
-            options={{
-              minimap: { enabled: false },
-            }}
-          />
-        </Tabs.TabPane>
-        <Tabs.TabPane key="2" tab="Preview">
-          <ReactMarkdown>{instructions}</ReactMarkdown>
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs
+        defaultActiveKey="1"
+        items={[
+          {
+            key: '1',
+            label: 'Write',
+            children: (
+              <Editor
+                height="500px"
+                language="markdown"
+                value={instructions}
+                onChange={onChange}
+                options={{
+                  minimap: { enabled: false },
+                }}
+              />
+            ),
+          },
+          {
+            key: '2',
+            label: 'Preview',
+            children: <ReactMarkdown>{instructions}</ReactMarkdown>,
+          },
+        ]}
+      />
     </Modal>
   );
 };

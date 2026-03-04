@@ -114,6 +114,9 @@ interface CodeConsoleStoreActions {
   // Old comment ID tracking
   setOldCommentID: (currentId: number, oldId: number) => void;
 
+  // Word Wrap
+  setWordWrap: (enabled: boolean) => void;
+
   // Temporary Edits
   setIsEditMode: (mode: boolean) => void;
   setTemporaryFileContent: (fileId: number, content: string) => void;
@@ -160,6 +163,7 @@ const getInitialState = (): ICodeConsoleState => ({
   hideGrades: false,
   executionResults: {},
   aiEnabled: false,
+  wordWrap: LOCAL_SETTINGS.wordWrap.getter(),
   isEditMode: false,
   temporaryFileContent: {},
 });
@@ -350,6 +354,12 @@ export const useCodeConsoleStore = create<CodeConsoleStore>()(
           false,
           'setOldCommentID',
         );
+      },
+
+      // Word Wrap
+      setWordWrap: (enabled) => {
+        LOCAL_SETTINGS.wordWrap.setter(enabled);
+        set({ wordWrap: enabled }, false, 'setWordWrap');
       },
 
       // Temporary Edits

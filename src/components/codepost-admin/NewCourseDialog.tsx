@@ -7,13 +7,13 @@ import { Organization, Course } from '../../api-client';
 import { coursesApi } from '../../api-client/clients';
 
 interface NewCourseDialogProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess: (course: Course) => void;
   organizations: Organization[];
 }
 
-const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onSuccess, organizations }) => {
+const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSuccess, organizations }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,7 +68,7 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ visible, onClose, onS
   return (
     <Modal
       title="Create New Course"
-      open={visible}
+      open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}

@@ -304,11 +304,51 @@
       background: #24be85;
     }
   }
+
+  // ============================================================
+  // Word Wrap Mode
+  // When data-word-wrap="true" is set on .code-container,
+  // both the syntax and underlay layers switch to pre-wrap.
+  // A hanging indent on the syntax layer's line wrappers ensures
+  // that wrapped continuations start past the line-number gutter,
+  // keeping layers pixel-aligned.
+  // ============================================================
+  &[data-word-wrap='true'] {
+    // Disable horizontal scroll — wrapping replaces it
+    overflow-x: hidden;
+
+    .code {
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-wrap: break-word;
+
+      code {
+        white-space: pre-wrap;
+      }
+    }
+
+    // Syntax layer: fill container width so wrapping matches underlay
+    .code--syntax {
+      left: 0;
+      right: 0;
+      width: auto;
+    }
+
+    // Template layer: fill container width so wrapping matches underlay
+    .code--template {
+      left: 0;
+      right: 0;
+      width: auto;
+    }
+
+    // Hanging indent for syntax line wrappers (react-syntax-highlighter wrapLines spans)
+    // The padding-left and text-indent values are set inline by CodeContent
+    // to match the line-number gutter width exactly.
+  }
 }
 
 // Applying the same scrollbar styles to the split screen panes (scrolling containers)
 .split-screen-pane {
-
   // Modern scrollbar styling - Floating Pill Design
   &::-webkit-scrollbar {
     width: 10px;

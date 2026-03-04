@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ExecutionResult, ExecutionOptions } from '@code-review/execution/executeFileStreaming';
 import { getHeaders } from '../../../utils/generics';
 
@@ -15,6 +15,18 @@ export function useExecuteFileAsync(): UseExecuteFileAsyncResult {
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Clean up polling on unmount to prevent setState on unmounted component
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (pollTimeoutRef.current) {
+        clearTimeout(pollTimeoutRef.current);
+        pollTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const execute = useCallback(async (fileId: number, options: ExecutionOptions = {}) => {
     setIsExecuting(true);
@@ -40,19 +52,24 @@ export function useExecuteFileAsync(): UseExecuteFileAsyncResult {
       const { task_id } = await res.json();
 
       // 2. Poll for results
+      let pollCount = 0;
+      const MAX_POLLS = 120; // 2 minutes max at 1s intervals
+
       const poll = async () => {
+        if (!isMountedRef.current) return;
+
         try {
           const statusRes = await fetch(`${process.env.REACT_APP_API_URL}/autograder/tasks/${task_id}/`, {
             headers: getHeaders(),
           });
 
           if (!statusRes.ok) {
-            // If 404, task might not be registered yet? Or failed.
-            // We'll retry a few times? Or assume error.
             throw new Error('Failed to check task status');
           }
 
           const data = await statusRes.json();
+
+          if (!isMountedRef.current) return;
 
           if (data.status === 'SUCCESS') {
             setResult(data.result);
@@ -62,9 +79,16 @@ export function useExecuteFileAsync(): UseExecuteFileAsyncResult {
             setIsExecuting(false);
           } else {
             // PENDING, STARTED, RETRY
+            pollCount++;
+            if (pollCount >= MAX_POLLS) {
+              setError('Execution timed out');
+              setIsExecuting(false);
+              return;
+            }
             pollTimeoutRef.current = setTimeout(poll, 1000);
           }
         } catch (e) {
+          if (!isMountedRef.current) return;
           setError(e instanceof Error ? e.message : 'Polling error');
           setIsExecuting(false);
         }
@@ -72,6 +96,7 @@ export function useExecuteFileAsync(): UseExecuteFileAsyncResult {
 
       poll();
     } catch (err) {
+      if (!isMountedRef.current) return;
       setError(err instanceof Error ? err.message : 'Unknown error');
       setIsExecuting(false);
     }

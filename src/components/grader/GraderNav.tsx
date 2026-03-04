@@ -8,7 +8,6 @@ import {
   MessageOutlined,
   PushpinOutlined,
   TrophyOutlined,
-  VideoCameraOutlined,
 } from '@ant-design/icons';
 
 import { Menu } from 'antd';
@@ -108,11 +107,6 @@ const GraderNav: React.FC<IProps> = (props) => {
   ];
 
   const bottomMenuItems = [
-    {
-      key: 'video',
-      icon: <VideoCameraOutlined />,
-      label: <Link to={`${props.baseURL}/video`}>Video</Link>,
-    },
     {
       key: 'docs',
       icon: <PushpinOutlined />,

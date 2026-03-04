@@ -258,17 +258,21 @@ const StudentDetail: React.FC<IProps> = (props) => {
       title: 'Assignment',
       dataIndex: 'assignment',
       key: 'assignment',
+      defaultSortOrder: 'ascend' as const,
+      sorter: (a: any, b: any) => a.key.localeCompare(b.key),
     },
     {
       title: 'Submitted',
       dataIndex: 'submitted',
       key: 'submitted',
       align: aligner,
+      sorter: (a: any, b: any) => a._submittedRaw - b._submittedRaw,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      sorter: (a: any, b: any) => a._statusRaw - b._statusRaw,
     },
     {
       title: 'Partners',
@@ -281,12 +285,14 @@ const StudentDetail: React.FC<IProps> = (props) => {
       dataIndex: 'grade',
       key: 'grade',
       align: aligner,
+      sorter: (a: any, b: any) => a._gradeRaw - b._gradeRaw,
     },
     {
       title: 'Grader',
       dataIndex: 'grader',
       key: 'grader',
       align: aligner,
+      sorter: (a: any, b: any) => a._graderRaw.localeCompare(b._graderRaw),
     },
     {
       title: (
@@ -479,6 +485,10 @@ const StudentDetail: React.FC<IProps> = (props) => {
           </Dropdown>
         </div>
       ),
+      _submittedRaw: submission?.dateUploaded ? new Date(submission.dateUploaded).getTime() : -1,
+      _statusRaw: !submission ? 0 : !submission.grader ? 1 : !submission.isFinalized ? 2 : 3,
+      _gradeRaw: submission?.isFinalized ? (submission.grade ?? 0) : submission ? -0.5 : -1,
+      _graderRaw: submission?.grader ?? '',
     };
   });
 

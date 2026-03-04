@@ -115,6 +115,15 @@ class CreateSignup extends React.Component<IProps, IState> {
     }
   }
 
+  public componentWillUnmount() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+    }
+  }
+
   public handleChange = (label: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const name = label;
     const newValue = event.target.value;

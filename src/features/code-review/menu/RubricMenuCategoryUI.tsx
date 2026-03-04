@@ -623,7 +623,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
         </div>
 
         <MarkdownEditorModal
-          visible={modalType !== null}
+          open={modalType !== null}
           title={modalType === 'explanation' ? 'Edit Student Explanation' : 'Edit Grader Instructions'}
           startText={modalType === 'explanation' ? props.explanation : props.instructionText}
           onCancel={handleCloseModal}

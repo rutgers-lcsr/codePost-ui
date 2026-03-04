@@ -26,7 +26,7 @@ interface IProps {
   isSuccess: boolean | null;
   logs: string;
   dockerfile: string;
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
@@ -42,7 +42,7 @@ export const BuildDetailModal = (props: IProps) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [props.logs, props.visible]);
+  }, [props.logs, props.open]);
 
   // Status Badge Logic
   let statusBadge;
@@ -187,7 +187,7 @@ export const BuildDetailModal = (props: IProps) => {
 
   return (
     <Modal
-      open={props.visible}
+      open={props.open}
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '16px', fontWeight: 600 }}>Environment Build</span>

@@ -52,9 +52,14 @@ interface IStandardConsoleLayoutProps {
 const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
-  const toggleConsoleTheme = (toTheme: ConsoleTheme) => {
+  const toggleConsoleTheme = React.useCallback((toTheme: ConsoleTheme) => {
     toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
-  };
+  }, []);
+
+  const themeContextValue = React.useMemo(
+    () => ({ consoleTheme, toggleConsoleTheme }),
+    [consoleTheme, toggleConsoleTheme],
+  );
 
   const [siderWidth, setSiderWidth] = React.useState(300);
   const [internalActivePanel, setInternalActivePanel] = React.useState<number | null>(2); // Default to Files
@@ -158,7 +163,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   const themeMode = consoleTheme === consoleThemes.light ? 'light' : 'dark';
 
   return (
-    <ConsoleThemeContext.Provider value={{ consoleTheme, toggleConsoleTheme }}>
+    <ConsoleThemeContext.Provider value={themeContextValue}>
       <Layout className="layout--standard-console" data-console-theme={themeMode}>
         <Header
           style={{

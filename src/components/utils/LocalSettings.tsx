@@ -180,10 +180,16 @@ const defaultPageSize = {
   },
 };
 
+// key: wordWrap
+// return type: boolean. If true, code in the console will wrap long lines instead of horizontal scrolling.
+// default value: false
+const wordWrap = generateSettingFunctions('wordWrap', false, booleanIParser, booleanOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
   cursorMode,
+  wordWrap,
   infoMenuHidden,
   fileMenuHidden,
   testsMenuHidden,

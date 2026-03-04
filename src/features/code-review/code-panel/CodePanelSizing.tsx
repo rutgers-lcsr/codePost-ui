@@ -39,6 +39,12 @@ class CodePanelLayout {
     const codeSyntax = document.getElementById('code-syntax');
 
     if (codeSyntax !== null) {
+      // Works in both wrapLines modes: query for the line-number element directly
+      const lineNumberEl = codeSyntax.querySelector('.react-syntax-highlighter-line-number') as HTMLElement | null;
+      if (lineNumberEl !== null) {
+        return lineNumberEl.offsetWidth;
+      }
+      // Fallback: old firstChild approach (non-wrapLines mode)
       const lineNumbers = codeSyntax.firstChild?.firstChild as HTMLElement | null;
       if (lineNumbers !== null) {
         return lineNumbers.offsetWidth;

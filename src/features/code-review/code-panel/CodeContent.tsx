@@ -23,6 +23,7 @@ import CodePanelSizing from './CodePanelSizing';
 
 import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 import type { ICursorType } from './Cursor';
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 
 export interface ICodeContentCoreProps {
   file: FileType;
@@ -68,6 +69,7 @@ type CodeContentProps = ICodeContentCoreProps & ICodeContentEditProps;
 
 const CodeContent: React.FC<CodeContentProps> = (props) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
   const fileWithId = props.file as FileType & { id?: number };
   const fileKey = fileWithId.id ?? props.file.name;
 
@@ -138,6 +140,10 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     [],
   );
 
+  // Compute line-number gutter width in em units (matches react-syntax-highlighter's internal min-width)
+  const lineDigits = React.useMemo(() => fileContent.split('\n').length.toString().length, [fileContent]);
+  const gutterWidthEm = `${lineDigits * 0.7 + 1}em`; // matches RSH's min-width formula
+
   // Memoize SyntaxHighlighter to prevent expensive re-renders when comments change
   const syntaxHighlighterLayer = React.useMemo(
     () => (
@@ -147,7 +153,19 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
         language={File.language(props.file)}
         style={consoleTheme.codeTheme}
         showLineNumbers={true}
-        wrapLines={false}
+        wrapLines={wordWrap}
+        wrapLongLines={wordWrap}
+        lineProps={
+          wordWrap
+            ? () => ({
+                style: {
+                  display: 'block',
+                  paddingLeft: gutterWidthEm,
+                  textIndent: `-${gutterWidthEm}`,
+                },
+              })
+            : undefined
+        }
         codeTagProps={{
           style: codeTagStyle,
         }}
@@ -161,8 +179,26 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
         {fileContent}
       </SyntaxHighlighter>
     ),
-    [props.file, consoleTheme.codeTheme, consoleTheme.codeBg, codeTagStyle, commonCodeStyle, fileContent],
+    [
+      props.file,
+      consoleTheme.codeTheme,
+      consoleTheme.codeBg,
+      codeTagStyle,
+      commonCodeStyle,
+      fileContent,
+      wordWrap,
+      gutterWidthEm,
+    ],
   );
+
+  // Padding for underlay/template layers: must match the syntax layer's gutter
+  const underlayPaddingLeft = React.useMemo(() => {
+    if (wordWrap) {
+      // Use em-based calc to exactly match the syntax layer's hanging indent
+      return `calc(${gutterWidthEm} + 20px)`;
+    }
+    return `${lineNumberPadding()}px`;
+  }, [wordWrap, gutterWidthEm, lineNumberPadding]);
 
   // Render logic for Edit Mode (non-notebook files only)
   // Jupyter notebooks are handled inline by the Markdown component (MarkdownCode renders Monaco editors)
@@ -286,6 +322,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
       <div
         id="code-container"
         className="code-container"
+        data-word-wrap={wordWrap ? 'true' : undefined}
         style={{
           ...containerStyle,
           cursor: props.readOnly ? 'default' : 'text',
@@ -300,7 +337,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
             className="code code--template"
             style={{
               ...commonCodeStyle,
-              paddingLeft: `${lineNumberPadding()}px`,
+              paddingLeft: underlayPaddingLeft,
               paddingBottom: '10px',
             }}
           >
@@ -313,7 +350,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
           className="code code--underlay"
           style={{
             ...commonCodeStyle,
-            paddingLeft: `${lineNumberPadding()}px`,
+            paddingLeft: underlayPaddingLeft,
           }}
         >
           <Code

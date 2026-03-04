@@ -7,13 +7,13 @@ import { UserIO } from '../../services/user';
 import type { UserType } from '../../types/models';
 
 interface NewUserDialogProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess: (user: UserType) => void;
   organizations: Organization[];
 }
 
-const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSuccess, organizations }) => {
+const NewUserDialog: React.FC<NewUserDialogProps> = ({ open, onClose, onSuccess, organizations }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,7 +51,7 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ visible, onClose, onSucce
   return (
     <Modal
       title="Create New User"
-      open={visible}
+      open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}

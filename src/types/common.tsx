@@ -39,6 +39,7 @@ export type Assignment = Omit<AssignmentGenerated, 'environment' | 'files' | 'fi
   modified?: string;
   names?: string[]; // Sometimes attached?
   test_analysis?: any; // Sometimes attached?
+  runFilesOnSubmit?: boolean;
   runTestsOnSubmit?: boolean;
   testsAffectGrade?: boolean;
 };

@@ -6,12 +6,12 @@ import { Organization } from '../../api-client';
 import { organizationsApi } from '../../api-client/clients';
 
 interface NewOrganizationDialogProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   onSuccess: (org: Organization) => void;
 }
 
-const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ visible, onClose, onSuccess }) => {
+const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ open, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +43,7 @@ const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ visible, 
   return (
     <Modal
       title="Create New Organization"
-      open={visible}
+      open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}

@@ -11,7 +11,7 @@ import { RubricCategory, RubricComment } from '../../../../../../api-client';
 const { Option } = Select;
 
 interface IProps {
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   onCreate: (values: { fileName: string; testCode: string; type: string; rubricItem?: number }) => void;
   language: string;
@@ -36,7 +36,7 @@ export const TestCreateModal = (props: IProps) => {
 
   // Sync props to state when modal opens
   useEffect(() => {
-    if (props.visible) {
+    if (props.open) {
       if (props.initialFileName) {
         setFileName(props.initialFileName);
         setCurrentStep(1);
@@ -57,7 +57,7 @@ export const TestCreateModal = (props: IProps) => {
         setSelectedContextFile(undefined);
       }
     }
-  }, [props.visible, props.initialFileName, props.contextFiles]);
+  }, [props.open, props.initialFileName, props.contextFiles]);
 
   useEffect(() => {
     let isMounted = true;
@@ -83,14 +83,14 @@ export const TestCreateModal = (props: IProps) => {
       }
     };
 
-    if (props.visible) {
+    if (props.open) {
       loadAiSettings();
     }
 
     return () => {
       isMounted = false;
     };
-  }, [props.visible, props.assignmentId, props.courseId]);
+  }, [props.open, props.assignmentId, props.courseId]);
 
   const [selectedRubricCategory, setSelectedRubricCategory] = useState<number | undefined>(undefined);
   const [selectedRubricItem, setSelectedRubricItem] = useState<number | undefined>(undefined);
@@ -339,7 +339,7 @@ export const TestCreateModal = (props: IProps) => {
   return (
     <Modal
       title="Create New Test"
-      open={props.visible}
+      open={props.open}
       onCancel={reset}
       width={600}
       footer={[

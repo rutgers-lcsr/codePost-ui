@@ -5,10 +5,9 @@ import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_cons
 import shortcuts from './keyboard_shortcuts.tsx';
 
 import { Drawer, Tabs, Tooltip, ConfigProvider, theme } from 'antd';
-const { TabPane } = Tabs;
 
 interface IKeyboardShortCutsProps {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
   isStudent: boolean;
 }
@@ -80,28 +79,26 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
     return props.isStudent ? !category.graderOnly : category;
   });
 
-  const tabs = filteredShortcuts.map((category: IShortcutCategory) => {
-    return (
-      <TabPane tab={category.category} key={category.category}>
-        <div style={{ width: '80%', margin: '0px auto', fontSize: '12px', color: isLight ? '#000' : '#fff' }}>
-          <div className="keyboard-shortcuts__grid">
-            {category.shortcuts.map((shortcut: IShortcut, idx: number) => {
-              return (
-                <div key={`${category.category}-${idx}`} className="keyboard-shortcuts__shortcut">
-                  <div>{shortcut.name}</div>
-                  <div className="keyboard-shortcuts__keys">
-                    {shortcut.keys.map((keyString: string, keyIdx: number) => {
-                      return <KeyIcon key={`${keyString}-${keyIdx}`} keyString={keyString} />;
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+  const tabItems = filteredShortcuts.map((category: IShortcutCategory) => ({
+    key: category.category,
+    label: category.category,
+    children: (
+      <div style={{ width: '80%', margin: '0px auto', fontSize: '12px', color: isLight ? '#000' : '#fff' }}>
+        <div className="keyboard-shortcuts__grid">
+          {category.shortcuts.map((shortcut: IShortcut, idx: number) => (
+            <div key={`${category.category}-${idx}`} className="keyboard-shortcuts__shortcut">
+              <div>{shortcut.name}</div>
+              <div className="keyboard-shortcuts__keys">
+                {shortcut.keys.map((keyString: string, keyIdx: number) => (
+                  <KeyIcon key={`${keyString}-${keyIdx}`} keyString={keyString} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-      </TabPane>
-    );
-  });
+      </div>
+    ),
+  }));
 
   const crawlerBg = isLight ? '#fff' : '#1f1f1f';
   const crawlerTextColor = isLight ? 'rgba(0, 0, 0, 0.85)' : '#fff';
@@ -117,7 +114,7 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
         placement="bottom"
         closable={true}
         mask={false}
-        open={props.visible}
+        open={props.open}
         onClose={props.onClose}
         style={{ color: crawlerTextColor }}
         styles={{
@@ -127,7 +124,7 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
         }}
       >
         <div style={{ textAlign: 'center' }} className="keyboard-shortcuts">
-          <Tabs type="card">{tabs}</Tabs>
+          <Tabs type="card" items={tabItems} />
         </div>
       </Drawer>
     </ConfigProvider>
