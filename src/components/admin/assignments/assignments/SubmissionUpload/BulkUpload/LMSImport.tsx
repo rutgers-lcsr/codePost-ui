@@ -332,14 +332,24 @@ const StepOneUploadZips = (props: IStepOneProps) => {
 
   return (
     <div>
-      <Collapse style={{ marginBottom: 20 }} activeKey={['1']}>
-        <Collapse.Panel header="Instructions" key="1">
-          Upload a folder of files, in the format below:
-          <br />
-          <br />
-          <ReactMarkdown>{exampleText}</ReactMarkdown>
-        </Collapse.Panel>
-      </Collapse>
+      <Collapse
+        style={{ marginBottom: 20 }}
+        activeKey={['1']}
+        items={[
+          {
+            key: '1',
+            label: 'Instructions',
+            children: (
+              <>
+                Upload a folder of files, in the format below:
+                <br />
+                <br />
+                <ReactMarkdown>{exampleText}</ReactMarkdown>
+              </>
+            ),
+          },
+        ]}
+      />
       <Upload.Dragger showUploadList={false} directory={true} multiple={false} beforeUpload={beforeUpload}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />

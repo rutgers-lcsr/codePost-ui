@@ -587,7 +587,7 @@ export const TestDefinitions = (props: IProps) => {
       </div>
 
       <TestCreateModal
-        visible={isCreateModalOpen}
+        open={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateTest}
         language={props.env?.language || 'python'}
@@ -600,7 +600,7 @@ export const TestDefinitions = (props: IProps) => {
       />
 
       <TestBuilderModal
-        visible={isBuilderOpen}
+        open={isBuilderOpen}
         onCancel={() => setIsBuilderOpen(false)}
         language={(() => {
           const rawLang = CodePostFile.language({ name: activeFile } as any);

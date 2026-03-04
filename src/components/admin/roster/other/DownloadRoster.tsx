@@ -217,11 +217,18 @@ const DownloadRoster: React.FC<IProps> = (props) => {
               <br />
             </div>
           ) : null}
-          <Collapse bordered={true} accordion={true} defaultActiveKey={['1']}>
-            <Collapse.Panel header="Preview" key="1">
-              <ReactMarkdown>{previewText}</ReactMarkdown>
-            </Collapse.Panel>
-          </Collapse>
+          <Collapse
+            bordered={true}
+            accordion={true}
+            defaultActiveKey={['1']}
+            items={[
+              {
+                key: '1',
+                label: 'Preview',
+                children: <ReactMarkdown>{previewText}</ReactMarkdown>,
+              },
+            ]}
+          />
         </div>
       </Modal>
     </div>

@@ -149,6 +149,7 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         title: 'Admin',
         dataIndex: 'admin',
         key: 'primary',
+        defaultSortOrder: 'ascend' as const,
         sorter: (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key),
         renderForSearch: (searchText: string) => {
           return (_text: string, record: { admin: string; key: string }, _index: number) => {

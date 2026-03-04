@@ -17,8 +17,6 @@ import { STUDENT_STATUS, getSubforStudent, isEqual } from './BulkUploadHelpers';
 
 import { IProtoSubmission } from './../FileReader';
 
-const Panel = Collapse.Panel;
-
 interface IBulkUploadConfirmProps {
   students: string[];
   protoSubmissions: IProtoSubmission[];
@@ -212,14 +210,22 @@ const BulkUploadConfirm = (props: IBulkUploadConfirmProps) => {
       ) : null}
       <Table pagination={{ pageSize: 5 }} dataSource={dataSource} columns={columns} />
       <Divider titlePlacement="left">Students not uploaded</Divider>
-      <Collapse>
-        <Panel header="Students without submissions" key="1">
-          <Table pagination={{ pageSize: 5 }} dataSource={withoutSubmissionsData} columns={studentColumns} />
-        </Panel>
-        <Panel header="Students with submissions" key="2">
-          <Table pagination={{ pageSize: 5 }} dataSource={withSubmissionsData} columns={studentColumns} />
-        </Panel>
-      </Collapse>
+      <Collapse
+        items={[
+          {
+            key: '1',
+            label: 'Students without submissions',
+            children: (
+              <Table pagination={{ pageSize: 5 }} dataSource={withoutSubmissionsData} columns={studentColumns} />
+            ),
+          },
+          {
+            key: '2',
+            label: 'Students with submissions',
+            children: <Table pagination={{ pageSize: 5 }} dataSource={withSubmissionsData} columns={studentColumns} />,
+          },
+        ]}
+      />
     </div>
   );
 };

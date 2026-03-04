@@ -488,7 +488,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         )}
       </Drawer>
       <NewOrganizationDialog
-        visible={showCreateDialog}
+        open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         onSuccess={() => {
           setShowCreateDialog(false);

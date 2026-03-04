@@ -186,7 +186,7 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
       </CPButton>
       <CollectionCreateForm
         form={form}
-        visible={dialogVisible}
+        open={dialogVisible}
         onCancel={toggleDialog}
         onCreate={handleCreate}
         assignments={props.assignments}
@@ -204,7 +204,7 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
 
 interface IFormProps {
   form: ReturnType<typeof Form.useForm>[0];
-  visible: boolean;
+  open: boolean;
   onCreate: () => void;
   onCancel: () => void;
   assignments: Assignment[];
@@ -218,7 +218,7 @@ interface IFormProps {
 }
 
 const CollectionCreateForm: React.FC<IFormProps> = (props) => {
-  const { visible, onCancel, onCreate, form, assignments } = props;
+  const { open, onCancel, onCreate, form, assignments } = props;
 
   // Validation rules
   const validateName = (_: unknown, value: string) => {
@@ -239,7 +239,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
   return (
     <Modal
-      open={visible}
+      open={open}
       title="Create an assignment"
       okText="Create"
       onCancel={onCancel}

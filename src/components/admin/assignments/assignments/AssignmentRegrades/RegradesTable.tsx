@@ -399,7 +399,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
         Edit Instructions
       </CPButton>
       <RegradeInstructionsModal
-        visible={instructionsModalVisible}
+        open={instructionsModalVisible}
         instructions={props.assignment.regradeInstructions ?? ''}
         cancel={closeInstructionsModal}
         save={saveInstructions}

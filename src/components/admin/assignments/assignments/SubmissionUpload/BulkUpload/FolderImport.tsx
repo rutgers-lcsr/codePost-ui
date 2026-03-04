@@ -21,7 +21,6 @@ import { UploadFile } from 'antd/lib/upload/interface';
 
 import { codePostFile, fileToProtoFileUpload, IProtoFileUpload } from './../FileReader';
 
-const Panel = Collapse.Panel;
 const Dragger = Upload.Dragger;
 
 interface IFolderImportProps {
@@ -105,11 +104,15 @@ export const FolderImport = (props: IFolderImportProps) => {
 
   return (
     <div>
-      <Collapse>
-        <Panel header="Instructions" key="1">
-          {props.instructions}
-        </Panel>
-      </Collapse>
+      <Collapse
+        items={[
+          {
+            key: '1',
+            label: 'Instructions',
+            children: props.instructions,
+          },
+        ]}
+      />
       <br />
       <br />
       <Switch checked={zipMode} onChange={onChange} /> <span> Upload Zip File</span>

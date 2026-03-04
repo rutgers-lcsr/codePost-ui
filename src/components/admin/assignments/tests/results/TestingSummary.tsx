@@ -16,7 +16,6 @@ import {
   TestCategoryType,
   AssignmentType,
 } from '../../../../../types/models';
-import { SubmissionTestResultType } from '../../../../../types/autograder';
 import { autograderApi } from '../../../../../api-client/clients';
 
 import { awaitTestResult } from '../autograderPollingUtils';
@@ -42,7 +41,6 @@ interface IProps {
   currentAssignment: AssignmentType;
   isAdmin: boolean;
   tableOnly: boolean;
-  match?: any;
   fullSubmissionsLoadComplete: boolean;
 }
 
@@ -113,6 +111,10 @@ export const TestingSummary = (props: IProps) => {
 
   const runAllCallback = () => {
     fetchPaginatedResults();
+    // Reset isRunning on the frontend env after completion
+    if (env) {
+      setEnv({ ...env, isRunning: false } as any);
+    }
   };
 
   const runAllSubmissions = async (
@@ -133,15 +135,15 @@ export const TestingSummary = (props: IProps) => {
         },
         progressCallback,
       );
-      const newEnv = { ...env } as any;
-      newEnv.isRunning = true;
-      setEnv(newEnv);
+      setEnv({ ...env, isRunning: true } as any);
     }
   };
 
-  const runSubmissionCallback = (sub: SubmissionInfoType, result: SubmissionTestResultType) => {
+  const runSubmissionCallback = async (sub: SubmissionInfoType, _result: any) => {
+    // Re-fetch this submission's tests from the backend after run completes
+    const tests = await fetchTestsBySubmission([sub]);
     const newTestBySub = { ...testsBySubmission };
-    newTestBySub[sub.id] = result.submissionTests;
+    newTestBySub[sub.id] = tests[sub.id] || [];
     setTestsBySubmission(newTestBySub);
     const newLoadingSubs = subsLoading.filter((id) => {
       return id !== sub.id;
@@ -159,32 +161,28 @@ export const TestingSummary = (props: IProps) => {
           simulate: false,
         } as any,
       })) as unknown as { task: string };
-      awaitTestResult(result.task, runSubmissionCallback.bind({}, sub));
+      awaitTestResult(result.task, (result: any) => runSubmissionCallback(sub, result));
     }
   };
 
   // ******************************* Return  *******************************
   let actions: any = [];
-  //  Only allow run all an edit tests if admin
-  actions =
-    !props.isAdmin || !props.match
-      ? []
-      : [
-          <RunAllTests
-            numSubmissions={props.submissions.length}
-            testCasesByCategory={testCasesByCategory}
-            runAllSubmissions={runAllSubmissions}
-            assignment={props.currentAssignment}
-            env={env}
-          />,
-          <Button type="primary">
-            <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
-          </Button>,
-        ];
+  //  Only allow run all and edit tests if admin
+  actions = !props.isAdmin
+    ? []
+    : [
+        <RunAllTests
+          numSubmissions={props.submissions.length}
+          testCasesByCategory={testCasesByCategory}
+          runAllSubmissions={runAllSubmissions}
+          assignment={props.currentAssignment}
+          env={env}
+        />,
+        <Button type="primary">
+          <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
+        </Button>,
+      ];
 
-  console.log(props.fullSubmissionsLoadComplete);
-
-  // Deduplicate submissions by ID to prevent duplicate key warnings
   const uniqueSubmissions = React.useMemo(() => {
     const seen = new Set<number>();
     return props.submissions.filter((sub) => {

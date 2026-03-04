@@ -10,7 +10,6 @@ import {
   SettingOutlined,
   TeamOutlined,
   TrophyOutlined,
-  VideoCameraOutlined,
 } from '@ant-design/icons';
 
 import { Menu } from 'antd';
@@ -167,11 +166,6 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
         mode="inline"
         selectedKeys={[]}
         items={[
-          {
-            key: 'video',
-            icon: <VideoCameraOutlined />,
-            label: <Link to={`${courseBaseURL}/video`}>Video</Link>,
-          },
           {
             key: 'docs',
             icon: <PushpinOutlined />,

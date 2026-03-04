@@ -233,7 +233,7 @@ function redactSensitiveData(str: string): string {
       // JWT (three base64url segments)
       .replace(/eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_.+/]*/g, '[REDACTED_JWT]')
       // key/token/auth/Authorization followed by = or : and a value
-      .replace(/\b(token|api[_\-]?key|auth|authorization)(\s*[:=]\s*["']?)([^\s"',}\]]+)/gi, '$1$2[REDACTED]')
+      .replace(/\b(token|api[_-]?key|auth|authorization)(\s*[:=]\s*["']?)([^\s"',}\]]+)/gi, '$1$2[REDACTED]')
   );
 }
 
@@ -308,48 +308,116 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// ── Pre-crash screenshot ───────────────────────────────────────────────────────
-// Capture a screenshot so we have a snapshot of the page *before* the error
-// boundary fallback UI renders. Strategy:
-//   • Once, 4 s after page load (initial state)
-//   • Every 5 minutes as a background safety net
-//   • On user activity (click / keydown), throttled to at most once per 60 s
-//     so idle sessions pay no cost but active sessions stay up-to-date.
-let lastScreenshot: string | null = null;
-let screenshotBusy = false;
-let lastCaptureTime = 0;
+// ── Periodic visual screenshot cache ────────────────────────────────────────────
+// Every 30s (when the tab is visible), capture a JPEG screenshot using
+// html-to-image and keep only the latest one in memory. When an error occurs
+// we immediately attach this cached image — it shows what the user was seeing
+// moments before the crash, not the error fallback page.
+let _toJpeg: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
+let _toPng: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
+let _lastScreenshot: string | null = null;
 
-async function captureScreenshot(): Promise<void> {
-  if (screenshotBusy) return;
-  screenshotBusy = true;
+const SCREENSHOT_INTERVAL_MS = 30_000; // 30 seconds
+let _screenshotTimer: ReturnType<typeof setTimeout> | null = null;
+
+async function captureScreenshotToCache(): Promise<void> {
+  if ((!_toJpeg && !_toPng) || document.hidden) return;
+  const captureOpts: Record<string, unknown> = {
+    quality: 0.4,
+    cacheBust: true,
+    // Skip font embedding entirely — it crashes on some pages where a CSS rule
+    // has an undefined font-family. fontEmbedCSS='' takes priority in the lib
+    // and short-circuits the entire font embedding pipeline.
+    skipFonts: true,
+    fontEmbedCSS: '',
+    filter: (node: HTMLElement) => {
+      if (!(node instanceof Element)) return true;
+      const tag = node.tagName?.toLowerCase();
+      return tag !== 'iframe' && tag !== 'video' && tag !== 'canvas';
+    },
+  };
   try {
-    const html2canvas = (await import('html2canvas')).default;
-    const canvas = await Promise.race<HTMLCanvasElement>([
-      html2canvas(document.body, { logging: false, allowTaint: true, useCORS: true }),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+    // Try JPEG first (smaller), fall back to PNG
+    const captureFn = _toJpeg ?? _toPng!;
+    const dataUrl = await Promise.race<string>([
+      captureFn(document.body, captureOpts),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
     ]);
-    lastScreenshot = canvas.toDataURL('image/jpeg', 0.5);
-    lastCaptureTime = Date.now();
-  } catch {
-    // keep previous screenshot on failure
-  } finally {
-    screenshotBusy = false;
+    _lastScreenshot = dataUrl;
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[ErrorBoundary] Screenshot cached (${Math.round(dataUrl.length / 1024)}KB)`);
+    }
+  } catch (err) {
+    // JPEG failed — try PNG as fallback
+    if (_toPng && _toJpeg) {
+      try {
+        const dataUrl = await Promise.race<string>([
+          _toPng(document.body, captureOpts),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
+        ]);
+        _lastScreenshot = dataUrl;
+        if (process.env.NODE_ENV === 'development') {
+          console.debug(`[ErrorBoundary] Screenshot cached via PNG fallback (${Math.round(dataUrl.length / 1024)}KB)`);
+        }
+        return;
+      } catch {
+        // both failed
+      }
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[ErrorBoundary] Screenshot capture failed:', err);
+    }
   }
 }
 
-if (typeof window !== 'undefined') {
-  // Initial capture once the page has settled
-  setTimeout(() => void captureScreenshot(), 4000);
-  // Background safety net every 5 minutes
-  setInterval(() => void captureScreenshot(), 5 * 60_000);
-  // On user activity, capture at most once per 60 s
-  const onActivity = () => {
-    if (Date.now() - lastCaptureTime > 60_000) {
-      void captureScreenshot();
+function scheduleNextScreenshot(): void {
+  _screenshotTimer = setTimeout(() => {
+    if (document.hidden) {
+      // Tab is hidden — skip and schedule next
+      scheduleNextScreenshot();
+      return;
     }
-  };
-  window.addEventListener('click', onActivity, { passive: true });
-  window.addEventListener('keydown', onActivity, { passive: true });
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(
+        () => {
+          void captureScreenshotToCache().then(scheduleNextScreenshot);
+        },
+        { timeout: 10_000 },
+      );
+    } else {
+      void captureScreenshotToCache().then(scheduleNextScreenshot);
+    }
+  }, SCREENSHOT_INTERVAL_MS);
+}
+
+// Initialise: eagerly load html-to-image, then take first screenshot after 5s
+// and start the 30s periodic cycle.
+if (typeof window !== 'undefined') {
+  import('html-to-image')
+    .then((mod) => {
+      _toJpeg = mod.toJpeg;
+      _toPng = mod.toPng;
+      if (process.env.NODE_ENV === 'development') {
+        console.debug('[ErrorBoundary] html-to-image loaded, toJpeg + toPng ready');
+      }
+      // First capture after page settles
+      setTimeout(() => {
+        void captureScreenshotToCache().then(scheduleNextScreenshot);
+      }, 5000);
+    })
+    .catch((err) => {
+      console.warn('[ErrorBoundary] Failed to load html-to-image:', err);
+    });
+
+  // Pause/resume on visibility change
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && _screenshotTimer) {
+      clearTimeout(_screenshotTimer);
+      _screenshotTimer = null;
+    } else if (!document.hidden && !_screenshotTimer && _toJpeg) {
+      scheduleNextScreenshot();
+    }
+  });
 }
 
 // ── Browser context helper ─────────────────────────────────────────────────────
@@ -383,9 +451,10 @@ function gatherBrowserContext() {
 
   const connection: Record<string, unknown> = {};
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const conn =
-      (navigator as any).connection ?? (navigator as any).mozConnection ?? (navigator as any).webkitConnection;
+    const nav = navigator as unknown as Record<string, unknown>;
+    const conn = (nav.connection ?? nav.mozConnection ?? nav.webkitConnection) as
+      | { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean }
+      | undefined;
     if (conn) {
       connection.effectiveType = conn.effectiveType;
       connection.downlinkMbps = conn.downlink;
@@ -396,8 +465,8 @@ function gatherBrowserContext() {
     /* ignore */
   }
 
-  let localStorageKeys: Record<string, string> = {};
-  let sessionStorageKeys: Record<string, string> = {};
+  const localStorageKeys: Record<string, string> = {};
+  const sessionStorageKeys: Record<string, string> = {};
   const storageVal = (store: Storage, key: string): string => {
     const v = store.getItem(key) ?? '';
     return v.length > 80 ? `${v.slice(0, 80)}…` : v;
@@ -466,7 +535,6 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
   // Flag to prevent infinite loops when errors occur within the ErrorBoundary itself
   private hasHandledError = false;
 
-  // This static method is called during the render phase to update state and show fallback UI
   public static getDerivedStateFromError(error: Error): Partial<IErrorBoundaryState> {
     return {
       error,
@@ -483,6 +551,12 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
     // Store errorInfo which is only available in componentDidCatch (not in getDerivedStateFromError)
     this.setState({ errorInfo });
+
+    // Stop the periodic screenshot timer — we've crashed
+    if (_screenshotTimer) {
+      clearTimeout(_screenshotTimer);
+      _screenshotTimer = null;
+    }
 
     const basePayload = {
       error: error.toString(),
@@ -513,12 +587,14 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
         2,
       ),
       url: window.location.href,
+      // Attach the most recent cached screenshot (captured every 30s before the crash)
+      screenshot: _lastScreenshot ?? undefined,
     };
 
     console.error('ErrorBoundary caught an error:', basePayload);
 
-    // Use the last periodic pre-crash screenshot (captured before the fallback UI rendered)
-    Logger.errorFull({ ...basePayload, screenshot: lastScreenshot ?? undefined });
+    // Single send with all data including cached screenshot
+    Logger.errorFull(basePayload);
   }
 
   private handleRefresh = () => {

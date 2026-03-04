@@ -2,8 +2,7 @@
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
 
-const MAX_TRIES_RUN = 45;
-const MAX_TRIES_BUILD = 120;
+const MAX_TRIES_RUN = 150;
 
 // Running a test
 export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
@@ -82,39 +81,4 @@ async function pollTestResult(
     progressCallback(result.result);
   }
   // Case 4: Pending result -- do nothing
-}
-
-// Running a build
-export function awaitBuildResult(id: number, callback: (result: any) => any) {
-  let tries = 0;
-  const interval = setInterval(() => {
-    pollBuildResult(id, interval, callback);
-    if (++tries === MAX_TRIES_BUILD) {
-      sendSlack('Long build notification - over 2 minutes', window.location.href, '#f7f7f7', '#autograder_bugs');
-      message.info('Your build is taking a long time to complete. Try coming back later to check on the results.', 25);
-      window.clearInterval(interval);
-    }
-  }, 1000);
-}
-
-async function pollBuildResult(id: number, interval: any, callback: (result: any) => any) {
-  // We use fetch instead of io-ts functions because we need to turn off the timer in case
-  //    of a failed response (e.g., 404)
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/environments/${id}/build_status/`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-      'Content-Type': 'application/json',
-    },
-    method: 'GET',
-  });
-  if (res.status === 200) {
-    const result = await res.json();
-
-    callback(result);
-    if (!result.inProgress) {
-      clearInterval(interval);
-    }
-  } else {
-    clearInterval(interval);
-  }
 }

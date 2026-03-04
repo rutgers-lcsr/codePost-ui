@@ -743,18 +743,27 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           >
             <Alert message={instructions} type="info" />
             <br />
-            <Tabs defaultActiveKey="1">
-              <Tabs.TabPane key="1" tab="Write">
-                <Input.TextArea
-                  defaultValue={questionText}
-                  onChange={changeQuestionText}
-                  autoSize={{ minRows: 10, maxRows: 16 }}
-                />
-              </Tabs.TabPane>
-              <Tabs.TabPane key="2" tab="Preview">
-                <ReactMarkdown>{questionText}</ReactMarkdown>
-              </Tabs.TabPane>
-            </Tabs>
+            <Tabs
+              defaultActiveKey="1"
+              items={[
+                {
+                  key: '1',
+                  label: 'Write',
+                  children: (
+                    <Input.TextArea
+                      defaultValue={questionText}
+                      onChange={changeQuestionText}
+                      autoSize={{ minRows: 10, maxRows: 16 }}
+                    />
+                  ),
+                },
+                {
+                  key: '2',
+                  label: 'Preview',
+                  children: <ReactMarkdown>{questionText}</ReactMarkdown>,
+                },
+              ]}
+            />
             {props.assignment.allowRegradeRequests ? (
               <div style={{ paddingTop: 15, ...regradeTextStyle }}>
                 Ask for a regrade: <Switch disabled={false} checked={questionIsRegrade} onChange={toggleIsRegrade} />

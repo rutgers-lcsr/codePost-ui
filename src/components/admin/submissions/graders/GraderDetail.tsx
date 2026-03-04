@@ -50,36 +50,43 @@ const GraderDetail = (props: IProps) => {
               title: 'Assignment',
               dataIndex: 'assignment',
               key: 'assignment',
+              defaultSortOrder: 'ascend' as const,
+              sorter: (a: any, b: any) => a.key.localeCompare(b.key),
             },
             {
               title: 'Claimed',
               dataIndex: 'claimed',
               key: 'claimed',
               align: aligner,
+              sorter: (a: any, b: any) => a._claimedRaw - b._claimedRaw,
             },
             {
               title: 'Finalized',
               dataIndex: 'finalized',
               key: 'finalized',
               align: aligner,
+              sorter: (a: any, b: any) => a._finalizedRaw - b._finalizedRaw,
             },
             {
               title: 'Unfinalized',
               dataIndex: 'unfinalized',
               key: 'unfinalized',
               align: aligner,
+              sorter: (a: any, b: any) => a._unfinalizedRaw - b._unfinalizedRaw,
             },
             {
               title: 'Avg. Grade',
               dataIndex: 'graderAverage',
               key: 'graderAverage',
               align: aligner,
+              sorter: (a: any, b: any) => a._graderAverageRaw - b._graderAverageRaw,
             },
             {
               title: 'Assignment Avg.',
               dataIndex: 'assignmentAverage',
               key: 'assignmentAverage',
               align: aligner,
+              sorter: (a: any, b: any) => a._assignmentAverageRaw - b._assignmentAverageRaw,
             },
           ];
 
@@ -125,6 +132,15 @@ const GraderDetail = (props: IProps) => {
                 : props.means[assignment.id]
                   ? `${props.means[assignment.id]}/${assignment.points}`
                   : '--',
+              _claimedRaw: numClaimed,
+              _finalizedRaw: numFinalized,
+              _unfinalizedRaw: numUnfinalized,
+              _graderAverageRaw: numFinalized > 0 ? avgGrade : -1,
+              _assignmentAverageRaw: assignment.mean
+                ? assignment.mean
+                : props.means[assignment.id]
+                  ? parseFloat(props.means[assignment.id]!)
+                  : -1,
             };
           });
 

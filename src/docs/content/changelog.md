@@ -6,6 +6,12 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ---
 
+## Coming Soon
+
+- Quality-of-life improvements for assignment setup and configuration.
+- UX refinements for grading and test authoring pages.
+- Performance and reliability improvements.
+
 ## v3.1.1 — Current Release
 
 - User-facing changelog page — you're reading it!
@@ -14,13 +20,11 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - Tests now check syntax of code before saving to prevent syntax errors in test cases.
 - Tests now check if target file exists before executing test scripts that reference files.
 
+### Change: Test and Execution Workflow Improvements
+
+- Tests and caching output now is selectable from assignment settings. Instructors can choose to disable automatic test execution and/or file caching on student submission if they prefer a more manual workflow.
+
 ---
-
-## Coming Soon
-
-- Quality-of-life improvements for assignment setup and configuration.
-- UX refinements for grading and test authoring pages.
-- Performance and reliability improvements.
 
 ---
 

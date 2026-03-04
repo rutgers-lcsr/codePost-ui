@@ -15,6 +15,7 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   comments: React.ReactNode;
   zoom: number;
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
+  isEditMode?: boolean;
 }
 
 export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
@@ -83,22 +84,25 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                   position: 'relative',
                   minWidth: '300px',
                   height: '100%',
-                  paddingBottom: '20em',
+                  paddingBottom: props.isEditMode ? 0 : '20em',
+                  overflowY: props.isEditMode ? 'hidden' : undefined,
                 }}
               >
-                {/* Toolbar widgets (e.g., Execute button) */}
+                {/* Toolbar */}
                 {props.toolbarWidgets && props.toolbarWidgets.length > 0 && (
                   <div
+                    className="code-toolbar"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      padding: '12px 20px',
-                      borderBottom: `1px solid ${consoleTheme.codeBorder}`,
+                      gap: '6px',
+                      padding: '4px 12px',
+                      borderBottom: `1px solid ${isDarkTheme ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
                       position: 'sticky',
                       top: 0,
                       zIndex: 100,
-                      backgroundColor: isDarkTheme ? consoleTheme.codeBg : '#f0f0f0',
+                      backgroundColor: isDarkTheme ? consoleTheme.codeBg : '#fafafa',
+                      minHeight: 36,
                     }}
                   >
                     {props.toolbarWidgets}

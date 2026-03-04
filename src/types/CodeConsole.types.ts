@@ -220,6 +220,9 @@ export interface ICodeConsoleState {
   /* ========================================
    * Temporary Edit State
    * ======================================== */
+  /** Whether word wrap is enabled in the code panel */
+  wordWrap: boolean;
+
   /** Whether the user is temporarily editing a file */
   isEditMode: boolean;
 

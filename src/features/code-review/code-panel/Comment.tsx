@@ -1468,7 +1468,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         <CommentToRubric
           initialText={text}
           initialPointDelta={points}
-          visible={makeRubric}
+          open={makeRubric}
           rubricCategories={props.rubricCategories}
           onCancel={() => setMakeRubric(false)}
         />

@@ -17,7 +17,7 @@ import * as React from 'react';
 import { CloseOutlined, EditOutlined } from '@ant-design/icons';
 
 /* other library imports */
-import { Button, Divider, Empty, message, Modal, Tag } from 'antd';
+import { Button, Empty, message, Modal, Tag, Tooltip } from 'antd';
 import _ from 'lodash';
 import queryString from 'query-string';
 import { useLocation, useParams } from 'react-router-dom';
@@ -63,7 +63,8 @@ import {
   TestCaseType,
   TestCategoryType,
 } from '../../types/models';
-import { FileType } from '../../utils/file';
+import { File, FileType } from '../../utils/file';
+import { brandColors } from '../../theme/colors';
 import { Submission as SubmissionService } from '../../services/submission';
 import { getLatestSubmissionTests } from '../../utils/submissionTests';
 
@@ -234,6 +235,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const activeSiderKey = useCodeConsoleStore((s) => s.activeSiderKey);
   const showHelpModal = useCodeConsoleStore((s) => s.showHelpModal); // Added selector
   const isEditMode = useCodeConsoleStore((s) => s.isEditMode);
+  const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
   // temporaryFileContent removed to prevent parent re-renders
 
   // Create a backwards-compatible state object from store
@@ -280,6 +282,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       activeSiderKey,
       showHelpModal,
       isEditMode,
+      wordWrap,
       // temporaryFileContent removed from state object to prevent re-renders
       // casting as any to satisfy interface without subscribing to store
       temporaryFileContent: {} as any,
@@ -326,6 +329,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       activeSiderKey,
       showHelpModal,
       isEditMode,
+      wordWrap,
     ],
   );
 
@@ -374,6 +378,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       activeSiderKey: currentState.activeSiderKey,
       showHelpModal: currentState.showHelpModal,
       isEditMode: currentState.isEditMode,
+      wordWrap: currentState.wordWrap,
       temporaryFileContent: currentState.temporaryFileContent,
     };
 
@@ -2095,72 +2100,182 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   const toolbarWidgets: React.ReactElement[] = [];
 
-  // Add execute button for supported executable files
-  if (selectedFile) {
-    const ext = selectedFile.extension.toLowerCase().replace(/^\./, '');
-    const executableExtensions = ['py', 'ipynb', 'r', 'rb', 'js', 'java', 'cpp', 'c', 'go', 'rs', 'sh'];
+  // Build structured toolbar with left (actions) and right (toggles) groups
+  {
+    const leftActions: React.ReactElement[] = [];
+    const rightActions: React.ReactElement[] = [];
 
-    if (executableExtensions.includes(ext)) {
-      // Add Edit Toggle and Execute Button
-      if (permissionLevel === PERMISSION_LEVEL.WRITE) {
-        // Only show edit toggle if:
-        // 1. User is superuser (codePostAdmin)
-        // 2. User is course admin
-        // 3. User is a grader AND Assignment allows graders to edit submissions
-        const isGrader = assignment && props.user.graderCourses.some((c) => c.id === assignment.course);
-        const canEditSubmission =
-          props.user.codePostAdmin ||
-          isCourseAdmin(assignment) ||
-          (isGrader && assignment && assignment.gradersCanEditSubmissions);
+    const isDark = consoleThemes.dark === (context as React.ContextType<typeof ConsoleThemeContext>).consoleTheme;
+    const currentTheme = (context as React.ContextType<typeof ConsoleThemeContext>).consoleTheme;
 
-        if (canEditSubmission) {
-          toolbarWidgets.push(
-            <Button
-              key="edit-toggle"
-              type={state.isEditMode ? 'primary' : 'default'}
-              icon={<EditOutlined />}
-              onClick={() => useCodeConsoleStore.getState().setIsEditMode(!state.isEditMode)}
-            >
-              {state.isEditMode ? 'Exit Edit' : 'Edit'}
-            </Button>,
+    // Shared compact button style for toolbar items
+    const tbBtnBase: React.CSSProperties = {
+      height: 28,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 4,
+      fontSize: 12,
+      border: 'none',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+    };
+
+    const tbDivider = (key: string) => (
+      <div
+        key={key}
+        style={{
+          width: 1,
+          height: 16,
+          backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+          margin: '0 4px',
+          flexShrink: 0,
+        }}
+      />
+    );
+
+    if (selectedFile) {
+      const ext = selectedFile.extension.toLowerCase().replace(/^\./, '');
+      const executableExtensions = ['py', 'ipynb', 'r', 'rb', 'js', 'java', 'cpp', 'c', 'go', 'rs', 'sh'];
+
+      if (executableExtensions.includes(ext)) {
+        // Edit toggle — compact outline style
+        if (permissionLevel === PERMISSION_LEVEL.WRITE) {
+          const isGrader = assignment && props.user.graderCourses.some((c) => c.id === assignment.course);
+          const canEditSubmission =
+            props.user.codePostAdmin ||
+            isCourseAdmin(assignment) ||
+            (isGrader && assignment && assignment.gradersCanEditSubmissions);
+
+          if (canEditSubmission) {
+            leftActions.push(
+              <Tooltip key="edit-toggle" title={state.isEditMode ? 'Exit edit mode' : 'Edit file'} placement="bottom">
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => useCodeConsoleStore.getState().setIsEditMode(!state.isEditMode)}
+                  style={{
+                    ...tbBtnBase,
+                    padding: '0 10px',
+                    gap: 4,
+                    color: state.isEditMode ? '#fff' : isDark ? currentTheme.text : undefined,
+                    backgroundColor: state.isEditMode
+                      ? brandColors.primary
+                      : isDark
+                        ? 'rgba(255,255,255,0.06)'
+                        : 'rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 500 }}>{state.isEditMode ? 'Editing' : 'Edit'}</span>
+                </Button>
+              </Tooltip>,
+            );
+            leftActions.push(tbDivider('div-edit'));
+          }
+        }
+
+        // Execute button — keep as-is since it has complex internal state
+        leftActions.push(
+          <ExecuteFileButton
+            key="execute-file-button"
+            file={selectedFile}
+            disabled={false}
+            onExecutionComplete={handleExecutionComplete}
+            canWrite={permissionLevel === PERMISSION_LEVEL.WRITE}
+            codeOverride={
+              state.isEditMode && selectedFile
+                ? useCodeConsoleStore.getState().temporaryFileContent[selectedFile.id]
+                : undefined
+            }
+          />,
+        );
+
+        // Clear outputs for Jupyter notebooks — move to right side
+        const executionResult = state.executionResults[selectedFile.id];
+        if (ext === 'ipynb' && executionResult) {
+          rightActions.push(
+            <Tooltip key="execution-clear-button" title="Clear execution outputs" placement="bottom">
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined style={{ fontSize: 13 }} />}
+                onClick={handleClearOutputs}
+                style={{
+                  ...tbBtnBase,
+                  padding: '0 6px',
+                  color: isDark ? '#f5827a' : '#ff4d4f',
+                }}
+              />
+            </Tooltip>,
           );
         }
       }
 
-      toolbarWidgets.push(
-        <ExecuteFileButton
-          key="execute-file-button"
-          file={selectedFile}
-          disabled={false}
-          onExecutionComplete={handleExecutionComplete}
-          canWrite={permissionLevel === PERMISSION_LEVEL.WRITE}
-          codeOverride={
-            state.isEditMode && selectedFile
-              ? useCodeConsoleStore.getState().temporaryFileContent[selectedFile.id]
-              : undefined
-          }
-        />,
-      );
-
-      // Add execution status for Jupyter notebooks
-      const executionResult = state.executionResults[selectedFile.id];
-      if (ext === 'ipynb' && executionResult) {
-        toolbarWidgets.push(
-          <Divider key="execution-divider" type="vertical" style={{ height: '24px', margin: '0 8px' }} />,
-        );
-        toolbarWidgets.push(
-          <Button
-            key="execution-clear-button"
-            type="text"
-            size="small"
-            icon={<CloseOutlined />}
-            onClick={handleClearOutputs}
-            danger
+      // Word wrap toggle — right side, available for all code files
+      const codeType = File.codeType(selectedFile);
+      if (!['markdown', 'jupyter', 'image', 'pdf'].includes(codeType)) {
+        rightActions.push(
+          <Tooltip
+            key="word-wrap-toggle"
+            title={state.wordWrap ? 'Disable word wrap' : 'Enable word wrap'}
+            placement="bottom"
           >
-            Clear
-          </Button>,
+            <Button
+              type="text"
+              size="small"
+              onClick={() => useCodeConsoleStore.getState().setWordWrap(!state.wordWrap)}
+              style={{
+                ...tbBtnBase,
+                padding: '0 6px',
+                color: state.wordWrap ? brandColors.primary : isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)',
+                backgroundColor: state.wordWrap
+                  ? isDark
+                    ? 'rgba(25, 134, 101, 0.15)'
+                    : 'rgba(25, 134, 101, 0.08)'
+                  : undefined,
+              }}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ display: 'block' }}
+              >
+                <path
+                  d="M2 3h12M2 7h9.5a2.5 2.5 0 0 1 0 5H10m0 0 1.5-1.5M10 12l1.5 1.5M2 11h4"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Button>
+          </Tooltip>,
         );
       }
+    }
+
+    // Only add toolbar if there are widgets to show
+    if (leftActions.length > 0 || rightActions.length > 0) {
+      toolbarWidgets.push(
+        <div
+          key="toolbar-layout"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{leftActions}</div>
+          {rightActions.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{rightActions}</div>
+          )}
+        </div>,
+      );
     }
   }
 
@@ -2895,6 +3010,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                 file={selectedFile}
                 zoom={state.codeZoom}
                 updateVerticalOffset={setVerticalOffset}
+                isEditMode={isEditMode}
               />
             </CommentHighlightProvider>
             <CustomCommentExplorer
@@ -2904,7 +3020,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               assignment={assignment}
               rubricComments={Object.values(rubricComments).flat()}
               rubricCategories={rubricCategories}
-              visible={state.showCustomCommentExplorer}
+              open={state.showCustomCommentExplorer}
               onCancel={toggleCustomCommentExplorer}
             />
           </div>
@@ -3103,7 +3219,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         {permissionLevel === PERMISSION_LEVEL.WRITE && assignment !== undefined && submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
-            visible={state.showInlineTestsModal}
+            open={state.showInlineTestsModal}
             show={showInlineTestsModal}
             hide={hideInlineTestsModal}
             files={files}

@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC, lazy } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 import { Course, Section } from '../../api-client';
 import type { CourseType, UserType } from '../../types/models';
@@ -11,7 +11,6 @@ const MySubmissionsPanel = lazy(() => import('./MySubmissionsPanel'));
 const SectionPanel = lazy(() => import('./SectionPanel'));
 const RegradesPanel = lazy(() => import('./RegradesPanel'));
 const ViewAllPanel = lazy(() => import('./ViewAllPanel'));
-const VideoModal = lazy(() => import('../landing/VideoModal'));
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 import RubricUI from '../admin/assignments/rubric/RubricUI';
@@ -57,8 +56,6 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
   someRegrades,
   isRubricEditor,
 }) => {
-  const navigate = useNavigate();
-
   const isAdmin = user.courseadminCourses.some((el: CourseType) => el.id === currentCourse.id);
 
   return (
@@ -116,7 +113,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           }
         />
       )}
-      <Route path="video" key="video" element={<VideoModal open={true} onCancel={() => navigate('/grader')} />} />
+      <Route path="video" key="video" element={<Navigate to="/docs" replace />} />
       {isRubricEditor && (
         <Route
           path="rubrics/*"

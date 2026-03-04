@@ -246,14 +246,23 @@ const RubricFileUpload: FC<IProps> = ({
               existing rubric in place for this assignment.
             </div>
             <br />
-            <Collapse defaultActiveKey={['json']}>
-              <Collapse.Panel header="Required JSON format" key="json">
-                <WarningOutlined /> One common mistake: don't use trailing commas (e.g.{' '}
-                <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
-                <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
-                <ReactMarkdown>{exampleText}</ReactMarkdown>
-              </Collapse.Panel>
-            </Collapse>
+            <Collapse
+              defaultActiveKey={['json']}
+              items={[
+                {
+                  key: 'json',
+                  label: 'Required JSON format',
+                  children: (
+                    <>
+                      <WarningOutlined /> One common mistake: don&apos;t use trailing commas (e.g.{' '}
+                      <Typography.Text code>[el1, el2,]</Typography.Text> should be{' '}
+                      <Typography.Text code>[el1, el2]</Typography.Text>) <br /> <br />
+                      <ReactMarkdown>{exampleText}</ReactMarkdown>
+                    </>
+                  ),
+                },
+              ]}
+            />
             <br />
             <br />
             <Upload beforeUpload={beforeUpload} listType="text" multiple={true}>

@@ -872,7 +872,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       {/* Modals */}
       <BuildDetailModal
-        visible={showLogsModal}
+        open={showLogsModal}
         onClose={() => setShowLogsModal(false)}
         inProgress={buildInProgress}
         isSuccess={buildIsSuccess}

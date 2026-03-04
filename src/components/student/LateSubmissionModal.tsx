@@ -12,7 +12,7 @@ import type { BeforeStudentUploadResponse } from '../../api-client';
 import type { AssignmentStudentType } from '../../types/models';
 
 interface ILateSubmissionModalProps {
-  visible: boolean;
+  open: boolean;
   assignment: AssignmentStudentType;
   onOk: any;
   onCancel: any;
@@ -100,10 +100,10 @@ Please see the course policy or contact your instructor if you have any question
       setStudentUploadInformation(studentUploadInformation);
     };
 
-    if (props.visible) {
+    if (props.open) {
       getStudentUploadInformation();
     }
-  }, [props.visible, props.assignment.id]);
+  }, [props.open, props.assignment.id]);
 
   let content;
 
@@ -125,7 +125,7 @@ Please see the course policy or contact your instructor if you have any question
   return (
     <Modal
       title="Confirm late submission"
-      open={props.visible}
+      open={props.open}
       onOk={props.onOk}
       onCancel={props.onCancel}
       okText={'Continue'}

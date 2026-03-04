@@ -8,14 +8,14 @@ import Editor from '@monaco-editor/react';
 interface IProps {
   // files: FileType[] | FileTemplateType[];
   files: AssignmentFileType[];
-  visible: boolean;
+  open: boolean;
   toggleVisible: () => void;
 }
 
 const FileExplorer = (props: IProps) => {
   return (
     <Modal
-      open={props.visible}
+      open={props.open}
       closable={true}
       width={'90%'}
       onCancel={props.toggleVisible}
@@ -26,32 +26,22 @@ const FileExplorer = (props: IProps) => {
       ]}
     >
       <div id="file-explorer">
-        <Tabs defaultActiveKey="1" tabPosition="left">
-          {props.files.map((file: AssignmentFileType) => {
-            return (
-              <Tabs.TabPane tab={file.name} key={`file-${file.id}`}>
-                {/* <CodeMirror
-                  key={`codeMirror-${file.id}`}
-                  value={file.code}
-                  options={{
-                    lineNumbers: true,
-                    lineWrapping: true,
-                    mode: 'txt',
-                    theme: 'neo',
-                    styleActiveLine: { nonEmpty: true },
-                    readOnly: true,
-                  }}
-                /> */}
-                <Editor
-                  height="80vh"
-                  defaultValue={file.data ?? ''}
-                  theme="vs-dark"
-                  options={{ readOnly: true, minimap: { enabled: false } }}
-                />
-              </Tabs.TabPane>
-            );
-          })}
-        </Tabs>
+        <Tabs
+          defaultActiveKey="1"
+          tabPosition="left"
+          items={props.files.map((file: AssignmentFileType) => ({
+            key: `file-${file.id}`,
+            label: file.name,
+            children: (
+              <Editor
+                height="80vh"
+                defaultValue={file.data ?? ''}
+                theme="vs-dark"
+                options={{ readOnly: true, minimap: { enabled: false } }}
+              />
+            ),
+          }))}
+        />
       </div>
     </Modal>
   );

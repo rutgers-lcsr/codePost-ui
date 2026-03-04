@@ -2,7 +2,7 @@
 import { Modal, Form, Input, InputNumber, Typography } from 'antd';
 
 interface IProps {
-  visible: boolean;
+  open: boolean;
   onCancel: () => void;
   onInsert: (code: string) => void;
   language: string;
@@ -138,7 +138,7 @@ end`;
   return (
     <Modal
       title="Add Test Case"
-      open={props.visible}
+      open={props.open}
       onOk={handleOk}
       onCancel={props.onCancel}
       width={600}

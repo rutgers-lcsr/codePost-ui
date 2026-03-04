@@ -7,10 +7,10 @@
 import * as React from 'react';
 import { useCallback } from 'react';
 
-import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined, MenuOutlined } from '@ant-design/icons';
+import { CodeOutlined, DeleteOutlined, EyeFilled, EyeInvisibleOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Dropdown, Modal, Button, Tooltip, Typography } from 'antd';
+import { Breadcrumb, Modal, Button, Tooltip, Typography, Popconfirm } from 'antd';
 
 /* other library imports */
 import dayjs from 'dayjs';
@@ -48,18 +48,19 @@ interface IProps {
 }
 
 const GraderAssignmentDetail: React.FC<IProps> = (props) => {
+  const { deleteSubmission } = props;
   const removeSubmission = useCallback(
     (toRemove: SubmissionInfoType) => {
       confirm({
         title: 'Are you sure you want to delete this submission?',
         content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
         onOk: () => {
-          return props.deleteSubmission(toRemove);
+          return deleteSubmission(toRemove);
         },
         okText: 'Remove',
       });
     },
-    [props.deleteSubmission],
+    [deleteSubmission],
   );
 
   const getStatus = (submission: SubmissionInfoType | undefined) => {
@@ -133,18 +134,22 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
       title: 'Students',
       dataIndex: 'students',
       key: 'students',
+      defaultSortOrder: 'ascend' as const,
+      sorter: (a: Record<string, string>, b: Record<string, string>) => a._studentsRaw.localeCompare(b._studentsRaw),
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       align: aligner,
+      sorter: (a: Record<string, number>, b: Record<string, number>) => a._statusRaw - b._statusRaw,
     },
     {
       title: 'Grade',
       dataIndex: 'grade',
       key: 'grade',
       align: aligner,
+      sorter: (a: Record<string, number>, b: Record<string, number>) => a._gradeRaw - b._gradeRaw,
     },
     {
       title: 'Viewed',
@@ -173,21 +178,6 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
           openSubmissionInSameTab(submission.id);
         }
       };
-      const menuItems = [
-        {
-          type: 'divider' as const,
-        },
-        {
-          key: 'delete',
-          label: (
-            <>
-              <DeleteOutlined /> Delete
-            </>
-          ),
-          danger: true,
-          onClick: () => removeSubmission(submission),
-        },
-      ];
 
       let gradeString: string;
       if (submission.isFinalized) {
@@ -223,11 +213,19 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
             <Tooltip title="Open Submission">
               <Button shape="circle" icon={<CodeOutlined />} onClick={open} style={{ marginRight: 8 }} />
             </Tooltip>
-            <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-              <Button shape="circle" icon={<MenuOutlined />} />
-            </Dropdown>
+            <Popconfirm
+              title="Are you sure you want to delete this submission?"
+              onConfirm={() => removeSubmission(submission)}
+            >
+              <Tooltip title="Delete Submission">
+                <Button shape="circle" icon={<DeleteOutlined />} danger />
+              </Tooltip>
+            </Popconfirm>
           </div>
         ),
+        _studentsRaw: submission.students.join(','),
+        _statusRaw: submission.isFinalized ? 1 : 0,
+        _gradeRaw: submission.isFinalized ? (submission.grade ?? 0) : -1,
       };
     });
 
@@ -245,22 +243,13 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
               items={[
                 { title: 'Submissions' },
                 {
-                  title: (
-                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                    <Link to={props.baseURL}>By Grader</Link>
-                  ),
+                  title: <Link to={props.baseURL}>By Grader</Link>,
                 },
                 {
-                  title: (
-                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                    <Link to={props.baseURL}>{props.grader}</Link>
-                  ),
+                  title: <Link to={props.baseURL}>{props.grader}</Link>,
                 },
                 {
-                  title: (
-                    // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                    <a>{selectedAssignment.name}</a>
-                  ),
+                  title: <span>{selectedAssignment.name}</span>,
                 },
               ]}
             />

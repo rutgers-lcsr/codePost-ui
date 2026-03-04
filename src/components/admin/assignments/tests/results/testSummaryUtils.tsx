@@ -4,32 +4,40 @@ import { TestCategoryType } from '../../../../../types/models';
 
 export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const sortedCategories = [...categories].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
-  const columns = [
+
+  const categoryColumns = sortedCategories.map((category) => ({
+    title: (
+      <span>
+        {category.name} {!shouldSort && <Spin />}
+      </span>
+    ),
+    dataIndex: category.name,
+    key: category.id.toString(),
+    align: 'center' as const,
+    ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
+  }));
+
+  const summaryColumn =
+    categories.length > 0
+      ? [
+          {
+            title: <span>Summary {!shouldSort && <Spin />}</span>,
+            dataIndex: 'summary',
+            key: 'summary',
+            align: 'center' as const,
+            ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
+          },
+        ]
+      : [];
+
+  return [
     {
       title: 'Student(s)',
       dataIndex: 'students',
       key: 'students',
     },
-    ...sortedCategories.map((category) => {
-      return {
-        title: (
-          <span>
-            {category.name} {!shouldSort && <Spin />}
-          </span>
-        ),
-        dataIndex: category.name,
-        key: category.id.toString(),
-        align: 'center' as const,
-        ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
-      };
-    }),
-    categories.length > 0 && {
-      title: <span>Summary {!shouldSort && <Spin />}</span>,
-      dataIndex: 'summary',
-      key: 'summary',
-      align: 'center' as const,
-      ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
-    },
+    ...categoryColumns,
+    ...summaryColumn,
     {
       title: 'Actions',
       dataIndex: 'actions',
@@ -37,7 +45,6 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
       align: 'center' as const,
     },
   ];
-  return columns;
 };
 
 export const byTestColumns = [

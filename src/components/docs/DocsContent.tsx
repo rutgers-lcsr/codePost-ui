@@ -613,7 +613,7 @@ const DocsContent: React.FC = () => {
       {/* Right TOC Side - Only show on large screens */}
       {width > 1200 && (
         <div style={{ width: '250px', padding: '60px 20px 0 0', flexShrink: 0 }}>
-          <DocsTOC items={tocItems} />
+          <DocsTOC key={currentPath} items={tocItems} />
         </div>
       )}
     </div>

@@ -276,6 +276,12 @@ export interface Assignment {
    */
   aiSystemPrompt?: string;
   /**
+   * If True, submission files will be automatically executed and cached when a student submits.
+   * @type {boolean}
+   * @memberof Assignment
+   */
+  runFilesOnSubmit?: boolean;
+  /**
    * If True, autograder tests will automatically run when a student submits.
    * @type {boolean}
    * @memberof Assignment
@@ -3446,6 +3452,12 @@ export interface PatchedAssignment {
    * @memberof PatchedAssignment
    */
   aiSystemPrompt?: string;
+  /**
+   * If True, submission files will be automatically executed and cached when a student submits.
+   * @type {boolean}
+   * @memberof PatchedAssignment
+   */
+  runFilesOnSubmit?: boolean;
   /**
    * If True, autograder tests will automatically run when a student submits.
    * @type {boolean}

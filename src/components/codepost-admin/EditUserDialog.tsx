@@ -7,7 +7,7 @@ import type { UserType } from '../../types/models';
 import { Organization } from '../../api-client';
 
 interface EditUserDialogProps {
-  visible: boolean;
+  open: boolean;
   user: UserType | null;
   onClose: () => void;
   onSuccess: () => void;
@@ -19,12 +19,12 @@ type EditUserValues = Pick<
   'organization' | 'codePostAdmin' | 'isOrgStaff' | 'canCreateCourses' | 'canModifyRosters'
 >;
 
-const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose, onSuccess, organizations }) => {
+const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, user, onClose, onSuccess, organizations }) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (visible && user) {
+    if (open && user) {
       form.setFieldsValue({
         codePostAdmin: user.codePostAdmin,
         isOrgStaff: user.isOrgStaff,
@@ -33,7 +33,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
         organization: user.organization,
       });
     }
-  }, [visible, user, form]);
+  }, [open, user, form]);
 
   const handleSubmit = async (values: EditUserValues) => {
     if (!user?.email) return;
@@ -53,7 +53,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ visible, user, onClose,
   return (
     <Modal
       title={`Edit Permissions: ${user?.email}`}
-      open={visible}
+      open={open}
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}

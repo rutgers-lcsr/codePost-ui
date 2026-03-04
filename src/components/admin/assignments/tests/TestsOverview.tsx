@@ -43,6 +43,9 @@ const TestsOverview = (props: IProps) => {
   useEffect(() => {
     let isMounted = true;
     const fetchStatuses = async () => {
+      // Skip polling when the tab is not visible to reduce unnecessary load
+      if (document.hidden) return;
+
       const statuses: { [key: number]: number } = {};
       const promises = uniqueAssignments
         .filter((a) => a.environment !== null)
@@ -60,12 +63,17 @@ const TestsOverview = (props: IProps) => {
       await Promise.all(promises);
 
       if (isMounted) {
-        setEnvBuildStatuses(statuses);
+        setEnvBuildStatuses((prev) => {
+          // Only update state if statuses actually changed
+          const changed = Object.keys(statuses).some((key) => prev[Number(key)] !== statuses[Number(key)]);
+          return changed ? statuses : prev;
+        });
       }
     };
 
     fetchStatuses();
-    const interval = setInterval(fetchStatuses, 3000);
+    // Poll every 15s instead of 3s — active builds are rare and don't need sub-second updates
+    const interval = setInterval(fetchStatuses, 15000);
 
     return () => {
       isMounted = false;

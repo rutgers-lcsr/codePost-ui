@@ -22,6 +22,7 @@ import { SubmissionInfoType } from '../../../types/models';
 
 import { DIRECTION, IRubricCategoryToRubricCommentsMap, Assignment } from '../../../types/common';
 import { useRubricStore, RESOLUTION, IFeedbackScore } from '../../../stores/useRubricStore';
+import { useShallow } from 'zustand/react/shallow';
 
 /**********************************************************************************************************************/
 
@@ -141,7 +142,35 @@ export interface IRubricManagerState {
 /**********************************************************************************************************************/
 
 const RubricManager: React.FC<IRubricManagerProps> = (props) => {
-  const store = useRubricStore();
+  // Subscribe only to state fields needed for rendering (shallow equality prevents
+  // re-renders when unrelated fields change). Actions are accessed via getState().
+  const storeState = useRubricStore(
+    useShallow((s) => ({
+      loadComplete: s.loadComplete,
+      changeLock: s.changeLock,
+      isSaving: s.isSaving,
+      errorObjects: s.errorObjects,
+      unsavedComments: s.unsavedComments,
+      deletedComments: s.deletedComments,
+      unsavedCategories: s.unsavedCategories,
+      deletedCategories: s.deletedCategories,
+      hasMoved: s.hasMoved,
+      activeComment: s.activeComment,
+      linkedComments: s.linkedComments,
+      resolutions: s.resolutions,
+      confirmedPropagation: s.confirmedPropagation,
+      showConfirmDialog: s.showConfirmDialog,
+      rubricCategories: s.rubricCategories,
+      rubricComments: s.rubricComments,
+      savedRubricCategories: s.savedRubricCategories,
+      savedRubricComments: s.savedRubricComments,
+      newObjectCounter: s.newObjectCounter,
+      feedbackScores: s.feedbackScores,
+      instanceLists: s.instanceLists,
+    })),
+  );
+  // Use getState() for store actions — they are stable and don't need reactive subscriptions
+  const storeActions = useRubricStore.getState();
 
   // Interval ref for reloading
   const intervalRef = useRef<number | undefined>(undefined);
@@ -164,44 +193,38 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   );
 
   // Load feedback scores
-  const loadFeedbackScores = useCallback(
-    async (rubricComments: RubricComment[]) => {
-      const newMap: Record<number, IFeedbackScore> = {};
-      for (const rComment of rubricComments) {
-        if (rComment.id > 0) {
-          const score = (await rubricCommentsApi.feedbackScoreRetrieve({
-            id: rComment.id,
-          })) as unknown as IFeedbackScore;
-          newMap[rComment.id] = {
-            negative: score.negative,
-            positive: score.positive,
-          };
-        }
+  const loadFeedbackScores = useCallback(async (rubricComments: RubricComment[]) => {
+    const newMap: Record<number, IFeedbackScore> = {};
+    for (const rComment of rubricComments) {
+      if (rComment.id > 0) {
+        const score = (await rubricCommentsApi.feedbackScoreRetrieve({
+          id: rComment.id,
+        })) as unknown as IFeedbackScore;
+        newMap[rComment.id] = {
+          negative: score.negative,
+          positive: score.positive,
+        };
       }
-      store.setFeedbackScores(newMap);
-    },
-    [store],
-  );
+    }
+    useRubricStore.getState().setFeedbackScores(newMap);
+  }, []);
 
   // Load instance lists
-  const loadInstanceLists = useCallback(
-    async (rubricComments: RubricComment[]): Promise<Record<number, number[]>> => {
-      const newMap: Record<number, number[]> = {};
-      for (const rComment of rubricComments) {
-        if (rComment.id > 0) {
-          const list = (await rubricCommentsApi.retrieve({
-            id: rComment.id,
-          })) as unknown as RubricCommentInstanceList;
-          newMap[rComment.id] = list.comments;
-        } else {
-          newMap[rComment.id] = [];
-        }
+  const loadInstanceLists = useCallback(async (rubricComments: RubricComment[]): Promise<Record<number, number[]>> => {
+    const newMap: Record<number, number[]> = {};
+    for (const rComment of rubricComments) {
+      if (rComment.id > 0) {
+        const list = (await rubricCommentsApi.retrieve({
+          id: rComment.id,
+        })) as unknown as RubricCommentInstanceList;
+        newMap[rComment.id] = list.comments;
+      } else {
+        newMap[rComment.id] = [];
       }
-      store.setInstanceLists(newMap);
-      return newMap;
-    },
-    [store],
-  );
+    }
+    useRubricStore.getState().setInstanceLists(newMap);
+    return newMap;
+  }, []);
 
   // Load assignment rubric
   const loadAssignmentRubric = useCallback(
@@ -211,12 +234,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         const rubric = rubricRequest as unknown as RubricFullData;
         const commentMap = buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
 
-        const categoriesChanged = !_.isEqual(store.savedRubricCategories, rubric.rubricCategories);
-        const commentsChanged = !_.isEqual(store.savedRubricComments, commentMap);
-        const shouldUpdateState = !store.loadComplete || categoriesChanged || commentsChanged;
+        const currentState = useRubricStore.getState();
+        const categoriesChanged = !_.isEqual(currentState.savedRubricCategories, rubric.rubricCategories);
+        const commentsChanged = !_.isEqual(currentState.savedRubricComments, commentMap);
+        const shouldUpdateState = !currentState.loadComplete || categoriesChanged || commentsChanged;
 
         // Notify about new comments
-        const oldComments = Object.values(store.rubricComments).flat();
+        const oldComments = Object.values(currentState.rubricComments).flat();
         if (oldComments.length > 0) {
           for (const newComment of rubric.rubricComments) {
             const found = oldComments.find((el) => el.id === newComment.id);
@@ -238,7 +262,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         }
 
         if (shouldUpdateState) {
-          store.initialize(rubric.rubricCategories, commentMap);
+          useRubricStore.getState().initialize(rubric.rubricCategories, commentMap);
 
           if (shouldLoadFeedback) {
             loadFeedbackScores(rubric.rubricComments);
@@ -251,58 +275,54 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         console.error('Failed to load rubric:', error);
       }
     },
-    [buildCommentMap, loadFeedbackScores, loadInstanceLists, props, store],
+    [buildCommentMap, loadFeedbackScores, loadInstanceLists, props],
   );
 
   // Delete linked comments
-  const deleteLinkedComments = useCallback(
-    async (rubricComment: RubricComment) => {
-      let comments: number[] = [];
-      if (store.instanceLists[rubricComment.id]) {
-        comments = store.instanceLists[rubricComment.id];
-      } else {
-        comments = (
-          (await rubricCommentsApi.retrieve({
-            id: rubricComment.id,
-          })) as unknown as RubricCommentInstanceList
-        ).comments;
-      }
+  const deleteLinkedComments = useCallback(async (rubricComment: RubricComment) => {
+    let comments: number[] = [];
+    const currentInstanceLists = useRubricStore.getState().instanceLists;
+    if (currentInstanceLists[rubricComment.id]) {
+      comments = currentInstanceLists[rubricComment.id];
+    } else {
+      comments = (
+        (await rubricCommentsApi.retrieve({
+          id: rubricComment.id,
+        })) as unknown as RubricCommentInstanceList
+      ).comments;
+    }
 
-      const promises = comments.map((commentID) => commentsApi.destroy({ id: commentID }));
-      return Promise.all(promises);
-    },
-    [store.instanceLists],
-  );
+    const promises = comments.map((commentID) => commentsApi.destroy({ id: commentID }));
+    return Promise.all(promises);
+  }, []);
 
   // Unlink linked comments
-  const unlinkLinkedComments = useCallback(
-    async (rubricComment: RubricComment) => {
-      let comments: number[] = [];
-      if (store.instanceLists[rubricComment.id]) {
-        comments = store.instanceLists[rubricComment.id];
-      } else {
-        comments = (
-          (await rubricCommentsApi.retrieve({
-            id: rubricComment.id,
-          })) as unknown as RubricCommentInstanceList
-        ).comments;
-      }
+  const unlinkLinkedComments = useCallback(async (rubricComment: RubricComment) => {
+    let comments: number[] = [];
+    const currentInstanceLists = useRubricStore.getState().instanceLists;
+    if (currentInstanceLists[rubricComment.id]) {
+      comments = currentInstanceLists[rubricComment.id];
+    } else {
+      comments = (
+        (await rubricCommentsApi.retrieve({
+          id: rubricComment.id,
+        })) as unknown as RubricCommentInstanceList
+      ).comments;
+    }
 
-      const promises = comments.map((commentID) => {
-        return commentsApi.partialUpdate({
-          id: commentID,
-          patchedComment: {
-            // text: rubricComment.text,  // Wait, legacy commentIO.update accepted payload. commentsApi.partialUpdate expects PatchedComment
-            // pointDelta: rubricComment.pointDelta, // Comment does not have pointDelta usually? Let's check model.
-            // rubricComment: null,
-            rubricComment: null,
-          },
-        });
+    const promises = comments.map((commentID) => {
+      return commentsApi.partialUpdate({
+        id: commentID,
+        patchedComment: {
+          // text: rubricComment.text,  // Wait, legacy commentIO.update accepted payload. commentsApi.partialUpdate expects PatchedComment
+          // pointDelta: rubricComment.pointDelta, // Comment does not have pointDelta usually? Let's check model.
+          // rubricComment: null,
+          rubricComment: null,
+        },
       });
-      return Promise.all(promises);
-    },
-    [store.instanceLists],
-  );
+    });
+    return Promise.all(promises);
+  }, []);
 
   // Build linked list
   const buildLinkedList = useCallback(
@@ -509,111 +529,111 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   );
 
   // Move category
-  const moveCategory = useCallback(
-    (category: RubricCategory, direction: DIRECTION) => {
-      const index = store.rubricCategories.findIndex((x) => x.id === category.id);
-      if (index === -1) return;
+  const moveCategory = useCallback((category: RubricCategory, direction: DIRECTION) => {
+    const { rubricCategories, moveCategory: doMove } = useRubricStore.getState();
+    const index = rubricCategories.findIndex((x) => x.id === category.id);
+    if (index === -1) return;
 
-      let targetIndex = index;
-      switch (direction) {
-        case DIRECTION.Up:
-          targetIndex = index === 0 ? 0 : index - 1;
-          break;
-        case DIRECTION.Down:
-          targetIndex = index === store.rubricCategories.length - 1 ? index : index + 1;
-          break;
-      }
+    let targetIndex = index;
+    switch (direction) {
+      case DIRECTION.Up:
+        targetIndex = index === 0 ? 0 : index - 1;
+        break;
+      case DIRECTION.Down:
+        targetIndex = index === rubricCategories.length - 1 ? index : index + 1;
+        break;
+    }
 
-      if (targetIndex !== index) {
-        store.moveCategory(category.id, targetIndex);
-      }
-    },
-    [store],
-  );
+    if (targetIndex !== index) {
+      doMove(category.id, targetIndex);
+    }
+  }, []);
 
   // Add rubric category
   const addRubricCategory = useCallback(
     (name?: string) => {
+      const s = useRubricStore.getState();
       const payload = {
         id: -1, // Will be replaced by store
         name: name ?? '',
         pointLimit: null,
         assignment: props.assignment.id,
         rubricComments: [],
-        sortKey: store.rubricCategories.length,
+        sortKey: s.rubricCategories.length,
         helpText: '',
         atMostOnce: false,
       };
-      store.addCategory(payload);
+      s.addCategory(payload);
     },
-    [props.assignment.id, store],
+    [props.assignment.id],
   );
 
   // Add rubric comment
-  const addRubricComment = useCallback(
-    (category: RubricCategory) => {
-      const payload = {
-        id: -1, // Will be replaced by store
-        text: '',
-        pointDelta: 0,
-        category: category.id,
-        // comments: [], // Generated RubricComment does not have comments field?
-        sortKey: store.rubricComments[category.id]?.length ?? 0,
-        explanation: '',
-        instructionText: '',
-        templateTextOn: false,
-      } as unknown as RubricComment;
-      store.addComment(category.id, payload);
-    },
-    [store],
-  );
+  const addRubricComment = useCallback((category: RubricCategory) => {
+    const s = useRubricStore.getState();
+    const payload = {
+      id: -1, // Will be replaced by store
+      text: '',
+      pointDelta: 0,
+      category: category.id,
+      // comments: [], // Generated RubricComment does not have comments field?
+      sortKey: s.rubricComments[category.id]?.length ?? 0,
+      explanation: '',
+      instructionText: '',
+      templateTextOn: false,
+    } as unknown as RubricComment;
+    s.addComment(category.id, payload);
+  }, []);
 
   // Set new rubric
   const setNewRubric = useCallback(
     (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => {
-      store.initialize(categories, comments);
+      useRubricStore.getState().initialize(categories, comments);
       onSave(undefined);
     },
-    [onSave, store],
+    [onSave],
   );
 
   // Replace rubric
   const replaceRubric = useCallback(
     (categories: RubricCategory[], comments: IRubricCategoryToRubricCommentsMap) => {
       // Mark all saved items for deletion
-      store.initialize(categories, comments);
+      useRubricStore.getState().initialize(categories, comments);
       onSave(undefined);
     },
-    [onSave, store],
+    [onSave],
   );
 
   // Linked comments resolution
   const onLinkedCommentsResolve = useCallback(
     (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: any) => void) => {
-      store.setResolution(comment.id, resolution);
+      const s = useRubricStore.getState();
+      s.setResolution(comment.id, resolution);
 
       // If user has finished resolving all linked comments, trigger save
-      const remainingLinked = store.linkedComments.filter((c) => c.id !== comment.id);
+      const remainingLinked = s.linkedComments.filter((c) => c.id !== comment.id);
       if (remainingLinked.length === 0) {
-        store.setLinkedComments([]);
+        s.setLinkedComments([]);
         onSave(fnc);
       }
     },
-    [onSave, store],
+    [onSave],
   );
 
   const onLinkedConfirmAccept = useCallback(
     (fnc?: (rubric: any) => void) => {
-      store.setShowConfirmDialog(false);
-      store.setConfirmedPropagation(true);
+      const s = useRubricStore.getState();
+      s.setShowConfirmDialog(false);
+      s.setConfirmedPropagation(true);
       onSave(fnc);
     },
-    [onSave, store],
+    [onSave],
   );
 
   // On back
   const onBack = useCallback(() => {
-    if (store.changesMade() && !store.changeLock) {
+    const s = useRubricStore.getState();
+    if (s.changesMade() && !s.changeLock) {
       const wantsToLeave = confirm(
         'You will lose your unsaved changes if you leave this page without saving. Are you sure you want to leave?',
       );
@@ -623,17 +643,14 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
     } else {
       props.onCancel();
     }
-  }, [props, store]);
+  }, [props]);
 
   // On unload
-  const onUnload = useCallback(
-    (event: BeforeUnloadEvent) => {
-      if (store.changesMade()) {
-        event.returnValue = 'You have unsaved changes.';
-      }
-    },
-    [store],
-  );
+  const onUnload = useCallback((event: BeforeUnloadEvent) => {
+    if (useRubricStore.getState().changesMade()) {
+      event.returnValue = 'You have unsaved changes.';
+    }
+  }, []);
 
   // Comment drag end
   const onCommentDragEnd = useCallback(
@@ -641,16 +658,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
       if (!result.destination) return;
       if (result.source.index === result.destination.index) return;
 
+      const s = useRubricStore.getState();
       const categoryID = +result.destination.droppableId;
-      const reorderedComments = arrayMove(
-        store.rubricComments[categoryID],
-        result.source.index,
-        result.destination.index,
-      );
+      const reorderedComments = arrayMove(s.rubricComments[categoryID], result.source.index, result.destination.index);
 
-      store.reorderComments(categoryID, reorderedComments);
+      s.reorderComments(categoryID, reorderedComments);
     },
-    [store],
+    [],
   );
 
   // Initialize on mount
@@ -659,7 +673,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
     if (props.defaultRubric) {
       const commentMap = buildCommentMap(props.defaultRubric.categories, props.defaultRubric.comments);
-      store.initialize(props.defaultRubric.categories, commentMap);
+      useRubricStore.getState().initialize(props.defaultRubric.categories, commentMap);
     } else {
       loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     }
@@ -683,11 +697,11 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   useEffect(() => {
     if (props.defaultRubric) {
       const commentMap = buildCommentMap(props.defaultRubric.categories, props.defaultRubric.comments);
-      store.initialize(props.defaultRubric.categories, commentMap);
+      useRubricStore.getState().initialize(props.defaultRubric.categories, commentMap);
       return;
     }
 
-    store.setLoadComplete(false);
+    useRubricStore.getState().setLoadComplete(false);
     loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment.id]);
@@ -723,13 +737,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
       loadAssignmentRubric,
       loadFeedbackScores,
       loadInstanceLists,
-      resetRubric: store.resetRubric,
+      resetRubric: storeActions.resetRubric,
       setNewRubric,
       replaceRubric,
-      onCategoryEdit: store.onCategoryEdit,
-      onCategoryUndo: store.onCategoryUndo,
-      onCommentEdit: store.onCommentEdit,
-      onCommentUndo: store.onCommentUndo,
+      onCategoryEdit: storeActions.onCategoryEdit,
+      onCategoryUndo: storeActions.onCategoryUndo,
+      onCommentEdit: storeActions.onCommentEdit,
+      onCommentUndo: storeActions.onCommentUndo,
       saveRubric,
       deleteLinkedComments,
       unlinkLinkedComments,
@@ -737,29 +751,29 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
       onSave,
       buildCommentMap,
       moveCategory,
-      updateRubricCategory: store.updateCategory,
-      deleteRubricCategory: store.deleteCategory,
+      updateRubricCategory: storeActions.updateCategory,
+      deleteRubricCategory: storeActions.deleteCategory,
       addRubricCategory,
-      updateRubricComment: store.updateComment,
-      deleteRubricComment: store.deleteComment,
+      updateRubricComment: storeActions.updateComment,
+      deleteRubricComment: storeActions.deleteComment,
       addRubricComment,
-      onLinkedAlertCancel: () => store.setLinkedComments([]),
+      onLinkedAlertCancel: () => useRubricStore.getState().setLinkedComments([]),
       onLinkedCommentsResolve,
-      onLinkedConfirmCancel: () => store.setShowConfirmDialog(false),
+      onLinkedConfirmCancel: () => useRubricStore.getState().setShowConfirmDialog(false),
       onLinkedConfirmAccept,
       onBack,
       onUnload,
-      toggleLock: store.toggleLock,
-      changesMade: store.changesMade,
-      activateCommentExplorer: store.setActiveComment,
-      clearCommentExplorer: () => store.setActiveComment(undefined),
+      toggleLock: storeActions.toggleLock,
+      changesMade: storeActions.changesMade,
+      activateCommentExplorer: storeActions.setActiveComment,
+      clearCommentExplorer: () => useRubricStore.getState().setActiveComment(undefined),
       onCommentDragEnd,
     }),
     [
       loadAssignmentRubric,
       loadFeedbackScores,
       loadInstanceLists,
-      store,
+      storeActions,
       setNewRubric,
       replaceRubric,
       saveRubric,
@@ -779,32 +793,13 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
     ],
   );
 
-  // Derive state from store
+  // Derive state from store — storeState is already shallow-compared, so this
+  // useMemo only recalculates when the subscribed fields actually change.
   const state: IRubricManagerState = useMemo(
     () => ({
-      loadComplete: store.loadComplete,
-      changeLock: store.changeLock,
-      isSaving: store.isSaving,
-      errorObjects: store.errorObjects,
-      unsavedComments: store.unsavedComments,
-      deletedComments: store.deletedComments,
-      unsavedCategories: store.unsavedCategories,
-      deletedCategories: store.deletedCategories,
-      hasMoved: store.hasMoved,
-      activeComment: store.activeComment,
-      linkedComments: store.linkedComments,
-      resolutions: store.resolutions,
-      confirmedPropagation: store.confirmedPropagation,
-      showConfirmDialog: store.showConfirmDialog,
-      rubricCategories: store.rubricCategories,
-      rubricComments: store.rubricComments,
-      savedRubricCategories: store.savedRubricCategories,
-      savedRubricComments: store.savedRubricComments,
-      newObjectCounter: store.newObjectCounter,
-      feedbackScores: store.feedbackScores,
-      instanceLists: store.instanceLists,
+      ...storeState,
     }),
-    [store],
+    [storeState],
   );
 
   const params: IRubricManagerParams = useMemo(

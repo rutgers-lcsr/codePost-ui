@@ -137,6 +137,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                 title: 'Student',
                 dataIndex: 'student',
                 key: 'primary',
+                defaultSortOrder: 'ascend' as const,
                 sorter: (a: any, b: any) => a.key.localeCompare(b.key),
                 renderForSearch: (searchText: string) => {
                   return (_text: string, record: any, _index: number) => {

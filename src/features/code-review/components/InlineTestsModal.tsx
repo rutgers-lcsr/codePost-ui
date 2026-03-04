@@ -10,7 +10,7 @@ interface IInlineTestsModalProps {
   files: FileType[];
   assignment: AssignmentType;
   submission: AnonymousSubmissionType;
-  visible: boolean;
+  open: boolean;
   show: () => void;
   hide: () => void;
 }
@@ -25,7 +25,7 @@ const InlineTestsModal = (props: IInlineTestsModalProps) => {
 
   return (
     <Modal
-      open={props.visible}
+      open={props.open}
       styles={{ body: { padding: '0px' } }}
       closable={false}
       width={'90%'}
