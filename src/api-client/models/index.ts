@@ -491,6 +491,85 @@ export interface AssignmentDataSetUpdate {
   isTestResource?: boolean;
 }
 /**
+ * Serializer for assignment deadline data used by the deploy calendar.
+ * @export
+ * @interface AssignmentDeadline
+ */
+export interface AssignmentDeadline {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentDeadline
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  courseName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  coursePeriod: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentDeadline
+   */
+  courseId: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  uploadDueDate: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  lateUploadDeadline: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentDeadline
+   */
+  maxLateDays: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDeadline
+   */
+  allowLateUploads: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDeadline
+   */
+  allowStudentUpload: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentDeadline
+   */
+  regradeDeadline: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentDeadline
+   */
+  studentCount: number;
+}
+/**
  *
  * @export
  * @interface AssignmentDownloadResponse
@@ -1362,7 +1441,7 @@ export interface Course {
    */
   readonly webhooks: Array<number>;
   /**
-   * The date when the course will be automatically deleted.
+   *
    * @type {string}
    * @memberof Course
    */
@@ -3014,13 +3093,13 @@ export interface Organization {
    */
   emailDomain?: string | null;
   /**
-   * If True, new users in this organization are automatically activated and assume external authentication.
+   *
    * @type {boolean}
    * @memberof Organization
    */
   ssoEnabled?: boolean;
   /**
-   * The SSO provider (e.g. CAS, AZURE, OIDC, GOOGLE).
+   *
    * @type {string}
    * @memberof Organization
    */
@@ -3032,7 +3111,7 @@ export interface Organization {
    */
   ssoConfig?: any | null;
   /**
-   * If False, suppresses welcome/added-to-course emails for users in this organization.
+   *
    * @type {boolean}
    * @memberof Organization
    */
@@ -3873,7 +3952,7 @@ export interface PatchedCourse {
    */
   readonly webhooks?: Array<number>;
   /**
-   * The date when the course will be automatically deleted.
+   *
    * @type {string}
    * @memberof PatchedCourse
    */
@@ -3909,6 +3988,79 @@ export interface PatchedCourse {
    */
   cloneFrom?: number;
 }
+/**
+ * Serializer for course AI configuration. Admin-only access.
+ * @export
+ * @interface PatchedCourseAISettings
+ */
+export interface PatchedCourseAISettings {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseAISettings
+   */
+  aiProvider?: PatchedCourseAISettingsAiProviderEnum | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseAISettings
+   */
+  aiApiKey?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseAISettings
+   */
+  aiBaseUrl?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseAISettings
+   */
+  aiModel?: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  aiDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  aiCommentsDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly aiEnabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly aiCommentsEnabled?: boolean;
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum PatchedCourseAISettingsAiProviderEnum {
+  Gemini = 'gemini',
+  Openai = 'openai',
+  Ollama = 'ollama',
+  Custom = 'custom',
+}
+
 /**
  * Serializer for CourseFile objects.
  * These are files that belong to courses (syllabi, resources, etc.).
@@ -4354,13 +4506,13 @@ export interface PatchedOrganization {
    */
   emailDomain?: string | null;
   /**
-   * If True, new users in this organization are automatically activated and assume external authentication.
+   *
    * @type {boolean}
    * @memberof PatchedOrganization
    */
   ssoEnabled?: boolean;
   /**
-   * The SSO provider (e.g. CAS, AZURE, OIDC, GOOGLE).
+   *
    * @type {string}
    * @memberof PatchedOrganization
    */
@@ -4372,7 +4524,7 @@ export interface PatchedOrganization {
    */
   ssoConfig?: any | null;
   /**
-   * If False, suppresses welcome/added-to-course emails for users in this organization.
+   *
    * @type {boolean}
    * @memberof PatchedOrganization
    */

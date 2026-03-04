@@ -16,7 +16,7 @@
 import * as runtime from '../runtime';
 import type { TokenRefreshSliding } from '../models/index';
 
-export interface RefreshCreateRequest {
+export interface CreateRequest {
   tokenRefreshSliding: TokenRefreshSliding;
 }
 
@@ -27,14 +27,14 @@ export class TokenRefreshApi extends runtime.BaseAPI {
   /**
    * Takes a sliding JSON web token and returns a new, refreshed version if the token\'s refresh period has not expired.
    */
-  async refreshCreateRaw(
-    requestParameters: RefreshCreateRequest,
+  async createRaw(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<runtime.ApiResponse<TokenRefreshSliding>> {
     if (requestParameters['tokenRefreshSliding'] == null) {
       throw new runtime.RequiredError(
         'tokenRefreshSliding',
-        'Required parameter "tokenRefreshSliding" was null or undefined when calling refreshCreate().',
+        'Required parameter "tokenRefreshSliding" was null or undefined when calling create().',
       );
     }
 
@@ -63,11 +63,11 @@ export class TokenRefreshApi extends runtime.BaseAPI {
   /**
    * Takes a sliding JSON web token and returns a new, refreshed version if the token\'s refresh period has not expired.
    */
-  async refreshCreate(
-    requestParameters: RefreshCreateRequest,
+  async create(
+    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<TokenRefreshSliding> {
-    const response = await this.refreshCreateRaw(requestParameters, initOverrides);
+    const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }
 }

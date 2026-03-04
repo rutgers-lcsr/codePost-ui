@@ -105,7 +105,7 @@ example().catch(console.error);
 
 ## aiSettingsPartialUpdate
 
-> CourseAISettings aiSettingsPartialUpdate(id, patchedCourse)
+> CourseAISettings aiSettingsPartialUpdate(id, patchedCourseAISettings)
 
 get: Get AI configuration for the course. patch: Update AI configuration for the course. Admin-only.
 
@@ -136,8 +136,8 @@ async function example() {
   const body = {
     // number | A unique integer value identifying this course.
     id: 56,
-    // PatchedCourse (optional)
-    patchedCourse: ...,
+    // PatchedCourseAISettings (optional)
+    patchedCourseAISettings: ...,
   } satisfies AiSettingsPartialUpdateRequest;
 
   try {
@@ -154,10 +154,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name              | Type                              | Description                                     | Notes                     |
-| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
-| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
+| Name                        | Type                                                  | Description                                     | Notes                     |
+| --------------------------- | ----------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                      | `number`                                              | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourseAISettings** | [PatchedCourseAISettings](PatchedCourseAISettings.md) |                                                 | [Optional]                |
 
 ### Return type
 

@@ -46,6 +46,7 @@ Assignment Serializer from which all other Assignment Serializer subclasses inhe
 | `testCategories`                   | Array&lt;number&gt; |
 | `showFrequentlyUsedRubricComments` | boolean             |
 | `aiSystemPrompt`                   | string              |
+| `runFilesOnSubmit`                 | boolean             |
 | `runTestsOnSubmit`                 | boolean             |
 | `testsAffectGrade`                 | boolean             |
 

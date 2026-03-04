@@ -369,8 +369,8 @@ export class AutograderApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/autograder/environments/{environment_id}/cleanup/`;
-    urlPath = urlPath.replace(`{${'environment_id'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
+    let urlPath = `/autograder/environments/{environmentId}/cleanup/`;
+    urlPath = urlPath.replace(`{${'environmentId'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
 
     const response = await this.request(
       {
@@ -437,8 +437,8 @@ export class AutograderApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/autograder/environments/{environment_id}/convert-to-manual/`;
-    urlPath = urlPath.replace(`{${'environment_id'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
+    let urlPath = `/autograder/environments/{environmentId}/convert-to-manual/`;
+    urlPath = urlPath.replace(`{${'environmentId'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
 
     const response = await this.request(
       {
@@ -1028,8 +1028,8 @@ export class AutograderApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/autograder/environments/{environment_id}/rollback/`;
-    urlPath = urlPath.replace(`{${'environment_id'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
+    let urlPath = `/autograder/environments/{environmentId}/rollback/`;
+    urlPath = urlPath.replace(`{${'environmentId'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
 
     const response = await this.request(
       {
@@ -1125,7 +1125,7 @@ export class AutograderApi extends runtime.BaseAPI {
   }
 
   /**
-   * list: Return a list of all the testFiles.
+   * Run tests for a submission using the modern TestService architecture. Dispatches run_test_task which calls TestService.run_suite().
    */
   async environmentsRunPartialUpdateRaw(
     requestParameters: EnvironmentsRunPartialUpdateRequest,
@@ -1182,7 +1182,7 @@ export class AutograderApi extends runtime.BaseAPI {
   }
 
   /**
-   * list: Return a list of all the testFiles.
+   * Run tests for a submission using the modern TestService architecture. Dispatches run_test_task which calls TestService.run_suite().
    */
   async environmentsRunPartialUpdate(
     requestParameters: EnvironmentsRunPartialUpdateRequest,
@@ -1230,8 +1230,8 @@ export class AutograderApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/autograder/environments/{environment_id}/status/`;
-    urlPath = urlPath.replace(`{${'environment_id'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
+    let urlPath = `/autograder/environments/{environmentId}/status/`;
+    urlPath = urlPath.replace(`{${'environmentId'}}`, encodeURIComponent(String(requestParameters['environmentId'])));
 
     const response = await this.request(
       {

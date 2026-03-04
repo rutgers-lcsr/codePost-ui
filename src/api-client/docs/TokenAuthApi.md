@@ -2,13 +2,13 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                       | HTTP request          | Description |
-| -------------------------------------------- | --------------------- | ----------- |
-| [**authCreate**](TokenAuthApi.md#authcreate) | **POST** /token-auth/ |             |
+| Method                               | HTTP request          | Description |
+| ------------------------------------ | --------------------- | ----------- |
+| [**create**](TokenAuthApi.md#create) | **POST** /token-auth/ |             |
 
-## authCreate
+## create
 
-> JWT authCreate(jWT)
+> JWT create(jWT)
 
 Takes a set of user credentials and returns a sliding JSON web token to prove the authentication of those credentials.
 
@@ -19,7 +19,7 @@ import {
   Configuration,
   TokenAuthApi,
 } from '';
-import type { AuthCreateRequest } from '';
+import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
@@ -28,10 +28,10 @@ async function example() {
   const body = {
     // JWT
     jWT: ...,
-  } satisfies AuthCreateRequest;
+  } satisfies CreateRequest;
 
   try {
-    const data = await api.authCreate(body);
+    const data = await api.create(body);
     console.log(data);
   } catch (error) {
     console.error(error);

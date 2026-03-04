@@ -279,7 +279,7 @@ Firefox:
       }
 
       tokenRefreshApi
-        .refreshCreate({ tokenRefreshSliding: { token: existingToken } })
+        .create({ tokenRefreshSliding: { token: existingToken } })
         .then((json: { token: string }) => {
           // If token changed while this request was in-flight (e.g., loginAs),
           // ignore this stale refresh response to avoid switching identities back.
@@ -336,7 +336,7 @@ Firefox:
     (username: string, password: string, shouldRedirect: boolean) => {
       setError('');
       return tokenAuthApi
-        .authCreateRaw({ jWT: { username, password } })
+        .createRaw({ jWT: { username, password } })
         .then((response) => response.raw.json())
         .then((json: { token: string; user: unknown }) => {
           const jwtToken = json.token;

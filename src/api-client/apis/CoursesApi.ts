@@ -23,6 +23,7 @@ import type {
   CourseStudentCaptions,
   PaginatedSectionList,
   PatchedCourse,
+  PatchedCourseAISettings,
   PatchedCourseRosterMap,
   PatchedCourseStudentCaptions,
 } from '../models/index';
@@ -37,10 +38,7 @@ export interface AddToRosterPartialUpdateRequest {
 
 export interface AiSettingsPartialUpdateRequest {
   id: number;
-  patchedCourse?: Omit<
-    PatchedCourse,
-    'id' | 'assignments' | 'sections' | 'inviteCode' | 'webhooks' | 'studentCount' | 'isRubricEditor'
-  >;
+  patchedCourseAISettings?: Omit<PatchedCourseAISettings, 'id' | 'aiEnabled' | 'aiCommentsEnabled'>;
 }
 
 export interface AiSettingsRetrieveRequest {
@@ -271,7 +269,7 @@ export class CoursesApi extends runtime.BaseAPI {
         method: 'PATCH',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['patchedCourse'],
+        body: requestParameters['patchedCourseAISettings'],
       },
       initOverrides,
     );

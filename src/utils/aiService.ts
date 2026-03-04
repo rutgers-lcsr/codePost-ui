@@ -1,8 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { commentsApi, coursesApi } from '../api-client/clients';
-import type { CourseAISettings, PatchedCourse } from '../api-client';
+import type { CourseAISettings, PatchedCourseAISettings } from '../api-client';
+import { PatchedCourseAISettingsAiProviderEnum } from '../api-client/models';
 
-export type AIProvider = 'gemini' | 'openai' | 'ollama' | 'custom';
+export type AIProvider = PatchedCourseAISettingsAiProviderEnum;
 
 export interface GenerateCommentRequest {
   file_id: number;
@@ -33,18 +34,11 @@ export async function getCourseAISettings(courseId: number): Promise<CourseAISet
 
 export async function updateCourseAISettings(
   courseId: number,
-  settings: {
-    aiProvider?: AIProvider | null;
-    aiApiKey?: string;
-    aiBaseUrl?: string | null;
-    aiModel?: string | null;
-    aiDisabled?: boolean;
-    aiCommentsDisabled?: boolean;
-  },
+  settings: Omit<PatchedCourseAISettings, 'id' | 'aiEnabled' | 'aiCommentsEnabled'>,
 ): Promise<CourseAISettings> {
   return await coursesApi.aiSettingsPartialUpdate({
     id: courseId,
-    patchedCourse: settings as unknown as PatchedCourse,
+    patchedCourseAISettings: settings,
   });
 }
 
@@ -65,15 +59,15 @@ export async function generateComment(params: GenerateCommentRequest): Promise<s
 }
 
 export const AI_PROVIDERS: { value: AIProvider; label: string }[] = [
-  { value: 'gemini', label: 'Google Gemini' },
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'ollama', label: 'Ollama (Self-hosted)' },
-  { value: 'custom', label: 'Custom Provider' },
+  { value: PatchedCourseAISettingsAiProviderEnum.Gemini, label: 'Google Gemini' },
+  { value: PatchedCourseAISettingsAiProviderEnum.Openai, label: 'OpenAI' },
+  { value: PatchedCourseAISettingsAiProviderEnum.Ollama, label: 'Ollama (Self-hosted)' },
+  { value: PatchedCourseAISettingsAiProviderEnum.Custom, label: 'Custom Provider' },
 ];
 
 export const DEFAULT_MODELS: Record<AIProvider, string> = {
-  gemini: 'gemini-2.5-flash',
-  openai: 'gpt-4o-mini',
-  ollama: 'llama3.2',
-  custom: 'default',
+  [PatchedCourseAISettingsAiProviderEnum.Gemini]: 'gemini-2.5-flash',
+  [PatchedCourseAISettingsAiProviderEnum.Openai]: 'gpt-4o-mini',
+  [PatchedCourseAISettingsAiProviderEnum.Ollama]: 'llama3.2',
+  [PatchedCourseAISettingsAiProviderEnum.Custom]: 'default',
 };
