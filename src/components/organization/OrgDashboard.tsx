@@ -166,8 +166,8 @@ const OrgDashboard: React.FC<IProps> = (props) => {
         </nav>
       </Sider>
 
-      <Layout style={{ marginLeft: 200, minHeight: '100vh' }}>
-        <Content role="main" style={{ margin: '24px 16px 0', overflow: 'initial' }}>
+      <Layout style={{ marginLeft: 200, height: '100vh' }}>
+        <Content role="main" style={{ padding: '24px 16px', overflowY: 'auto' }}>
           <Routes>
             <Route
               path="/"
