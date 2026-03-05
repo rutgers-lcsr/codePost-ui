@@ -11,12 +11,15 @@
  */
 
 import React from 'react';
-import { Alert, Card, Flex, Input, message, Select, Space, Switch, Tag, Transfer, Typography } from 'antd';
+import { Alert, Card, Flex, Input, message, Select, Space, Spin, Switch, Tag, Transfer, Typography } from 'antd';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
 import CPButton from '../core/CPButton';
+import TokenRateEditor from '../core/TokenRateEditor';
+import type { CustomTokenRates, DefaultTokenRates } from '../core/TokenRateEditor';
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../utils/aiService';
 import type { AIProvider } from '../../utils/aiService';
 import { AiCoursePolicyEnum, PatchedOrganizationAISettingsUpdateAiProviderEnum } from '../../api-client';
+import type { AIModel } from '../../api-client';
 import { AIUsageService } from '../../services/aiUsage';
 import type { Course } from '../../api-client';
 
@@ -42,10 +45,18 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
   const [coursePolicy, setCoursePolicy] = React.useState<AiCoursePolicyEnum>(AiCoursePolicyEnum.None);
   const [enabledCourseIds, setEnabledCourseIds] = React.useState<number[]>([]);
+  const [hasApiKey, setHasApiKey] = React.useState(false);
+  const [apiKeyHint, setApiKeyHint] = React.useState<string | null>(null);
+  const [customTokenRates, setCustomTokenRates] = React.useState<CustomTokenRates>({});
+  const [defaultTokenRates, setDefaultTokenRates] = React.useState<DefaultTokenRates>({});
+
+  // Model dropdown
+  const [modelOptions, setModelOptions] = React.useState<{ label: string; value: string }[]>([]);
+  const [loadingModels, setLoadingModels] = React.useState(false);
 
   // Derived
   const isConfigured = !!provider;
-  const showBaseUrl = provider === 'ollama' || provider === 'custom';
+  const showBaseUrl = provider === 'ollama' || provider === 'portkey' || provider === 'custom';
 
   React.useEffect(() => {
     const load = async () => {
@@ -58,6 +69,10 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         setAiCommentsDisabled(s.aiCommentsDisabled ?? false);
         setCoursePolicy(s.aiCoursePolicy ?? AiCoursePolicyEnum.None);
         setEnabledCourseIds(s.aiEnabledCourseIds ?? []);
+        setHasApiKey(s.hasApiKey ?? false);
+        setApiKeyHint(s.apiKeyHint ?? null);
+        setCustomTokenRates((s.aiTokenRates as CustomTokenRates) ?? {});
+        setDefaultTokenRates((s.defaultTokenRates as DefaultTokenRates) ?? {});
       } catch {
         message.error('Failed to load organization AI settings');
       } finally {
@@ -66,6 +81,53 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
     };
     load();
   }, [orgId]);
+
+  // Fetch curated + live models when provider changes
+  React.useEffect(() => {
+    if (!provider) {
+      setModelOptions([]);
+      return;
+    }
+    setLoadingModels(true);
+
+    const buildOptions = (curated: AIModel[], live: AIModel[]) => {
+      const opts: { label: string; value: string }[] = [];
+      const seen = new Set<string>();
+      for (const m of curated) {
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          opts.push({ label: `${m.name}${m.isDefault ? ' ★' : ''}`, value: m.id });
+        }
+      }
+      for (const m of live) {
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          opts.push({ label: m.name, value: m.id });
+        }
+      }
+      return opts;
+    };
+
+    // Fetch curated list first, then try live provider query in parallel
+    const curatedPromise = AIUsageService.getModels(provider)
+      .then((res) => res.providers?.[0]?.models ?? [])
+      .catch(() => [] as AIModel[]);
+
+    const livePromise = AIUsageService.getOrgModels(orgId)
+      .then((res) => {
+        const provData = res.providers?.[0];
+        if (provData?.liveError) {
+          console.warn('Live model fetch warning:', provData.liveError);
+        }
+        return provData?.liveModels ?? [];
+      })
+      .catch(() => [] as AIModel[]);
+
+    Promise.all([curatedPromise, livePromise]).then(([curated, live]) => {
+      setModelOptions(buildOptions(curated, live));
+      setLoadingModels(false);
+    });
+  }, [provider, orgId]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -78,6 +140,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         aiCommentsDisabled,
         aiCoursePolicy: coursePolicy,
         aiEnabledCourseIds: coursePolicy === AiCoursePolicyEnum.Selected ? enabledCourseIds : [],
+        aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
         ...(apiKey ? { aiApiKey: apiKey } : {}),
       });
       setApiKey('');
@@ -153,7 +216,12 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>
-                <LockOutlined /> API Key
+                <LockOutlined /> API Key{' '}
+                {(provider === 'ollama' || provider === 'portkey') && (
+                  <Text type="secondary" style={{ fontWeight: 'normal', fontSize: 12 }}>
+                    (Optional)
+                  </Text>
+                )}
               </Text>
               <Input.Password
                 value={apiKey}
@@ -161,9 +229,23 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                   setApiKey(e.target.value);
                   mark();
                 }}
-                placeholder={isConfigured ? '••••••••  (key saved — enter new key to update)' : 'Enter API key'}
+                placeholder={hasApiKey ? '••••••••  (key saved — enter new key to update)' : 'Enter API key'}
                 style={{ maxWidth: 420 }}
               />
+              {hasApiKey && apiKeyHint && (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Current key:{' '}
+                  <Text code style={{ fontSize: 12 }}>
+                    {apiKeyHint}
+                  </Text>
+                </Text>
+              )}
+              {provider === 'portkey' && (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  For self-hosted Portkey gateway, the API key is optional. If provided, it is sent as the
+                  x-portkey-api-key header.
+                </Text>
+              )}
             </Flex>
           )}
 
@@ -177,7 +259,13 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                   setBaseUrl(e.target.value);
                   mark();
                 }}
-                placeholder={provider === 'ollama' ? 'http://localhost:11434' : 'https://api.example.com'}
+                placeholder={
+                  provider === 'ollama'
+                    ? 'http://localhost:11434'
+                    : provider === 'portkey'
+                      ? 'http://portkey-gateway.example.com:8787'
+                      : 'https://api.example.com'
+                }
                 style={{ maxWidth: 420 }}
               />
             </Flex>
@@ -187,19 +275,40 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
           {provider && (
             <Flex vertical gap={4}>
               <Text strong>Model</Text>
-              <Input
-                value={model}
-                onChange={(e) => {
-                  setModel(e.target.value);
+              <Select
+                showSearch
+                value={model || undefined}
+                onChange={(value) => {
+                  setModel(value);
                   mark();
                 }}
-                placeholder={DEFAULT_MODELS[provider] || 'default'}
-                style={{ maxWidth: 300 }}
+                placeholder={DEFAULT_MODELS[provider] || 'Select a model'}
+                style={{ maxWidth: 400 }}
+                loading={loadingModels}
+                notFoundContent={loadingModels ? <Spin size="small" /> : 'No models found'}
+                options={modelOptions}
+                filterOption={(input, option) =>
+                  !!option &&
+                  (option.value.toLowerCase().includes(input.toLowerCase()) ||
+                    (typeof option.label === 'string' && option.label.toLowerCase().includes(input.toLowerCase())))
+                }
               />
               <Text type="secondary" style={{ fontSize: 12 }}>
                 Default: {DEFAULT_MODELS[provider]}
               </Text>
             </Flex>
+          )}
+
+          {/* ── Token Rate Overrides ── */}
+          {isConfigured && (
+            <TokenRateEditor
+              defaultRates={defaultTokenRates}
+              customRates={customTokenRates}
+              onChange={(rates) => {
+                setCustomTokenRates(rates);
+                mark();
+              }}
+            />
           )}
 
           {/* ── Toggles (only when configured) ── */}

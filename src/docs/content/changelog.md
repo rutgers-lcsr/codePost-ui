@@ -34,6 +34,26 @@ AI usage is now tracked automatically for every AI call (comment generation and 
 
 Each dashboard shows total requests, token counts, estimated costs, time-series charts, and breakdowns by assignment, course, or organization. Date range and granularity (hourly, daily, monthly) are configurable.
 
+### New: Portkey Provider Support
+
+Added **Portkey** as a first-class AI provider option. Portkey is an AI gateway that routes requests to multiple LLM providers. Select it from the provider dropdown, set your gateway URL, and optionally provide an API key.
+
+### New: Model Dropdown with Live Provider Query
+
+The model selector is now a **searchable dropdown** that automatically populates with curated models for the selected provider. When credentials are configured, it also fetches available models directly from your provider's API.
+
+### New: API Key Hint
+
+After saving an API key, a **masked hint** (e.g., `sk-…abc1`) is displayed below the key field so admins can verify which key is active without exposing it.
+
+### New: Custom Token Rate Overrides
+
+Organization and course admins can now **override per-model token cost rates** used for usage estimates. Useful for self-hosted models, volume pricing, or unlisted models. Expand **Custom Token Rates** in AI settings to view and edit rates.
+
+### New: Per-Model Usage Breakdown
+
+Usage dashboards now include a **Usage by Model** table showing token counts, costs, and request counts grouped by AI model. The org-level dashboard also shows course period for disambiguating same-named courses.
+
 See the [AI Settings & Usage Guide](/docs/ai-guide) for full details.
 
 ## v3.1.1 — Quality of Life Improvements & Bug Fixes

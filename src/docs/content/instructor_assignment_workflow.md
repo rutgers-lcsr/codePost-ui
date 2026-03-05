@@ -90,10 +90,10 @@ The AI tab controls AI-assisted comment generation for this assignment. AI must 
 Before the AI tab is useful, an admin must configure AI on the course:
 
 1. Navigate to **Course Settings > AI Features**.
-2. Choose a **Provider**: Google Gemini, OpenAI, Ollama (self-hosted), or Custom.
-3. Enter an **API Key** (stored encrypted — never shown after saving).
-4. Optionally set a **Model** (e.g., `gemini-2.5-flash`, `gpt-4o-mini`). Leaving this blank uses the provider's default.
-5. For Ollama or Custom providers, enter a **Base URL**.
+2. Choose a **Provider**: Google Gemini, OpenAI, Ollama (self-hosted), Portkey (AI gateway), or Custom.
+3. Enter an **API Key** (stored encrypted — a masked hint is shown after saving so you can verify which key is active).
+4. Select a **Model** from the dropdown — it auto-populates with curated and live models from your provider. You can also search or type a custom model name.
+5. For Ollama, Portkey, or Custom providers, enter a **Base URL**.
 6. Toggle **Global AI** on to enable all AI features (comment generation + test generation).
 7. Optionally toggle **Comment Generation** separately — you can keep test generation on while disabling comment generation in the Code Console.
 

@@ -23,6 +23,7 @@ import {
   ThunderboltOutlined,
   ApiOutlined,
   LineChartOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import { AIUsageChart, formatNumber, formatCost } from '../core/AIUsageChart';
@@ -82,6 +83,56 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
   const breakdownColumns = [
     {
       title: breakdownLabel,
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
+    {
+      title: 'Requests',
+      dataIndex: 'requestCount',
+      key: 'requestCount',
+      align: 'right' as const,
+      render: (v: number) => formatNumber(v),
+      sorter: (a: any, b: any) => a.requestCount - b.requestCount,
+    },
+    {
+      title: 'Input Tokens',
+      dataIndex: 'inputTokens',
+      key: 'inputTokens',
+      align: 'right' as const,
+      render: (v: number) => formatNumber(v),
+      sorter: (a: any, b: any) => a.inputTokens - b.inputTokens,
+    },
+    {
+      title: 'Output Tokens',
+      dataIndex: 'outputTokens',
+      key: 'outputTokens',
+      align: 'right' as const,
+      render: (v: number) => formatNumber(v),
+      sorter: (a: any, b: any) => a.outputTokens - b.outputTokens,
+    },
+    {
+      title: 'Total Tokens',
+      dataIndex: 'totalTokens',
+      key: 'totalTokens',
+      align: 'right' as const,
+      render: (v: number) => formatNumber(v),
+      sorter: (a: any, b: any) => a.totalTokens - b.totalTokens,
+      defaultSortOrder: 'descend' as const,
+    },
+    {
+      title: 'Est. Cost',
+      dataIndex: 'estimatedCost',
+      key: 'estimatedCost',
+      align: 'right' as const,
+      render: (v: string) => formatCost(v),
+      sorter: (a: any, b: any) => parseFloat(a.estimatedCost) - parseFloat(b.estimatedCost),
+    },
+  ];
+
+  const modelBreakdownColumns = [
+    {
+      title: 'Model',
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => <Text strong>{name}</Text>,
@@ -264,6 +315,27 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
               <Table
                 dataSource={data.breakdown.map((item, idx) => ({ ...item, key: item.id ?? idx }))}
                 columns={breakdownColumns}
+                pagination={false}
+                size="small"
+                scroll={{ x: 600 }}
+              />
+            </Card>
+          )}
+
+          {/* Model Breakdown Table */}
+          {data.modelBreakdown && data.modelBreakdown.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <RobotOutlined />
+                  <span>Usage by Model</span>
+                </Space>
+              }
+              style={{ marginTop: 24 }}
+            >
+              <Table
+                dataSource={data.modelBreakdown.map((item, idx) => ({ ...item, key: item.name ?? idx }))}
+                columns={modelBreakdownColumns}
                 pagination={false}
                 size="small"
                 scroll={{ x: 600 }}

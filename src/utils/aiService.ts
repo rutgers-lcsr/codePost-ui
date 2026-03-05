@@ -62,6 +62,7 @@ export const AI_PROVIDERS: { value: AIProvider; label: string }[] = [
   { value: PatchedCourseAISettingsAiProviderEnum.Gemini, label: 'Google Gemini' },
   { value: PatchedCourseAISettingsAiProviderEnum.Openai, label: 'OpenAI' },
   { value: PatchedCourseAISettingsAiProviderEnum.Ollama, label: 'Ollama (Self-hosted)' },
+  { value: PatchedCourseAISettingsAiProviderEnum.Portkey, label: 'Portkey (Self-hosted)' },
   { value: PatchedCourseAISettingsAiProviderEnum.Custom, label: 'Custom Provider' },
 ];
 
@@ -69,5 +70,6 @@ export const DEFAULT_MODELS: Record<AIProvider, string> = {
   [PatchedCourseAISettingsAiProviderEnum.Gemini]: 'gemini-2.5-flash',
   [PatchedCourseAISettingsAiProviderEnum.Openai]: 'gpt-4o-mini',
   [PatchedCourseAISettingsAiProviderEnum.Ollama]: 'llama3.2',
+  [PatchedCourseAISettingsAiProviderEnum.Portkey]: 'default',
   [PatchedCourseAISettingsAiProviderEnum.Custom]: 'default',
 };

@@ -5,6 +5,7 @@ All URIs are relative to _http://localhost_
 | Method                                                                                   | HTTP request                                  | Description |
 | ---------------------------------------------------------------------------------------- | --------------------------------------------- | ----------- |
 | [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate)                   | **PATCH** /courses/{id}/addToRoster/          |             |
+| [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve)                                   | **GET** /courses/{id}/aiModels/               |             |
 | [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
 | [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
 | [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
@@ -94,6 +95,77 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiModelsRetrieve
+
+> AIProviderModelsList aiModelsRetrieve(id)
+
+GET: Return curated AI models for the course\&#39;s effective provider. Also queries the provider\&#39;s API for live model listings using the course\&#39;s own credentials or inherited org credentials. Only accessible by course admins.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { AiModelsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies AiModelsRetrieveRequest;
+
+  try {
+    const data = await api.aiModelsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**AIProviderModelsList**](AIProviderModelsList.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

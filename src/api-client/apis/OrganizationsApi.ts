@@ -15,12 +15,17 @@
 
 import * as runtime from '../runtime';
 import type {
+  AIProviderModelsList,
   AIUsageSummary,
   Organization,
   OrganizationAISettings,
   PatchedOrganization,
   PatchedOrganizationAISettingsUpdate,
 } from '../models/index';
+
+export interface AiModelsRetrieveRequest {
+  id: number;
+}
 
 export interface AiSettingsPartialUpdateRequest {
   id: number;
@@ -97,6 +102,71 @@ export interface VerifyUserCreateRequest {
  *
  */
 export class OrganizationsApi extends runtime.BaseAPI {
+  /**
+   * GET: Return curated AI models for the org\'s configured provider. Also queries the provider\'s API for live model listings using the org\'s stored credentials. Only accessible by Org Staff or superuser.
+   */
+  async aiModelsRetrieveRaw(
+    requestParameters: AiModelsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIProviderModelsList>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiModelsRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/aiModels/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET: Return curated AI models for the org\'s configured provider. Also queries the provider\'s API for live model listings using the org\'s stored credentials. Only accessible by Org Staff or superuser.
+   */
+  async aiModelsRetrieve(
+    requestParameters: AiModelsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIProviderModelsList> {
+    const response = await this.aiModelsRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
   /**
    * GET: Return the organization\'s AI configuration. PATCH: Update the organization\'s AI configuration. Only accessible by Org Staff or superuser.
    */

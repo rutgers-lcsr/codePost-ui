@@ -2,6 +2,7 @@
 import { organizationsApi, coursesApi, systemApi } from '../api-client/clients';
 import type {
   AIUsageSummary,
+  AIProviderModelsList,
   OrganizationAISettings,
   PatchedOrganizationAISettingsUpdate,
   CourseAISettings,
@@ -72,4 +73,18 @@ export class AIUsageService {
       endDate: params.endDate,
       organizationId: params.organizationId,
     });
+
+  // --- AI Models ---
+
+  /** Get the curated model list for all providers (or a specific one). */
+  public static getModels = (provider?: string): Promise<AIProviderModelsList> =>
+    systemApi.aiModelsRetrieve({ provider: provider as any });
+
+  /** Get models for the org's configured provider, including live-queried models. */
+  public static getOrgModels = (orgId: number): Promise<AIProviderModelsList> =>
+    organizationsApi.aiModelsRetrieve({ id: orgId });
+
+  /** Get models for the course's effective provider, including live-queried models. */
+  public static getCourseModels = (courseId: number): Promise<AIProviderModelsList> =>
+    coursesApi.aiModelsRetrieve({ id: courseId });
 }

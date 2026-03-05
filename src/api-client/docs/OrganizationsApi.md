@@ -4,6 +4,7 @@ All URIs are relative to _http://localhost_
 
 | Method                                                                     | HTTP request                                      | Description |
 | -------------------------------------------------------------------------- | ------------------------------------------------- | ----------- |
+| [**aiModelsRetrieve**](OrganizationsApi.md#aimodelsretrieve)               | **GET** /organizations/{id}/aiModels/             |             |
 | [**aiSettingsPartialUpdate**](OrganizationsApi.md#aisettingspartialupdate) | **PATCH** /organizations/{id}/aiSettings/         |             |
 | [**aiSettingsRetrieve**](OrganizationsApi.md#aisettingsretrieve)           | **GET** /organizations/{id}/aiSettings/           |             |
 | [**aiUsageRetrieve**](OrganizationsApi.md#aiusageretrieve)                 | **GET** /organizations/{id}/aiUsage/              |             |
@@ -20,6 +21,77 @@ All URIs are relative to _http://localhost_
 | [**update**](OrganizationsApi.md#update)                                   | **PUT** /organizations/{id}/                      |             |
 | [**usersRetrieve**](OrganizationsApi.md#usersretrieve)                     | **GET** /organizations/{id}/users/                |             |
 | [**verifyUserCreate**](OrganizationsApi.md#verifyusercreate)               | **POST** /organizations/{id}/verify_user/         |             |
+
+## aiModelsRetrieve
+
+> AIProviderModelsList aiModelsRetrieve(id)
+
+GET: Return curated AI models for the org\&#39;s configured provider. Also queries the provider\&#39;s API for live model listings using the org\&#39;s stored credentials. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import { Configuration, OrganizationsApi } from '';
+import type { AiModelsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+  } satisfies AiModelsRetrieveRequest;
+
+  try {
+    const data = await api.aiModelsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                           | Notes                     |
+| ------ | -------- | ----------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+
+### Return type
+
+[**AIProviderModelsList**](AIProviderModelsList.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 ## aiSettingsPartialUpdate
 
