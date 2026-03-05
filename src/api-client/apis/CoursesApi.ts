@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AIProviderModelsList,
   AIUsageSummary,
   Course,
   CourseAISettings,
@@ -37,9 +38,16 @@ export interface AddToRosterPartialUpdateRequest {
   >;
 }
 
+export interface AiModelsRetrieveRequest {
+  id: number;
+}
+
 export interface AiSettingsPartialUpdateRequest {
   id: number;
-  patchedCourseAISettings?: Omit<PatchedCourseAISettings, 'id' | 'aiEnabled' | 'aiCommentsEnabled' | 'orgAiAvailable'>;
+  patchedCourseAISettings?: Omit<
+    PatchedCourseAISettings,
+    'id' | 'aiEnabled' | 'aiCommentsEnabled' | 'orgAiAvailable' | 'hasApiKey' | 'apiKeyHint' | 'defaultTokenRates'
+  >;
 }
 
 export interface AiSettingsRetrieveRequest {
@@ -225,6 +233,71 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CourseRoster> {
     const response = await this.addToRosterPartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * GET: Return curated AI models for the course\'s effective provider. Also queries the provider\'s API for live model listings using the course\'s own credentials or inherited org credentials. Only accessible by course admins.
+   */
+  async aiModelsRetrieveRaw(
+    requestParameters: AiModelsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIProviderModelsList>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiModelsRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/courses/{id}/aiModels/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET: Return curated AI models for the course\'s effective provider. Also queries the provider\'s API for live model listings using the course\'s own credentials or inherited org credentials. Only accessible by course admins.
+   */
+  async aiModelsRetrieve(
+    requestParameters: AiModelsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIProviderModelsList> {
+    const response = await this.aiModelsRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

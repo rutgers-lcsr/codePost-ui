@@ -32,6 +32,9 @@ apis/TokenVerifyApi.ts
 apis/UsersApi.ts
 apis/WebhooksApi.ts
 apis/index.ts
+docs/AIModel.md
+docs/AIProviderModels.md
+docs/AIProviderModelsList.md
 docs/AIUsageBreakdown.md
 docs/AIUsageBucket.md
 docs/AIUsageSummary.md

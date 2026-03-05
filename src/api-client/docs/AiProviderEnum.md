@@ -1,6 +1,6 @@
 # AiProviderEnum
 
-- `gemini` - Google Gemini _ `openai` - OpenAI _ `ollama` - Ollama (Self-hosted) \* `custom` - Custom Provider
+- `gemini` - Google Gemini _ `openai` - OpenAI _ `ollama` - Ollama (Self-hosted) _ `portkey` - Portkey (Self-hosted) _ `custom` - Custom Provider
 
 ## Properties
 

@@ -25,5 +25,10 @@ export default defineConfig({
         maxThreads: 1,
       },
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      exclude: ['src/api-client/**', 'node_modules/**', 'src/**/__tests__/**', 'src/**/*.test.{ts,tsx}'],
+    },
   },
 });

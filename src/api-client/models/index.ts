@@ -2,6 +2,75 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+ * A single AI model entry.
+ * @export
+ * @interface AIModel
+ */
+export interface AIModel {
+  /**
+   * Model identifier to pass to the provider API
+   * @type {string}
+   * @memberof AIModel
+   */
+  id: string;
+  /**
+   * Human-readable display name
+   * @type {string}
+   * @memberof AIModel
+   */
+  name: string;
+  /**
+   * Whether this is the default model for the provider
+   * @type {boolean}
+   * @memberof AIModel
+   */
+  isDefault?: boolean;
+}
+/**
+ * Models available for a single provider.
+ * @export
+ * @interface AIProviderModels
+ */
+export interface AIProviderModels {
+  /**
+   * Provider identifier (e.g. 'gemini', 'openai')
+   * @type {string}
+   * @memberof AIProviderModels
+   */
+  provider: string;
+  /**
+   * Curated list of known models for this provider
+   * @type {Array<AIModel>}
+   * @memberof AIProviderModels
+   */
+  models: Array<AIModel>;
+  /**
+   * Models fetched from the provider's API (only included when credentials are supplied)
+   * @type {Array<AIModel>}
+   * @memberof AIProviderModels
+   */
+  liveModels?: Array<AIModel>;
+  /**
+   * Error message if querying the provider failed
+   * @type {string}
+   * @memberof AIProviderModels
+   */
+  liveError?: string | null;
+}
+/**
+ * Response wrapper for the AI models endpoint.
+ * @export
+ * @interface AIProviderModelsList
+ */
+export interface AIProviderModelsList {
+  /**
+   * List of providers with their models
+   * @type {Array<AIProviderModels>}
+   * @memberof AIProviderModelsList
+   */
+  providers: Array<AIProviderModels>;
+}
+/**
  * Usage breakdown by a dimension (course, assignment, provider, model).
  * @export
  * @interface AIUsageBreakdown
@@ -142,6 +211,12 @@ export interface AIUsageSummary {
    */
   breakdown: Array<AIUsageBreakdown>;
   /**
+   * Usage breakdown by AI model
+   * @type {Array<AIUsageBreakdown>}
+   * @memberof AIUsageSummary
+   */
+  modelBreakdown?: Array<AIUsageBreakdown>;
+  /**
    *
    * @type {GranularityEnum}
    * @memberof AIUsageSummary
@@ -191,6 +266,7 @@ export enum AiCoursePolicyEnum {
  * * `gemini` - Google Gemini
  * * `openai` - OpenAI
  * * `ollama` - Ollama (Self-hosted)
+ * * `portkey` - Portkey (Self-hosted)
  * * `custom` - Custom Provider
  * @export
  * @enum {string}
@@ -199,6 +275,7 @@ export enum AiProviderEnum {
   Gemini = 'gemini',
   Openai = 'openai',
   Ollama = 'ollama',
+  Portkey = 'portkey',
   Custom = 'custom',
 }
 
@@ -1705,6 +1782,12 @@ export interface CourseAISettings {
    */
   aiUseOwnSettings?: boolean;
   /**
+   * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
+   * @type {any}
+   * @memberof CourseAISettings
+   */
+  aiTokenRates?: any | null;
+  /**
    *
    * @type {boolean}
    * @memberof CourseAISettings
@@ -1722,6 +1805,24 @@ export interface CourseAISettings {
    * @memberof CourseAISettings
    */
   readonly orgAiAvailable: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CourseAISettings
+   */
+  readonly hasApiKey: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAISettings
+   */
+  readonly apiKeyHint: string | null;
+  /**
+   *
+   * @type {{ [key: string]: { [key: string]: any | undefined; } | undefined; }}
+   * @memberof CourseAISettings
+   */
+  readonly defaultTokenRates: { [key: string]: { [key: string]: any | undefined } | undefined };
 }
 
 /**
@@ -1732,6 +1833,7 @@ export enum CourseAISettingsAiProviderEnum {
   Gemini = 'gemini',
   Openai = 'openai',
   Ollama = 'ollama',
+  Portkey = 'portkey',
   Custom = 'custom',
 }
 
@@ -3376,6 +3478,12 @@ export interface OrganizationAISettings {
    */
   readonly aiEnabledCourseIds: Array<number>;
   /**
+   * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
+   * @type {any}
+   * @memberof OrganizationAISettings
+   */
+  aiTokenRates?: any | null;
+  /**
    *
    * @type {boolean}
    * @memberof OrganizationAISettings
@@ -3387,6 +3495,24 @@ export interface OrganizationAISettings {
    * @memberof OrganizationAISettings
    */
   readonly aiCommentsEnabled: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  readonly hasApiKey: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof OrganizationAISettings
+   */
+  readonly apiKeyHint: string | null;
+  /**
+   *
+   * @type {{ [key: string]: { [key: string]: any | undefined; } | undefined; }}
+   * @memberof OrganizationAISettings
+   */
+  readonly defaultTokenRates: { [key: string]: { [key: string]: any | undefined } | undefined };
 }
 
 /**
@@ -3397,6 +3523,7 @@ export enum OrganizationAISettingsAiProviderEnum {
   Gemini = 'gemini',
   Openai = 'openai',
   Ollama = 'ollama',
+  Portkey = 'portkey',
   Custom = 'custom',
 }
 
@@ -4326,6 +4453,12 @@ export interface PatchedCourseAISettings {
    */
   aiUseOwnSettings?: boolean;
   /**
+   * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
+   * @type {any}
+   * @memberof PatchedCourseAISettings
+   */
+  aiTokenRates?: any | null;
+  /**
    *
    * @type {boolean}
    * @memberof PatchedCourseAISettings
@@ -4343,6 +4476,24 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   readonly orgAiAvailable?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly hasApiKey?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly apiKeyHint?: string | null;
+  /**
+   *
+   * @type {{ [key: string]: { [key: string]: any | undefined; } | undefined; }}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly defaultTokenRates?: { [key: string]: { [key: string]: any | undefined } | undefined };
 }
 
 /**
@@ -4353,6 +4504,7 @@ export enum PatchedCourseAISettingsAiProviderEnum {
   Gemini = 'gemini',
   Openai = 'openai',
   Ollama = 'ollama',
+  Portkey = 'portkey',
   Custom = 'custom',
 }
 
@@ -4879,6 +5031,12 @@ export interface PatchedOrganizationAISettingsUpdate {
    * @memberof PatchedOrganizationAISettingsUpdate
    */
   aiEnabledCourseIds?: Array<number>;
+  /**
+   * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
+   * @type {any}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiTokenRates?: any | null;
 }
 
 /**
@@ -4889,6 +5047,7 @@ export enum PatchedOrganizationAISettingsUpdateAiProviderEnum {
   Gemini = 'gemini',
   Openai = 'openai',
   Ollama = 'ollama',
+  Portkey = 'portkey',
   Custom = 'custom',
 }
 

@@ -5,6 +5,7 @@ All URIs are relative to _http://localhost_
 | Method                                                      | HTTP request              | Description |
 | ----------------------------------------------------------- | ------------------------- | ----------- |
 | [**activityRetrieve**](SystemApi.md#activityretrieve)       | **GET** /system/activity/ |             |
+| [**aiModelsRetrieve**](SystemApi.md#aimodelsretrieve)       | **GET** /system/aiModels/ |             |
 | [**aiUsageRetrieve**](SystemApi.md#aiusageretrieve)         | **GET** /system/aiUsage/  |             |
 | [**bannerPartialUpdate**](SystemApi.md#bannerpartialupdate) | **PATCH** /system/banner/ |             |
 | [**bannerRetrieve**](SystemApi.md#bannerretrieve)           | **GET** /system/banner/   |             |
@@ -76,6 +77,77 @@ example().catch(console.error);
 ### Return type
 
 [**SystemActivityResponse**](SystemActivityResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiModelsRetrieve
+
+> AIProviderModelsList aiModelsRetrieve(provider)
+
+GET: Return the curated list of AI models per provider. Optional query params: ?provider&#x3D;X to filter by provider. No credentials are required — this just returns the static list.
+
+### Example
+
+```ts
+import { Configuration, SystemApi } from '';
+import type { AiModelsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SystemApi(config);
+
+  const body = {
+    // 'custom' | 'gemini' | 'ollama' | 'openai' | 'portkey' | Filter to a single provider (optional)
+    provider: provider_example,
+  } satisfies AiModelsRetrieveRequest;
+
+  try {
+    const data = await api.aiModelsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name         | Type                                              | Description                 | Notes                                                                                |
+| ------------ | ------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------ |
+| **provider** | `custom`, `gemini`, `ollama`, `openai`, `portkey` | Filter to a single provider | [Optional] [Defaults to `undefined`] [Enum: custom, gemini, ollama, openai, portkey] |
+
+### Return type
+
+[**AIProviderModelsList**](AIProviderModelsList.md)
 
 ### Authorization
 

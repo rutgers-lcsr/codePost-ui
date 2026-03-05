@@ -1,0 +1,56 @@
+name: Perform Codepost UI Tests
+
+on:
+  push:
+    branches: [master, render]
+  pull_request:
+    branches: [master, render]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ESLint + Prettier)
+    runs-on: testing-codepost
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  typecheck:
+    name: Type Check (TypeScript)
+    runs-on: testing-codepost
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type checking
+        run: npx tsc --noEmit
+
+  test:
+    name: Tests (Vitest + coverage)
+    runs-on: testing-codepost
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npx vitest run --coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-coverage-report
+          path: coverage/
+          retention-days: 7

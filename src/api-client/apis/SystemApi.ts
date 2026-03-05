@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AIProviderModelsList,
   AIUsageSummary,
   MaintenanceBannerResponse,
   PatchedMaintenanceBanner,
@@ -29,6 +30,10 @@ export interface ActivityRetrieveRequest {
   pageSize?: number;
   search?: string;
   startDate?: string;
+}
+
+export interface AiModelsRetrieveRequest {
+  provider?: AiModelsRetrieveProviderEnum;
 }
 
 export interface AiUsageRetrieveRequest {
@@ -122,6 +127,67 @@ export class SystemApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<SystemActivityResponse> {
     const response = await this.activityRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * GET: Return the curated list of AI models per provider. Optional query params: ?provider=X to filter by provider. No credentials are required — this just returns the static list.
+   */
+  async aiModelsRetrieveRaw(
+    requestParameters: AiModelsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIProviderModelsList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters['provider'] != null) {
+      queryParameters['provider'] = requestParameters['provider'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/system/aiModels/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * GET: Return the curated list of AI models per provider. Optional query params: ?provider=X to filter by provider. No credentials are required — this just returns the static list.
+   */
+  async aiModelsRetrieve(
+    requestParameters: AiModelsRetrieveRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIProviderModelsList> {
+    const response = await this.aiModelsRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -363,6 +429,17 @@ export class SystemApi extends runtime.BaseAPI {
   }
 }
 
+/**
+ * @export
+ * @enum {string}
+ */
+export enum AiModelsRetrieveProviderEnum {
+  Custom = 'custom',
+  Gemini = 'gemini',
+  Ollama = 'ollama',
+  Openai = 'openai',
+  Portkey = 'portkey',
+}
 /**
  * @export
  * @enum {string}
