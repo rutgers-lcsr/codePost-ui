@@ -314,7 +314,6 @@ const AnnotationModule: React.FC<IProps> = ({ index = 0 }) => {
   const handleHoverComment = (idx: number | null) => {
     setHoveredComment(idx);
     if (idx !== null) {
-      const c = comments[idx];
       if (currentTab === 'Code') setHoveredLine(CODE_HIGHLIGHT_LINES[idx] ?? null);
       else if (currentTab === 'Jupyter') setHoveredLine(JUPYTER_HIGHLIGHT_LINES[idx] ?? null);
       else setHoveredLine(PDF_HIGHLIGHT_LINE);
