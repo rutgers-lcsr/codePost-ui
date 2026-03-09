@@ -14,14 +14,14 @@ const LandingAnnotationPanel = () => {
       text={
         <div>
           <div style={{ paddingBottom: 15 }}>
-            Use codePost to annotate{' '}
+            Annotate{' '}
             <span
               style={{ color: index === 0 ? colors.green8 : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 0)}
             >
               code
             </span>{' '}
-            with easy-to-read comments. Write custom comments, or apply a standardized rubric. We support commenting on{' '}
+            with inline comments and shared rubrics.{' '}
             <span
               style={{ color: index === 1 ? colors.green8 : '', fontWeight: 600, cursor: 'pointer' }}
               onClick={setIndex.bind({}, 1)}
@@ -35,7 +35,10 @@ const LandingAnnotationPanel = () => {
             >
               PDFs
             </span>{' '}
-            too.
+            are first-class too.
+            <br />
+            <br />
+            Keyboard-driven navigation makes grading fast. Shared rubrics keep feedback consistent across your team.
           </div>
         </div>
       }

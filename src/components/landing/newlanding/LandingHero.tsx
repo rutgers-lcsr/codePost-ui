@@ -70,7 +70,7 @@ const LandingHero = () => {
           maxWidth: 700,
         }}
       >
-        Grade Code, PDFs, and Jupyter Notebooks in one unified workflow.
+        Grade code, PDFs, and Jupyter Notebooks in one unified workflow.
       </p>
       <div
         style={{

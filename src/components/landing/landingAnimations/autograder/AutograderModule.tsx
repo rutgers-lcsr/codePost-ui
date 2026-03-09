@@ -1,116 +1,322 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { Collapse, Segmented, Typography, Badge, Progress, Card, Button } from 'antd';
+import { CheckCircleFilled, CloseCircleFilled, CaretRightOutlined, PlayCircleOutlined } from '@ant-design/icons';
 
-import { Slider, Typography } from 'antd';
+const { Text, Title } = Typography;
 
-import fileMode from './FileMode.jpg';
-import noCode from './IO.jpg';
-import unit from './Unit.jpg';
+// ── Status colors matching real TestsList ───────────────────────────
+const statusColors = {
+  passed: { main: '#389e0d', bg: '#f6ffed', border: '#b7eb8f' },
+  failed: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' },
+  default: { main: '#595959', bg: '#fafafa', border: '#d9d9d9' },
+};
 
-const AutograderModule = () => {
-  const [index, setIndex] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+// ── Test data structures ───────────────────────────────────────────
+interface TestDef {
+  name: string;
+  description: string;
+  score: number;
+  maxScore: number;
+  passed: boolean;
+}
 
-  // Add aria-label to the slider handle for accessibility
-  useEffect(() => {
-    if (sliderRef.current) {
-      const handle = sliderRef.current.querySelector('.ant-slider-handle');
-      if (handle) {
-        handle.setAttribute('aria-label', 'Test complexity: Simple to Flexible');
-      }
-    }
-  }, []);
+interface TestCategory {
+  name: string;
+  targetFileName: string;
+  tests: TestDef[];
+}
 
-  const noCodeImg = <img style={{ marginTop: 5, marginLeft: 10 }} width={550} src={noCode} alt="" />;
-  const unitImg = <img style={{ marginTop: 6, marginLeft: 10 }} width={550} src={unit} alt="" />;
-  const fileModeImg = <img style={{ marginTop: 0, marginLeft: 5 }} width={550} src={fileMode} alt="" />;
+// ── Test data per slider mode ──────────────────────────────────────
 
-  const handleChange = (e: any) => {
-    setIndex(e);
-  };
+// Mode 0: Simple — one category, basic unit tests
+const SIMPLE_CATEGORIES: TestCategory[] = [
+  {
+    name: 'Sorting Tests',
+    targetFileName: 'solution.py',
+    tests: [
+      { name: 'test_basic_sort', description: 'Basic ascending sort', score: 5, maxScore: 5, passed: true },
+      { name: 'test_empty_input', description: 'Empty array edge case', score: 5, maxScore: 5, passed: true },
+      { name: 'test_duplicates', description: 'Handle duplicate values', score: 5, maxScore: 5, passed: true },
+      { name: 'test_reverse', description: 'Reverse-sorted input', score: 0, maxScore: 5, passed: false },
+      { name: 'test_single', description: 'Single element array', score: 5, maxScore: 5, passed: true },
+    ],
+  },
+];
 
-  let text;
-  switch (index) {
-    case 0:
-      text = 'Write tests without any code!';
-      break;
-    case 1:
-      text = 'Write powerful unit tests.';
-      break;
-    case 2:
-      text = 'Import your existing test scripts and run them as is.';
-      break;
-  }
+// Mode 1: Medium — two categories
+const MEDIUM_CATEGORIES: TestCategory[] = [
+  {
+    name: 'Correctness',
+    targetFileName: 'merge_sort.py',
+    tests: [
+      { name: 'test_sorted', description: 'Already sorted input', score: 5, maxScore: 5, passed: true },
+      { name: 'test_random', description: 'Random order input', score: 5, maxScore: 5, passed: true },
+      { name: 'test_negative', description: 'Negative values', score: 0, maxScore: 5, passed: false },
+    ],
+  },
+  {
+    name: 'Performance',
+    targetFileName: 'merge_sort.py',
+    tests: [
+      { name: 'test_time', description: 'O(n log n) time complexity', score: 5, maxScore: 5, passed: true },
+      { name: 'test_space', description: 'Memory usage within bounds', score: 5, maxScore: 5, passed: true },
+    ],
+  },
+];
+
+// Mode 2: Flexible — three categories
+const FLEXIBLE_CATEGORIES: TestCategory[] = [
+  {
+    name: 'Sorting Correctness',
+    targetFileName: 'sort_module.py',
+    tests: [
+      { name: 'test_asc', description: 'Ascending sort', score: 5, maxScore: 5, passed: true },
+      { name: 'test_desc', description: 'Descending input', score: 5, maxScore: 5, passed: true },
+      { name: 'test_equal', description: 'All equal elements', score: 0, maxScore: 5, passed: false },
+    ],
+  },
+  {
+    name: 'Edge Cases',
+    targetFileName: 'sort_module.py',
+    tests: [
+      { name: 'test_empty', description: 'Empty array', score: 5, maxScore: 5, passed: true },
+      { name: 'test_single', description: 'Single element', score: 5, maxScore: 5, passed: true },
+    ],
+  },
+  {
+    name: 'Stability',
+    targetFileName: 'sort_module.py',
+    tests: [{ name: 'test_no_mutation', description: 'Input array unchanged', score: 5, maxScore: 5, passed: true }],
+  },
+];
+
+type TestMode = 0 | 1 | 2;
+const modeCategories = [SIMPLE_CATEGORIES, MEDIUM_CATEGORIES, FLEXIBLE_CATEGORIES] as const;
+
+// ── Single test card ───────────────────────────────────────────────
+const TestCard: React.FC<{ test: TestDef; visible: boolean }> = ({ test, visible }) => {
+  const sc = test.passed ? statusColors.passed : statusColors.failed;
+
   return (
-    <div style={{ marginRight: 25 }}>
-      <div ref={sliderRef} style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
-        <Typography.Text
-          className={index === 0 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
-          style={{ marginRight: 15 }}
+    <Card
+      size="small"
+      hoverable
+      style={{
+        marginBottom: 10,
+        borderRadius: 6,
+        border: `1px solid ${sc.border}`,
+        borderLeft: `4px solid ${sc.main}`,
+        backgroundColor: '#fff',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(4px)',
+        transition: 'opacity 0.25s ease, transform 0.25s ease',
+      }}
+      styles={{ body: { padding: '10px 14px' } }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div style={{ paddingTop: 1 }}>
+          {test.passed ? (
+            <CheckCircleFilled style={{ fontSize: 20, color: statusColors.passed.main }} />
+          ) : (
+            <CloseCircleFilled style={{ fontSize: 20, color: statusColors.failed.main }} />
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, marginRight: 8 }}>
+              <Text strong style={{ fontSize: 12, display: 'block', lineHeight: 1.4 }}>
+                {test.description}
+              </Text>
+            </div>
+            <div style={{ flexShrink: 0, textAlign: 'right' }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: sc.main,
+                  border: `1px solid ${sc.border}`,
+                  background: sc.bg,
+                  borderRadius: 4,
+                  padding: '1px 6px',
+                  display: 'inline-block',
+                }}
+              >
+                {test.score}/{test.maxScore} pts
+              </div>
+              <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{test.passed ? 'Passed' : 'Failed'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+// ── Category header (matches real renderCategoryHeader) ────────────
+const CategoryHeader: React.FC<{ category: TestCategory }> = ({ category }) => {
+  const catScore = category.tests.reduce((s, t) => s + t.score, 0);
+  const catMax = category.tests.reduce((s, t) => s + t.maxScore, 0);
+  const catPct = catMax > 0 ? Math.round((catScore / catMax) * 100) : 0;
+  const isComplete = catMax > 0 && catScore === catMax;
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        paddingRight: 8,
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, paddingRight: 16 }}>
+        <Text
+          strong
+          style={{
+            fontSize: 12,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
         >
-          Simple
-        </Typography.Text>
-        <Slider
-          style={{ width: 'calc(100% - 80px)' }}
-          tooltip={{ open: false }}
-          min={0}
-          max={2}
-          dots={true}
-          onChange={handleChange}
-          value={index}
-          aria-label="Test complexity: Simple to Flexible"
+          {category.name}
+        </Text>
+        <Text code style={{ fontSize: 10, marginTop: 2, color: '#999' }}>
+          {category.targetFileName}
+        </Text>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+        <Text strong style={{ fontSize: 11, color: isComplete ? '#52c41a' : undefined }}>
+          {catScore} / {catMax} pts
+        </Text>
+        <div style={{ width: 70, marginTop: 2 }}>
+          <Progress percent={catPct} size="small" showInfo={false} strokeColor={isComplete ? '#52c41a' : undefined} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main component ─────────────────────────────────────────────────
+const AutograderModule: React.FC = () => {
+  const [mode, setMode] = useState<TestMode>(0);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const categories = modeCategories[mode];
+  const allTests = categories.flatMap((c) => c.tests);
+
+  // Animate cards in one by one
+  useEffect(() => {
+    setVisibleCount(0);
+    let i = 0;
+    const tick = () => {
+      i += 1;
+      setVisibleCount(i);
+      if (i < allTests.length) setTimeout(tick, 150);
+    };
+    const t = setTimeout(tick, 250);
+    return () => clearTimeout(t);
+  }, [mode, allTests.length]);
+
+  const passed = allTests.filter((t) => t.passed).length;
+  const failed = allTests.filter((t) => !t.passed).length;
+  const totalScore = allTests.reduce((s, t) => s + t.score, 0);
+  const totalMax = allTests.reduce((s, t) => s + t.maxScore, 0);
+  const pct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+
+  // Track global test index for staggered animation across categories
+  let globalIdx = 0;
+
+  return (
+    <div style={{ width: 460 }}>
+      {/* Mode selector */}
+      <div style={{ marginBottom: 16 }}>
+        <Segmented
+          value={mode}
+          onChange={(v) => setMode(v as TestMode)}
+          options={[
+            { label: 'Simple', value: 0 },
+            { label: 'Standard', value: 1 },
+            { label: 'Flexible', value: 2 },
+          ]}
+          block
         />
-        <Typography.Text
-          className={index === 2 ? 'slider-text--active' : index === 1 ? 'slider-text' : 'slider-text--inactive'}
-          style={{ marginLeft: 15 }}
-        >
-          Flexible
-        </Typography.Text>
       </div>
+
+      {/* Test results panel */}
       <div
         style={{
-          fontWeight: 500,
-          fontSize: 18,
-          color: '#666666',
-          fontStyle: 'italic',
-          marginBottom: 10,
+          background: '#fff',
+          borderRadius: 8,
+          border: '1px solid #e8e8e8',
+          overflow: 'hidden',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
         }}
-        className={`display-flex justify-content-center align-items-center`}
       >
-        {text}
-      </div>
-      <div
-        style={{
-          maxWidth: 550,
-          width: 550,
-          height: 390,
-          position: 'relative',
-        }}
-        className={`display-flex justify-content-center align-items-center`}
-      >
+        {/* Header */}
         <div
-          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 0 ? '--active' : ''
-          }`}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 16px',
+            borderBottom: '1px solid #f0f0f0',
+            background: '#fafafa',
+          }}
         >
-          {noCodeImg}
+          <Title level={5} style={{ margin: 0, fontSize: 14 }}>
+            Test Results
+          </Title>
+          <Button type="primary" icon={<PlayCircleOutlined />} size="small">
+            Run All
+          </Button>
         </div>
-        <div
-          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 1 ? '--active' : ''
-          }`}
-        >
-          {unitImg}
-        </div>
-        <div
-          style={{ position: 'absolute', maxWidth: 550, borderRadius: 8 }}
-          className={`display-flex justify-content-center align-items-center bevel autograder-image${
-            index === 2 ? '--active' : ''
-          }`}
-        >
-          {fileModeImg}
+
+        <div style={{ padding: '12px 16px' }}>
+          {/* Summary badges */}
+          <div style={{ marginBottom: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <Badge count={`${passed} Passed`} style={{ backgroundColor: statusColors.passed.main, color: '#fff' }} />
+            {failed > 0 && (
+              <Badge count={`${failed} Failed`} style={{ backgroundColor: statusColors.failed.main, color: '#fff' }} />
+            )}
+          </div>
+
+          {/* Progress bar */}
+          <div style={{ marginBottom: 12 }}>
+            <Progress
+              percent={pct}
+              status={failed > 0 ? 'exception' : passed === allTests.length ? 'success' : 'active'}
+              format={() => `${totalScore}/${totalMax}`}
+              strokeColor={passed === allTests.length ? statusColors.passed.main : undefined}
+            />
+          </div>
+
+          {/* Categories as collapsible panels */}
+          <Collapse
+            defaultActiveKey={categories.map((_, i) => i.toString())}
+            ghost
+            expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ fontSize: 11 }} />}
+          >
+            {categories.map((category, catIdx) => {
+              const startIdx = globalIdx;
+              globalIdx += category.tests.length;
+
+              return (
+                <Collapse.Panel
+                  key={catIdx.toString()}
+                  header={<CategoryHeader category={category} />}
+                  style={{ marginBottom: 8 }}
+                >
+                  {category.tests.map((test, testIdx) => (
+                    <TestCard key={`${mode}-${test.name}`} test={test} visible={startIdx + testIdx < visibleCount} />
+                  ))}
+                </Collapse.Panel>
+              );
+            })}
+          </Collapse>
         </div>
       </div>
     </div>

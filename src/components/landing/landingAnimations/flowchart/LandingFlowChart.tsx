@@ -35,7 +35,7 @@ const nodes: any[] = [
   {
     id: 3,
     title: 'Autograder',
-    position: { x: 33, y: 70 },
+    position: { x: 33, y: 55 },
     icon: 'code',
     color: colors.brandPrimary,
     tint: 25,
@@ -44,7 +44,7 @@ const nodes: any[] = [
   {
     id: 4,
     title: 'Annotation',
-    position: { x: 33, y: 55 },
+    position: { x: 33, y: 40 },
     icon: 'highlight',
     color: colors.brandPrimary,
     tint: 25,
@@ -53,7 +53,7 @@ const nodes: any[] = [
   {
     id: 6,
     title: 'Standard Rubrics',
-    position: { x: 33, y: 85 },
+    position: { x: 33, y: 70 },
     icon: 'profile',
     color: colors.brandPrimary,
     tint: 25,
