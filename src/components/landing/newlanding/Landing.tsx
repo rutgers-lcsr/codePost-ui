@@ -82,7 +82,7 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
         moduleMaxHeight={550}
         removeModelSmallScreen={false}
         module={
-          <Suspense fallback={<div style={{ width: 480, height: 550 }} />}>
+          <Suspense fallback={<div style={{ width: 460, height: 550 }} />}>
             <AutograderModule />
           </Suspense>
         }
@@ -95,11 +95,12 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
         text={
           <div>
             <div style={{ paddingBottom: 24 }}>
-              Docker-based isolation for secure testing. Templates for <strong>Python, Java, R</strong>, and many
-              others.
+              Docker-based isolation for secure testing. Built-in support for{' '}
+              <strong>Python, Java, C/C++, Node.js, R</strong>, and more.
               <br />
               <br />
-              Run simple I/O tests or complex script-based suites.
+              Write unit tests or custom test scripts with partial credit scoring. codePost runs them automatically on
+              every submission in a sandboxed container.
             </div>
             <Link to="/autograder" target="_blank" rel="noopener noreferrer">
               <CPButton
@@ -114,8 +115,8 @@ class LandingOld extends React.Component<IWithWindowWatcherProps> {
             </Link>
           </div>
         }
-        title="Industrial-Strength Automation"
-        subTitle="Test securely, grade instantly."
+        title="Automated Testing"
+        subTitle="Secure, sandboxed autograding."
         module={
           <Suspense fallback={<div style={{ width: 500, height: 400 }} />}>
             <LandingFlowChart />

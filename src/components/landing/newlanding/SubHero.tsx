@@ -24,8 +24,7 @@ const SubHero = () => {
   const boxShadow =
     '8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15), 10px 25px 20px 0 rgba(0, 0, 0, 0.05)';
 
-  // FIX ME -- FIX constants
-  const transformSmallScreen = windowSize.width > MAX_WIDTH + 20 ? 1 : windowSize.width / (610 + 20);
+  const transformSmallScreen = windowSize.width > MAX_WIDTH + 20 ? 1 : windowSize.width / (MAX_WIDTH + 20);
 
   return (
     <div>
@@ -41,20 +40,20 @@ const SubHero = () => {
             paddingRight: windowSize.width < landingVars.breakpoints.verticalPanels ? 0 : 50,
           }}
         >
-          <Typography.Title level={2}>codePost isn’t just another grading tool</Typography.Title>
+          <Typography.Title level={2}>Built for how CS courses actually work</Typography.Title>
           <span style={{ maxWidth: '700px', lineHeight: 1.5, fontSize: '17px', marginTop: 15 }}>
             <p style={{ breakInside: 'avoid', marginBottom: '1.2em' }}>
-              We rebuilt the feedback-giving process from the ground up to make you brilliant at what you do: teaching
-              the next generation of programmers.
+              We rebuilt the feedback-giving process from the ground up — for instructors running large courses, graders
+              working through hundreds of submissions, and students who deserve clear, actionable feedback.
             </p>
             <p style={{ breakInside: 'avoid', marginBottom: '1.2em' }}>
               codePost is fast and easy-to-use.{' '}
-              <span style={{ fontWeight: 600, color: '#476b63' }}>Actually easy to use.</span> And it includes advanced
-              features that will supercharge your teaching and save you time.
+              <span style={{ fontWeight: 600, color: '#476b63' }}>Actually easy to use.</span> Split-panel code review
+              with inline highlighting. Comment cards with point deductions. Shared rubrics for consistency.
             </p>
             <p style={{ breakInside: 'avoid', marginBottom: '1.2em' }}>
-              Leave comments on code with your keyboard. Write tests that compare student code against solution code in
-              seconds. Triage regrade requests. To name but a few.
+              Keyboard-driven annotation. Docker-sandboxed autograding. Anonymous grading mode. Programmatic access via
+              SDK or REST API. To name but a few.
             </p>
           </span>
           <br />

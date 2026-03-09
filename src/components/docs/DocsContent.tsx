@@ -20,6 +20,7 @@ import {
   WarningOutlined,
   ExclamationCircleOutlined,
   CloseCircleOutlined,
+  LinkOutlined,
 } from '@ant-design/icons';
 import DocsTOC, { TOCItem } from './DocsTOC';
 import useWindowSize from '../core/useWindowSize';
@@ -35,6 +36,55 @@ const slugify = (text: string) => {
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(/[^\w-]+/g, '') // Remove all non-word chars
     .replace(/--+/g, '-'); // Replace multiple - with single -
+};
+
+const HeadingWithAnchor: React.FC<{
+  level: 1 | 2 | 3;
+  id: string;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}> = ({ level, id, children, style }) => {
+  const [hovered, setHovered] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+
+  const copyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `${window.location.origin}${window.location.pathname}#${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <Title
+      level={level}
+      id={id}
+      style={{ ...style, position: 'relative' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+      <a
+        href={`#${id}`}
+        onClick={copyLink}
+        aria-label="Copy link to heading"
+        style={{
+          marginLeft: '8px',
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.15s',
+          color: copied ? colors.actionGreen : colors.neutralDisable,
+          fontSize: level === 1 ? '18px' : level === 2 ? '16px' : '14px',
+          verticalAlign: 'middle',
+          textDecoration: 'none',
+          cursor: 'pointer',
+        }}
+        title={copied ? 'Copied!' : 'Copy link'}
+      >
+        <LinkOutlined />
+      </a>
+    </Title>
+  );
 };
 
 // Plugin to remove HTML comments from markdown
@@ -53,24 +103,41 @@ const DocsContent: React.FC = () => {
   const { '*': splat } = useParams();
   const { width } = useWindowSize(); // Use window size hook
 
-  const { search } = useLocation();
+  const { search, hash } = useLocation();
   const highlightTerm = new URLSearchParams(search).get('highlight');
 
-  // Scroll to highlight or top
+  // Scroll to anchor hash, highlight match, or top — retrying until the element exists
   useEffect(() => {
+    const anchorId = hash ? hash.slice(1) : null;
+
     if (highlightTerm) {
-      setTimeout(() => {
+      // Search highlight takes priority over anchor
+      let attempts = 0;
+      const tryScroll = () => {
         const element = document.querySelector('.doc-match-highlight');
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          window.scrollTo(0, 0);
+        } else if (attempts++ < 20) {
+          setTimeout(tryScroll, 50);
         }
-      }, 100);
+      };
+      setTimeout(tryScroll, 50);
+    } else if (anchorId) {
+      // Retry until the heading element is in the DOM (content may still be rendering)
+      let attempts = 0;
+      const tryScroll = () => {
+        const element = document.getElementById(anchorId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (attempts++ < 20) {
+          setTimeout(tryScroll, 50);
+        }
+      };
+      setTimeout(tryScroll, 50);
     } else {
       window.scrollTo(0, 0);
     }
-  }, [splat, highlightTerm]);
+  }, [splat, highlightTerm, hash]);
 
   const renderWithHighlight = (nodes: React.ReactNode) => {
     if (!highlightTerm || !nodes) return nodes;
@@ -183,26 +250,24 @@ const DocsContent: React.FC = () => {
   }
 
   const Components: Components = {
-    h1: ({ node, children, ...props }: any) => {
+    h1: ({ node: _node, children }: any) => {
       const text = String(children);
-      // H1 doesn't usually need deep link in TOC, but good to have ID
       const id = slugify(text);
       return (
-        <Title
+        <HeadingWithAnchor
           level={1}
           id={id}
           style={{ marginTop: 0, marginBottom: '24px', color: colors.neutralTitle, fontWeight: 700 }}
-          {...props}
         >
           {children}
-        </Title>
+        </HeadingWithAnchor>
       );
     },
-    h2: ({ node, children, ...props }: any) => {
+    h2: ({ node: _node, children }: any) => {
       const text = String(children);
       const id = slugify(text);
       return (
-        <Title
+        <HeadingWithAnchor
           level={2}
           id={id}
           style={{
@@ -213,24 +278,22 @@ const DocsContent: React.FC = () => {
             borderBottom: `1px solid ${colors.neutralBorder}`,
             paddingBottom: '10px',
           }}
-          {...props}
         >
           {children}
-        </Title>
+        </HeadingWithAnchor>
       );
     },
-    h3: ({ node, children, ...props }: any) => {
+    h3: ({ node: _node, children }: any) => {
       const text = String(children);
       const id = slugify(text);
       return (
-        <Title
+        <HeadingWithAnchor
           level={3}
           id={id}
           style={{ marginTop: '32px', marginBottom: '16px', color: colors.neutralTitle, fontWeight: 600 }}
-          {...props}
         >
           {children}
-        </Title>
+        </HeadingWithAnchor>
       );
     },
     p: ({ node, children, ...props }: any) =>
