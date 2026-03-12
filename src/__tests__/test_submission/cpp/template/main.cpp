@@ -12,7 +12,7 @@ std::vector<int> parse_numbers(const std::string& csv_line) {
 }
 
 int main() {
-    std::ifstream input("../existing_data.txt");
+    std::ifstream input("shared/existing_data.txt");
     std::string line;
     std::getline(input, line);
 

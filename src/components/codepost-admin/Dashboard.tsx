@@ -7,6 +7,7 @@ import {
   GlobalOutlined,
   TeamOutlined,
   UserOutlined,
+  UserAddOutlined,
   DashboardOutlined,
   RiseOutlined,
   ApiOutlined,
@@ -47,6 +48,7 @@ import MaintenanceBannerPanel from './MaintenanceBannerPanel';
 import DeployCalendar from './DeployCalendar';
 import AIUsageDashboard from '../core/AIUsageDashboard';
 import { AIUsageService } from '../../services/aiUsage';
+import PendingAdminsTable from './PendingAdminsTable';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
@@ -61,6 +63,7 @@ type TabType =
   | 'Organizations'
   | 'Courses'
   | 'Admins'
+  | 'Pending Admins'
   | 'Users'
   | 'Activity'
   | 'Deploy Calendar'
@@ -476,6 +479,8 @@ const Dashboard = () => {
             <AdminTable admins={admins} />
           </div>
         );
+      case 'Pending Admins':
+        return <PendingAdminsTable />;
       case 'Organizations':
         return (
           <div style={{ padding: '24px' }}>
@@ -572,6 +577,11 @@ const Dashboard = () => {
                 key: 'Admins',
                 icon: <TeamOutlined />,
                 label: `Admins (${admins.length})`,
+              },
+              {
+                key: 'Pending Admins',
+                icon: <UserAddOutlined />,
+                label: 'Pending Admins',
               },
               {
                 key: 'Users',

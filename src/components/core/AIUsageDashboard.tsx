@@ -185,7 +185,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       {/* Header */}
       <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: colors.neutralTitle }}>
+          <Title level={3} style={{ margin: 0, color: colors.neutralTitle }}>
             {title}
           </Title>
           {description && (

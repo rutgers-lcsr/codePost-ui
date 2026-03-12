@@ -19,12 +19,8 @@ export default defineConfig({
     setupFiles: './src/setupTests.ts',
     css: true,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        minThreads: 1,
-        maxThreads: 1,
-      },
-    },
+    minThreads: 1,
+    maxThreads: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],

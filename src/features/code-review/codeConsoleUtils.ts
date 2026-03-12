@@ -328,7 +328,7 @@ export const filterCurrentFileVersions = (
     else {
       const currentCreated = currentFiles[path].created ? Date.parse(currentFiles[path].created) : 0;
       const nextCreated = file.created ? Date.parse(file.created) : 0;
-      if (currentCreated <= nextCreated) {
+      if (currentCreated < nextCreated) {
         currentFiles[path] = file;
       }
     }
