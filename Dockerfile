@@ -18,14 +18,10 @@ COPY . .
 # Build arguments for environment variables
 ARG REACT_APP_API_URL
 ARG REACT_APP_VERSION
-ARG REACT_APP_GA_ID
-ARG REACT_APP_OPTIMIZE_ID
 
 # Set environment variables for build
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_VERSION=$REACT_APP_VERSION
-ENV REACT_APP_GA_ID=$REACT_APP_GA_ID
-ENV REACT_APP_OPTIMIZE_ID=$REACT_APP_OPTIMIZE_ID
 
 # Build the application with Vite
 RUN npm run build:production

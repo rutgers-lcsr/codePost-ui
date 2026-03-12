@@ -4,7 +4,7 @@ parse_numbers <- function(csv_line) {
   numeric(0)
 }
 
-csv_line <- trimws(readLines("../existing_data.txt", warn = FALSE)[1])
+csv_line <- trimws(readLines("shared/existing_data.txt", warn = FALSE)[1])
 values <- parse_numbers(csv_line)
 
 writeLines(sprintf("TODO count=%d", length(values)), "starter_output.txt")

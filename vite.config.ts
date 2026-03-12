@@ -53,8 +53,6 @@ export default defineConfig(async (config) => {
     define: {
       'process.env.REACT_APP_API_URL': JSON.stringify(env.REACT_APP_API_URL || 'http://localhost:8000'),
       'process.env.REACT_APP_VERSION': JSON.stringify(packageJson.version),
-      'process.env.REACT_APP_GA_ID': JSON.stringify(env.REACT_APP_GA_ID || ''),
-      'process.env.REACT_APP_OPTIMIZE_ID': JSON.stringify(env.REACT_APP_OPTIMIZE_ID || ''),
       'process.env.NODE_ENV': JSON.stringify(mode),
     },
     server: {

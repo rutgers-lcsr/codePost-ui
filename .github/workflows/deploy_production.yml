@@ -4,27 +4,46 @@ on:
   push:
     branches: [master]
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    needs: [tests]
     environment: production
     runs-on: production-ui
     env:
       REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Set up Certs
         run: |
           HOSTNAME=$(hostname)
           cp -rflT /etc/letsencrypt/live/$HOSTNAME/ certs/
+
       - name: Create .env file
         run: |
-          echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env
+          cat <<EOF > .env
+          REACT_APP_API_URL=${{ vars.REACT_APP_API_URL }}
+          EOF
 
-      - name: Compose and build container
+      - name: Build container
         run: |
           docker compose build
-      - name: Compose and run container
+
+      - name: Deploy container
         run: |
-          docker compose up -d
+          docker compose up -d --remove-orphans --wait --wait-timeout 180
+
+      - name: Remove docker artifacts
+        run: |
+          docker system prune -f
+
+      - name: Notify deployment success
+        run: echo "Deployment to production UI server successful!"
+
+  tests:
+    uses: ./.github/workflows/test_codepost_ui.yml

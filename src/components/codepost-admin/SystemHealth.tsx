@@ -190,6 +190,7 @@ const SystemHealth: React.FC = () => {
             onChange={setRefreshInterval}
             options={REFRESH_OPTIONS}
             style={{ width: 80 }}
+            aria-label="Auto-refresh interval"
             title="Auto-refresh interval"
           />
           <Tooltip title="Refresh now">

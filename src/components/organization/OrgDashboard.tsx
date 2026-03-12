@@ -2,7 +2,14 @@
 import * as React from 'react';
 import { Layout, Menu, theme, Typography } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { DashboardOutlined, SettingOutlined, TeamOutlined, BookOutlined, RobotOutlined } from '@ant-design/icons';
+import {
+  DashboardOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  BookOutlined,
+  RobotOutlined,
+  UserAddOutlined,
+} from '@ant-design/icons';
 import CPLogo from '../core/CPLogo';
 import useFixedWindow from '../core/useFixedWindow';
 import type { UserType } from '../../types/models';
@@ -14,6 +21,7 @@ import OrgCourses from './OrgCourses';
 import OrgUsers from './OrgUsers';
 import OrgAIUsage from './OrgAIUsage';
 import OrgAISettingsCard from './OrgAISettingsCard';
+import OrgPendingAdmins from './OrgPendingAdmins';
 
 const { Content, Sider } = Layout;
 
@@ -44,6 +52,7 @@ const OrgDashboard: React.FC<IProps> = (props) => {
     const path = location.pathname;
     if (path.includes('/settings')) return 'settings';
     if (path.includes('/courses')) return 'courses';
+    if (path.includes('/pending-admins')) return 'pending-admins';
     if (path.includes('/users')) return 'users';
     if (path.includes('/ai-usage')) return 'ai-usage';
     if (path.includes('/ai-settings')) return 'ai-settings';
@@ -147,6 +156,11 @@ const OrgDashboard: React.FC<IProps> = (props) => {
                 label: 'Users',
               },
               {
+                key: 'pending-admins',
+                icon: <UserAddOutlined />,
+                label: 'Pending Admins',
+              },
+              {
                 key: 'settings',
                 icon: <SettingOutlined />,
                 label: 'Settings',
@@ -199,6 +213,7 @@ const OrgDashboard: React.FC<IProps> = (props) => {
                 />
               }
             />
+            <Route path="/pending-admins" element={<OrgPendingAdmins orgId={props.user.organization!} />} />
             <Route path="/settings" element={<OrgSettings user={props.user} />} />
             <Route
               path="/ai-settings"

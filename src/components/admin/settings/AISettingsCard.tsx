@@ -246,6 +246,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                     mark();
                   }}
                   placeholder="Select a provider"
+                  aria-label="AI Provider"
                   style={{ width: 250 }}
                   allowClear
                 >

@@ -181,6 +181,7 @@ const MaintenanceBannerPanel: React.FC = () => {
                 onChange={(e) => setDraft((d) => ({ ...d, color: e.target.value }))}
                 placeholder="#rrggbb or css"
                 style={{ width: '130px' }}
+                aria-label="Custom colour override"
                 title="Custom colour override"
               />
             </Space>

@@ -60,7 +60,8 @@ describe('RubricCategoryManager', () => {
         {({ helperz }: IRubricCategoryManagerParams) => {
           React.useEffect(() => {
             helperz.changeName('Updated name');
-          }, [helperz]);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+          }, []);
           return null;
         }}
       </RubricCategoryManager>,
@@ -97,7 +98,8 @@ describe('RubricCategoryManager', () => {
         {({ helperz }: IRubricCategoryManagerParams) => {
           React.useEffect(() => {
             helperz.updateRubricComment(baseComment.id, 'text', { target: { value: 'Updated comment' } });
-          }, [helperz]);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+          }, []);
           return null;
         }}
       </RubricCategoryManager>,

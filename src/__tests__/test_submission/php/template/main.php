@@ -7,7 +7,7 @@ function parse_numbers(string $csv_line): array {
     return [];
 }
 
-$csv = trim((string) file_get_contents(__DIR__ . '/../existing_data.txt'));
+$csv = trim((string) file_get_contents(__DIR__ . '/shared/existing_data.txt'));
 $values = parse_numbers($csv);
 
 file_put_contents(__DIR__ . '/starter_output.txt', 'TODO count=' . count($values) . PHP_EOL);

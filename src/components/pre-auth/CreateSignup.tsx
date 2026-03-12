@@ -38,6 +38,7 @@ enum STATUS {
   VALIDATION_ONGOING,
   VALIDATION_REJECTED,
   VALIDATION_ERROR,
+  PENDING_APPROVAL,
 }
 
 // Standard Normal variate using Box-Muller transform.
@@ -84,6 +85,7 @@ interface IState {
 
   // Misc
   matchOrg: string;
+  isNewOrg: boolean;
 }
 
 interface IProps extends IWithWindowWatcherProps {
@@ -104,6 +106,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     progress: 0,
 
     matchOrg: '',
+    isNewOrg: false,
   };
 
   private interval: any;
@@ -193,24 +196,22 @@ class CreateSignup extends React.Component<IProps, IState> {
         .then((json) => {
           if (!json.success) {
             this.setState({ status: STATUS.BAD_EMAIL, matchOrg: json.org });
-          } else {
-            // after triggering validation process, check status at interval defined by USER_VALIDATION_INTERVAL
-            this.interval = setInterval(() => {
-              this.checkUserValidation();
-            }, USER_VALIDATION_INTERVAL);
+          } else if (json.pending) {
+            // New flow: request is pending approval — show pending state immediately
+            this.setState({
+              isNewOrg: json.is_new_org,
+            });
 
-            // start progress counter
+            // Start progress bar animation, then transition to PENDING_APPROVAL
             this.setState({ progress: 1 }, () => {
-              // update counter periodically
               this.progressInterval = setInterval(() => {
                 const currentProgress = this.state.progress;
                 const newProgress = currentProgress + 0.15 + Math.abs(randomNormal()) * 0.3;
                 if (newProgress >= 100) {
-                  clearInterval(this.interval);
                   clearInterval(this.progressInterval);
                   this.setState({
                     progress: 100,
-                    status: STATUS.VALIDATION_ONGOING,
+                    status: STATUS.PENDING_APPROVAL,
                   });
                 } else {
                   this.setState({
@@ -219,10 +220,18 @@ class CreateSignup extends React.Component<IProps, IState> {
                 }
               }, PROGRESS_INCREMENT_TIME);
             });
+
+            // Also poll for approval status
+            this.interval = setInterval(() => {
+              this.checkUserValidation();
+            }, USER_VALIDATION_INTERVAL);
+          } else {
+            // User already existed and was already approved (e.g. admin already exists)
+            this.setState({ progress: 100, status: STATUS.VALIDATION_SUCCESS });
           }
         })
         .catch((_err) => {
-          this.setState({ status: STATUS.VALIDATION_SUCCESS, progress: 100 });
+          this.setState({ status: STATUS.VALIDATION_ERROR, progress: 100 });
         });
     });
   };
@@ -392,6 +401,53 @@ class CreateSignup extends React.Component<IProps, IState> {
               description="Your account is waiting for manual approval from our team. We've received your request and will email you as soon as your organization is verified."
               type="info"
             />
+          </div>
+        );
+        break;
+      case STATUS.PENDING_APPROVAL:
+        content = (
+          <div>
+            <Progress percent={100} />
+            <br />
+            <br />
+            <Alert
+              message="Request Submitted Successfully"
+              description={
+                this.state.isNewOrg ? (
+                  <div>
+                    <p>
+                      Since{' '}
+                      <strong>{this.state.createNewOrg ? this.state.newOrg : this.state.selectedOrg?.label}</strong> is
+                      a new organization on codePost, our team needs to review your request before your account can be
+                      activated.
+                    </p>
+                    <p style={{ marginTop: 8 }}>
+                      We&apos;ve sent you a confirmation email. You&apos;ll receive another email once your account has
+                      been approved. This usually takes less than one business day.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p>
+                      Your request to join{' '}
+                      <strong>{this.state.createNewOrg ? this.state.newOrg : this.state.selectedOrg?.label}</strong> as
+                      a course admin has been sent to your organization&apos;s staff for review.
+                    </p>
+                    <p style={{ marginTop: 8 }}>
+                      We&apos;ve sent you a confirmation email. You&apos;ll receive another email once your request has
+                      been approved.
+                    </p>
+                  </div>
+                )
+              }
+              type="info"
+              showIcon
+            />
+            <div style={{ marginTop: 16 }}>
+              <Typography.Text type="secondary">
+                Have questions? Contact us at <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>.
+              </Typography.Text>
+            </div>
           </div>
         );
         break;

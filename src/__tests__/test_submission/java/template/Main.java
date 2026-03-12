@@ -12,7 +12,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        String csv = Files.readString(Path.of("../existing_data.txt")).trim();
+        String csv = Files.readString(Path.of("shared/existing_data.txt")).trim();
         List<Integer> values = parseNumbers(csv);
 
         Files.writeString(Path.of("starter_output.txt"), "TODO count=" + values.size());
