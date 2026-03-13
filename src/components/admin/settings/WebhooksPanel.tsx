@@ -66,6 +66,7 @@ const WebhooksPanel = (props: IProps) => {
       }
     };
     fetchWebhooks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {

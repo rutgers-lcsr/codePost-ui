@@ -205,7 +205,6 @@ export const TestsChangeModal = (props: IProps) => {
   /******************************* State Variables ****************************/
   useEffect(() => {
     if (props.checkChanges) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- triggered by parent via boolean prop
       setStatus(STATUS.PARSING);
       const errors = checkForErrors(props.currentFileCode);
       if (errors.length > 0) {
@@ -259,6 +258,7 @@ export const TestsChangeModal = (props: IProps) => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.checkChanges]);
 
   // ********************* API Chamges ******************************

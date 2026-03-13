@@ -564,6 +564,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       setNewMapping(response.rosterMap ?? {});
     };
     fetchMap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -595,6 +596,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
     } else {
       didMountRef.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newMapping]);
 
   const columns = [

@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
@@ -306,7 +307,6 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   );
 
   // Handle scroll position restoration (replacement for getSnapshotBeforeUpdate)
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM scroll save/restore after render
   useEffect(() => {
     const prevProps = prevPropsRef.current;
     const codeScrollArea = document.getElementById('code-scroll-area');

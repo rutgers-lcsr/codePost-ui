@@ -146,7 +146,7 @@ function parseTestLogs(logs: string): ParsedTestResult[] {
         message: data.message,
         description: data.description,
       });
-    } catch (e) {
+    } catch {
       // JSON parse failed, continue to fallback
     }
   }

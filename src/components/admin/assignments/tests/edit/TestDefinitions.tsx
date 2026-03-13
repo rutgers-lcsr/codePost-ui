@@ -57,6 +57,7 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     fetchTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentAssignment.id]);
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export const TestDefinitions = (props: IProps) => {
     ) {
       setActiveFile(props.helpers[0].name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.helpers]);
 
   const [isRunning, setIsRunning] = useState(false);
@@ -215,7 +217,7 @@ export const TestDefinitions = (props: IProps) => {
       });
       setCategories((prev) => [...prev, newCat]);
       return newCat.id;
-    } catch (e) {
+    } catch {
       message.error(`Failed to create category for ${name}`);
       return null;
     }
@@ -252,7 +254,7 @@ export const TestDefinitions = (props: IProps) => {
       // Auto-switch view to this file
       setActiveFile(values.fileName);
       setActiveTestId(newTest.id);
-    } catch (e) {
+    } catch {
       message.error('Failed to create test');
     }
   };
@@ -261,7 +263,7 @@ export const TestDefinitions = (props: IProps) => {
     try {
       await testCasesApi.destroy({ id: testCtx.id });
       setTestCases(testCases.filter((t) => t.id !== testCtx.id));
-    } catch (e) {
+    } catch {
       message.error('Failed to delete test');
     }
   };
@@ -274,7 +276,7 @@ export const TestDefinitions = (props: IProps) => {
       });
       setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
       return updated;
-    } catch (e) {
+    } catch {
       message.error('Failed to save test');
       return testCtx;
     }

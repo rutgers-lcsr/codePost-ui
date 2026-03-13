@@ -21,6 +21,11 @@ const EVENT_CATEGORIES = [
   'Late Submission Error',
   'Become User',
   'UI Error',
+  'Bug Report',
+  'Display Issue',
+  'Performance',
+  'Data Issue',
+  'Other',
   'User Happiness',
   'User Dump',
   'Admin Change Organization Request',
@@ -36,6 +41,16 @@ const EVENT_CATEGORIES = [
   'API Error',
   'One-Time Token Generated',
 ];
+
+// Categories that contain diagnostic error detail (browser context, console logs, etc.)
+const DIAGNOSTIC_CATEGORIES = new Set([
+  'UI Error',
+  'Bug Report',
+  'Display Issue',
+  'Performance',
+  'Data Issue',
+  'Other',
+]);
 
 const ActivityFeed: React.FC = () => {
   type EventLogType = SystemActivityResponse['results'][number];
@@ -86,6 +101,7 @@ const ActivityFeed: React.FC = () => {
 
   useEffect(() => {
     fetchLogs(1, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Debounced search
@@ -155,7 +171,7 @@ const ActivityFeed: React.FC = () => {
       // not JSON — fall through to raw display
     }
 
-    const isUIError = record.category === 'UI Error';
+    const isUIError = DIAGNOSTIC_CATEGORIES.has(record.category);
     const screenshot = parsedMeta && typeof parsedMeta.screenshot === 'string' ? parsedMeta.screenshot : null;
 
     // Parse nested errorDetail JSON (stored as a JSON string inside meta)

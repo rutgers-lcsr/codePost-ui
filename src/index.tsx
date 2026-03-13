@@ -15,6 +15,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 import MaintenanceBanner from './components/core/MaintenanceBanner';
+import ReportIssueButton from './components/core/ReportIssueButton';
 
 import { StrictMode } from 'react';
 import ErrorBoundary from './components/core/ErrorBoundary';
@@ -36,6 +37,7 @@ root.render(
           <StrictMode>
             <App />
           </StrictMode>
+          <ReportIssueButton />
         </BrowserRouter>
       </DndProvider>
     </ConfigProvider>

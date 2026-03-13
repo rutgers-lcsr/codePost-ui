@@ -130,7 +130,7 @@ end`;
       const code = generateSnippet(values);
       props.onInsert(code);
       form.resetFields();
-    } catch (e) {
+    } catch {
       // validation failed
     }
   };

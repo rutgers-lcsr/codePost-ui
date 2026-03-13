@@ -1,12 +1,17 @@
+
 # RegisterAndSetPasswordRequest
+
 
 ## Properties
 
-| Name        | Type   |
-| ----------- | ------ |
-| `uid`       | string |
-| `token`     | string |
-| `password1` | string |
-| `password2` | string |
+Name | Type
+------------ | -------------
+`uid` | string
+`token` | string
+`password1` | string
+`password2` | string
+
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

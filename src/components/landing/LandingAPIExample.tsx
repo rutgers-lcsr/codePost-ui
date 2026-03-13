@@ -102,13 +102,6 @@ interface IState {
   exampleIndex: number;
 }
 
-// @ts-expect-error CodeMirror types may not be fully compatible
-let instance: CodeMirror.Editor | null = null;
-// @ts-expect-error CodeMirror types may not be fully compatible
-const setEditor = (editor: CodeMirror.Editor) => {
-  instance = editor;
-};
-
 class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
   public constructor(props: IWithWindowWatcherProps) {
     super(props);
@@ -119,31 +112,10 @@ class APIExample extends React.PureComponent<IWithWindowWatcherProps, IState> {
 
   public changeAPITabIndex = (newIndex: number) => {
     this.setState({ exampleIndex: newIndex });
-    setTimeout(() => {
-      if (instance) {
-        instance.refresh();
-      }
-    }, 1);
   };
 
   public render() {
     const { exampleIndex } = this.state;
-    // const codeMirror = (
-    // <CodeMirror
-    //   key={`codeMirror${this.state.exampleIndex}`}
-    //   className="api-codemirror"
-    //   onBeforeChange={dummyFunction}
-    //   editorDidMount={setEditor}
-    //   value={apiCodeExamples[this.state.exampleIndex].code}
-    //   options={{
-    //     lineNumbers: true,
-    //     readOnly: true,
-    //     lineWrapping: true,
-    //     mode: 'python',
-    //     theme: 'material',
-    //   }}
-    // />
-    // );
 
     const customPanelStyle = {
       background: 'rgb(38, 50, 56, 0.95)',

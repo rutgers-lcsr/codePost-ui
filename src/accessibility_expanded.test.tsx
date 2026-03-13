@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
@@ -246,10 +246,6 @@ const mockAssignmentsProps: any = {
   sections: [],
   courses: [mockCourse],
   baseURL: '/admin/assignments',
-};
-
-const mockDashboardProps = {
-  // Dashboard doesn't take props, it fetches everything
 };
 
 // Axe config

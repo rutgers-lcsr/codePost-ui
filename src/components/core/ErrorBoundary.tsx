@@ -4,6 +4,12 @@ import * as React from 'react';
 import { FileType, getFileContent } from '../../utils/file';
 
 import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
+import {
+  gatherBrowserContext,
+  getLastScreenshot,
+  recentConsoleLogs,
+  stopScreenshotTimer,
+} from '../../utils/diagnostics';
 
 import { Result, Button, Collapse, Typography, Space, Card, theme, Divider, Modal } from 'antd';
 import {
@@ -225,318 +231,6 @@ const TroubleshootingCard: React.FC = () => {
   );
 };
 
-// ── Sensitive data helpers ────────────────────────────────────────────────────
-// Keys matching these patterns are excluded from storage key listings.
-const SENSITIVE_KEY_RE = /token|auth|jwt|secret|password|credential|bearer|api[_-]?key/i;
-
-/**
- * Redact common credential patterns from a log string so auth tokens are never
- * persisted in the error report.
- */
-function redactSensitiveData(str: string): string {
-  return (
-    str
-      // Bearer / Token header values
-      .replace(/\bBearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]')
-      // JWT (three base64url segments)
-      .replace(/eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_.+/]*/g, '[REDACTED_JWT]')
-      // key/token/auth/Authorization followed by = or : and a value
-      .replace(/\b(token|api[_-]?key|auth|authorization)(\s*[:=]\s*["']?)([^\s"',}\]]+)/gi, '$1$2[REDACTED]')
-  );
-}
-
-// ── Console interceptor ────────────────────────────────────────────────────────
-// Captures the last 30 console errors/warnings so they're available at crash time.
-const MAX_CONSOLE_LOGS = 30;
-const recentConsoleLogs: Array<{ level: string; message: string; at: string }> = [];
-
-/** Serialize a single console argument to a readable string. */
-function serializeArg(a: unknown): string {
-  if (typeof a === 'string') return a;
-  if (a instanceof Error) return `[Error: ${a.message}]`;
-  try {
-    const s = JSON.stringify(a);
-    return s !== undefined ? s : String(a);
-  } catch {
-    return String(a);
-  }
-}
-
-/**
- * Perform printf-style substitution on console arguments.
- * Handles %s, %o/%O, %d/%i, %f, %c — matching browser DevTools behaviour.
- * Falls back to space-joining when the first arg is not a format string.
- */
-function formatConsoleArgs(args: unknown[]): string {
-  if (args.length === 0) return '';
-
-  if (typeof args[0] === 'string' && /%[oOsdifc]/.test(args[0])) {
-    let i = 1;
-    const formatted = args[0].replace(/%([oOsdifc])/g, (_match, spec: string): string => {
-      if (i >= args.length) return `%${spec}`;
-      const val = args[i++];
-      switch (spec) {
-        case 'o':
-        case 'O':
-          return serializeArg(val);
-        case 's':
-          return String(val);
-        case 'd':
-        case 'i':
-          return String(Math.trunc(Number(val)));
-        case 'f':
-          return String(Number(val));
-        case 'c':
-          return ''; // CSS styling — discard
-        default:
-          return `%${spec}`;
-      }
-    });
-    // Append any surplus args that had no matching specifier
-    const surplus = args.slice(i).map(serializeArg);
-    return surplus.length ? `${formatted} ${surplus.join(' ')}` : formatted;
-  }
-
-  return args.map(serializeArg).join(' ');
-}
-
-if (typeof window !== 'undefined') {
-  (['error', 'warn'] as const).forEach((level) => {
-    const original = console[level].bind(console) as (...args: unknown[]) => void;
-    console[level] = (...args: unknown[]) => {
-      const raw = formatConsoleArgs(args);
-      recentConsoleLogs.push({
-        level,
-        message: redactSensitiveData(raw),
-        at: new Date().toISOString(),
-      });
-      if (recentConsoleLogs.length > MAX_CONSOLE_LOGS) recentConsoleLogs.shift();
-      original(...args);
-    };
-  });
-}
-
-// ── Periodic visual screenshot cache ────────────────────────────────────────────
-// Every 30s (when the tab is visible), capture a JPEG screenshot using
-// html-to-image and keep only the latest one in memory. When an error occurs
-// we immediately attach this cached image — it shows what the user was seeing
-// moments before the crash, not the error fallback page.
-let _toJpeg: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
-let _toPng: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
-let _lastScreenshot: string | null = null;
-
-const SCREENSHOT_INTERVAL_MS = 30_000; // 30 seconds
-let _screenshotTimer: ReturnType<typeof setTimeout> | null = null;
-
-async function captureScreenshotToCache(): Promise<void> {
-  if ((!_toJpeg && !_toPng) || document.hidden) return;
-  const captureOpts: Record<string, unknown> = {
-    quality: 0.4,
-    cacheBust: true,
-    // Skip font embedding entirely — it crashes on some pages where a CSS rule
-    // has an undefined font-family. fontEmbedCSS='' takes priority in the lib
-    // and short-circuits the entire font embedding pipeline.
-    skipFonts: true,
-    fontEmbedCSS: '',
-    filter: (node: HTMLElement) => {
-      if (!(node instanceof Element)) return true;
-      const tag = node.tagName?.toLowerCase();
-      return tag !== 'iframe' && tag !== 'video' && tag !== 'canvas';
-    },
-  };
-  try {
-    // Try JPEG first (smaller), fall back to PNG
-    const captureFn = _toJpeg ?? _toPng!;
-    const dataUrl = await Promise.race<string>([
-      captureFn(document.body, captureOpts),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
-    ]);
-    _lastScreenshot = dataUrl;
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`[ErrorBoundary] Screenshot cached (${Math.round(dataUrl.length / 1024)}KB)`);
-    }
-  } catch (err) {
-    // JPEG failed — try PNG as fallback
-    if (_toPng && _toJpeg) {
-      try {
-        const dataUrl = await Promise.race<string>([
-          _toPng(document.body, captureOpts),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
-        ]);
-        _lastScreenshot = dataUrl;
-        if (process.env.NODE_ENV === 'development') {
-          console.debug(`[ErrorBoundary] Screenshot cached via PNG fallback (${Math.round(dataUrl.length / 1024)}KB)`);
-        }
-        return;
-      } catch {
-        // both failed
-      }
-    }
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[ErrorBoundary] Screenshot capture failed:', err);
-    }
-  }
-}
-
-function scheduleNextScreenshot(): void {
-  _screenshotTimer = setTimeout(() => {
-    if (document.hidden) {
-      // Tab is hidden — skip and schedule next
-      scheduleNextScreenshot();
-      return;
-    }
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(
-        () => {
-          void captureScreenshotToCache().then(scheduleNextScreenshot);
-        },
-        { timeout: 10_000 },
-      );
-    } else {
-      void captureScreenshotToCache().then(scheduleNextScreenshot);
-    }
-  }, SCREENSHOT_INTERVAL_MS);
-}
-
-// Initialise: eagerly load html-to-image, then take first screenshot after 5s
-// and start the 30s periodic cycle.
-if (typeof window !== 'undefined') {
-  import('html-to-image')
-    .then((mod) => {
-      _toJpeg = mod.toJpeg;
-      _toPng = mod.toPng;
-      if (process.env.NODE_ENV === 'development') {
-        console.debug('[ErrorBoundary] html-to-image loaded, toJpeg + toPng ready');
-      }
-      // First capture after page settles
-      setTimeout(() => {
-        void captureScreenshotToCache().then(scheduleNextScreenshot);
-      }, 5000);
-    })
-    .catch((err) => {
-      console.warn('[ErrorBoundary] Failed to load html-to-image:', err);
-    });
-
-  // Pause/resume on visibility change
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && _screenshotTimer) {
-      clearTimeout(_screenshotTimer);
-      _screenshotTimer = null;
-    } else if (!document.hidden && !_screenshotTimer && _toJpeg) {
-      scheduleNextScreenshot();
-    }
-  });
-}
-
-// ── Browser context helper ─────────────────────────────────────────────────────
-function gatherBrowserContext() {
-  const timing: Record<string, number> = {};
-  try {
-    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
-    if (nav) {
-      timing.domContentLoadedMs = Math.round(nav.domContentLoadedEventEnd - nav.startTime);
-      timing.pageLoadMs = Math.round(nav.loadEventEnd - nav.startTime);
-      timing.ttfbMs = Math.round(nav.responseStart - nav.startTime);
-      timing.dnsMs = Math.round(nav.domainLookupEnd - nav.domainLookupStart);
-      timing.connectMs = Math.round(nav.connectEnd - nav.connectStart);
-    }
-  } catch {
-    /* ignore */
-  }
-
-  const memory: Record<string, unknown> = {};
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mem = (performance as any).memory;
-    if (mem) {
-      memory.usedJSHeapSizeMB = Math.round(mem.usedJSHeapSize / 1048576);
-      memory.totalJSHeapSizeMB = Math.round(mem.totalJSHeapSize / 1048576);
-      memory.jsHeapSizeLimitMB = Math.round(mem.jsHeapSizeLimit / 1048576);
-    }
-  } catch {
-    /* ignore */
-  }
-
-  const connection: Record<string, unknown> = {};
-  try {
-    const nav = navigator as unknown as Record<string, unknown>;
-    const conn = (nav.connection ?? nav.mozConnection ?? nav.webkitConnection) as
-      | { effectiveType?: string; downlink?: number; rtt?: number; saveData?: boolean }
-      | undefined;
-    if (conn) {
-      connection.effectiveType = conn.effectiveType;
-      connection.downlinkMbps = conn.downlink;
-      connection.rttMs = conn.rtt;
-      connection.saveData = conn.saveData;
-    }
-  } catch {
-    /* ignore */
-  }
-
-  const localStorageKeys: Record<string, string> = {};
-  const sessionStorageKeys: Record<string, string> = {};
-  const storageVal = (store: Storage, key: string): string => {
-    const v = store.getItem(key) ?? '';
-    return v.length > 80 ? `${v.slice(0, 80)}…` : v;
-  };
-  try {
-    Object.keys(localStorage)
-      .filter((k) => !SENSITIVE_KEY_RE.test(k))
-      .forEach((k) => {
-        localStorageKeys[k] = storageVal(localStorage, k);
-      });
-  } catch {
-    /* ignore */
-  }
-  try {
-    Object.keys(sessionStorage)
-      .filter((k) => !SENSITIVE_KEY_RE.test(k))
-      .forEach((k) => {
-        sessionStorageKeys[k] = storageVal(sessionStorage, k);
-      });
-  } catch {
-    /* ignore */
-  }
-
-  // Recent failed resource loads (images, scripts, etc.)
-  const failedResources: string[] = [];
-  try {
-    performance.getEntriesByType('resource').forEach((entry) => {
-      const r = entry as PerformanceResourceTiming;
-      if (r.transferSize === 0 && r.decodedBodySize === 0 && r.duration === 0) {
-        failedResources.push(r.name);
-      }
-    });
-  } catch {
-    /* ignore */
-  }
-
-  return {
-    userAgent: navigator.userAgent,
-    language: navigator.language,
-    platform: navigator.platform,
-    hardwareConcurrency: navigator.hardwareConcurrency,
-    maxTouchPoints: navigator.maxTouchPoints,
-    cookiesEnabled: navigator.cookieEnabled,
-    onLine: navigator.onLine,
-    screen: {
-      resolution: `${screen.width}x${screen.height}`,
-      available: `${screen.availWidth}x${screen.availHeight}`,
-      devicePixelRatio: window.devicePixelRatio,
-      colorDepth: screen.colorDepth,
-    },
-    viewport: `${window.innerWidth}x${window.innerHeight}`,
-    referrer: document.referrer || null,
-    timeOnPageSeconds: Math.round(performance.now() / 1000),
-    localStorageKeys,
-    sessionStorageKeys,
-    timing,
-    memory,
-    connection,
-    failedResources: failedResources.slice(-10),
-  };
-}
-
 class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
   public state: Readonly<IErrorBoundaryState> = {};
 
@@ -561,10 +255,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
     this.setState({ errorInfo });
 
     // Stop the periodic screenshot timer — we've crashed
-    if (_screenshotTimer) {
-      clearTimeout(_screenshotTimer);
-      _screenshotTimer = null;
-    }
+    stopScreenshotTimer();
 
     // ── Always send: bare error string only (no identifying info) ──
     Logger.errorMinimal(error.toString());
@@ -592,7 +283,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
         2,
       ),
       url: window.location.href,
-      screenshot: _lastScreenshot ?? undefined,
+      screenshot: getLastScreenshot() ?? undefined,
     };
 
     console.error('ErrorBoundary caught an error:', error.toString());
@@ -685,7 +376,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <Button type="primary" size="small" icon={<BugOutlined />} onClick={this.handleDiagnosticConsent}>
                 Share Diagnostics
               </Button>
-              {_lastScreenshot && (
+              {getLastScreenshot() && (
                 <Button size="small" icon={<CameraOutlined />} onClick={this.handlePreviewScreenshot}>
                   Preview Screenshot
                 </Button>
@@ -710,9 +401,9 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               This is the screenshot that will be included with the diagnostic report. It shows what was on screen
               shortly before the error occurred.
             </Text>
-            {_lastScreenshot && (
+            {getLastScreenshot() && (
               <img
-                src={_lastScreenshot}
+                src={getLastScreenshot()!}
                 alt="Screenshot preview"
                 style={{
                   width: '100%',

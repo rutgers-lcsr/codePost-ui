@@ -1,14 +1,18 @@
 # TokenRefreshApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                  | HTTP request             | Description |
-| --------------------------------------- | ------------------------ | ----------- |
-| [**create**](TokenRefreshApi.md#create) | **POST** /token-refresh/ |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**create**](TokenRefreshApi.md#create) | **POST** /token-refresh/ |  |
+
+
 
 ## create
 
 > TokenRefreshSliding create(tokenRefreshSliding)
+
+
 
 Takes a sliding JSON web token and returns a new, refreshed version if the token\&#39;s refresh period has not expired.
 
@@ -44,9 +48,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                    | Type                                          | Description | Notes |
-| ----------------------- | --------------------------------------------- | ----------- | ----- |
-| **tokenRefreshSliding** | [TokenRefreshSliding](TokenRefreshSliding.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenRefreshSliding** | [TokenRefreshSliding](TokenRefreshSliding.md) |  | |
 
 ### Return type
 
@@ -61,10 +66,11 @@ No authorization required
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

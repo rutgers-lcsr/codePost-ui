@@ -163,7 +163,7 @@ export const TestCreateModal = (props: IProps) => {
       } else {
         message.error('No script returned from AI.');
       }
-    } catch (e) {
+    } catch {
       message.error('Failed to generate script.');
     } finally {
       setIsGenerating(false);

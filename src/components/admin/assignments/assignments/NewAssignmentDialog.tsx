@@ -69,7 +69,7 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
           course.assignments.map(async (id) => {
             try {
               return await assignmentsApi.retrieve({ id });
-            } catch (e) {
+            } catch {
               return null;
             }
           }),

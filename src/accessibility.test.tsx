@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
@@ -244,7 +244,7 @@ describe('Accessibility', () => {
 
   it('should have no violations on Code Console (Demo)', async () => {
     // Known to fail runtime, but keeping test structure
-    const { container } = render(
+    render(
       <MemoryRouter>
         <CodeConsole inDemoMode={true} user={mockUser} handleLogout={vi.fn()} />
       </MemoryRouter>,

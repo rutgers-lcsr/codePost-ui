@@ -11,6 +11,10 @@ const shortcuts: IShortcutCategory[] = [
         keys: ['COMMAND', '/'],
       },
       {
+        name: 'Report an Issue',
+        keys: ['ALT', 'SHIFT', 'r'],
+      },
+      {
         name: 'Toggle Info Tab',
         keys: ['COMMAND', 'SHIFT', 'e'],
       },

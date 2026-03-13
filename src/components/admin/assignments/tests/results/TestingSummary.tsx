@@ -105,6 +105,7 @@ export const TestingSummary = (props: IProps) => {
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentAssignment && props.currentAssignment.id]);
 
   // ******************************* API / State change functions  *******************************

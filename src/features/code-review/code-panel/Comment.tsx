@@ -1361,7 +1361,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
         });
       }
     },
-    [props.onPin, text, points, props.comment.rubricComment, props.comment.id],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.onPin, text, points, props.comment.rubricComment, props.comment.id, props.comment.startLine],
   );
 
   const titleRight = [commentElements.points];

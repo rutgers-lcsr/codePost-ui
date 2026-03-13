@@ -393,6 +393,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     propsSelectedAssignment,
     isVisible,

@@ -38,7 +38,7 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
         try {
           const data = await Submission.readPartnerLink(props.submission.id);
           setLink(data);
-        } catch (err) {
+        } catch {
           setLink(undefined);
         }
       }

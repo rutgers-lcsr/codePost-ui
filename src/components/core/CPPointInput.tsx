@@ -67,7 +67,6 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
   const prevValueRef = useRef<number | undefined>(value);
 
   // When value changes from external source (navigation), sync the type
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs pointType from external value prop changes
   useEffect(() => {
     const prevValue = prevValueRef.current;
 

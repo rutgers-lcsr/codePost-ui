@@ -58,7 +58,6 @@ const Grader: React.FC<IComponentProps> = (props) => {
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
 
   // Refs for timer logging (keeping original behavior though it was commented out)
-  // eslint-disable-next-line react-hooks/purity -- useRef only uses initial value on first render
   const timerRef = useRef<number>(Date.now());
   const timesRef = useRef<number[]>([]);
 
@@ -97,7 +96,8 @@ const Grader: React.FC<IComponentProps> = (props) => {
       setLocalSectionsLed([]);
       setIsSuperGrader(false);
     }
-  }, [currentCourse?.id, superGraderCourses, sectionsLed]); // Depend on ID to trigger reload only when course changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally depends on course ID only to avoid re-fetch loops
+  }, [currentCourse?.id, superGraderCourses, sectionsLed]);
 
   // ADD THIS BACK TO TURN ON THE SURVEY AGAIN
   // useEffect(() => {

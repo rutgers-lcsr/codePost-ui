@@ -170,7 +170,7 @@ const Code = (props: CodePropsWithoutComments) => {
       if (result) {
         props.onUpdateCommentLocation(data.id, result.startLine, result.endLine, result.startChar, result.endChar);
       }
-    } catch (err) {
+    } catch {
       // Ignore
     }
   };

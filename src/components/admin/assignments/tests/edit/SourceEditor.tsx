@@ -74,9 +74,9 @@ export const SourceEditor = (props: IProps) => {
 
   useEffect(() => {
     if (props.currentFile) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync draft with prop when file changes
       setDraftCode(props.currentFile.code);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentFile?.id, props.currentFile?.code]);
 
   /************************** API functions ****************************/

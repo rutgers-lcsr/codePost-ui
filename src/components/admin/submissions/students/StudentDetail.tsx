@@ -85,6 +85,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
   const { deleteSubmission, addFilesToSubmission, uploadSubmission, changeSubmissionGrader } = props;
 
   // Derive submissionsMap directly from props to ensure it's always up to date
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const submissionsMap = props.submissions[props.student] || {};
 
   // ******************************************** State changes **************************************************

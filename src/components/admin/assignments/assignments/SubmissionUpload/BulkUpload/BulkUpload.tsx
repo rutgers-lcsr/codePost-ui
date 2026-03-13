@@ -253,6 +253,7 @@ const BulkUpload: FC<IProps> = (props) => {
 
       await performUploadWithMap(localFileMap);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     protoSubmissions,
     numFiles,

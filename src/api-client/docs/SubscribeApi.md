@@ -1,14 +1,18 @@
 # SubscribeApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                               | HTTP request         | Description |
-| ------------------------------------ | -------------------- | ----------- |
-| [**create**](SubscribeApi.md#create) | **POST** /subscribe/ |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**create**](SubscribeApi.md#create) | **POST** /subscribe/ |  |
+
+
 
 ## create
 
 > SubscribeToEmailListResponse create(subscribeToEmailListRequest)
+
+
 
 ### Example
 
@@ -21,7 +25,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -53,9 +57,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                            | Type                                                          | Description | Notes |
-| ------------------------------- | ------------------------------------------------------------- | ----------- | ----- |
-| **subscribeToEmailListRequest** | [SubscribeToEmailListRequest](SubscribeToEmailListRequest.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **subscribeToEmailListRequest** | [SubscribeToEmailListRequest](SubscribeToEmailListRequest.md) |  | |
 
 ### Return type
 
@@ -70,10 +75,11 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

@@ -89,7 +89,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         const data = await response.json();
         message.error(data.error || 'Rollback failed');
       }
-    } catch (e) {
+    } catch {
       message.error('Failed to rollback');
     } finally {
       setActionLoading(null);
@@ -115,7 +115,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       } else {
         message.error('Cleanup failed');
       }
-    } catch (e) {
+    } catch {
       message.error('Failed to cleanup');
     } finally {
       setActionLoading(null);
@@ -139,7 +139,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       } else {
         message.error('Conversion failed');
       }
-    } catch (e) {
+    } catch {
       message.error('Failed to convert');
     } finally {
       setActionLoading(null);

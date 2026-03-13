@@ -296,7 +296,7 @@ const DocsContent: React.FC = () => {
         </HeadingWithAnchor>
       );
     },
-    p: ({ node, children, ...props }: any) =>
+    p: ({ node: _node, children, ...props }: any) =>
       (() => {
         const paragraphText = React.Children.toArray(children)
           .map((child) => (typeof child === 'string' ? child : ''))
@@ -316,7 +316,7 @@ const DocsContent: React.FC = () => {
           </div>
         );
       })(),
-    a: ({ node, children, href, ...props }: any) => {
+    a: ({ node: _node, children, href, ...props }: any) => {
       const isInternal = href && href.startsWith('/docs');
       if (isInternal) {
         return (
@@ -331,7 +331,7 @@ const DocsContent: React.FC = () => {
         </a>
       );
     },
-    li: ({ node, children, ...props }: any) => (
+    li: ({ node: _node, children, ...props }: any) => (
       <li
         style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
         {...props}
@@ -339,7 +339,7 @@ const DocsContent: React.FC = () => {
         {renderWithHighlight(children)}
       </li>
     ),
-    blockquote: ({ node, children, ...props }: any) => {
+    blockquote: ({ node: _node, children, ...props }: any) => {
       // Check for GitHub-style alerts: [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
 
       // Helper to extract full text content from children
@@ -484,7 +484,7 @@ const DocsContent: React.FC = () => {
         </blockquote>
       );
     },
-    code({ node, inline, className, children, ...props }: any) {
+    code({ node: _node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
         <div
@@ -533,7 +533,7 @@ const DocsContent: React.FC = () => {
         </code>
       );
     },
-    table: ({ node, children, ...props }: any) => (
+    table: ({ node: _node, children, ...props }: any) => (
       <div
         style={{
           overflowX: 'auto',
@@ -554,18 +554,18 @@ const DocsContent: React.FC = () => {
         </table>
       </div>
     ),
-    thead: ({ node, children, ...props }: any) => (
+    thead: ({ node: _node, children, ...props }: any) => (
       <thead style={{ backgroundColor: colors.neutralBackground }} {...props}>
         {children}
       </thead>
     ),
-    tbody: ({ node, children, ...props }: any) => <tbody {...props}>{children}</tbody>,
-    tr: ({ node, children, ...props }: any) => (
+    tbody: ({ node: _node, children, ...props }: any) => <tbody {...props}>{children}</tbody>,
+    tr: ({ node: _node, children, ...props }: any) => (
       <tr style={{ borderBottom: `1px solid ${colors.neutralBorder}` }} {...props}>
         {children}
       </tr>
     ),
-    th: ({ node, children, ...props }: any) => (
+    th: ({ node: _node, children, ...props }: any) => (
       <th
         style={{
           padding: '12px 16px',
@@ -578,7 +578,7 @@ const DocsContent: React.FC = () => {
         {renderWithHighlight(children)}
       </th>
     ),
-    td: ({ node, children, ...props }: any) => (
+    td: ({ node: _node, children, ...props }: any) => (
       <td
         style={{
           padding: '12px 16px',
@@ -589,7 +589,7 @@ const DocsContent: React.FC = () => {
         {renderWithHighlight(children)}
       </td>
     ),
-    img: ({ node, ...props }: any) => (
+    img: ({ node: _node, ...props }: any) => (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0' }}>
         <Image
           alt={props.alt || ''}

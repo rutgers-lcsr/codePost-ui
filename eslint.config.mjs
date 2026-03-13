@@ -27,7 +27,7 @@ export default tseslint.config(
                 { allowConstantExport: true },
             ],
             '@typescript-eslint/no-explicit-any': 'warn',
-            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
             'prettier/prettier': 'warn',
             'jsx-a11y/anchor-is-valid': 'off',
             'no-restricted-imports': [
