@@ -53,7 +53,11 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
   useFixedWindow();
   const [consoleTheme, setConsoleTheme] = React.useState(consoleThemes.light);
   const toggleConsoleTheme = React.useCallback((toTheme: ConsoleTheme) => {
-    toTheme === 'light' ? setConsoleTheme(consoleThemes.light) : setConsoleTheme(consoleThemes.dark);
+    if (toTheme === 'light') {
+      setConsoleTheme(consoleThemes.light);
+    } else {
+      setConsoleTheme(consoleThemes.dark);
+    }
   }, []);
 
   const themeContextValue = React.useMemo(

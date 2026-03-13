@@ -97,7 +97,7 @@ interface IProps {
 const validateEmail = (email: string) => {
   // 🙏 https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
   const re =
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    /^(([^<>()[\]\\.,;:\s@"]+(\.\[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 };
 
@@ -112,6 +112,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
 
   // Initial roster input calculation
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs initial state from props; also set by file upload
     setRosterInput(
       rosterToCsv(
         props.sectionsByStudent,
@@ -128,18 +129,15 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
     );
   }, [props.sectionsByStudent, props.roleType, props.admins, props.graders, props.students]);
 
-  // Clean up on dialog close
-  useEffect(() => {
-    if (!dialogVisible) {
+  const toggleDialog = () => {
+    if (dialogVisible) {
+      // Clean up on dialog close
       setUploadErrors([]);
       setStatus(UPLOAD_STATUS.UPLOAD);
       setUpdates({ deleted: {}, changed: {}, added: {} });
       setUpdatingRoster(false);
       setNewRoster(undefined);
     }
-  }, [dialogVisible]);
-
-  const toggleDialog = () => {
     setDialogVisible(!dialogVisible);
   };
 

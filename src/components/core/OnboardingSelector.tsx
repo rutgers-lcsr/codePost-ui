@@ -157,7 +157,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   const [errorText, setErrorText] = React.useState('');
 
   let title;
-  let options = [];
+  let options: React.ReactNode[];
   let message;
   let footerButtons = null;
   if (uploading) {

@@ -40,7 +40,7 @@ interface IDetailProps {
 }
 
 function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.ComponentType<T>) {
-  return (props: IParentProps & T) => {
+  const BuiltGraderPanel = (props: IParentProps & T) => {
     const navigate = useNavigate();
 
     // In v6, simple back navigation to index or explicit path
@@ -97,6 +97,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
       </Routes>
     );
   };
+  return BuiltGraderPanel;
 }
 
 export default GraderPanelBuilder;

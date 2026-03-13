@@ -286,7 +286,6 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         // No submission yet, just show tests without results
         try {
           const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
-          // @ts-ignore
           setTestCasesState(studentTests.testCases as any[]);
         } catch (e) {
           console.error(e);
@@ -486,7 +485,11 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     setFiles([]);
     setFileList([]);
     setRejectedFiles([]);
-    onSuccess ? onSuccess(submission!.id) : onCancel();
+    if (onSuccess) {
+      onSuccess(submission!.id);
+    } else {
+      onCancel();
+    }
   }, [onSuccess, onCancel, submission]);
 
   const toggleDirectoryUpload = useCallback(() => {

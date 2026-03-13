@@ -23,7 +23,7 @@ const Badge: React.FC<IBadgeProps> = (props) => {
 
   const numericCount = typeof count === 'number' ? count : parseFloat(count);
 
-  let label = `${count}`;
+  let label: string;
   let className = `badge badge--${_size}`;
   let badgeStyle: 'negative' | 'positive' | 'neutral' = 'neutral';
 

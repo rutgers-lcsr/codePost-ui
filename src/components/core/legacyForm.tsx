@@ -44,6 +44,7 @@ const create = (options?: CreateOptions) => {
         if (typeof wrappedComponentRef === 'function') {
           wrappedComponentRef(innerRef.current);
         } else {
+          // eslint-disable-next-line react-hooks/immutability -- legacy ref forwarding shim
           wrappedComponentRef.current = innerRef.current;
         }
       }, [wrappedComponentRef]);

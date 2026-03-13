@@ -64,6 +64,7 @@ export interface IManageAdminsProps {
 }
 
 const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
+  const { updateRoster } = props;
   const removeAdmin = useCallback(
     (toRemove: string) => {
       confirm({
@@ -71,12 +72,12 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         content: `Once removed, they won't be able to access the course.
         You can always add them back from this page.`,
         onOk: () => {
-          return props.updateRoster([], [toRemove], USER_APP.CourseAdmin);
+          return updateRoster([], [toRemove], USER_APP.CourseAdmin);
         },
         okText: 'Remove',
       });
     },
-    [props.updateRoster],
+    [updateRoster],
   );
 
   const sendActivationEmail = useCallback(

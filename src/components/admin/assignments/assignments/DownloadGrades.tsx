@@ -35,7 +35,7 @@ export const buildAllGradesTable = (
     assignments.forEach((assignment) => {
       const submission = submissionsByStudent[student]?.[assignment.id];
 
-      let grade = '';
+      let grade: string;
       if (submission) {
         grade =
           submission.isFinalized && submission.grade !== null ? submission.grade.toString() : ungradedAsZero ? '0' : '';

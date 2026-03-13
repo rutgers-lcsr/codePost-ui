@@ -213,18 +213,6 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     listeners: new Set(),
   });
 
-  // Keep hover store in sync with focusedCommentId prop
-  React.useEffect(() => {
-    if (focusedCommentId !== undefined) {
-      if (hoverStoreRef.current.value !== focusedCommentId) {
-        hoverStoreRef.current.value = focusedCommentId;
-        // Re-apply styling immediately
-        applyHoverStyling(focusedCommentId);
-        notifyHoverListeners();
-      }
-    }
-  }, [focusedCommentId]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Track DOM nodes currently marked as hovered so we can clean them up without re-rendering Markdown/PDF
   const hoveredElementsRef = React.useRef<HTMLElement[]>([]);
 
@@ -293,6 +281,18 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     },
     [clearHoveredElements, effectiveComments, file],
   );
+
+  // Keep hover store in sync with focusedCommentId prop
+  React.useEffect(() => {
+    if (focusedCommentId !== undefined) {
+      if (hoverStoreRef.current.value !== focusedCommentId) {
+        hoverStoreRef.current.value = focusedCommentId;
+        // Re-apply styling immediately
+        applyHoverStyling(focusedCommentId);
+        notifyHoverListeners();
+      }
+    }
+  }, [focusedCommentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setHoveredCommentId = React.useCallback(
     (id: number | null) => {

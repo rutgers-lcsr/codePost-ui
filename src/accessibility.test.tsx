@@ -120,9 +120,9 @@ describe('Accessibility', () => {
         <IndexManager {...mockIndexesProps} />
       </MemoryRouter>,
     );
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   });
 
@@ -133,9 +133,9 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   });
 
@@ -146,9 +146,9 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   });
 
@@ -159,9 +159,9 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   });
 
@@ -172,23 +172,23 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   }, 30000);
 
   it('should have no violations on the Student Console (Student)', async () => {
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const { container } = render(
       <MemoryRouter>
         <Student {...mockStudentProps} />
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -211,9 +211,9 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -236,9 +236,9 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     const results = await axe(container, axeConfig);
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
   }, 30000);
 
@@ -250,7 +250,7 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
     // Skip axe check for now as runtime error persists
-    // @ts-ignore
+    // @ts-expect-error — legacy type incompatibility
     // const results = await axe(container, axeConfig);
     // expect(results).toHaveNoViolations();
   }, 30000);
@@ -273,9 +273,9 @@ describe('Accessibility', () => {
     marketingPages.forEach(({ name, component }) => {
       it(`should have no violations on ${name} page`, async () => {
         const { container } = render(<MemoryRouter>{component}</MemoryRouter>);
-        // @ts-ignore
+        // @ts-expect-error — legacy type incompatibility
         const results = await axe(container, axeConfig);
-        // @ts-ignore
+        // @ts-expect-error — legacy type incompatibility
         expect(results).toHaveNoViolations();
       }, 30000);
     });

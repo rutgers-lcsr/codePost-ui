@@ -22,7 +22,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
 
   const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
     const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
-    return !Boolean(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
+    return !(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
   };
 
   const showModal = (dataset?: AssignmentDataSetType) => {

@@ -280,7 +280,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Delete linked comments
   const deleteLinkedComments = useCallback(async (rubricComment: RubricComment) => {
-    let comments: number[] = [];
+    let comments: number[];
     const currentInstanceLists = useRubricStore.getState().instanceLists;
     if (currentInstanceLists[rubricComment.id]) {
       comments = currentInstanceLists[rubricComment.id];
@@ -298,7 +298,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Unlink linked comments
   const unlinkLinkedComments = useCallback(async (rubricComment: RubricComment) => {
-    let comments: number[] = [];
+    let comments: number[];
     const currentInstanceLists = useRubricStore.getState().instanceLists;
     if (currentInstanceLists[rubricComment.id]) {
       comments = currentInstanceLists[rubricComment.id];

@@ -172,13 +172,13 @@ const demoAssignments = (courseID: number) => {
               type: 'shell',
               pointsFail: -1,
               text: `# Run student code
-result=\$(java HelloWorld)
+result=$(java HelloWorld)
 
 # Grab length of output
 resultLen=\${#result}
 minLen=0
 
-if [ "\$resultLen" -gt "\$minLen" ]
+if [ "$resultLen" -gt "$minLen" ]
  then
    TestOutput true "passed"
  else

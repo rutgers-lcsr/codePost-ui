@@ -319,7 +319,7 @@ const RubricMenuUI = ({
               cursorIndex: cursorIndex,
               commentIndex: thisIndex,
             };
-            // @ts-ignore
+            // @ts-expect-error — legacy type incompatibility
             return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
           }}
         </RubricCategoryManager>

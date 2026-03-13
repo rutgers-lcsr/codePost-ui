@@ -52,8 +52,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
       return Promise.resolve();
     }
 
-    const thisFile = filesCopy[thisFileIndex];
-    thisFile.data = code;
+    const thisFile = { ...filesCopy[thisFileIndex], data: code };
 
     setFilesCopy(arrayUpdate(filesCopy, thisFile, thisFileIndex));
     return Promise.resolve();

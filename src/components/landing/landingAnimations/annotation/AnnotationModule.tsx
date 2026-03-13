@@ -301,7 +301,7 @@ const AnnotationModule: React.FC<IProps> = ({ index = 0 }) => {
   const [hoveredLine, setHoveredLine] = useState<number | null>(null);
 
   useEffect(() => {
-    setCommentVisible(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- animation reset on tab change with delayed reveal
     setHoveredComment(null);
     setHoveredLine(null);
     const t = setTimeout(() => setCommentVisible(true), 500);

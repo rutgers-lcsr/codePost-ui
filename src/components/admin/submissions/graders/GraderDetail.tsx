@@ -158,16 +158,10 @@ const GraderDetail = (props: IProps) => {
                     items={[
                       { title: <Link to={props.baseURL.split('/').slice(0, -1).join('/')}>Submissions</Link> },
                       {
-                        title: (
-                          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                          <Link to={props.baseURL.split('/').slice(0, -1).join('/')}>By Grader</Link>
-                        ),
+                        title: <Link to={props.baseURL.split('/').slice(0, -1).join('/')}>By Grader</Link>,
                       },
                       {
-                        title: (
-                          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                          <a>{props.grader}</a>
-                        ),
+                        title: <a>{props.grader}</a>,
                       },
                     ]}
                   />

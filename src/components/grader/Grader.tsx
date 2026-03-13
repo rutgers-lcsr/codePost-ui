@@ -58,6 +58,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
 
   // Refs for timer logging (keeping original behavior though it was commented out)
+  // eslint-disable-next-line react-hooks/purity -- useRef only uses initial value on first render
   const timerRef = useRef<number>(Date.now());
   const timesRef = useRef<number[]>([]);
 
@@ -79,7 +80,6 @@ const Grader: React.FC<IComponentProps> = (props) => {
           .slice()
           .filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
 
-        // @ts-ignore: Assignment type compatibility
         setAssignments(newAssignments);
         setIsSuperGrader(newIsSuperGrader);
         setLocalSectionsLed(newSectionsLed);
@@ -165,12 +165,12 @@ const Grader: React.FC<IComponentProps> = (props) => {
       <Routes>
         <Route
           path=":panel/:assignment"
-          // @ts-ignore
+          // @ts-expect-error — legacy type incompatibility
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
         <Route
           path=":panel"
-          // @ts-ignore
+          // @ts-expect-error — legacy type incompatibility
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
       </Routes>

@@ -85,6 +85,7 @@ const DraggableBodyRow: React.FC<IBodyRowProps> = ({ index, moveRow, className, 
 
   const opacity = isDragging ? 0.5 : 1;
 
+  // eslint-disable-next-line react-hooks/refs -- react-dnd composing pattern requires ref access during render
   drag(drop(ref));
 
   return (

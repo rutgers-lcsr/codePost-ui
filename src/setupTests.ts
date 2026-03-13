@@ -51,12 +51,10 @@ vi.mock('react-pdf', () => {
 vi.mock('@wistia/wistia-player-react', () => {
   return {
     WistiaPlayer: () => React.createElement('div'),
-    WistiaProvider: ({ children }: { children?: React.ReactNode }) =>
-      React.createElement('div', null, children),
+    WistiaProvider: ({ children }: { children?: React.ReactNode }) => React.createElement('div', null, children),
   };
 });
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 (globalThis as Record<string, unknown>).DOMMatrix = class DOMMatrix {
   a = 1;
   b = 0;
@@ -238,7 +236,6 @@ Object.defineProperty(window, 'getComputedStyle', {
 });
 
 if (globalThis.HTMLCanvasElement) {
-  // eslint-disable-next-line no-extend-native
   globalThis.HTMLCanvasElement.prototype.getContext = vi.fn(() => {
     // minimal stub; enough for libraries that just check for a truthy context
     return {

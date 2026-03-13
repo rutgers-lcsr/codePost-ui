@@ -306,6 +306,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   );
 
   // Handle scroll position restoration (replacement for getSnapshotBeforeUpdate)
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM scroll save/restore after render
   useEffect(() => {
     const prevProps = prevPropsRef.current;
     const codeScrollArea = document.getElementById('code-scroll-area');
@@ -315,6 +316,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     if (codeScrollArea !== null && prevProps) {
       if (prevFileId !== currentFileId) {
         // Save scroll position for previous file
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- save scroll position on file change
         setFileScrollPositions((prev) => ({
           ...prev,
           [prevFileId]: codeScrollArea.scrollTop,

@@ -69,7 +69,11 @@ const RegradesDetailPanel = (props: IProps) => {
 
   const refreshSubmissions = () => {
     setLoading(true);
-    viewAll ? loadAllSubmissions(props.assignment) : loadMySubmissions(props.assignment, props.user.email!);
+    if (viewAll) {
+      loadAllSubmissions(props.assignment);
+    } else {
+      loadMySubmissions(props.assignment, props.user.email!);
+    }
   };
 
   const updateSubmission = (toUpdate: AnonymousSubmissionInfoType) => {
