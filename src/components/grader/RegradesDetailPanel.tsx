@@ -12,8 +12,8 @@ import { Breadcrumb, Switch } from 'antd';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 /* codePost imports */
+import { assignmentsApi } from '../../api-client/clients';
 import { submissionsApi } from '../../api-client/clients';
-import { getHeaders } from '../../utils/generics';
 import { Assignment } from '../../types/common';
 import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
 
@@ -37,17 +37,13 @@ const RegradesDetailPanel = (props: IProps) => {
   const [viewAll, setViewAll] = useState(false);
 
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
-    // Manual fetch to support 'grader' query param which is missing in generated client
     try {
-      const query = new URLSearchParams({
-        grader: user,
+      const response = await assignmentsApi.submissionsListRaw({
+        id: currentAssignment.id,
         compact: '1',
+        grader: user,
       });
-      const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
-        headers: getHeaders(),
-      });
-      if (!response.ok) throw new Error('Failed to fetch submissions');
-      const data = await response.json();
+      const data = await response.raw.json();
       setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (error) {
       console.error(error);
@@ -58,14 +54,11 @@ const RegradesDetailPanel = (props: IProps) => {
 
   const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
     try {
-      const query = new URLSearchParams({
+      const response = await assignmentsApi.submissionsListRaw({
+        id: currentAssignment.id,
         compact: '1',
       });
-      const response = await fetch(`/api/assignments/${currentAssignment.id}/submissions/?${query.toString()}`, {
-        headers: getHeaders(),
-      });
-      if (!response.ok) throw new Error('Failed to fetch submissions');
-      const data = await response.json();
+      const data = await response.raw.json();
       setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
     } catch (error) {
       console.error(error);

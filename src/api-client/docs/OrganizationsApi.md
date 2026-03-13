@@ -9,11 +9,14 @@ All URIs are relative to _http://localhost_
 | [**aiSettingsRetrieve**](OrganizationsApi.md#aisettingsretrieve)           | **GET** /organizations/{id}/aiSettings/           |             |
 | [**aiUsageRetrieve**](OrganizationsApi.md#aiusageretrieve)                 | **GET** /organizations/{id}/aiUsage/              |             |
 | [**analyticsRetrieve**](OrganizationsApi.md#analyticsretrieve)             | **GET** /organizations/{id}/analytics/            |             |
+| [**approveAdminCreate**](OrganizationsApi.md#approveadmincreate)           | **POST** /organizations/{id}/approve_admin/       |             |
 | [**create**](OrganizationsApi.md#create)                                   | **POST** /organizations/                          |             |
 | [**demoteStaffCreate**](OrganizationsApi.md#demotestaffcreate)             | **POST** /organizations/{id}/demote_staff/        |             |
+| [**denyAdminCreate**](OrganizationsApi.md#denyadmincreate)                 | **POST** /organizations/{id}/deny_admin/          |             |
 | [**destroy**](OrganizationsApi.md#destroy)                                 | **DELETE** /organizations/{id}/                   |             |
 | [**list**](OrganizationsApi.md#list)                                       | **GET** /organizations/                           |             |
 | [**partialUpdate**](OrganizationsApi.md#partialupdate)                     | **PATCH** /organizations/{id}/                    |             |
+| [**pendingAdminsRetrieve**](OrganizationsApi.md#pendingadminsretrieve)     | **GET** /organizations/{id}/pending_admins/       |             |
 | [**promoteStaffCreate**](OrganizationsApi.md#promotestaffcreate)           | **POST** /organizations/{id}/promote_staff/       |             |
 | [**removeUserCreate**](OrganizationsApi.md#removeusercreate)               | **POST** /organizations/{id}/remove_user/         |             |
 | [**resetUserPasswordCreate**](OrganizationsApi.md#resetuserpasswordcreate) | **POST** /organizations/{id}/reset_user_password/ |             |
@@ -392,6 +395,83 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## approveAdminCreate
+
+> Organization approveAdminCreate(id, organization)
+
+Approve a pending admin request. Grants canCreateCourses&#x3D;True. Payload: { \&#39;user_email\&#39;: \&#39;...\&#39; }
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OrganizationsApi,
+} from '';
+import type { ApproveAdminCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+    // Organization
+    organization: ...,
+  } satisfies ApproveAdminCreateRequest;
+
+  try {
+    const data = await api.approveAdminCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name             | Type                            | Description                                           | Notes                     |
+| ---------------- | ------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**           | `number`                        | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| **organization** | [Organization](Organization.md) |                                                       |                           |
+
+### Return type
+
+[**Organization**](Organization.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## create
 
 > Organization create(organization)
@@ -505,6 +585,83 @@ async function example() {
 
   try {
     const data = await api.demoteStaffCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name             | Type                            | Description                                           | Notes                     |
+| ---------------- | ------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**           | `number`                        | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| **organization** | [Organization](Organization.md) |                                                       |                           |
+
+### Return type
+
+[**Organization**](Organization.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## denyAdminCreate
+
+> Organization denyAdminCreate(id, organization)
+
+Deny a pending admin request. Payload: { \&#39;user_email\&#39;: \&#39;...\&#39; }
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OrganizationsApi,
+} from '';
+import type { DenyAdminCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+    // Organization
+    organization: ...,
+  } satisfies DenyAdminCreateRequest;
+
+  try {
+    const data = await api.denyAdminCreate(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -745,6 +902,77 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## pendingAdminsRetrieve
+
+> Organization pendingAdminsRetrieve(id)
+
+Returns a list of users with pendingValidation&#x3D;True in this organization. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import { Configuration, OrganizationsApi } from '';
+import type { PendingAdminsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+  } satisfies PendingAdminsRetrieveRequest;
+
+  try {
+    const data = await api.pendingAdminsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                           | Notes                     |
+| ------ | -------- | ----------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Organization**](Organization.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

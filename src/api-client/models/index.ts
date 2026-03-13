@@ -7525,6 +7525,18 @@ export interface ValidateNewAdminUserResponse {
    * @memberof ValidateNewAdminUserResponse
    */
   actionId: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof ValidateNewAdminUserResponse
+   */
+  isNewOrg?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof ValidateNewAdminUserResponse
+   */
+  pending?: boolean;
 }
 /**
  *
