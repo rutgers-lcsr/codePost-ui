@@ -78,15 +78,35 @@ The Code Console is where you review your graded work.
 
 ## Regrade Requests
 
-If enabled by your instructor, you may request a regrade if you believe there was a grading error.
+If enabled by your instructor, you may request a regrade or ask a question about your grade once your submission has been graded.
 
-1. Open the submission in the Code Console.
-2. Click the **Regrade Request** (question mark icon) button.
-3. Explain specifically which part of the grading is incorrect and why.
-4. Submit the request.
+### Submitting a Request
+
+1. Open the graded submission in the Code Console.
+2. In the **Submission Info** panel on the right, look for the regrade request card.
+3. Click **Submit Request**.
+4. Choose whether this is a **Regrade Request** or a general **Question** using the toggle.
+5. Write a clear explanation of which part of the grading you believe is incorrect and why.
+6. Click **Submit**.
+
+### Tracking Your Request
+
+After submitting, the Submission Info panel shows the current status of your request:
+
+- **Open**: Your request has been submitted and is waiting for a grader to review it.
+- **Claimed**: A grader has picked up your request and is working on a response.
+- **View Response**: The grader has responded. Click to read their reply.
+
+### Deleting a Request
+
+You can delete your request before a grader claims it by clicking the **Delete** button. Once a grader has claimed or responded to your request, it cannot be deleted.
+
+### Deadlines
+
+If your instructor has set a regrade deadline, you will not be able to submit a request after that date. The deadline is displayed in the regrade card.
 
 > [!IMPORTANT]
-> Use regrade requests responsibly. Frivolous requests may be penalized depending on course policy.
+> Use regrade requests responsibly. You can only submit one request per submission — make sure to include all relevant details. Frivolous requests may be penalized depending on course policy.
 
 ## Troubleshooting
 

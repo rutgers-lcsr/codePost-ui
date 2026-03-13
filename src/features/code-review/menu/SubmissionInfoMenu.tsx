@@ -86,6 +86,11 @@ interface ISubmissionInfoWriteProps {
     graderUsername: string | undefined,
   ) => Promise<AnonymousSubmissionType>;
   addLateDayCreditComment: any;
+  graderEmail?: string;
+  onUpdateRegrade?: (
+    submission: AnonymousSubmissionType,
+    fields: Partial<AnonymousSubmissionType>,
+  ) => Promise<AnonymousSubmissionType>;
 }
 
 const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
@@ -327,6 +332,15 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
             </div>
           </div>
         )}
+
+        {props.submission !== undefined && props.submission.questionText ? (
+          <GraderRegrade
+            submission={props.submission}
+            graderEmail={props.graderEmail}
+            isCourseAdmin={props.isCourseAdmin}
+            onUpdateRegrade={props.onUpdateRegrade}
+          />
+        ) : null}
 
         {props.readOnlySubmission !== undefined &&
         props.submitStudentQuestion &&
@@ -580,6 +594,239 @@ export const Students = (props: {
   }
 };
 
+/******************************* Grader Regrade Info *******************************************/
+
+interface IGraderRegradeProps {
+  submission: AnonymousSubmissionType;
+  graderEmail?: string;
+  isCourseAdmin: boolean;
+  onUpdateRegrade?: (
+    submission: AnonymousSubmissionType,
+    fields: Partial<AnonymousSubmissionType>,
+  ) => Promise<AnonymousSubmissionType>;
+}
+
+const GraderRegrade = (props: IGraderRegradeProps) => {
+  const { consoleTheme } = React.useContext(ConsoleThemeContext);
+  const [responseText, setResponseText] = useState(props.submission.questionResponse ?? '');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+
+  const isClaimed = !!props.submission.questionResponder;
+  const isClaimedByMe = props.submission.questionResponder === props.graderEmail;
+  const isClosed = !props.submission.questionIsOpen;
+  const hasResponse = !!props.submission.questionResponse;
+
+  const canClaim = !isClaimed || isClaimedByMe || props.isCourseAdmin;
+  const canRespond = isClaimedByMe && !isClosed;
+
+  const handleClaim = async () => {
+    if (!props.onUpdateRegrade) return;
+    setLoading(true);
+    try {
+      await props.onUpdateRegrade(props.submission, {
+        questionResponder: props.graderEmail,
+        questionResponse: '',
+        questionIsOpen: true,
+      });
+      message.success('Regrade claimed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRelease = async () => {
+    if (!props.onUpdateRegrade) return;
+    setLoading(true);
+    try {
+      await props.onUpdateRegrade(props.submission, {
+        questionResponder: null,
+        questionResponse: '',
+        questionIsOpen: true,
+      });
+      message.success('Regrade released.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (closeAfter: boolean) => {
+    if (!props.onUpdateRegrade) return;
+    setLoading(true);
+    try {
+      await props.onUpdateRegrade(props.submission, {
+        questionResponse: responseText,
+        questionIsOpen: !closeAfter,
+      });
+      setIsEditing(false);
+      message.success(closeAfter ? 'Response submitted and closed.' : 'Response saved.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReopen = async () => {
+    if (!props.onUpdateRegrade) return;
+    setLoading(true);
+    try {
+      await props.onUpdateRegrade(props.submission, { questionIsOpen: true });
+      message.success('Regrade re-opened.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          color: consoleTheme.siderMenuItemColor,
+          marginBottom: 8,
+          marginTop: 8,
+        }}
+      >
+        {props.submission.questionIsRegrade ? 'Regrade Request' : 'Student Question'}
+      </div>
+      <Card
+        size="small"
+        variant="borderless"
+        style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
+        styles={{ body: { padding: 12 } }}
+      >
+        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Tag color={isClosed ? 'green' : isClaimed ? 'blue' : 'orange'} style={{ margin: 0 }}>
+              {isClosed ? 'Closed' : isClaimed ? `Claimed by ${props.submission.questionResponder}` : 'Open'}
+            </Tag>
+            {props.submission.questionDate && (
+              <Text style={{ fontSize: 11, color: consoleTheme.siderMenuItemColor }}>
+                <CodePostDate datetime={props.submission.questionDate} />
+              </Text>
+            )}
+          </div>
+          <Text style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: consoleTheme.text }}>
+            {props.submission.questionText}
+          </Text>
+
+          {/* Existing response */}
+          {hasResponse && !isEditing && (
+            <>
+              <Divider style={{ margin: '4px 0' }} />
+              <div>
+                <Text style={{ fontSize: 11, color: consoleTheme.siderMenuItemColor, fontWeight: 600 }}>
+                  {props.submission.questionResponder ?? 'Response'}
+                </Text>
+                {props.submission.responseDate && (
+                  <Text style={{ fontSize: 11, color: consoleTheme.siderMenuItemColor, marginLeft: 8 }}>
+                    <CodePostDate datetime={props.submission.responseDate} />
+                  </Text>
+                )}
+              </div>
+              <Text style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: consoleTheme.text }}>
+                {props.submission.questionResponse}
+              </Text>
+            </>
+          )}
+
+          {/* Response editor */}
+          {isEditing && (
+            <>
+              <Divider style={{ margin: '4px 0' }} />
+              <Input.TextArea
+                value={responseText}
+                onChange={(e) => setResponseText(e.target.value)}
+                autoSize={{ minRows: 3, maxRows: 8 }}
+                placeholder="Write your response..."
+                style={{ fontSize: 12 }}
+              />
+              <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                <Button
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setResponseText(props.submission.questionResponse ?? '');
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  loading={isLoading}
+                  onClick={() => handleSubmit(false)}
+                >
+                  Save Draft
+                </Button>
+                <Button
+                  type="primary"
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  loading={isLoading}
+                  onClick={() => handleSubmit(true)}
+                  disabled={!responseText.trim()}
+                >
+                  Submit &amp; Close
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Action buttons */}
+          {props.onUpdateRegrade && (
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', paddingTop: 2 }}>
+              {!isClaimed && canClaim && !isClosed && (
+                <Button
+                  type="primary"
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  loading={isLoading}
+                  onClick={handleClaim}
+                >
+                  Claim
+                </Button>
+              )}
+              {isClaimedByMe && !isClosed && (
+                <Button
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  loading={isLoading}
+                  onClick={handleRelease}
+                >
+                  Release
+                </Button>
+              )}
+              {canRespond && !isEditing && (
+                <Button
+                  type="primary"
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  onClick={() => setIsEditing(true)}
+                >
+                  {hasResponse ? 'Edit Response' : 'Respond'}
+                </Button>
+              )}
+              {isClosed && (isClaimedByMe || props.isCourseAdmin) && (
+                <Button
+                  size="small"
+                  style={{ fontSize: 11, padding: '0 6px', height: 22 }}
+                  loading={isLoading}
+                  onClick={handleReopen}
+                >
+                  Re-open
+                </Button>
+              )}
+            </div>
+          )}
+        </Space>
+      </Card>
+    </div>
+  );
+};
+
 /******************************* Student Question and Regrade option *******************************************/
 
 interface IStudentRegradeProps {
@@ -657,7 +904,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   // *********************** RENDER *************************
   const regradeStatus = !props.submission.questionText
     ? QUESTION_STATUS.NOT_SUBMITTED
-    : props.submission.questionResponse
+    : props.submission.questionResponse && !props.submission.questionIsOpen
       ? QUESTION_STATUS.RESPONDED
       : props.submission.questionResponder
         ? QUESTION_STATUS.CLAIMED

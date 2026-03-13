@@ -46,7 +46,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
     // In v6, simple back navigation to index or explicit path
     const back = () => {
       LOCAL_SETTINGS.defaultAssignment.setter(0);
-      navigate('.', { replace: true });
+      navigate('..', { relative: 'path' });
     };
 
     const breadcrumbs = [

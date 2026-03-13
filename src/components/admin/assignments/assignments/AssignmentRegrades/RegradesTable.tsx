@@ -6,17 +6,14 @@ import {
   CodeOutlined,
   EditOutlined,
   ExclamationCircleOutlined,
-  EyeOutlined,
   InfoCircleOutlined,
-  MenuOutlined,
   MinusCircleOutlined,
   PlusCircleOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 
-import { Divider, Dropdown, Input, message, Modal, Table, Tag, Typography } from 'antd';
+import { Button, Divider, Input, message, Modal, Space, Table, Tag, Typography } from 'antd';
 
-/* codePost imports */
 /* codePost imports */
 import { assignmentsApi } from '../../../../../api-client/clients';
 import { Assignment, SubmissionInfoType } from '../../../../../types/common';
@@ -33,7 +30,7 @@ import { openSubmission } from '../../../other/AdminUtils';
 import { CodePostDate } from '../../../../utils/CodepostDate';
 
 const { TextArea } = Input;
-const { Paragraph, Text } = Typography;
+const { Text } = Typography;
 const { confirm } = Modal;
 
 interface IRegradesTableProps {
@@ -152,95 +149,55 @@ const RegradesTable = (props: IRegradesTableProps) => {
     } else return RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE;
   };
 
-  const getResponseContent = (submission: SubmissionInfoType | AnonymousSubmissionInfoType) => {
-    const responseStatus = getResponseStatus(submission);
-
-    switch (responseStatus) {
-      case RESPONSE_STATUS.EDIT_NOT_ALLOWED:
-        return (
-          <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
-            {submission.questionResponse}
-          </Paragraph>
-        );
-      case RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE:
-        return (
-          <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
-            {submission.questionResponse}
-          </Paragraph>
-        );
-      case RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE: {
-        const toggle = () => {
-          toggleModal(false, submission);
-        };
-
-        return (
-          <CPButton cpType="primary" onClick={toggle}>
-            Respond
-          </CPButton>
-        );
-      }
-    }
-  };
-
   // *********************** TABLE CONTENT *************************
-  const aligner: 'left' | 'center' | 'right' = 'center';
+  const btnStyle = { fontSize: 11, padding: '0 6px', height: 22 };
+
   const columns = [
-    {
-      title: 'Code',
-      dataIndex: 'code',
-      key: 'code',
-      align: aligner,
-    },
     {
       title: 'Student(s)',
       dataIndex: 'students',
       key: 'students',
-      sorter: (a: any, b: any) => a.students.localeCompare(b.students),
+      width: 200,
+      sorter: (a: any, b: any) => (a.studentSort ?? '').localeCompare(b.studentSort ?? ''),
     },
     {
-      title: 'Request Type',
-      dataIndex: 'type',
-      key: 'type',
-      align: aligner,
+      title: 'Request',
+      dataIndex: 'request',
+      key: 'request',
+    },
+    {
+      title: 'Date',
+      dataIndex: 'dateDisplay',
+      key: 'date',
+      width: 140,
+      sorter: (a: any, b: any) => (a.dateSort ?? '').localeCompare(b.dateSort ?? ''),
     },
     {
       title: 'Status',
       dataIndex: 'statusTag',
       key: 'statusTag',
-      align: aligner,
-      sorter: (a: any, b: any) => a.status.localeCompare(b.status),
-    },
-    {
-      title: 'Text',
-      dataIndex: 'text',
-      key: 'text',
+      width: 100,
+      align: 'center' as const,
+      sorter: (a: any, b: any) => (a.statusSort ?? '').localeCompare(b.statusSort ?? ''),
+      defaultSortOrder: 'ascend' as const,
+      filters: [
+        { text: 'Open', value: 'Open' },
+        { text: 'Closed', value: 'Closed' },
+      ],
+      onFilter: (value: any, record: any) => record.statusSort === value,
     },
     {
       title: 'Responder',
       dataIndex: 'responder',
       key: 'responder',
-      align: aligner,
-      sorter: (a: any, b: any) => {
-        if (!a.responder && b.responder) {
-          return -1;
-        } else if (a.responder && !b.responder) {
-          return 1;
-        } else if (!a.responder && !b.responder) {
-          return 0;
-        }
-        return a.responder.localeCompare(b.responder);
-      },
-    },
-    {
-      title: 'Response',
-      dataIndex: 'response',
-      key: 'response',
+      width: 180,
+      sorter: (a: any, b: any) => (a.responderSort ?? '').localeCompare(b.responderSort ?? ''),
     },
     {
       title: 'Actions',
       dataIndex: 'actions',
       key: 'actions',
-      align: aligner,
+      width: 280,
     },
   ];
 
@@ -257,99 +214,119 @@ const RegradesTable = (props: IRegradesTableProps) => {
   const rows = regradeSubmissions.map((submission) => {
     const isAbleToChange =
       props.isAdmin || submission.questionResponder === props.user.email || submission.questionResponder === null;
-
     const isAbleToClose = submission.questionIsOpen && submission.questionResponse;
-
+    const isClaimedByMe = submission.questionResponder === props.user.email;
+    const isClosed = !submission.questionIsOpen;
     const responseStatus = getResponseStatus(submission);
 
-    const updateSubmissionFieldClick = () => {
-      updateSubmissionField(submission, 'questionResponder', props.user.email);
+    const studentLabel =
+      submission.students && !props.isAnonymous ? submission.students.toString() : `#${submission.id}`;
+
+    const handleClaim = () => {
+      if (submission.questionResponder === null) {
+        updateSubmissionField(submission, 'questionResponder', props.user.email);
+      } else {
+        confirmClear(submission, false);
+      }
     };
 
-    const confirmClearReleaseClick = () => {
-      confirmClear(submission, true);
+    const handleRelease = () => {
+      if (submission.questionResponse) {
+        confirmClear(submission, true);
+      } else {
+        clearRegrade(submission, null);
+      }
     };
 
-    const confirmClearNonReleaseClick = () => {
-      confirmClear(submission, false);
-    };
-
-    const menuItems = [
-      {
-        key: '1',
-        label: (
-          <>
-            <EyeOutlined /> View Regrade
-          </>
-        ),
-        onClick: toggleModal.bind({}, true, submission),
-      },
-      ...(responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE
-        ? [
-            {
-              key: '2',
-              label: (
-                <>
-                  <EditOutlined /> Edit Response
-                </>
-              ),
-              onClick: toggleModal.bind({}, false, submission),
-            },
-          ]
-        : []),
-      {
-        key: '3',
-        label: (
-          <>
-            {submission.questionResponder !== props.user.email ? <PlusCircleOutlined /> : <MinusCircleOutlined />}
-            {submission.questionResponder !== props.user.email ? ' Claim' : ' Release'}
-          </>
-        ),
-        onClick:
-          submission.questionResponder === null
-            ? updateSubmissionFieldClick
-            : submission.questionResponder === props.user.email
-              ? confirmClearReleaseClick
-              : confirmClearNonReleaseClick,
-        disabled: !isAbleToChange,
-      },
-      {
-        key: '4',
-        label: (
-          <>
-            {submission.questionIsOpen ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />}
-            {submission.questionIsOpen ? ' Close' : ' Re-open'}
-          </>
-        ),
-        onClick: updateSubmissionField.bind({}, submission, 'questionIsOpen', !submission.questionIsOpen),
-        disabled: !(isAbleToChange && (!submission.questionIsOpen || isAbleToClose)),
-      },
-    ];
-
-    const responseContent = getResponseContent(submission);
     return {
       key: submission.id,
-      code: <CodeOutlined onClick={openSubmission.bind({}, submission.id)} />,
-      students: submission.students && !props.isAnonymous ? submission.students.toString() : submission.id,
-      type: submission.questionIsRegrade ? 'Regrade' : 'Question',
-      statusTag:
-        submission.questionText && !submission.questionIsOpen ? (
-          <Tag color="green">Closed</Tag>
-        ) : (
-          <Tag color="orange">Open</Tag>
-        ),
-      status: submission.questionText && !submission.questionIsOpen ? 'Closed' : 'Open',
-      responder: submission.questionResponder,
-      text: (
-        <Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }} ellipsis={{ rows: 2, expandable: false }}>
-          {submission.questionText}
-        </Paragraph>
+      students: (
+        <a onClick={() => openSubmission(submission.id)} style={{ fontWeight: 500 }}>
+          {studentLabel}
+        </a>
       ),
-      response: responseContent,
+      studentSort: studentLabel,
+      dateDisplay: submission.questionDate ? (
+        <Text style={{ fontSize: 12, color: '#666' }}>
+          <CodePostDate datetime={submission.questionDate} />
+        </Text>
+      ) : (
+        ''
+      ),
+      dateSort: submission.questionDate ?? '',
+      request: (
+        <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {submission.questionIsRegrade && (
+              <Tag color="geekblue" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>
+                Regrade
+              </Tag>
+            )}
+          </div>
+          <Text style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{submission.questionText}</Text>
+        </Space>
+      ),
+      statusTag: isClosed ? <Tag color="green">Closed</Tag> : <Tag color="orange">Open</Tag>,
+      statusSort: isClosed ? 'Closed' : 'Open',
+      responder: submission.questionResponder ?? '',
+      responderSort: submission.questionResponder ?? '',
       actions: (
-        <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-          <MenuOutlined />
-        </Dropdown>
+        <Space size={4} wrap>
+          <Button size="small" style={btnStyle} icon={<CodeOutlined />} onClick={() => openSubmission(submission.id)}>
+            View
+          </Button>
+          {!isClaimedByMe && isAbleToChange && !isClosed && (
+            <Button size="small" style={btnStyle} icon={<PlusCircleOutlined />} onClick={handleClaim}>
+              Claim
+            </Button>
+          )}
+          {isClaimedByMe && !isClosed && (
+            <Button size="small" style={btnStyle} icon={<MinusCircleOutlined />} onClick={handleRelease}>
+              Release
+            </Button>
+          )}
+          {responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_NEW_RESPONSE && (
+            <Button
+              type="primary"
+              size="small"
+              style={btnStyle}
+              icon={<EditOutlined />}
+              onClick={() => toggleModal(false, submission)}
+            >
+              Respond
+            </Button>
+          )}
+          {responseStatus === RESPONSE_STATUS.EDIT_ALLOWED_EXISTING_RESPONSE && (
+            <Button
+              size="small"
+              style={btnStyle}
+              icon={<EditOutlined />}
+              onClick={() => toggleModal(false, submission)}
+            >
+              Edit
+            </Button>
+          )}
+          {isAbleToChange && isClosed && (
+            <Button
+              size="small"
+              style={btnStyle}
+              icon={<ExclamationCircleOutlined />}
+              onClick={() => updateSubmissionField(submission, 'questionIsOpen', true)}
+            >
+              Re-open
+            </Button>
+          )}
+          {isAbleToChange && !isClosed && isAbleToClose && (
+            <Button
+              size="small"
+              style={btnStyle}
+              icon={<CheckCircleOutlined />}
+              onClick={() => updateSubmissionField(submission, 'questionIsOpen', false)}
+            >
+              Close
+            </Button>
+          )}
+        </Space>
       ),
     };
   });
@@ -388,32 +365,40 @@ const RegradesTable = (props: IRegradesTableProps) => {
 
   // *********************** RENDER *************************
 
+  const openCount = regradeSubmissions.filter((s) => s.questionIsOpen).length;
+  const closedCount = regradeSubmissions.length - openCount;
+
   return (
     <div>
-      <CPButton
-        cpType="secondary"
-        icon={<InfoCircleOutlined />}
-        style={{ marginBottom: 10, marginRight: 10 }}
-        onClick={openInstructionsModal}
-      >
-        Edit Instructions
-      </CPButton>
-      <RegradeInstructionsModal
-        open={instructionsModalVisible}
-        instructions={props.assignment.regradeInstructions ?? ''}
-        cancel={closeInstructionsModal}
-        save={saveInstructions}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+        {props.isAdmin && (
+          <CPButton cpType="secondary" icon={<InfoCircleOutlined />} onClick={openInstructionsModal}>
+            Edit Instructions
+          </CPButton>
+        )}
+        <RegradeInstructionsModal
+          open={instructionsModalVisible}
+          instructions={props.assignment.regradeInstructions ?? ''}
+          cancel={closeInstructionsModal}
+          save={saveInstructions}
+        />
+        <CPButton cpType="secondary" icon={<ReloadOutlined />} onClick={props.refreshCourseData}>
+          Refresh
+        </CPButton>
+        <span style={{ marginLeft: 'auto', fontSize: 13, color: '#666' }}>
+          {regradeSubmissions.length} request{regradeSubmissions.length !== 1 ? 's' : ''} &middot;{' '}
+          <Text style={{ color: '#fa8c16' }}>{openCount} open</Text> &middot;{' '}
+          <Text style={{ color: '#52c41a' }}>{closedCount} closed</Text>
+        </span>
+      </div>
+      <Table
+        columns={columns}
+        dataSource={rows}
+        loading={props.isLoading}
+        size="small"
+        pagination={regradeSubmissions.length > 20 ? { pageSize: 20 } : false}
       />
-      <CPButton
-        cpType="secondary"
-        icon={<ReloadOutlined />}
-        style={{ marginBottom: 10 }}
-        onClick={props.refreshCourseData}
-      >
-        Refresh Data
-      </CPButton>
-      <Table columns={columns} dataSource={rows} loading={props.isLoading} />{' '}
-      <Modal onCancel={onCancel} open={modalVisible} title="Respond to Regrade request" footer={footer}>
+      <Modal onCancel={onCancel} open={modalVisible} title="Respond to Regrade Request" footer={footer}>
         <div className="display-flex flex-direction-column">
           <div style={{ fontSize: 13, color: 'grey', marginBottom: 5 }}>
             {activeSubmission ? activeSubmission.students : ''}
