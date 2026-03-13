@@ -12,6 +12,11 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - UX refinements for grading and test authoring pages.
 - Performance and reliability improvements.
 
+### Instructor Improvements
+
+- Allow instructors to view the course as a student to better understand the student experience and troubleshoot issues.
+- Allow instructors to view the course as a grader to better understand the grading experience and troubleshoot issues
+
 ### Feature changes
 
 - Editing a submission current doesn't save anywhere, but we plan on adding a "Save" function to editing to allow graders/instructors to modify a students submission and run test on the modified code without affecting the student's original submission. We also plan on showing differences between the original and modified code to make it easier for graders to keep track of their changes. As well as allow students to view the changes made by graders to their code.
