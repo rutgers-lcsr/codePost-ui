@@ -109,8 +109,35 @@ vi.mock('./api-client/clients', () => ({
   coursesApi: {
     list: vi.fn(() => Promise.resolve([mockCourse])),
     retrieve: vi.fn(() => Promise.resolve(mockCourse)),
-    aiSettingsRetrieve: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
+    aiSettingsRetrieve: vi.fn(() =>
+      Promise.resolve({
+        id: 1,
+        aiEnabled: false,
+        aiDisabled: false,
+        aiCommentsEnabled: false,
+        aiCommentsDisabled: false,
+        orgAiAvailable: false,
+        aiUseOwnSettings: false,
+        aiProvider: null,
+        aiBaseUrl: '',
+        aiModel: '',
+        hasApiKey: false,
+        apiKeyHint: null,
+        aiTokenRates: {},
+        defaultTokenRates: {},
+      }),
+    ),
     aiSettingsPartialUpdate: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
+    aiUsageRetrieve: vi.fn(() =>
+      Promise.resolve({
+        totalRequests: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCost: 0,
+        timeSeries: [],
+        breakdown: [],
+      }),
+    ),
     rosterRetrieve: vi.fn(() =>
       Promise.resolve({
         id: 1,
