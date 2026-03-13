@@ -77,11 +77,41 @@ For test syntax and parser behavior, see [Testing Guide](/docs/testing-guide).
 3. Escalate assignment-wide issues to instructors/admins.
 4. Continue grading unaffected submissions when possible.
 
-### A student asks for regrade
+### Handling regrade requests
 
-- Follow instructor-defined regrade workflow.
-- Leave an audit trail in comments.
-- Avoid direct score edits without rationale.
+When a student submits a regrade request, it appears in two places:
+
+- **Regrade Requests panel** (grader dashboard): Shows all assignments with open and closed requests. Click an assignment name to see the full list.
+- **Submission Info** (Code Console sidebar): When viewing a submission with a regrade request, the request text, status, and action buttons appear directly in the sidebar.
+
+#### From the Regrade Requests panel
+
+1. Navigate to the **Regrade Requests** tab in the grader dashboard.
+2. Click the assignment name to see all requests.
+3. Use the **Claim** button to assign a request to yourself.
+4. Click **Respond** to write your response, or **View** to open the submission in the Code Console.
+5. After writing a response, choose **Save Draft** to keep working, or **Submit & Close** to finalize.
+6. You can **Re-open** a closed request if needed.
+
+#### From the Code Console
+
+When viewing a submission that has a regrade request:
+
+1. The **Submission Info** panel shows the request text and status.
+2. Click **Claim** to assign it to yourself.
+3. Click **Respond** to write your response inline.
+4. Use **Submit & Close** to send your response and close the request.
+5. Use **Release** if you want to unassign yourself.
+
+> [!NOTE]
+> Students can see your email as the responder once you submit a response. Keep your tone professional and constructive.
+
+#### Tips
+
+- Claim requests promptly so students know their request is being reviewed.
+- Leave an audit trail — your response is visible to the student and the instructor.
+- Avoid direct score edits without a written rationale in the response.
+- If you are unsure about a regrade, escalate to the instructor rather than guessing.
 
 ### I cannot access a submission
 

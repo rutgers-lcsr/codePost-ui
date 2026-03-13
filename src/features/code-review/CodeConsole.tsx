@@ -1242,6 +1242,13 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     return newSubmission;
   };
 
+  const updateRegrade = async (sub: AnonymousSubmissionType, fields: Partial<AnonymousSubmissionType>) => {
+    const payload = { id: sub.id, ...fields };
+    const updated = await SubmissionService.update(payload);
+    setState((prev) => ({ ...prev, submission: { ...updated, files: updated.files || [] } }));
+    return { ...updated, files: updated.files || [] } as AnonymousSubmissionType;
+  };
+
   const addLateDayCreditComment = async (lateDayCreditsUsed: number) => {
     // -- Add a LateDayCredit Comment --
     //
@@ -2552,6 +2559,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             updateGrader={updateGrader}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
+            graderEmail={props.user.email}
+            onUpdateRegrade={updateRegrade}
           />,
           <TestsMenu
             key="tests-menu"
@@ -3050,6 +3059,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           addLateDayCreditComment={addLateDayCreditComment}
           isStudentMode={state.isStudent}
           courseStudentsCanSeeGraders={state.course?.studentsCanSeeGraders}
+          graderEmail={props.user.email}
+          onUpdateRegrade={updateRegrade}
         />,
       );
       siderTitles.push('Submission Info');

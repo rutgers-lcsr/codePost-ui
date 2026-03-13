@@ -7,9 +7,10 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Switch } from 'antd';
+import { Switch, Typography } from 'antd';
 
 /* other library imports */
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { assignmentsApi } from '../../api-client/clients';
@@ -19,6 +20,8 @@ import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../typ
 import RegradesDetailPanel from './RegradesDetailPanel';
 
 import GraderPanelBuilder from './GraderPanel';
+
+import { encodeForLink } from '../core/URLutils';
 
 const RegradePanelShell = GraderPanelBuilder(RegradesDetailPanel);
 
@@ -107,12 +110,6 @@ class RegradesPanel extends React.Component<IProps, IState> {
     const centerAlign: alignType = 'center';
     const columns = [
       {
-        title: 'Zoom in',
-        dataIndex: 'zoom',
-        align: centerAlign,
-        key: '0',
-      },
-      {
         title: 'Assignment',
         dataIndex: 'assignment',
         key: '1',
@@ -124,14 +121,14 @@ class RegradesPanel extends React.Component<IProps, IState> {
         key: '2',
       },
       {
-        title: 'With Regrades',
-        dataIndex: 'regrades',
+        title: 'Open',
+        dataIndex: 'open',
         align: centerAlign,
         key: '3',
       },
       {
-        title: 'Open Regrades',
-        dataIndex: 'open',
+        title: 'Closed',
+        dataIndex: 'closed',
         align: centerAlign,
         key: '4',
       },
@@ -149,11 +146,20 @@ class RegradesPanel extends React.Component<IProps, IState> {
         );
       });
 
+      const openCount = regradeSubmissions.filter((sub: AnonymousSubmissionInfoType) => sub.questionIsOpen).length;
+
       return {
-        assignment: assignment.name,
-        total: list.length,
+        assignment: (
+          <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+            <Typography.Text strong className="text-link">
+              {assignment.name}
+            </Typography.Text>
+          </Link>
+        ),
         regrades: regradeSubmissions.length,
-        open: regradeSubmissions.filter((sub: AnonymousSubmissionInfoType) => sub.questionIsOpen).length,
+        total: regradeSubmissions.length,
+        open: openCount,
+        closed: regradeSubmissions.length - openCount,
         key: assignment.id,
       };
     });
