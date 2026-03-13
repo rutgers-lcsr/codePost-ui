@@ -65,9 +65,12 @@ Usage dashboards now include a **Usage by Model** table showing token counts, co
 
 See the [AI Settings & Usage Guide](/docs/ai-guide) for full details.
 
-### Other Changes
+### UI Improvements
 
 - Actions buttons on the Instructors Assignment table are now a row of buttons with icons and tooltips instead of a dropdown to improve discoverability and reduce clicks.
+
+### Bug Fixes
+
 - Regrading Table now has a new view and fixed issue with no regrades showing for graders.
 
 ## v3.1.1 — Quality of Life Improvements & Bug Fixes
