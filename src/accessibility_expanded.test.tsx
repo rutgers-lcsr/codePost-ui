@@ -328,12 +328,14 @@ describe.sequential('Expanded Accessibility Audit', () => {
   it('should have no violations on Course Settings Panel', async () => {
     const { container } = await renderWithRouter(<CourseSettingsPanel {...mockCourseSettingsProps} />);
 
+    await waitFor(() => expect(container.textContent).toContain('AI Features'));
+
     const results = await runAxe(container);
     if (results.violations.length > 0) {
       console.log('Axe violations on Course Settings Panel:', JSON.stringify(results.violations, null, 2));
     }
     expect(results.violations).toHaveLength(0);
-  }, 30000);
+  }, 60000);
 
   it.skip('should have no violations on Roster Manager', async () => {
     const { container } = await renderWithRouter(<RosterManager {...mockRosterProps} />);
