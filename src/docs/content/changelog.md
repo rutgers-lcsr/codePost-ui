@@ -12,6 +12,10 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - UX refinements for grading and test authoring pages.
 - Performance and reliability improvements.
 
+### Feature changes
+
+- Editing a submission current doesn't save anywhere, but we plan on adding a "Save" function to editing to allow graders/instructors to modify a students submission and run test on the modified code without affecting the student's original submission. We also plan on showing differences between the original and modified code to make it easier for graders to keep track of their changes. As well as allow students to view the changes made by graders to their code.
+
 ## v3.2.0 — AI Settings & Usage Analytics
 
 > **Highlight**: Organization-level AI configuration, per-course inheritance, and comprehensive usage tracking with cost estimates.
