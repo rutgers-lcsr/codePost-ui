@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/* eslint-disable react-refresh/only-export-components */
 /* react imports */
 import { useState, useEffect } from 'react';
 
@@ -179,6 +180,7 @@ const DownloadGrades = (props: IProps) => {
     if (!numMissing && !numUngraded) {
       onDownload();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numMissing, numUngraded]);
 
   // ********************************** RENDER ****************************************

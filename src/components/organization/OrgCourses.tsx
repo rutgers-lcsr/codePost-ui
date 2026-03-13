@@ -101,7 +101,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
 
           message.success('Invite code reset!');
           onRefresh(); // Refresh list to get updated code in table
-        } catch (error) {
+        } catch {
           message.error('Failed to reset invite code');
         }
       },

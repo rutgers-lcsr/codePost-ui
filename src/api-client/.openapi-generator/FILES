@@ -8,6 +8,7 @@ apis/CommentsApi.ts
 apis/CourseFilesApi.ts
 apis/CoursesApi.ts
 apis/DashboardApi.ts
+apis/DevAuthApi.ts
 apis/FilesApi.ts
 apis/ImpersonateApi.ts
 apis/LogsApi.ts
@@ -85,6 +86,7 @@ docs/CourseStudentCaptions.md
 docs/CoursesApi.md
 docs/DashboardApi.md
 docs/DashboardStats.md
+docs/DevAuthApi.md
 docs/DiskCheck.md
 docs/EmailPasswordResetRequest.md
 docs/EmailPasswordResetResponse.md

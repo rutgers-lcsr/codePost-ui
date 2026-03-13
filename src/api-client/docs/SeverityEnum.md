@@ -1,10 +1,14 @@
+
 # SeverityEnum
 
-- `info` - info _ `warning` - warning _ `critical` - critical
+* `info` - info * `warning` - warning * `critical` - critical
 
 ## Properties
 
-| Name | Type |
-| ---- | ---- |
+Name | Type
+------------ | -------------
+
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+

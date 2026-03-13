@@ -52,10 +52,17 @@ export class Logger {
     errorDetail?: string;
     url?: string;
     screenshot?: string;
+    category?: string;
   }> = [];
   private static _pendingDumps: Array<{ attachments?: Array<Record<string, unknown>>; courseID?: number }> = [];
 
-  private static async postError(payload: { error?: string; errorDetail?: string; url?: string; screenshot?: string }) {
+  private static async postError(payload: {
+    error?: string;
+    errorDetail?: string;
+    url?: string;
+    screenshot?: string;
+    category?: string;
+  }) {
     try {
       await logsApi.logErrorCreate({ logErrorRequest: payload });
     } catch {
@@ -101,7 +108,13 @@ export class Logger {
    * (base64-encoded JPEG data URL).
    * Only sends if user has consented; otherwise queues.
    */
-  public static errorFull(payload: { error: string; errorDetail: string; url: string; screenshot?: string }) {
+  public static errorFull(payload: {
+    error: string;
+    errorDetail: string;
+    url: string;
+    screenshot?: string;
+    category?: string;
+  }) {
     if (getConsentStatus() === 'accepted') {
       void Logger.postError(payload);
     } else {

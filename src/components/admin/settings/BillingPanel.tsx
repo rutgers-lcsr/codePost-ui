@@ -63,6 +63,7 @@ const BillingPanel = (props: IProps) => {
       .then((data) => {
         setDetails(data);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requestWaiver = async () => {

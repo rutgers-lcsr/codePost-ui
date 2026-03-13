@@ -236,7 +236,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
       message.success('Pinned comment updated');
       setIsEditing(false);
       onRefresh();
-    } catch (err) {
+    } catch {
       message.error('Failed to update pinned comment');
     }
   };
@@ -247,7 +247,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
       await commentTemplatesApi.destroy({ id: t.id });
       message.success('Pinned comment deleted');
       onRefresh();
-    } catch (err) {
+    } catch {
       message.error('Failed to delete pinned comment');
     }
   };
@@ -265,7 +265,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
       });
       message.success(`Template made ${!t.isGlobal ? 'Global' : 'Personal'}`);
       onRefresh();
-    } catch (err) {
+    } catch {
       message.error('Failed to update template status');
     }
   };

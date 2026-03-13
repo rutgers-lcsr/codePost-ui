@@ -170,7 +170,7 @@ const RubricFileUpload: FC<IProps> = ({
           setUploadFileName(file.name);
           setStatus(STATUS.UPLOAD_ERRORS);
         }
-      } catch (error) {
+      } catch {
         setUploadErrors(["The rubric you uploaded isn't a valid JSON object."]);
         setUploadFileName(file.name);
         setStatus(STATUS.UPLOAD_ERRORS);

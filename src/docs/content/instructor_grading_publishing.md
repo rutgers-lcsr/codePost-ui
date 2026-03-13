@@ -39,6 +39,7 @@ Speed up your grading with these hotkeys:
 - **General**:
   - `Cmd/Ctrl + /`: Show Shortcuts Guide
   - `Cmd/Ctrl + i`: Toggle Dark Mode
+  - `Alt + Shift + R`: Report an issue to the codePost team
 - **Navigation**:
   - `Cmd/Ctrl + Shift + f`: Toggle File Tab
   - `Cmd/Ctrl + Shift + g`: Toggle Rubric Tab

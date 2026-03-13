@@ -49,6 +49,9 @@ This guide helps graders and TAs work efficiently in codePost while staying alig
 
 Efficient graders use hotkeys. Press `Cmd/Ctrl + /` to see the full list in the console.
 
+- **General**:
+  - `Alt + Shift + R` : Report an issue to the codePost team
+
 - **Navigation**:
   - `Alt + [` / `]` : Next/Previous File
   - `Cmd/Ctrl + Shift + f` : Toggle File Browser

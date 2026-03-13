@@ -31,11 +31,12 @@ export const TestManager = (props: IProps) => {
           setActiveCategoryId(cats[0].id);
         }
       }
-    } catch (e) {
+    } catch {
       message.error('Failed to load test categories');
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment.id, props.assignment.testCategories]);
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export const TestManager = (props: IProps) => {
       setCategories([...categories, newCat]);
       setActiveCategoryId(newCat.id);
       message.success('Category created');
-    } catch (e) {
+    } catch {
       message.error('Failed to create category');
     }
   };
@@ -71,7 +72,7 @@ export const TestManager = (props: IProps) => {
         setActiveCategoryId(newCats.length > 0 ? newCats[0].id : undefined);
       }
       message.success('Category deleted');
-    } catch (e) {
+    } catch {
       message.error('Failed to delete category');
     }
   };

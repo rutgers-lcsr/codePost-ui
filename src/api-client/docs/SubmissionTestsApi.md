@@ -1,21 +1,25 @@
 # SubmissionTestsApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                                   | HTTP request                      | Description |
-| -------------------------------------------------------- | --------------------------------- | ----------- |
-| [**create**](SubmissionTestsApi.md#create)               | **POST** /submissionTests/        |             |
-| [**destroy**](SubmissionTestsApi.md#destroy)             | **DELETE** /submissionTests/{id}/ |             |
-| [**list**](SubmissionTestsApi.md#list)                   | **GET** /submissionTests/         |             |
-| [**partialUpdate**](SubmissionTestsApi.md#partialupdate) | **PATCH** /submissionTests/{id}/  |             |
-| [**retrieve**](SubmissionTestsApi.md#retrieve)           | **GET** /submissionTests/{id}/    |             |
-| [**update**](SubmissionTestsApi.md#update)               | **PUT** /submissionTests/{id}/    |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**create**](SubmissionTestsApi.md#create) | **POST** /submissionTests/ |  |
+| [**destroy**](SubmissionTestsApi.md#destroy) | **DELETE** /submissionTests/{id}/ |  |
+| [**list**](SubmissionTestsApi.md#list) | **GET** /submissionTests/ |  |
+| [**partialUpdate**](SubmissionTestsApi.md#partialupdate) | **PATCH** /submissionTests/{id}/ |  |
+| [**retrieve**](SubmissionTestsApi.md#retrieve) | **GET** /submissionTests/{id}/ |  |
+| [**update**](SubmissionTestsApi.md#update) | **PUT** /submissionTests/{id}/ |  |
+
+
 
 ## create
 
 > SubmissionTest create(submissionTest)
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
@@ -28,7 +32,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -60,9 +64,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name               | Type                                | Description | Notes |
-| ------------------ | ----------------------------------- | ----------- | ----- |
-| **submissionTest** | [SubmissionTest](SubmissionTest.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **submissionTest** | [SubmissionTest](SubmissionTest.md) |  | |
 
 ### Return type
 
@@ -77,38 +82,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **201**     |             | -                |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## destroy
 
 > destroy(id)
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionTestsApi } from '';
+import {
+  Configuration,
+  SubmissionTestsApi,
+} from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionTestsApi(config);
 
@@ -131,8 +142,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                              | Notes                     |
-| ------ | -------- | -------------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
 
 ### Return type
@@ -148,38 +160,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-### HTTP response details
 
-| Status code | Description      | Response headers |
-| ----------- | ---------------- | ---------------- |
-| **204**     | No response body | -                |
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | No response body |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## list
 
 > Array&lt;SubmissionTest&gt; list()
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionTestsApi } from '';
+import {
+  Configuration,
+  SubmissionTestsApi,
+} from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionTestsApi(config);
 
@@ -212,19 +230,22 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## partialUpdate
 
 > SubmissionTest partialUpdate(id, patchedSubmissionTest)
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
@@ -237,7 +258,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -271,10 +292,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                      | Type                                              | Description                                              | Notes                     |
-| ------------------------- | ------------------------------------------------- | -------------------------------------------------------- | ------------------------- |
-| **id**                    | `number`                                          | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
-| **patchedSubmissionTest** | [PatchedSubmissionTest](PatchedSubmissionTest.md) |                                                          | [Optional]                |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
+| **patchedSubmissionTest** | [PatchedSubmissionTest](PatchedSubmissionTest.md) |  | [Optional] |
 
 ### Return type
 
@@ -289,38 +311,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## retrieve
 
 > SubmissionTest retrieve(id)
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionTestsApi } from '';
+import {
+  Configuration,
+  SubmissionTestsApi,
+} from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionTestsApi(config);
 
@@ -343,8 +371,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                              | Notes                     |
-| ------ | -------- | -------------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
 
 ### Return type
@@ -360,19 +389,22 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## update
 
 > SubmissionTest update(id, submissionTest)
 
-list: Return a list of all the solutionFiles. create: Create a new solutionFiles. retrieve: Return the given solutionFiles. update: Update a solutionFiles. partial_update: Update a solutionFiles. delete: Delete a solutionFiles.
+
+
+list: Return a list of all the solutionFiles.  create: Create a new solutionFiles.  retrieve: Return the given solutionFiles.  update: Update a solutionFiles.  partial_update: Update a solutionFiles.  delete: Delete a solutionFiles.
 
 ### Example
 
@@ -385,7 +417,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -419,10 +451,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name               | Type                                | Description                                              | Notes                     |
-| ------------------ | ----------------------------------- | -------------------------------------------------------- | ------------------------- |
-| **id**             | `number`                            | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
-| **submissionTest** | [SubmissionTest](SubmissionTest.md) |                                                          |                           |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission test. | [Defaults to `undefined`] |
+| **submissionTest** | [SubmissionTest](SubmissionTest.md) |  | |
 
 ### Return type
 
@@ -437,10 +470,11 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

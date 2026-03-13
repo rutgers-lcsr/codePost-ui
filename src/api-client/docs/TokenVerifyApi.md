@@ -1,16 +1,20 @@
 # TokenVerifyApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                 | HTTP request            | Description |
-| -------------------------------------- | ----------------------- | ----------- |
-| [**create**](TokenVerifyApi.md#create) | **POST** /token-verify/ |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**create**](TokenVerifyApi.md#create) | **POST** /token-verify/ |  |
+
+
 
 ## create
 
 > TokenVerify create(tokenVerify)
 
-Takes a token and indicates if it is valid. This view provides no information about a token\&#39;s fitness for a particular use.
+
+
+Takes a token and indicates if it is valid.  This view provides no information about a token\&#39;s fitness for a particular use.
 
 ### Example
 
@@ -44,9 +48,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name            | Type                          | Description | Notes |
-| --------------- | ----------------------------- | ----------- | ----- |
-| **tokenVerify** | [TokenVerify](TokenVerify.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **tokenVerify** | [TokenVerify](TokenVerify.md) |  | |
 
 ### Return type
 
@@ -61,10 +66,11 @@ No authorization required
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

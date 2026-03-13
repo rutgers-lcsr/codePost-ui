@@ -1,20 +1,24 @@
 # OttApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                             | HTTP request            | Description |
-| -------------------------------------------------- | ----------------------- | ----------- |
-| [**generateCreate**](OttApi.md#generatecreate)     | **POST** /ott/generate/ |             |
-| [**generateRetrieve**](OttApi.md#generateretrieve) | **GET** /ott/generate/  |             |
-| [**retrieve**](OttApi.md#retrieve)                 | **GET** /ott/           |             |
-| [**validateCreate**](OttApi.md#validatecreate)     | **POST** /ott/validate/ |             |
-| [**validateRetrieve**](OttApi.md#validateretrieve) | **GET** /ott/validate/  |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**generateCreate**](OttApi.md#generatecreate) | **POST** /ott/generate/ |  |
+| [**generateRetrieve**](OttApi.md#generateretrieve) | **GET** /ott/generate/ |  |
+| [**retrieve**](OttApi.md#retrieve) | **GET** /ott/ |  |
+| [**validateCreate**](OttApi.md#validatecreate) | **POST** /ott/validate/ |  |
+| [**validateRetrieve**](OttApi.md#validateretrieve) | **GET** /ott/validate/ |  |
+
+
 
 ## generateCreate
 
 > GenerateOTTResponse generateCreate(generateOTTRequest)
 
-Generate a one-time token for the authenticated course instructor. Used to create one time tokens for jupyter servers.
+
+
+Generate a one-time token for the authenticated course instructor.  Used to create one time tokens for jupyter servers.
 
 ### Example
 
@@ -27,7 +31,7 @@ import type { GenerateCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -59,9 +63,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                   | Type                                        | Description | Notes |
-| ---------------------- | ------------------------------------------- | ----------- | ----- |
-| **generateOTTRequest** | [GenerateOTTRequest](GenerateOTTRequest.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **generateOTTRequest** | [GenerateOTTRequest](GenerateOTTRequest.md) |  | |
 
 ### Return type
 
@@ -76,38 +81,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## generateRetrieve
 
 > GenerateOTTResponse generateRetrieve()
 
-Generate a one-time token for the authenticated course instructor. Used to create one time tokens for jupyter servers.
+
+
+Generate a one-time token for the authenticated course instructor.  Used to create one time tokens for jupyter servers.
 
 ### Example
 
 ```ts
-import { Configuration, OttApi } from '';
+import {
+  Configuration,
+  OttApi,
+} from '';
 import type { GenerateRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new OttApi(config);
 
@@ -140,38 +151,44 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## retrieve
 
 > JwtOttResponse retrieve()
+
+
 
 Generate a JWT short-lived 5 min token for the authenticated user. Used to exchange a one-time token for imbedding in an iframe or other uses.
 
 ### Example
 
 ```ts
-import { Configuration, OttApi } from '';
+import {
+  Configuration,
+  OttApi,
+} from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new OttApi(config);
 
@@ -204,19 +221,22 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## validateCreate
 
 > User validateCreate(validateOTTRequest)
 
-Validate a one-time token and return the associated user data. Used for long lived Jupyter server sessions. Should stay in memory.
+
+
+Validate a one-time token and return the associated user data.  Used for long lived Jupyter server sessions. Should stay in memory.
 
 ### Example
 
@@ -229,7 +249,7 @@ import type { ValidateCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -261,9 +281,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                   | Type                                        | Description | Notes |
-| ---------------------- | ------------------------------------------- | ----------- | ----- |
-| **validateOTTRequest** | [ValidateOTTRequest](ValidateOTTRequest.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **validateOTTRequest** | [ValidateOTTRequest](ValidateOTTRequest.md) |  | |
 
 ### Return type
 
@@ -278,38 +299,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## validateRetrieve
 
 > User validateRetrieve()
 
-Validate a one-time token and return the associated user data. Used for long lived Jupyter server sessions. Should stay in memory.
+
+
+Validate a one-time token and return the associated user data.  Used for long lived Jupyter server sessions. Should stay in memory.
 
 ### Example
 
 ```ts
-import { Configuration, OttApi } from '';
+import {
+  Configuration,
+  OttApi,
+} from '';
 import type { ValidateRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new OttApi(config);
 
@@ -342,10 +369,11 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

@@ -1,52 +1,59 @@
 # SubmissionsApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                                                                             | HTTP request                                            | Description |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------- |
-| [**checkPermissionRetrieve**](SubmissionsApi.md#checkpermissionretrieve)                           | **GET** /submissions/{id}/checkPermission/              |             |
-| [**create**](SubmissionsApi.md#create)                                                             | **POST** /submissions/                                  |             |
-| [**deleteRegradePartialUpdate**](SubmissionsApi.md#deleteregradepartialupdate)                     | **PATCH** /submissions/{id}/deleteRegrade/              |             |
-| [**destroy**](SubmissionsApi.md#destroy)                                                           | **DELETE** /submissions/{id}/                           |             |
-| [**generatePartnerLinkRetrieve**](SubmissionsApi.md#generatepartnerlinkretrieve)                   | **GET** /submissions/{id}/generatePartnerLink/          |             |
-| [**historyList**](SubmissionsApi.md#historylist)                                                   | **GET** /submissions/{id}/history/                      |             |
-| [**historyPartialUpdate**](SubmissionsApi.md#historypartialupdate)                                 | **PATCH** /submissions/{id}/history/                    |             |
-| [**list**](SubmissionsApi.md#list)                                                                 | **GET** /submissions/                                   |             |
-| [**notifyStudentsCreate**](SubmissionsApi.md#notifystudentscreate)                                 | **POST** /submissions/{id}/notifyStudents/              |             |
-| [**partialUpdate**](SubmissionsApi.md#partialupdate)                                               | **PATCH** /submissions/{id}/                            |             |
-| [**removePartnerRetrieve**](SubmissionsApi.md#removepartnerretrieve)                               | **GET** /submissions/{id}/removePartner/                |             |
-| [**retrieve**](SubmissionsApi.md#retrieve)                                                         | **GET** /submissions/{id}/                              |             |
-| [**submissionTestsList**](SubmissionsApi.md#submissiontestslist)                                   | **GET** /submissions/{id}/submissionTests/              |             |
-| [**submitRegradePartialUpdate**](SubmissionsApi.md#submitregradepartialupdate)                     | **PATCH** /submissions/{id}/submitRegrade/              |             |
-| [**testResultsRetrieve**](SubmissionsApi.md#testresultsretrieve)                                   | **GET** /submissions/{id}/testResults/                  |             |
-| [**update**](SubmissionsApi.md#update)                                                             | **PUT** /submissions/{id}/                              |             |
-| [**validatePartnerLinkAndReturnRetrieve**](SubmissionsApi.md#validatepartnerlinkandreturnretrieve) | **GET** /submissions/{id}/validatePartnerLinkAndReturn/ |             |
-| [**validatePartnerLinkRetrieve**](SubmissionsApi.md#validatepartnerlinkretrieve)                   | **GET** /submissions/{id}/validatePartnerLink/          |             |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**checkPermissionRetrieve**](SubmissionsApi.md#checkpermissionretrieve) | **GET** /submissions/{id}/checkPermission/ |  |
+| [**create**](SubmissionsApi.md#create) | **POST** /submissions/ |  |
+| [**deleteRegradePartialUpdate**](SubmissionsApi.md#deleteregradepartialupdate) | **PATCH** /submissions/{id}/deleteRegrade/ |  |
+| [**destroy**](SubmissionsApi.md#destroy) | **DELETE** /submissions/{id}/ |  |
+| [**generatePartnerLinkRetrieve**](SubmissionsApi.md#generatepartnerlinkretrieve) | **GET** /submissions/{id}/generatePartnerLink/ |  |
+| [**historyList**](SubmissionsApi.md#historylist) | **GET** /submissions/{id}/history/ |  |
+| [**historyPartialUpdate**](SubmissionsApi.md#historypartialupdate) | **PATCH** /submissions/{id}/history/ |  |
+| [**list**](SubmissionsApi.md#list) | **GET** /submissions/ |  |
+| [**notifyStudentsCreate**](SubmissionsApi.md#notifystudentscreate) | **POST** /submissions/{id}/notifyStudents/ |  |
+| [**partialUpdate**](SubmissionsApi.md#partialupdate) | **PATCH** /submissions/{id}/ |  |
+| [**removePartnerRetrieve**](SubmissionsApi.md#removepartnerretrieve) | **GET** /submissions/{id}/removePartner/ |  |
+| [**retrieve**](SubmissionsApi.md#retrieve) | **GET** /submissions/{id}/ |  |
+| [**submissionTestsList**](SubmissionsApi.md#submissiontestslist) | **GET** /submissions/{id}/submissionTests/ |  |
+| [**submitRegradePartialUpdate**](SubmissionsApi.md#submitregradepartialupdate) | **PATCH** /submissions/{id}/submitRegrade/ |  |
+| [**testResultsRetrieve**](SubmissionsApi.md#testresultsretrieve) | **GET** /submissions/{id}/testResults/ |  |
+| [**update**](SubmissionsApi.md#update) | **PUT** /submissions/{id}/ |  |
+| [**validatePartnerLinkAndReturnRetrieve**](SubmissionsApi.md#validatepartnerlinkandreturnretrieve) | **GET** /submissions/{id}/validatePartnerLinkAndReturn/ |  |
+| [**validatePartnerLinkRetrieve**](SubmissionsApi.md#validatepartnerlinkretrieve) | **GET** /submissions/{id}/validatePartnerLink/ |  |
+
+
 
 ## checkPermissionRetrieve
 
 > SubmissionCheckPermissionResponse checkPermissionRetrieve(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { CheckPermissionRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -69,8 +76,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -86,19 +94,22 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## create
 
 > Submission create(submission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -111,7 +122,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -143,9 +154,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name           | Type                        | Description | Notes |
-| -------------- | --------------------------- | ----------- | ----- |
-| **submission** | [Submission](Submission.md) |             |       |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **submission** | [Submission](Submission.md) |  | |
 
 ### Return type
 
@@ -160,19 +172,22 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **201**     |             | -                |
+|-------------|-------------|------------------|
+| **201** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## deleteRegradePartialUpdate
 
 > StudentSubmission deleteRegradePartialUpdate(id, patchedSubmission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -185,7 +200,7 @@ import type { DeleteRegradePartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -219,10 +234,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                  | Type                                      | Description                                         | Notes                     |
-| --------------------- | ----------------------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**                | `number`                                  | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |                                                     | [Optional]                |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |  | [Optional] |
 
 ### Return type
 
@@ -237,38 +253,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## destroy
 
 > destroy(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -291,8 +313,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -308,38 +331,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-### HTTP response details
 
-| Status code | Description      | Response headers |
-| ----------- | ---------------- | ---------------- |
-| **204**     | No response body | -                |
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | No response body |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## generatePartnerLinkRetrieve
 
 > SubmissionPartnerLinkResponse generatePartnerLinkRetrieve(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { GeneratePartnerLinkRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -362,8 +391,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -379,38 +409,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## historyList
 
 > Array&lt;SubmissionHistory&gt; historyList(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { HistoryListRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -433,8 +469,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -450,19 +487,22 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## historyPartialUpdate
 
 > Array&lt;SubmissionHistory&gt; historyPartialUpdate(id, patchedSubmission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -475,7 +515,7 @@ import type { HistoryPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -509,10 +549,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                  | Type                                      | Description                                         | Notes                     |
-| --------------------- | ----------------------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**                | `number`                                  | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |                                                     | [Optional]                |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |  | [Optional] |
 
 ### Return type
 
@@ -527,38 +568,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## list
 
 > Array&lt;Submission&gt; list()
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -591,19 +638,22 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## notifyStudentsCreate
 
 > string notifyStudentsCreate(id, submission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -616,7 +666,7 @@ import type { NotifyStudentsCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -650,10 +700,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name           | Type                        | Description                                         | Notes                     |
-| -------------- | --------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**         | `number`                    | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **submission** | [Submission](Submission.md) |                                                     |                           |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **submission** | [Submission](Submission.md) |  | |
 
 ### Return type
 
@@ -668,19 +719,22 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## partialUpdate
 
 > Submission partialUpdate(id, patchedSubmission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -693,7 +747,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -727,10 +781,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                  | Type                                      | Description                                         | Notes                     |
-| --------------------- | ----------------------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**                | `number`                                  | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |                                                     | [Optional]                |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |  | [Optional] |
 
 ### Return type
 
@@ -745,38 +800,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## removePartnerRetrieve
 
 > string removePartnerRetrieve(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { RemovePartnerRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -799,8 +860,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -816,38 +878,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## retrieve
 
 > Submission retrieve(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -870,8 +938,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -887,38 +956,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## submissionTestsList
 
 > Array&lt;SubmissionTest&gt; submissionTestsList(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { SubmissionTestsListRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -941,8 +1016,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -958,19 +1034,22 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## submitRegradePartialUpdate
 
 > StudentSubmission submitRegradePartialUpdate(id, patchedSubmission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -983,7 +1062,7 @@ import type { SubmitRegradePartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1017,10 +1096,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name                  | Type                                      | Description                                         | Notes                     |
-| --------------------- | ----------------------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**                | `number`                                  | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |                                                     | [Optional]                |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **patchedSubmission** | [PatchedSubmission](PatchedSubmission.md) |  | [Optional] |
 
 ### Return type
 
@@ -1035,38 +1115,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## testResultsRetrieve
 
 > SubmissionTestResultsResponse testResultsRetrieve(id)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { TestResultsRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -1089,8 +1175,9 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
 | **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
 
 ### Return type
@@ -1106,19 +1193,22 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## update
 
 > Submission update(id, submission)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
@@ -1131,7 +1221,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1165,10 +1255,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name           | Type                        | Description                                         | Notes                     |
-| -------------- | --------------------------- | --------------------------------------------------- | ------------------------- |
-| **id**         | `number`                    | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **submission** | [Submission](Submission.md) |                                                     |                           |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **submission** | [Submission](Submission.md) |  | |
 
 ### Return type
 
@@ -1183,38 +1274,44 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## validatePartnerLinkAndReturnRetrieve
 
 > StudentSubmission validatePartnerLinkAndReturnRetrieve(id, token)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { ValidatePartnerLinkAndReturnRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -1239,10 +1336,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name      | Type     | Description                                         | Notes                     |
-| --------- | -------- | --------------------------------------------------- | ------------------------- |
-| **id**    | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **token** | `string` |                                                     | [Defaults to `undefined`] |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **token** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1257,38 +1355,44 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 
 ## validatePartnerLinkRetrieve
 
 > string validatePartnerLinkRetrieve(id, token)
 
-list: Return a list of all the submissions. create: Create a new submission. retrieve: Return the given submission. update: Update a submission. partial_update: Update a submission. delete: Delete a submission.
+
+
+list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
 
 ### Example
 
 ```ts
-import { Configuration, SubmissionsApi } from '';
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
 import type { ValidatePartnerLinkRetrieveRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
-  const config = new Configuration({
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({ 
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new SubmissionsApi(config);
 
@@ -1313,10 +1417,11 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name      | Type     | Description                                         | Notes                     |
-| --------- | -------- | --------------------------------------------------- | ------------------------- |
-| **id**    | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
-| **token** | `string` |                                                     | [Defaults to `undefined`] |
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **token** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1331,10 +1436,11 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-### HTTP response details
 
+### HTTP response details
 | Status code | Description | Response headers |
-| ----------- | ----------- | ---------------- |
-| **200**     |             | -                |
+|-------------|-------------|------------------|
+| **200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+

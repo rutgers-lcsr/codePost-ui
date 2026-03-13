@@ -35,7 +35,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
       try {
         const data = await Submission.validatePartnerLinkAndReturn(parseInt(sid, 10), token);
         setSubmission(data);
-      } catch (err) {
+      } catch {
         setStatus(STATUS.INVALID);
         setSubmission(undefined);
       }
@@ -54,7 +54,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
     try {
       await Submission.validatePartnerLink(parseInt(sid, 10), token);
       setStatus(STATUS.SUCCESS);
-    } catch (err) {
+    } catch {
       setStatus(STATUS.INVALID);
     }
   };

@@ -30,7 +30,7 @@ const DocsSidebar: React.FC = () => {
   };
 
   // Get all docs for searching
-  const allDocs = getAllDocs();
+  const allDocs = useMemo(() => getAllDocs(), []);
 
   // Filter docs based on search
   const searchResults = useMemo(() => {
@@ -105,7 +105,7 @@ const DocsSidebar: React.FC = () => {
         snippet,
       };
     });
-  }, [searchText]);
+  }, [searchText, allDocs]);
 
   // Group routes by category for normal view
   const categories: Record<DocCategory, typeof docRoutes> = {

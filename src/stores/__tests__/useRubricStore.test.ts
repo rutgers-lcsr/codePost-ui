@@ -195,7 +195,7 @@ describe('useRubricStore', () => {
 
     it('should NOT track new categories (id < 0) in deletedCategories', () => {
       useRubricStore.getState().initialize([], {});
-      const newId = useRubricStore.getState().addCategory({ name: 'Temp' } as RubricCategory);
+      useRubricStore.getState().addCategory({ name: 'Temp' } as RubricCategory);
       const newCat = useRubricStore.getState().rubricCategories[0];
 
       useRubricStore.getState().deleteCategory(newCat);

@@ -16,7 +16,7 @@ import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
 const EditableContext = React.createContext<any>(null);
 
-const EditableRow: React.FC<any> = ({ index, ...props }) => {
+const EditableRow: React.FC<any> = ({ index: _index, ...props }) => {
   const [form] = Form.useForm();
   return (
     <Form form={form} component={false}>

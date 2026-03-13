@@ -139,7 +139,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       });
       message.success('Successfully updated instructions!');
       closeInstructionsModal();
-    } catch (err) {
+    } catch {
       // unsuccessful
     }
   };
