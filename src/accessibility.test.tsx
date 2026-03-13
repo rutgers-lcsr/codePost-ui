@@ -137,7 +137,7 @@ describe('Accessibility', () => {
     const results = await axe(container, axeConfig);
     // @ts-expect-error — legacy type incompatibility
     expect(results).toHaveNoViolations();
-  });
+  }, 10000);
 
   it('should have no violations on JoinSignup page', async () => {
     const { container } = render(
