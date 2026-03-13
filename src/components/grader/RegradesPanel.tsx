@@ -12,7 +12,7 @@ import { Switch } from 'antd';
 /* other library imports */
 
 /* codePost imports */
-import { getHeaders } from '../../utils/generics';
+import { assignmentsApi } from '../../api-client/clients';
 import { Course } from '../../api-client';
 import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
 
@@ -65,18 +65,13 @@ class RegradesPanel extends React.Component<IProps, IState> {
     this.setState({ isLoading: true }, () => {
       const promises = assignments.map(async (assn) => {
         try {
-          const params = new URLSearchParams({
+          const response = await assignmentsApi.submissionsListRaw({
+            id: assn.id,
             compact: '1',
+            grader: grader,
           });
-          if (grader) {
-            params.append('grader', grader);
-          }
-          const response = await fetch(`/api/assignments/${assn.id}/submissions/?${params.toString()}`, {
-            headers: getHeaders(),
-          });
-          if (!response.ok) throw new Error(`Failed to fetch submissions for assignment ${assn.id}`);
-          const data = await response.json();
-          return data;
+          const data = await response.raw.json();
+          return Array.isArray(data) ? data : (data?.results ?? []);
         } catch (error) {
           console.error(error);
           return [];

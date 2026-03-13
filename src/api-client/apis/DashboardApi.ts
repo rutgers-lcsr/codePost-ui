@@ -14,12 +14,64 @@
  */
 
 import * as runtime from '../runtime';
-import type { AssignmentDeadline, DashboardStats } from '../models/index';
+import type { AssignmentDeadline, DashboardStats, User } from '../models/index';
 
 /**
  *
  */
 export class DashboardApi extends runtime.BaseAPI {
+  /**
+   * Approve a pending admin request (superuser only). Payload: { \'user_email\': \'...\' }
+   */
+  async approvePendingAdminCreateRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/dashboard/approve_pending_admin/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Approve a pending admin request (superuser only). Payload: { \'user_email\': \'...\' }
+   */
+  async approvePendingAdminCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+    await this.approvePendingAdminCreateRaw(initOverrides);
+  }
+
   /**
    * Returns all assignments with their due dates and late upload deadlines. Useful for planning deployment windows.
    */
@@ -70,6 +122,111 @@ export class DashboardApi extends runtime.BaseAPI {
    */
   async deadlinesList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<AssignmentDeadline>> {
     const response = await this.deadlinesListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Deny a pending admin request (superuser only). Payload: { \'user_email\': \'...\' }
+   */
+  async denyPendingAdminCreateRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/dashboard/deny_pending_admin/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Deny a pending admin request (superuser only). Payload: { \'user_email\': \'...\' }
+   */
+  async denyPendingAdminCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+    await this.denyPendingAdminCreateRaw(initOverrides);
+  }
+
+  /**
+   * Returns all users with pendingValidation=True across all organizations. Used by the SuperAdmin dashboard to manage pending admin requests.
+   */
+  async pendingAdminsListRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<User>>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/dashboard/pending_admins/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns all users with pendingValidation=True across all organizations. Used by the SuperAdmin dashboard to manage pending admin requests.
+   */
+  async pendingAdminsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<User>> {
+    const response = await this.pendingAdminsListRaw(initOverrides);
     return await response.value();
   }
 

@@ -1487,7 +1487,7 @@ example().catch(console.error);
 
 ## submissionsList
 
-> PaginatedSubmissionList submissionsList(id, page, pageSize)
+> PaginatedSubmissionList submissionsList(id, compact, grader, page, pageSize, student)
 
 Return a (optionally filtered) list of submissions whose parent is the requested assignment.
 
@@ -1515,10 +1515,16 @@ async function example() {
   const body = {
     // number | A unique integer value identifying this assignment.
     id: 56,
+    // string | If set to \'1\', return submissions without nested file data. (optional)
+    compact: compact_example,
+    // string | Filter submissions by grader email. (optional)
+    grader: grader_example,
     // number | A page number within the paginated result set. (optional)
     page: 56,
     // number | Number of results to return per page. (optional)
     pageSize: 56,
+    // string | Filter submissions by student email. (optional)
+    student: student_example,
   } satisfies SubmissionsListRequest;
 
   try {
@@ -1535,11 +1541,14 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name         | Type     | Description                                         | Notes                                |
-| ------------ | -------- | --------------------------------------------------- | ------------------------------------ |
-| **id**       | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`]            |
-| **page**     | `number` | A page number within the paginated result set.      | [Optional] [Defaults to `undefined`] |
-| **pageSize** | `number` | Number of results to return per page.               | [Optional] [Defaults to `undefined`] |
+| Name         | Type     | Description                                                           | Notes                                |
+| ------------ | -------- | --------------------------------------------------------------------- | ------------------------------------ |
+| **id**       | `number` | A unique integer value identifying this assignment.                   | [Defaults to `undefined`]            |
+| **compact**  | `string` | If set to \&#39;1\&#39;, return submissions without nested file data. | [Optional] [Defaults to `undefined`] |
+| **grader**   | `string` | Filter submissions by grader email.                                   | [Optional] [Defaults to `undefined`] |
+| **page**     | `number` | A page number within the paginated result set.                        | [Optional] [Defaults to `undefined`] |
+| **pageSize** | `number` | Number of results to return per page.                                 | [Optional] [Defaults to `undefined`] |
+| **student**  | `string` | Filter submissions by student email.                                  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

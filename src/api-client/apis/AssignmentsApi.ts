@@ -166,8 +166,11 @@ export interface SubmissionTestsListRequest {
 
 export interface SubmissionsListRequest {
   id: number;
+  compact?: string;
+  grader?: string;
   page?: number;
   pageSize?: number;
+  student?: string;
 }
 
 export interface UpdateRequest {
@@ -1541,12 +1544,24 @@ export class AssignmentsApi extends runtime.BaseAPI {
 
     const queryParameters: any = {};
 
+    if (requestParameters['compact'] != null) {
+      queryParameters['compact'] = requestParameters['compact'];
+    }
+
+    if (requestParameters['grader'] != null) {
+      queryParameters['grader'] = requestParameters['grader'];
+    }
+
     if (requestParameters['page'] != null) {
       queryParameters['page'] = requestParameters['page'];
     }
 
     if (requestParameters['pageSize'] != null) {
       queryParameters['page_size'] = requestParameters['pageSize'];
+    }
+
+    if (requestParameters['student'] != null) {
+      queryParameters['student'] = requestParameters['student'];
     }
 
     const headerParameters: runtime.HTTPHeaders = {};

@@ -47,11 +47,21 @@ export interface AnalyticsRetrieveRequest {
   id: number;
 }
 
+export interface ApproveAdminCreateRequest {
+  id: number;
+  organization: Omit<Organization, 'id'>;
+}
+
 export interface CreateRequest {
   organization: Omit<Organization, 'id'>;
 }
 
 export interface DemoteStaffCreateRequest {
+  id: number;
+  organization: Omit<Organization, 'id'>;
+}
+
+export interface DenyAdminCreateRequest {
   id: number;
   organization: Omit<Organization, 'id'>;
 }
@@ -63,6 +73,10 @@ export interface DestroyRequest {
 export interface PartialUpdateRequest {
   id: number;
   patchedOrganization?: Omit<PatchedOrganization, 'id'>;
+}
+
+export interface PendingAdminsRetrieveRequest {
+  id: number;
 }
 
 export interface PromoteStaffCreateRequest {
@@ -443,6 +457,81 @@ export class OrganizationsApi extends runtime.BaseAPI {
   }
 
   /**
+   * Approve a pending admin request. Grants canCreateCourses=True. Payload: { \'user_email\': \'...\' }
+   */
+  async approveAdminCreateRaw(
+    requestParameters: ApproveAdminCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Organization>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling approveAdminCreate().',
+      );
+    }
+
+    if (requestParameters['organization'] == null) {
+      throw new runtime.RequiredError(
+        'organization',
+        'Required parameter "organization" was null or undefined when calling approveAdminCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/approve_admin/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['organization'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Approve a pending admin request. Grants canCreateCourses=True. Payload: { \'user_email\': \'...\' }
+   */
+  async approveAdminCreate(
+    requestParameters: ApproveAdminCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Organization> {
+    const response = await this.approveAdminCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * list: Return a list of all the organizations.  create: Create a new organization.  retrieve: Return the given organization.  update: Update an organization.  partial_update: Update an organization.  delete: Delete an organization
    */
   async createRaw(
@@ -581,6 +670,81 @@ export class OrganizationsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Organization> {
     const response = await this.demoteStaffCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Deny a pending admin request. Payload: { \'user_email\': \'...\' }
+   */
+  async denyAdminCreateRaw(
+    requestParameters: DenyAdminCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Organization>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling denyAdminCreate().',
+      );
+    }
+
+    if (requestParameters['organization'] == null) {
+      throw new runtime.RequiredError(
+        'organization',
+        'Required parameter "organization" was null or undefined when calling denyAdminCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/deny_admin/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['organization'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Deny a pending admin request. Payload: { \'user_email\': \'...\' }
+   */
+  async denyAdminCreate(
+    requestParameters: DenyAdminCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Organization> {
+    const response = await this.denyAdminCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -763,6 +927,71 @@ export class OrganizationsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Organization> {
     const response = await this.partialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns a list of users with pendingValidation=True in this organization. Only accessible by Org Staff or superuser.
+   */
+  async pendingAdminsRetrieveRaw(
+    requestParameters: PendingAdminsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Organization>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling pendingAdminsRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/organizations/{id}/pending_admins/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns a list of users with pendingValidation=True in this organization. Only accessible by Org Staff or superuser.
+   */
+  async pendingAdminsRetrieve(
+    requestParameters: PendingAdminsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Organization> {
+    const response = await this.pendingAdminsRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
