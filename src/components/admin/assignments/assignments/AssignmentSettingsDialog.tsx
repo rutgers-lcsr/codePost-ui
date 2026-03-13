@@ -60,7 +60,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
   const isStudentVisibleFile = (file: AssignmentFileType): boolean => {
     const normalized = file as AssignmentFileType & { is_test_resource?: boolean };
-    return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+    return !(file.hidden || file.isTestResource || normalized.is_test_resource);
   };
 
   const loadFiles = () => {

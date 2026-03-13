@@ -103,6 +103,7 @@ const RubricCommentExplorer: React.FC<IProps> = ({ rubricComment, closeCommentEx
   useEffect(() => {
     if (!isVisible) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState after async API fetch
     setIsLoading(true);
     readComments(rubricComment)
       .then((comments) => {

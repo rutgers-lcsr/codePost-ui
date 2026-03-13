@@ -67,6 +67,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
   const prevValueRef = useRef<number | undefined>(value);
 
   // When value changes from external source (navigation), sync the type
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs pointType from external value prop changes
   useEffect(() => {
     const prevValue = prevValueRef.current;
 
@@ -77,6 +78,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
 
       // If signs are different (or one is zero and other isn't), this is likely a navigation
       if (prevSign !== newSign || (prevValue === 0 && value !== 0)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- sync point type on navigation
         setPointType(getTypeFromValue(value, defaultToPositive));
       }
     } else if (value !== undefined && prevValue === undefined) {

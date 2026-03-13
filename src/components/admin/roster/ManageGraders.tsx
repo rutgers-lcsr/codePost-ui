@@ -63,6 +63,7 @@ export interface IManageGradersProps {
 
 const ManageGraders: React.FC<IManageGradersProps> = (props) => {
   const location = useLocation();
+  const { updateRoster } = props;
 
   const sendActivationEmail = useCallback(
     (grader: string) => {
@@ -78,42 +79,42 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         content: `All of their work (graded submissions) won't be impacted, but the
       grader won't be able to access this course any longer. You can always add them back from this page.`,
         onOk: () => {
-          return props.updateRoster([], [toRemove], USER_APP.Grader);
+          return updateRoster([], [toRemove], USER_APP.Grader);
         },
         okText: 'Remove',
       });
     },
-    [props.updateRoster],
+    [updateRoster],
   );
 
   const toggleSuperGrader = useCallback(
     (grader: string, include: boolean) => {
       if (include) {
-        props.updateRoster([grader], [], USER_APP.SuperGrader).then(() => {
+        updateRoster([grader], [], USER_APP.SuperGrader).then(() => {
           message.success(`${grader} is now a supergrader`);
         });
       } else {
-        props.updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
+        updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
           message.success(`${grader} is no longer a supergrader`);
         });
       }
     },
-    [props.updateRoster],
+    [updateRoster],
   );
 
   const toggleRubricEditor = useCallback(
     (grader: string, include: boolean) => {
       if (include) {
-        props.updateRoster([grader], [], USER_APP.RubricEditor).then(() => {
+        updateRoster([grader], [], USER_APP.RubricEditor).then(() => {
           message.success(`${grader} is now a rubric editor`);
         });
       } else {
-        props.updateRoster([], [grader], USER_APP.RubricEditor).then(() => {
+        updateRoster([], [grader], USER_APP.RubricEditor).then(() => {
           message.success(`${grader} is no longer a rubric editor`);
         });
       }
     },
-    [props.updateRoster],
+    [updateRoster],
   );
 
   const inactiveEmails = useMemo(() => {
@@ -359,10 +360,7 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
           items={[
             { title: 'Roster' },
             {
-              title: (
-                // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                <a>Graders</a>
-              ),
+              title: <a>Graders</a>,
             },
           ]}
         />

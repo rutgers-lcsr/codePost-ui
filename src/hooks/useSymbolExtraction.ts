@@ -94,10 +94,10 @@ export const useSymbolExtraction = (
       } else if (language === 'java') {
         captureAll(/\bclass\s+([A-Za-z_]\w*)\b/gm, 'class');
         captureAll(
-          /\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>\[\]]+\s+([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{/gm,
+          /\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>[\]]+\s+([A-Za-z_]\w*)\s*\([^;{}]*\)\s*\{/gm,
           'method',
         );
-        captureAll(/\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>\[\]]+\s+([A-Za-z_]\w*)\s*(?:=|;)/gm, 'field');
+        captureAll(/\b(?:public|private|protected)?\s*(?:static\s+)?[\w<>[\]]+\s+([A-Za-z_]\w*)\s*(?:=|;)/gm, 'field');
       } else if (language === 'r') {
         captureAll(/^\s*([A-Za-z.][\w.]*)\s*(?:<-|=)\s*function\s*\(/gm, 'function');
         captureAll(/^\s*([A-Za-z.][\w.]*)\s*(?:<-|=)\s*.+$/gm, 'variable');
@@ -162,7 +162,7 @@ export const useSymbolExtraction = (
                 const typeCapture = match.captures.find((c: QueryCapture) => c.name !== 'name' && c.name !== 'op'); // @function, @class, etc.
 
                 if (capture && typeCapture) {
-                  let name = capture.node.text;
+                  const name = capture.node.text;
                   const type = typeCapture.name; // 'function', 'class', 'variable', 'method', 'field', 'import'
                   const startLine = capture.node.startPosition.row + 1;
                   addSymbol(

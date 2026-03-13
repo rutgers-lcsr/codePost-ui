@@ -103,7 +103,7 @@ export const calculateFullStats = (
   // We don't want to slow down the ManageAssignments stats calculations
   let max: number | null = null;
   let min: number | null = null;
-  let mean: number | null = null;
+  let mean: number | null;
   let median: number | null = null;
 
   if (assignmentSubs === null) {

@@ -16,6 +16,7 @@ export const useTreeSitter = (language: string | undefined) => {
 
   useEffect(() => {
     if (!language || !['python', 'java', 'r'].includes(language)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- async WASM parser initialization
       setParser(null);
       return;
     }

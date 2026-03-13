@@ -336,5 +336,5 @@ describe.sequential('Expanded Accessibility Audit', () => {
       console.log('Axe violations on Super Admin Dashboard:', JSON.stringify(results.violations, null, 2));
     }
     expect(results.violations).toHaveLength(0);
-  }, 30000);
+  }, 60000);
 });

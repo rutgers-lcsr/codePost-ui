@@ -60,12 +60,12 @@ const getResourceDatasetDetails = (
 
 const isStudentVisibleFile = (file: AssignmentFileType): boolean => {
   const normalized = file as AssignmentFileType & { is_test_resource?: boolean };
-  return !Boolean(file.hidden || file.isTestResource || normalized.is_test_resource);
+  return !(file.hidden || file.isTestResource || normalized.is_test_resource);
 };
 
 const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
   const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
-  return !Boolean(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
+  return !(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
 };
 
 const getErrorMessage = (error: unknown): string => {

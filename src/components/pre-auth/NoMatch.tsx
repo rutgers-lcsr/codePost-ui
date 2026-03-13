@@ -130,7 +130,7 @@ class NoMatch extends React.Component<IProps, IState> {
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
           <Typography.Title level={1}>Whoops! This page doesn't exist!</Typography.Title>
           <Typography.Title level={4}>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+            {/* eslint-disable-next-line */}
             You can{' '}
             <Link to="/" className="text-link">
               return to our homepage

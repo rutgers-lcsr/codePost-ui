@@ -298,7 +298,7 @@ export const calculateGrade = (
   const testsAffectGrade = assignment.testsAffectGrade ?? true;
   const testPoints = testsAffectGrade ? pointsFromTests(submissionTests, testCases) : 0;
 
-  let grade = 0;
+  let grade: number;
   if (assignment.additiveGrading) {
     grade = 0 - commentPoints - categoryPoints - testPoints;
   } else {

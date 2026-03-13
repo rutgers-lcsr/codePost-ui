@@ -57,6 +57,7 @@ const TestScriptCardView = (props: IProps) => {
     handleChange([
       ...items,
       {
+        // eslint-disable-next-line react-hooks/purity -- Date.now() only runs on user click, not during render
         id: `draft-${Date.now()}-${items.length}`,
         type: 'test',
         name: 'New Test',
@@ -76,7 +77,7 @@ const TestScriptCardView = (props: IProps) => {
       case 'r':
         return `result <- add(1, 2)\nstopifnot(result == 3)`;
       case 'cpp':
-        return `int result = add(1, 2);\nassertTrue(result == 3, \"Expected 3\");`;
+        return `int result = add(1, 2);\nassertTrue(result == 3, "Expected 3");`;
       case 'ruby':
         return `result = add(1, 2)\nraise 'Expected 3' unless result == 3`;
       case 'php':

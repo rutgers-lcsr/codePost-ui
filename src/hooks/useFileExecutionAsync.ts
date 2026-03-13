@@ -96,7 +96,7 @@ export const useFileExecutionAsync = () => {
         }
         setError(message);
         setIsExecuting(false);
-        throw new Error(message);
+        throw new Error(message, { cause: err });
       }
     },
     [pollTask],

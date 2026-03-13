@@ -53,7 +53,7 @@ const DocsSidebar: React.FC = () => {
       // Find match in content
       const contentMatch = matches?.find((m) => m.key === 'plainText');
 
-      let snippet: React.ReactNode = '';
+      let snippet: React.ReactNode;
       if (contentMatch && contentMatch.indices.length > 0) {
         // Find the longest match to avoid highlighting just a single fuzzy letter
         const bestMatch = contentMatch.indices.reduce((prev, current) => {

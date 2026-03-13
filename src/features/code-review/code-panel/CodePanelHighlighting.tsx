@@ -92,7 +92,7 @@ export const buildHTMLString = (highlights: number[][], thetext: string, line: n
       }
     }
 
-    let element = '';
+    let element: string;
 
     // We've reached the end of the line, and there are highlights that need closing
     // Close if ANY highlights are open (prevIDs) OR if highlights are ending (remIDs)
@@ -143,7 +143,7 @@ export const convertStringToJSX = (
     if (html.includes('</strong>')) {
       let className = html.match(/class=".*?"/g) ? html.match(/class=".*?"/g)![0] : '';
       let commentID = 0;
-      let commentIDs: number[] = [];
+      let commentIDs: number[];
 
       if (className !== '') {
         className = className.split('=')[1];

@@ -382,7 +382,7 @@ const TestResultsTable = (props: IProps) => {
   }
 
   /* Show a message appropriate to the way in which the user is using the autograder */
-  let emptyMessage = '';
+  let emptyMessage: string;
   if (props.submissions.length === 0) {
     if (props.assignment.allowStudentUpload) {
       emptyMessage = "Once your students have uploaded, you'll be able to view test results here.";

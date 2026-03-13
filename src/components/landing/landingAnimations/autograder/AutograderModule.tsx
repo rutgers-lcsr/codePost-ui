@@ -210,6 +210,7 @@ const AutograderModule: React.FC = () => {
 
   // Animate cards in one by one
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- animation timer pattern, not cascading render
     setVisibleCount(0);
     let i = 0;
     const tick = () => {
@@ -227,8 +228,11 @@ const AutograderModule: React.FC = () => {
   const totalMax = allTests.reduce((s, t) => s + t.maxScore, 0);
   const pct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
 
-  // Track global test index for staggered animation across categories
-  let globalIdx = 0;
+  // Cumulative test counts per category for staggered animation
+  const categoryOffsets = categories.reduce<number[]>(
+    (acc, cat) => [...acc, (acc[acc.length - 1] ?? 0) + cat.tests.length],
+    [0],
+  );
 
   return (
     <div style={{ width: 460 }}>
@@ -301,8 +305,7 @@ const AutograderModule: React.FC = () => {
             expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ fontSize: 11 }} />}
           >
             {categories.map((category, catIdx) => {
-              const startIdx = globalIdx;
-              globalIdx += category.tests.length;
+              const startIdx = categoryOffsets[catIdx];
 
               return (
                 <Collapse.Panel

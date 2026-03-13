@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
@@ -37,12 +37,10 @@ const CourseMenu = (props: IProps) => {
   const [searchText, setSearchText] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Reset search when dropdown closes
-  useEffect(() => {
-    if (!dropdownOpen) {
-      setSearchText('');
-    }
-  }, [dropdownOpen]);
+  const handleOpenChange = useCallback((open: boolean) => {
+    setDropdownOpen(open);
+    if (!open) setSearchText('');
+  }, []);
 
   let selectorText = 'No courses yet...';
   if (props.courses.length > 0) {
@@ -186,7 +184,7 @@ const CourseMenu = (props: IProps) => {
       value={selectorText}
       minWidth={350}
       open={dropdownOpen}
-      onOpenChange={setDropdownOpen}
+      onOpenChange={handleOpenChange}
       menu={{
         items: menuItems,
         style: { maxHeight: '400px', overflowY: 'auto' },

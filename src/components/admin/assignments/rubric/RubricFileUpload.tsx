@@ -292,7 +292,7 @@ const RubricFileUpload: FC<IProps> = ({
         </Button>,
       ];
       break;
-    case STATUS.FILE_UPLOADED:
+    case STATUS.FILE_UPLOADED: {
       const isReplacement = rubricCategories.length > 0;
       content = (
         <div>
@@ -318,6 +318,7 @@ const RubricFileUpload: FC<IProps> = ({
         </Button>,
       ];
       break;
+    }
   }
 
   return (

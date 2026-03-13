@@ -81,7 +81,7 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
       // DEFAULT MODE: Create fake files from FAKE_FILES
       await Promise.all(
         Object.keys(FAKE_FILES).map(async (filename) => {
-          // @ts-ignore
+          // @ts-expect-error — legacy type incompatibility
           const content = FAKE_FILES[filename];
           const extension = filename.split('.').pop() || '';
           await submissionFilesApi.create({

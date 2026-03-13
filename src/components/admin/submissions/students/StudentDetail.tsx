@@ -82,6 +82,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
   const [selectedSubmission, setSelectedSubmission] = useState('');
   const [assignmentToUpload, setAssignmentToUpload] = useState<Assignment | undefined>(undefined);
   const [subsRunning, setSubsRunning] = useState<number[]>([]);
+  const { deleteSubmission, addFilesToSubmission, uploadSubmission, changeSubmissionGrader } = props;
 
   // Derive submissionsMap directly from props to ensure it's always up to date
   const submissionsMap = props.submissions[props.student] || {};
@@ -117,12 +118,12 @@ const StudentDetail: React.FC<IProps> = (props) => {
         title: 'Are you sure you want to remove this submission?',
         content: `The following students are associated with this submission: ${toRemove.students.join(',')}.`,
         onOk: () => {
-          return props.deleteSubmission(toRemove);
+          return deleteSubmission(toRemove);
         },
         okText: 'Remove',
       });
     },
-    [props.deleteSubmission],
+    [deleteSubmission],
   );
 
   const callback = useCallback((sub: SubmissionInfoType, _result: unknown) => {
@@ -175,35 +176,35 @@ const StudentDetail: React.FC<IProps> = (props) => {
           </div>
         ),
         onOk: () => {
-          props.deleteSubmission(toRemove).then(() => {
+          deleteSubmission(toRemove).then(() => {
             toggleUploadSubmissionVisible(toRemove.assignment);
           });
         },
         okText: 'Remove',
       });
     },
-    [props.deleteSubmission, toggleUploadSubmissionVisible],
+    [deleteSubmission, toggleUploadSubmissionVisible],
   );
 
   const handleUploadSubmission = useCallback(
     (assignment: Assignment, partners: string[], files: UploadFile[], _sendConfirmationEmail?: boolean) => {
       const submission = submissionsMap[assignment.id];
       if (submission) {
-        return props.addFilesToSubmission(submission, files);
+        return addFilesToSubmission(submission, files);
       } else {
-        return props.uploadSubmission(assignment, partners, files);
+        return uploadSubmission(assignment, partners, files);
       }
     },
-    [submissionsMap, props.addFilesToSubmission, props.uploadSubmission],
+    [submissionsMap, addFilesToSubmission, uploadSubmission],
   );
 
   const changeGrader = useCallback(
     (submission: SubmissionInfoType, newGrader: string | undefined) => {
-      props.changeSubmissionGrader(submission, newGrader).then(() => {
+      changeSubmissionGrader(submission, newGrader).then(() => {
         message.success('Updated grader');
       });
     },
-    [props.changeSubmissionGrader],
+    [changeSubmissionGrader],
   );
 
   // ******************************************** Render helpers **************************************************
@@ -505,16 +506,10 @@ const StudentDetail: React.FC<IProps> = (props) => {
           <Breadcrumb
             items={[
               {
-                title: (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                  <a>Submissions</a>
-                ),
+                title: <a>Submissions</a>,
               },
               {
-                title: (
-                  // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                  <Link to={props.baseURL}>Students</Link>
-                ),
+                title: <Link to={props.baseURL}>Students</Link>,
                 // onClick: props.onBack,
               },
               { title: props.student },

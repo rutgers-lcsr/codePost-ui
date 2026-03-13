@@ -209,7 +209,7 @@ const parsePython = (script: string): ICardTestItem[] => {
 
 const parseJava = (script: string): ICardTestItem[] => {
   const items: ICardTestItem[] = [];
-  const regex = /@Test\s*\((.*?)\)\s*public\s+[\w<>\[\]]+\s+(\w+)\s*\([^)]*\)\s*\{/gs;
+  const regex = /@Test\s*\((.*?)\)\s*public\s+[\w<>[\]]+\s+(\w+)\s*\([^)]*\)\s*\{/gs;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 

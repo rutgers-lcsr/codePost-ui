@@ -60,9 +60,6 @@ const ShareInviteCode = (props: IProps) => {
           inviteCodeEnabled: enabled,
         },
       });
-      // Update local object to reflect changes (mimicking legacy behavior)
-      if (whitelist) (props.course as any).emailWhitelist = whitelist;
-      if (enabled !== undefined) (props.course as any).inviteCodeEnabled = enabled;
       message.success('Settings updated');
       setVisible(false);
     } catch (e) {

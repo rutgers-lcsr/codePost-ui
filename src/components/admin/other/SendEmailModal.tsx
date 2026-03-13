@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { FC, useState, useCallback, useEffect } from 'react';
+import React, { FC, useState, useCallback } from 'react';
 import { MailOutlined } from '@ant-design/icons';
 import { Button, List, message, Modal } from 'antd';
 import { Assignment } from '../../../types/common';
@@ -26,15 +26,11 @@ const SendEmailModal: FC<IProps> = ({ buttonText, title, emails, template, cours
   const [modalVisible, setModalVisible] = useState(false);
   const [usersToShow, setUsersToShow] = useState(MAX_USERS_IN_INITIAL_LIST);
 
-  // Reset users list when modal closes
-  useEffect(() => {
-    if (!modalVisible) {
-      setUsersToShow(MAX_USERS_IN_INITIAL_LIST);
-    }
-  }, [modalVisible]);
-
   const toggleDialog = useCallback(() => {
-    setModalVisible((prev) => !prev);
+    setModalVisible((prev) => {
+      if (prev) setUsersToShow(MAX_USERS_IN_INITIAL_LIST); // reset on close
+      return !prev;
+    });
   }, []);
 
   const sendEmails = useCallback(
