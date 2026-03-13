@@ -2092,6 +2092,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
   let leftHeader: React.ReactNode[] = [];
   let middleHeader: React.ReactNode[] = [];
+  // eslint-disable-next-line no-useless-assignment -- initializer required for TypeScript control-flow analysis
   let rightHeader: React.ReactNode[] = [];
   let content;
   let siderTitles: Array<React.ReactNode | string> = [];
