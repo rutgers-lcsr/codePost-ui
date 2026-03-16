@@ -25,7 +25,7 @@ interface IProps {
 
 const LandingPanel = (props: IProps) => {
   const brandColor = colors.brandPrimary;
-  const textColor = '#7F7F7F';
+  const textColor = '#595959';
   const titleSize = props.textSize === 'big' ? 28 : 20;
   const subTitleSize = props.textSize === 'big' ? 26 : 22;
   const textSize = props.textSize === 'big' ? 17 : 17;

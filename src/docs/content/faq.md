@@ -54,6 +54,7 @@ A **Supergrader** is a special type of grader with elevated permissions:
 - Can grade any submission (not limited to assigned sections)
 - Can view anonymized submissions
 - Useful for TAs who need to help across multiple sections
+- Can create pinned comments for other graders to use
 
 To make a grader a supergrader, go to **Roster > Graders** and toggle the "Supergrader" option.
 

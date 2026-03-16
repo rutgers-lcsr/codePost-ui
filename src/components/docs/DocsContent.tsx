@@ -10,7 +10,7 @@ import { Image, Typography, Alert, Breadcrumb, Divider } from 'antd';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
   HomeOutlined,
   LeftOutlined,
@@ -36,6 +36,16 @@ const slugify = (text: string) => {
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(/[^\w-]+/g, '') // Remove all non-word chars
     .replace(/--+/g, '-'); // Replace multiple - with single -
+};
+
+// Helper to extract full text content from React children
+const getTextContent = (child: any): string => {
+  if (!child) return '';
+  if (typeof child === 'string') return child;
+  if (typeof child === 'number') return String(child);
+  if (Array.isArray(child)) return child.map(getTextContent).join('');
+  if (child.props?.children) return getTextContent(child.props.children);
+  return '';
 };
 
 const HeadingWithAnchor: React.FC<{
@@ -198,7 +208,8 @@ const DocsContent: React.FC = () => {
     const doc = getDocByPath(currentPath);
 
     if (doc) {
-      content = doc.content;
+      // Strip leading h1 from markdown — the page already renders an h1 from the route title
+      content = doc.content.replace(/^#\s+.+\n*/, '');
     } else {
       error = `File not found: ${currentRoute.fileName}`;
     }
@@ -219,12 +230,12 @@ const DocsContent: React.FC = () => {
 
       const h2Match = line.match(/^##\s+(.+)$/);
       if (h2Match) {
-        items.push({ id: slugify(h2Match[1]), text: h2Match[1], level: 2 });
+        items.push({ id: slugify(h2Match[1]), text: h2Match[1].replace(/[`_*]/g, ''), level: 2 });
         return;
       }
       const h3Match = line.match(/^###\s+(.+)$/);
       if (h3Match) {
-        items.push({ id: slugify(h3Match[1]), text: h3Match[1], level: 3 });
+        items.push({ id: slugify(h3Match[1]), text: h3Match[1].replace(/[`_*]/g, ''), level: 3 });
       }
     });
     return items;
@@ -251,7 +262,7 @@ const DocsContent: React.FC = () => {
 
   const Components: Components = {
     h1: ({ node: _node, children }: any) => {
-      const text = String(children);
+      const text = getTextContent(children);
       const id = slugify(text);
       return (
         <HeadingWithAnchor
@@ -264,7 +275,7 @@ const DocsContent: React.FC = () => {
       );
     },
     h2: ({ node: _node, children }: any) => {
-      const text = String(children);
+      const text = getTextContent(children);
       const id = slugify(text);
       return (
         <HeadingWithAnchor
@@ -284,7 +295,7 @@ const DocsContent: React.FC = () => {
       );
     },
     h3: ({ node: _node, children }: any) => {
-      const text = String(children);
+      const text = getTextContent(children);
       const id = slugify(text);
       return (
         <HeadingWithAnchor
@@ -331,26 +342,42 @@ const DocsContent: React.FC = () => {
         </a>
       );
     },
-    li: ({ node: _node, children, ...props }: any) => (
-      <li
-        style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
-        {...props}
-      >
-        {renderWithHighlight(children)}
-      </li>
-    ),
+    li: ({ node: _node, children, checked, ...props }: any) => {
+      // If it's a task list item (checkbox), ensure the input has an aria-label
+      if (checked !== null && checked !== undefined) {
+        return (
+          <li
+            style={{
+              marginBottom: '12px',
+              fontSize: '16px',
+              color: colors.neutralMainText,
+              lineHeight: '28px',
+              listStyleType: 'none',
+            }}
+            {...props}
+          >
+            <input type="checkbox" checked={checked} readOnly style={{ marginRight: '8px' }} aria-label="Task item" />
+            {renderWithHighlight(
+              React.Children.map(children, (child) => {
+                // Remove the extra input react-markdown adds if we're rendering our own
+                if (React.isValidElement(child) && child.type === 'input') return null;
+                return child;
+              }),
+            )}
+          </li>
+        );
+      }
+      return (
+        <li
+          style={{ marginBottom: '12px', fontSize: '16px', color: colors.neutralMainText, lineHeight: '28px' }}
+          {...props}
+        >
+          {renderWithHighlight(children)}
+        </li>
+      );
+    },
     blockquote: ({ node: _node, children, ...props }: any) => {
       // Check for GitHub-style alerts: [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
-
-      // Helper to extract full text content from children
-      const getTextContent = (child: any): string => {
-        if (!child) return '';
-        if (typeof child === 'string') return child;
-        if (typeof child === 'number') return String(child);
-        if (Array.isArray(child)) return child.map(getTextContent).join('');
-        if (child.props?.children) return getTextContent(child.props.children);
-        return '';
-      };
 
       const fullText = getTextContent(children);
 
@@ -486,8 +513,12 @@ const DocsContent: React.FC = () => {
     },
     code({ node: _node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
+      const uniqueId = React.useMemo(() => Math.random().toString(36).substr(2, 9), []);
       return !inline && match ? (
         <div
+          role="region"
+          aria-label={`${match[1]} code example ${uniqueId}`}
+          tabIndex={0}
           style={{
             borderRadius: '8px',
             overflow: 'hidden',
@@ -507,10 +538,23 @@ const DocsContent: React.FC = () => {
             {match[1].toUpperCase()}
           </div>
           <SyntaxHighlighter
-            style={materialLight}
+            style={vscDarkPlus}
             language={match[1]}
-            PreTag="div"
-            customStyle={{ margin: 0, padding: '16px' }}
+            PreTag={(preProps: any) => <div tabIndex={0} {...preProps} />}
+            customStyle={{
+              margin: 0,
+              padding: '16px',
+              fontFamily: '"Roboto Mono", "Fira Code", Menlo, Monaco, Consolas, monospace',
+              fontSize: '14px',
+              lineHeight: '1.6',
+            }}
+            codeTagProps={{
+              style: {
+                fontFamily: '"Roboto Mono", "Fira Code", Menlo, Monaco, Consolas, monospace',
+                fontSize: '14px',
+                lineHeight: '1.6',
+              },
+            }}
             {...props}
           >
             {String(children).replace(/\n$/, '')}
@@ -524,8 +568,8 @@ const DocsContent: React.FC = () => {
             padding: '2px 6px',
             borderRadius: '4px',
             fontSize: '85%',
-            fontFamily: 'Menlo, monospace',
-            color: colors.brandDark,
+            fontFamily: '"Roboto Mono", "Fira Code", Menlo, Monaco, Consolas, monospace',
+            color: colors.green9,
           }}
           {...props}
         >
@@ -533,27 +577,35 @@ const DocsContent: React.FC = () => {
         </code>
       );
     },
-    table: ({ node: _node, children, ...props }: any) => (
-      <div
-        style={{
-          overflowX: 'auto',
-          marginBottom: '24px',
-          borderRadius: '8px',
-          border: `1px solid ${colors.neutralBorder}`,
-        }}
-      >
-        <table
+    table: ({ node: _node, children, ...props }: any) => {
+      // Create a unique id for the table based on its content (headers) or simple random string
+      const tableId = `table-${Math.random().toString(36).substr(2, 9)}`;
+      return (
+        <div
+          role="region"
+          aria-labelledby={tableId}
+          tabIndex={0}
           style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: '14px',
+            overflowX: 'auto',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            border: `1px solid ${colors.neutralBorder}`,
           }}
-          {...props}
         >
-          {children}
-        </table>
-      </div>
-    ),
+          <table
+            id={tableId}
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '14px',
+            }}
+            {...props}
+          >
+            {children}
+          </table>
+        </div>
+      );
+    },
     thead: ({ node: _node, children, ...props }: any) => (
       <thead style={{ backgroundColor: colors.neutralBackground }} {...props}>
         {children}
@@ -565,19 +617,44 @@ const DocsContent: React.FC = () => {
         {children}
       </tr>
     ),
-    th: ({ node: _node, children, ...props }: any) => (
-      <th
-        style={{
-          padding: '12px 16px',
-          fontWeight: 600,
-          textAlign: 'left',
-          color: colors.neutralTitle,
-        }}
-        {...props}
-      >
-        {renderWithHighlight(children)}
-      </th>
-    ),
+    th: ({ node: _node, children, ...props }: any) => {
+      // Check if children is empty to provide discernible text for screen readers
+      const isEmpty =
+        !children ||
+        (Array.isArray(children) && children.length === 0) ||
+        (typeof children === 'string' && children.trim() === '');
+      return (
+        <th
+          style={{
+            padding: '12px 16px',
+            fontWeight: 600,
+            textAlign: 'left',
+            color: colors.neutralTitle,
+          }}
+          {...props}
+        >
+          {isEmpty ? (
+            <span
+              style={{
+                position: 'absolute',
+                width: '1px',
+                height: '1px',
+                padding: '0',
+                margin: '-1px',
+                overflow: 'hidden',
+                clip: 'rect(0, 0, 0, 0)',
+                whiteSpace: 'nowrap',
+                border: '0',
+              }}
+            >
+              Empty header
+            </span>
+          ) : (
+            renderWithHighlight(children)
+          )}
+        </th>
+      );
+    },
     td: ({ node: _node, children, ...props }: any) => (
       <td
         style={{

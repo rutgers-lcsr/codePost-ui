@@ -1,26 +1,22 @@
 # TestCasesApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**create**](TestCasesApi.md#create) | **POST** /testCases/ |  |
-| [**destroy**](TestCasesApi.md#destroy) | **DELETE** /testCases/{id}/ |  |
-| [**list**](TestCasesApi.md#list) | **GET** /testCases/ |  |
-| [**partialUpdate**](TestCasesApi.md#partialupdate) | **PATCH** /testCases/{id}/ |  |
-| [**retrieve**](TestCasesApi.md#retrieve) | **GET** /testCases/{id}/ |  |
-| [**runCreate**](TestCasesApi.md#runcreate) | **POST** /testCases/{id}/run/ |  |
-| [**update**](TestCasesApi.md#update) | **PUT** /testCases/{id}/ |  |
-
-
+| Method                                             | HTTP request                  | Description |
+| -------------------------------------------------- | ----------------------------- | ----------- |
+| [**create**](TestCasesApi.md#create)               | **POST** /testCases/          |             |
+| [**destroy**](TestCasesApi.md#destroy)             | **DELETE** /testCases/{id}/   |             |
+| [**list**](TestCasesApi.md#list)                   | **GET** /testCases/           |             |
+| [**partialUpdate**](TestCasesApi.md#partialupdate) | **PATCH** /testCases/{id}/    |             |
+| [**retrieve**](TestCasesApi.md#retrieve)           | **GET** /testCases/{id}/      |             |
+| [**runCreate**](TestCasesApi.md#runcreate)         | **POST** /testCases/{id}/run/ |             |
+| [**update**](TestCasesApi.md#update)               | **PUT** /testCases/{id}/      |             |
 
 ## create
 
 > TestCase create(testCase)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
@@ -33,7 +29,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -65,10 +61,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **testCase** | [TestCase](TestCase.md) |  | |
+| Name         | Type                    | Description | Notes |
+| ------------ | ----------------------- | ----------- | ----- |
+| **testCase** | [TestCase](TestCase.md) |             |       |
 
 ### Return type
 
@@ -83,44 +78,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## destroy
 
 > destroy(id)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TestCasesApi,
-} from '';
+import { Configuration, TestCasesApi } from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new TestCasesApi(config);
 
@@ -143,9 +132,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                        | Notes                     |
+| ------ | -------- | -------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this test case. | [Defaults to `undefined`] |
 
 ### Return type
@@ -161,44 +149,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## list
 
 > Array&lt;TestCase&gt; list()
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TestCasesApi,
-} from '';
+import { Configuration, TestCasesApi } from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new TestCasesApi(config);
 
@@ -231,22 +213,19 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## partialUpdate
 
 > TestCase partialUpdate(id, patchedTestCase)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
@@ -259,7 +238,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -293,11 +272,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this test case. | [Defaults to `undefined`] |
-| **patchedTestCase** | [PatchedTestCase](PatchedTestCase.md) |  | [Optional] |
+| Name                | Type                                  | Description                                        | Notes                     |
+| ------------------- | ------------------------------------- | -------------------------------------------------- | ------------------------- |
+| **id**              | `number`                              | A unique integer value identifying this test case. | [Defaults to `undefined`] |
+| **patchedTestCase** | [PatchedTestCase](PatchedTestCase.md) |                                                    | [Optional]                |
 
 ### Return type
 
@@ -312,44 +290,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## retrieve
 
 > TestCase retrieve(id)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  TestCasesApi,
-} from '';
+import { Configuration, TestCasesApi } from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new TestCasesApi(config);
 
@@ -372,9 +344,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                        | Notes                     |
+| ------ | -------- | -------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this test case. | [Defaults to `undefined`] |
 
 ### Return type
@@ -390,22 +361,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## runCreate
 
 > TestCaseRunResponse runCreate(id, testCaseRunRequest)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
@@ -418,7 +386,7 @@ import type { RunCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -452,11 +420,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this test case. | [Defaults to `undefined`] |
-| **testCaseRunRequest** | [TestCaseRunRequest](TestCaseRunRequest.md) |  | [Optional] |
+| Name                   | Type                                        | Description                                        | Notes                     |
+| ---------------------- | ------------------------------------------- | -------------------------------------------------- | ------------------------- |
+| **id**                 | `number`                                    | A unique integer value identifying this test case. | [Defaults to `undefined`] |
+| **testCaseRunRequest** | [TestCaseRunRequest](TestCaseRunRequest.md) |                                                    | [Optional]                |
 
 ### Return type
 
@@ -471,22 +438,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## update
 
 > TestCase update(id, testCase)
 
-
-
-list: Return a list of all the testcases.  create: Create a new testcases.  retrieve: Return the given testcases.  update: Update a testcases.  partial_update: Update a testcases.  delete: Delete a testcases.
+list: Return a list of all the testcases. create: Create a new testcases. retrieve: Return the given testcases. update: Update a testcases. partial_update: Update a testcases. delete: Delete a testcases.
 
 ### Example
 
@@ -499,7 +463,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -533,11 +497,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this test case. | [Defaults to `undefined`] |
-| **testCase** | [TestCase](TestCase.md) |  | |
+| Name         | Type                    | Description                                        | Notes                     |
+| ------------ | ----------------------- | -------------------------------------------------- | ------------------------- |
+| **id**       | `number`                | A unique integer value identifying this test case. | [Defaults to `undefined`] |
+| **testCase** | [TestCase](TestCase.md) |                                                    |                           |
 
 ### Return type
 
@@ -552,11 +515,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

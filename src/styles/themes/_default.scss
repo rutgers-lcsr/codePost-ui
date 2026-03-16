@@ -641,7 +641,7 @@
       color: rgba(255, 255, 255, 0.65);
 
       &::after {
-        border-right-color: #24be85;
+        border-right-color: $brandPrimary;
       }
     }
   }

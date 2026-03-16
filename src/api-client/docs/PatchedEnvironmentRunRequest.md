@@ -1,17 +1,12 @@
-
 # PatchedEnvironmentRunRequest
-
 
 ## Properties
 
-Name | Type
------------- | -------------
-`submission` | number
-`simulate` | boolean
-`exposedOnly` | boolean
-`files` | any
-
+| Name          | Type    |
+| ------------- | ------- |
+| `submission`  | number  |
+| `simulate`    | boolean |
+| `exposedOnly` | boolean |
+| `files`       | any     |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-

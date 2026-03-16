@@ -65,7 +65,6 @@
 }
 
 #APIExample {
-
   // API Docs Reference styling, including arrow animation on move
   .apiexample {
     &__docs {
@@ -125,7 +124,7 @@
     color: black;
 
     &:hover {
-      color: #24be85 !important;
+      color: $brandPrimary !important;
       transition: 0.3s;
     }
   }
@@ -138,20 +137,22 @@
     border-radius: 3px !important;
     padding: 2px 5px 1px 5px !important;
     font-weight: 600 !important;
-    color: rgba(0, 0, 0, 0.55);
+    color: rgba(0, 0, 0, 0.7);
   }
 }
 
 // Hero "code review" highlight
 .codePost-title-highlight {
-  font-family: PT Mono, monospace;
+  font-family:
+    PT Mono,
+    monospace;
   font-weight: 400;
 
   mark {
     background-color: #d3f2e7 !important;
     border-radius: 4px !important;
     padding: 3px 8px 2px 8px !important;
-    color: #24be85;
+    color: $brandPrimary;
   }
 }
 
@@ -167,7 +168,9 @@
 
 // Hero "code review" highlight
 .codePost-title-highlight-new {
-  font-family: PT Mono, monospace;
+  font-family:
+    PT Mono,
+    monospace;
   font-weight: 400;
   font-size: xx-large;
 
@@ -182,7 +185,11 @@
 // Why Panel codeMirror
 .bad-codemirror {
   .CodeMirror {
-    font-family: monaco, Consolas, Lucida Console, mono;
+    font-family:
+      monaco,
+      Consolas,
+      Lucida Console,
+      mono;
     font-size: 10px;
     line-height: 1.8;
     font-weight: 500;
@@ -205,7 +212,11 @@
 // API Panel codeMirror
 .api-codemirror {
   .CodeMirror {
-    font-family: monaco, Consolas, Lucida Console, mono;
+    font-family:
+      monaco,
+      Consolas,
+      Lucida Console,
+      mono;
     line-height: 1.8;
     font-weight: 500;
     height: auto;
@@ -226,7 +237,9 @@
 }
 
 .bevel {
-  box-shadow: 8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25), 0 0 2px 0 rgba(0, 0, 0, 0.15),
+  box-shadow:
+    8px 8px 22px 0 hsla(0, 0%, 84.7%, 0.25),
+    0 0 2px 0 rgba(0, 0, 0, 0.15),
     10px 25px 20px 0 rgba(0, 0, 0, 0.05);
   border-radius: 5;
   overflow: hidden;
@@ -335,10 +348,17 @@
   height: 8px;
   -webkit-mask: url(../../img/landing/arrows-delayed.svg);
   mask: url(../../img/landing/arrows-delayed.svg);
-  -webkit-transition-property: opacity, -webkit-transform;
-  transition-property: opacity, -webkit-transform;
+  -webkit-transition-property:
+    opacity,
+    -webkit-transform;
+  transition-property:
+    opacity,
+    -webkit-transform;
   transition-property: opacity, transform;
-  transition-property: opacity, transform, -webkit-transform;
+  transition-property:
+    opacity,
+    transform,
+    -webkit-transform;
   -webkit-transition-duration: 0.5s;
   transition-duration: 0.5s;
   -webkit-transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);

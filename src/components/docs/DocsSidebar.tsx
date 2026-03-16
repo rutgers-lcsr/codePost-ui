@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { docRoutes, DocCategory } from './DocsConfig';
 import {
   AppstoreOutlined,
+  CodeOutlined,
   TeamOutlined,
   RocketOutlined,
   SearchOutlined,
@@ -110,10 +111,11 @@ const DocsSidebar: React.FC = () => {
   // Group routes by category for normal view
   const categories: Record<DocCategory, typeof docRoutes> = {
     'Getting Started': [],
+    Changelog: [],
     'Instructor Workflows': [],
     'Role Guides': [],
+    'Python SDK': [],
     Reference: [],
-    Changelog: [],
   };
 
   docRoutes.forEach((route) => {
@@ -130,6 +132,8 @@ const DocsSidebar: React.FC = () => {
         return <ToolOutlined />;
       case 'Role Guides':
         return <TeamOutlined />;
+      case 'Python SDK':
+        return <CodeOutlined />;
       case 'Changelog':
         return <HistoryOutlined />;
       default:
@@ -255,22 +259,21 @@ const DocsSidebar: React.FC = () => {
             )}
           </div>
         ) : (
-          <Menu
-            mode="inline"
-            selectedKeys={[getSelectedKey()]}
-            style={{ background: 'transparent', borderRight: 0 }}
-            items={menuItems}
-          />
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <Menu
+              mode="inline"
+              selectedKeys={[getSelectedKey()]}
+              style={{ background: 'transparent', borderRight: 0 }}
+              items={menuItems}
+            />
+          </div>
         )}
 
         <div
           style={{
             padding: '20px',
             borderTop: `1px solid ${colors.neutralBorder}`,
-            marginTop: 'auto',
-            position: 'absolute',
-            bottom: 0,
-            width: '100%',
+            flexShrink: 0,
           }}
         >
           <Link

@@ -1,44 +1,37 @@
 # AuthApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**ssoCallbackRetrieve**](AuthApi.md#ssocallbackretrieve) | **GET** /auth/sso/callback/{provider}/ |  |
-| [**ssoCheckRetrieve**](AuthApi.md#ssocheckretrieve) | **GET** /auth/sso/check/ |  |
-| [**ssoLoginRetrieve**](AuthApi.md#ssologinretrieve) | **GET** /auth/sso/login/{provider}/ |  |
-
-
+| Method                                                    | HTTP request                           | Description |
+| --------------------------------------------------------- | -------------------------------------- | ----------- |
+| [**ssoCallbackRetrieve**](AuthApi.md#ssocallbackretrieve) | **GET** /auth/sso/callback/{provider}/ |             |
+| [**ssoCheckRetrieve**](AuthApi.md#ssocheckretrieve)       | **GET** /auth/sso/check/               |             |
+| [**ssoLoginRetrieve**](AuthApi.md#ssologinretrieve)       | **GET** /auth/sso/login/{provider}/    |             |
 
 ## ssoCallbackRetrieve
 
 > ssoCallbackRetrieve(provider)
-
-
 
 Handles the callback from the SSO provider. Validates ticket/code, creates session, redirects to frontend.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AuthApi,
-} from '';
+import { Configuration, AuthApi } from '';
 import type { SsoCallbackRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AuthApi(config);
 
@@ -61,10 +54,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **provider** | `string` |  | [Defaults to `undefined`] |
+| Name         | Type     | Description | Notes                     |
+| ------------ | -------- | ----------- | ------------------------- |
+| **provider** | `string` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -79,44 +71,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **302** | Redirect to frontend with token |  -  |
+
+| Status code | Description                     | Response headers |
+| ----------- | ------------------------------- | ---------------- |
+| **302**     | Redirect to frontend with token | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## ssoCheckRetrieve
 
 > CheckSSOAvailabilityResponse ssoCheckRetrieve()
-
-
 
 Checks if the given email belongs to an SSO-enabled organization. Returns { \&quot;sso_enabled\&quot;: true, \&quot;provider\&quot;: \&quot;CAS\&quot;, \&quot;org_id\&quot;: 123 } or { \&quot;sso_enabled\&quot;: false }
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AuthApi,
-} from '';
+import { Configuration, AuthApi } from '';
 import type { SsoCheckRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AuthApi(config);
 
@@ -149,44 +135,38 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## ssoLoginRetrieve
 
 > ssoLoginRetrieve(provider)
-
-
 
 Redirects user to the SSO provider\&#39;s login page. Requires \&#39;email\&#39; query param to identify the organization (and thus the config), OR \&#39;org\&#39; ID directly.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AuthApi,
-} from '';
+import { Configuration, AuthApi } from '';
 import type { SsoLoginRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AuthApi(config);
 
@@ -209,10 +189,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **provider** | `string` |  | [Defaults to `undefined`] |
+| Name         | Type     | Description | Notes                     |
+| ------------ | -------- | ----------- | ------------------------- |
+| **provider** | `string` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -227,11 +206,10 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **302** | Redirect to SSO provider |  -  |
+
+| Status code | Description              | Response headers |
+| ----------- | ------------------------ | ---------------- |
+| **302**     | Redirect to SSO provider | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

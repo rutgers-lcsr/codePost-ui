@@ -36,3 +36,7 @@
 .ant-message {
   z-index: 3000 !important;
 }
+// Override Anchor active link contrast against grey (#f2f2f2) background
+.ant-anchor-link-title-active {
+  color: #0d7354 !important; // green8 - WCAG AA compliant on #f2f2f2
+}

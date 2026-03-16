@@ -72,7 +72,7 @@ const Scholarship = (props: IProps) => {
     </div>
   );
   const ourStory = (
-    <div style={{ color: 'grey' }}>
+    <div style={{ color: '#595959' }}>
       <Typography.Title level={3} style={{ color: '#476b63' }}>
         Our Story
       </Typography.Title>
@@ -96,19 +96,19 @@ const Scholarship = (props: IProps) => {
   const details = (
     <div style={{ textAlign: 'left' }}>
       <div style={{ marginBottom: 25 }}>
-        <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
+        <Typography.Title level={3} style={{ fontSize: 20, color: '#595959' }}>
           <CalendarOutlined style={{ marginRight: 10 }} />
           Timeline
         </Typography.Title>
         <div style={{ paddingLeft: 20 }}>
           <div style={{ marginBottom: 10 }}>
-            <Typography.Title level={4} style={{ color: 'grey' }}>
+            <Typography.Title level={4} style={{ color: '#595959' }}>
               Deadline to apply:
             </Typography.Title>
             <div style={{ fontSize: 18 }}>June 30th, 2020</div>
           </div>
           <div style={{ marginBottom: 10 }}>
-            <Typography.Title level={4} style={{ color: 'grey' }}>
+            <Typography.Title level={4} style={{ color: '#595959' }}>
               Winners announced:
             </Typography.Title>
             <div style={{ fontSize: 18 }}>July 31th, 2020</div>
@@ -116,16 +116,16 @@ const Scholarship = (props: IProps) => {
         </div>
       </div>
       <div style={{ marginBottom: 25 }}>
-        <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
+        <Typography.Title level={3} style={{ fontSize: 20, color: '#595959' }}>
           <CrownOutlined style={{ marginRight: 10 }} />
           Amount
         </Typography.Title>
-        <Typography.Title level={4} style={{ paddingLeft: 20, color: 'grey' }}>
+        <Typography.Title level={4} style={{ paddingLeft: 20, color: '#595959' }}>
           $500 Scholarship
         </Typography.Title>
       </div>
       <div style={{ marginBottom: 25 }}>
-        <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
+        <Typography.Title level={3} style={{ fontSize: 20, color: '#595959' }}>
           <IdcardOutlined style={{ marginRight: 10 }} />
           Eligibility
         </Typography.Title>
@@ -134,7 +134,7 @@ const Scholarship = (props: IProps) => {
         </div>
       </div>
       <div style={{ marginBottom: 25 }}>
-        <Typography.Title level={3} style={{ fontSize: 20, color: 'grey' }}>
+        <Typography.Title level={3} style={{ fontSize: 20, color: '#595959' }}>
           <ProfileOutlined style={{ marginRight: 10 }} />
           Selection Criteria
         </Typography.Title>
@@ -195,7 +195,7 @@ const Scholarship = (props: IProps) => {
               display: 'flex',
               flexDirection: 'column',
               textAlign: 'center',
-              color: 'grey',
+              color: '#595959',
               backgroundColor: '#f5f5f7',
               padding: 25,
               height: 'fit-content',
@@ -228,7 +228,7 @@ const Scholarship = (props: IProps) => {
             style={{ width: '100%', maxWidth: 750, padding: 35 }}
             alt="One of the first grading sessions in which codePost was used, when we were students in 2015."
           />
-          <div style={{ fontSize: 20, marginTop: 10, color: 'grey', fontStyle: 'italic', textAlign: 'center' }}>
+          <div style={{ fontSize: 20, marginTop: 10, color: '#595959', fontStyle: 'italic', textAlign: 'center' }}>
             One of the first grading sessions in which codePost was used, when we were students in 2015.
           </div>
         </div>

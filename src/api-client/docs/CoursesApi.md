@@ -1,42 +1,38 @@
 # CoursesApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate) | **PATCH** /courses/{id}/addToRoster/ |  |
-| [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve) | **GET** /courses/{id}/aiModels/ |  |
-| [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate) | **PATCH** /courses/{id}/aiSettings/ |  |
-| [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve) | **GET** /courses/{id}/aiSettings/ |  |
-| [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve) | **GET** /courses/{id}/aiUsage/ |  |
-| [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate) | **PATCH** /courses/{id}/changeInviteCode/ |  |
-| [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate) | **PATCH** /courses/{id}/courseSettings/ |  |
-| [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve) | **GET** /courses/{id}/courseSettings/ |  |
-| [**create**](CoursesApi.md#create) | **POST** /courses/ |  |
-| [**deleteRubricCategoryPartialUpdate**](CoursesApi.md#deleterubriccategorypartialupdate) | **PATCH** /courses/{id}/deleteRubricCategory/ |  |
-| [**destroy**](CoursesApi.md#destroy) | **DELETE** /courses/{id}/ |  |
-| [**list**](CoursesApi.md#list) | **GET** /courses/ |  |
-| [**partialUpdate**](CoursesApi.md#partialupdate) | **PATCH** /courses/{id}/ |  |
-| [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate) | **PATCH** /courses/{id}/removeFromRoster/ |  |
-| [**retrieve**](CoursesApi.md#retrieve) | **GET** /courses/{id}/ |  |
-| [**rosterMapPartialUpdate**](CoursesApi.md#rostermappartialupdate) | **PATCH** /courses/{id}/rosterMap/ |  |
-| [**rosterMapRetrieve**](CoursesApi.md#rostermapretrieve) | **GET** /courses/{id}/rosterMap/ |  |
-| [**rosterPartialUpdate**](CoursesApi.md#rosterpartialupdate) | **PATCH** /courses/{id}/roster/ |  |
-| [**rosterRetrieve**](CoursesApi.md#rosterretrieve) | **GET** /courses/{id}/roster/ |  |
-| [**sectionsList**](CoursesApi.md#sectionslist) | **GET** /courses/{id}/sections/ |  |
-| [**studentCaptionsPartialUpdate**](CoursesApi.md#studentcaptionspartialupdate) | **PATCH** /courses/{id}/studentCaptions/ |  |
-| [**studentCaptionsRetrieve**](CoursesApi.md#studentcaptionsretrieve) | **GET** /courses/{id}/studentCaptions/ |  |
-| [**update**](CoursesApi.md#update) | **PUT** /courses/{id}/ |  |
-
-
+| Method                                                                                   | HTTP request                                  | Description |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------- | ----------- |
+| [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate)                   | **PATCH** /courses/{id}/addToRoster/          |             |
+| [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve)                                   | **GET** /courses/{id}/aiModels/               |             |
+| [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
+| [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
+| [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
+| [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/     |             |
+| [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/       |             |
+| [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/         |             |
+| [**create**](CoursesApi.md#create)                                                       | **POST** /courses/                            |             |
+| [**deleteRubricCategoryPartialUpdate**](CoursesApi.md#deleterubriccategorypartialupdate) | **PATCH** /courses/{id}/deleteRubricCategory/ |             |
+| [**destroy**](CoursesApi.md#destroy)                                                     | **DELETE** /courses/{id}/                     |             |
+| [**list**](CoursesApi.md#list)                                                           | **GET** /courses/                             |             |
+| [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                      |             |
+| [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/     |             |
+| [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                        |             |
+| [**rosterMapPartialUpdate**](CoursesApi.md#rostermappartialupdate)                       | **PATCH** /courses/{id}/rosterMap/            |             |
+| [**rosterMapRetrieve**](CoursesApi.md#rostermapretrieve)                                 | **GET** /courses/{id}/rosterMap/              |             |
+| [**rosterPartialUpdate**](CoursesApi.md#rosterpartialupdate)                             | **PATCH** /courses/{id}/roster/               |             |
+| [**rosterRetrieve**](CoursesApi.md#rosterretrieve)                                       | **GET** /courses/{id}/roster/                 |             |
+| [**sectionsList**](CoursesApi.md#sectionslist)                                           | **GET** /courses/{id}/sections/               |             |
+| [**studentCaptionsPartialUpdate**](CoursesApi.md#studentcaptionspartialupdate)           | **PATCH** /courses/{id}/studentCaptions/      |             |
+| [**studentCaptionsRetrieve**](CoursesApi.md#studentcaptionsretrieve)                     | **GET** /courses/{id}/studentCaptions/        |             |
+| [**update**](CoursesApi.md#update)                                                       | **PUT** /courses/{id}/                        |             |
 
 ## addToRosterPartialUpdate
 
 > CourseRoster addToRosterPartialUpdate(id, patchedCourse)
 
-
-
-get: Show the roster for a course.  patch: Update the roster for a course.
+get: Show the roster for a course. patch: Update the roster for a course.
 
 ### Example
 
@@ -49,7 +45,7 @@ import type { AddToRosterPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -83,11 +79,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -102,44 +97,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## aiModelsRetrieve
 
 > AIProviderModelsList aiModelsRetrieve(id)
-
-
 
 GET: Return curated AI models for the course\&#39;s effective provider. Also queries the provider\&#39;s API for live model listings using the course\&#39;s own credentials or inherited org credentials. Only accessible by course admins.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { AiModelsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -162,9 +151,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -180,22 +168,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## aiSettingsPartialUpdate
 
 > CourseAISettings aiSettingsPartialUpdate(id, patchedCourseAISettings)
 
-
-
-get: Get AI configuration for the course.  patch: Update AI configuration for the course. Admin-only.
+get: Get AI configuration for the course. patch: Update AI configuration for the course. Admin-only.
 
 ### Example
 
@@ -208,7 +193,7 @@ import type { AiSettingsPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -242,11 +227,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourseAISettings** | [PatchedCourseAISettings](PatchedCourseAISettings.md) |  | [Optional] |
+| Name                        | Type                                                  | Description                                     | Notes                     |
+| --------------------------- | ----------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                      | `number`                                              | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourseAISettings** | [PatchedCourseAISettings](PatchedCourseAISettings.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -261,44 +245,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## aiSettingsRetrieve
 
 > CourseAISettings aiSettingsRetrieve(id)
 
-
-
-get: Get AI configuration for the course.  patch: Update AI configuration for the course. Admin-only.
+get: Get AI configuration for the course. patch: Update AI configuration for the course. Admin-only.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { AiSettingsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -321,9 +299,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -339,44 +316,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## aiUsageRetrieve
 
 > AIUsageSummary aiUsageRetrieve(id, endDate, granularity, startDate)
-
-
 
 Returns AI usage analytics for the course. Includes time-series data and per-assignment breakdown. Only accessible by course admins.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { AiUsageRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -405,13 +376,12 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **endDate** | `string` | End date (ISO 8601) | [Optional] [Defaults to `undefined`] |
+| Name            | Type                         | Description                                                                            | Notes                                                               |
+| --------------- | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **id**          | `number`                     | A unique integer value identifying this course.                                        | [Defaults to `undefined`]                                           |
+| **endDate**     | `string`                     | End date (ISO 8601)                                                                    | [Optional] [Defaults to `undefined`]                                |
 | **granularity** | `daily`, `hourly`, `monthly` | Time bucket granularity: \&#39;hourly\&#39;, \&#39;daily\&#39;, or \&#39;monthly\&#39; | [Optional] [Defaults to `undefined`] [Enum: daily, hourly, monthly] |
-| **startDate** | `string` | Start date (ISO 8601) | [Optional] [Defaults to `undefined`] |
+| **startDate**   | `string`                     | Start date (ISO 8601)                                                                  | [Optional] [Defaults to `undefined`]                                |
 
 ### Return type
 
@@ -426,22 +396,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## changeInviteCodePartialUpdate
 
 > string changeInviteCodePartialUpdate(id, patchedCourse)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -454,7 +421,7 @@ import type { ChangeInviteCodePartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -488,11 +455,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -507,22 +473,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## courseSettingsPartialUpdate
 
 > CourseSettings courseSettingsPartialUpdate(id, patchedCourse)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -535,7 +498,7 @@ import type { CourseSettingsPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -569,11 +532,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -588,44 +550,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## courseSettingsRetrieve
 
 > CourseSettings courseSettingsRetrieve(id)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { CourseSettingsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -648,9 +604,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -666,22 +621,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## create
 
 > Course create(course)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -694,7 +646,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -726,10 +678,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **course** | [Course](Course.md) |  | |
+| Name       | Type                | Description | Notes |
+| ---------- | ------------------- | ----------- | ----- |
+| **course** | [Course](Course.md) |             |       |
 
 ### Return type
 
@@ -744,22 +695,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## deleteRubricCategoryPartialUpdate
 
 > deleteRubricCategoryPartialUpdate(id, patchedCourse)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -772,7 +720,7 @@ import type { DeleteRubricCategoryPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -806,11 +754,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -825,44 +772,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## destroy
 
 > destroy(id)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -885,9 +826,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -903,44 +843,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## list
 
 > Array&lt;Course&gt; list()
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -973,22 +907,19 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## partialUpdate
 
 > Course partialUpdate(id, patchedCourse)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -1001,7 +932,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1035,11 +966,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -1054,22 +984,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## removeFromRosterPartialUpdate
 
 > CourseRoster removeFromRosterPartialUpdate(id, patchedCourse)
 
-
-
-get: Show the roster for a course.  patch: Update the roster for a course.
+get: Show the roster for a course. patch: Update the roster for a course.
 
 ### Example
 
@@ -1082,7 +1009,7 @@ import type { RemoveFromRosterPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1116,11 +1043,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -1135,44 +1061,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## retrieve
 
 > Course retrieve(id)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -1195,9 +1115,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -1213,22 +1132,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## rosterMapPartialUpdate
 
 > CourseRosterMap rosterMapPartialUpdate(id, patchedCourseRosterMap)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -1241,7 +1157,7 @@ import type { RosterMapPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1275,11 +1191,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourseRosterMap** | [PatchedCourseRosterMap](PatchedCourseRosterMap.md) |  | [Optional] |
+| Name                       | Type                                                | Description                                     | Notes                     |
+| -------------------------- | --------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                     | `number`                                            | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourseRosterMap** | [PatchedCourseRosterMap](PatchedCourseRosterMap.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -1294,44 +1209,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## rosterMapRetrieve
 
 > CourseRosterMap rosterMapRetrieve(id)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { RosterMapRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -1354,9 +1263,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -1372,22 +1280,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## rosterPartialUpdate
 
 > CourseRoster rosterPartialUpdate(id, patchedCourse)
 
-
-
-get: Show the roster for a course.  patch: Update the roster for a course.
+get: Show the roster for a course. patch: Update the roster for a course.
 
 ### Example
 
@@ -1400,7 +1305,7 @@ import type { RosterPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1434,11 +1339,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |  | [Optional] |
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -1453,44 +1357,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## rosterRetrieve
 
 > CourseRoster rosterRetrieve(id)
 
-
-
-get: Show the roster for a course.  patch: Update the roster for a course.
+get: Show the roster for a course. patch: Update the roster for a course.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { RosterRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -1513,9 +1411,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -1531,44 +1428,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## sectionsList
 
 > PaginatedSectionList sectionsList(id, page, pageSize)
-
-
 
 Gets a paginated list of sections for a course. We use this for performance for large courses to fetch sections in bulk. They\&#39;re rarely used in admin console operations, so it\&#39;s a great candidate to paginate Returns a list of Section objects
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { SectionsListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -1595,12 +1486,11 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **page** | `number` | A page number within the paginated result set. | [Optional] [Defaults to `undefined`] |
-| **pageSize** | `number` | Number of results to return per page. | [Optional] [Defaults to `undefined`] |
+| Name         | Type     | Description                                     | Notes                                |
+| ------------ | -------- | ----------------------------------------------- | ------------------------------------ |
+| **id**       | `number` | A unique integer value identifying this course. | [Defaults to `undefined`]            |
+| **page**     | `number` | A page number within the paginated result set.  | [Optional] [Defaults to `undefined`] |
+| **pageSize** | `number` | Number of results to return per page.           | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1615,22 +1505,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## studentCaptionsPartialUpdate
 
 > CourseStudentCaptions studentCaptionsPartialUpdate(id, patchedCourseStudentCaptions)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -1643,7 +1530,7 @@ import type { StudentCaptionsPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1677,11 +1564,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **patchedCourseStudentCaptions** | [PatchedCourseStudentCaptions](PatchedCourseStudentCaptions.md) |  | [Optional] |
+| Name                             | Type                                                            | Description                                     | Notes                     |
+| -------------------------------- | --------------------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                           | `number`                                                        | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedCourseStudentCaptions** | [PatchedCourseStudentCaptions](PatchedCourseStudentCaptions.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -1696,44 +1582,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## studentCaptionsRetrieve
 
 > CourseStudentCaptions studentCaptionsRetrieve(id)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  CoursesApi,
-} from '';
+import { Configuration, CoursesApi } from '';
 import type { StudentCaptionsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new CoursesApi(config);
 
@@ -1756,9 +1636,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
 
 ### Return type
@@ -1774,22 +1653,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## update
 
 > Course update(id, course)
 
-
-
-list: Return a list of all the courses.  create: Create a new course.  retrieve: Return the given course.  update: Update a course.  partial_update: Update a course.  delete: Delete a course
+list: Return a list of all the courses. create: Create a new course. retrieve: Return the given course. update: Update a course. partial_update: Update a course. delete: Delete a course
 
 ### Example
 
@@ -1802,7 +1678,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1836,11 +1712,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
-| **course** | [Course](Course.md) |  | |
+| Name       | Type                | Description                                     | Notes                     |
+| ---------- | ------------------- | ----------------------------------------------- | ------------------------- |
+| **id**     | `number`            | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **course** | [Course](Course.md) |                                                 |                           |
 
 ### Return type
 
@@ -1855,11 +1730,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

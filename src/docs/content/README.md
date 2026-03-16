@@ -50,7 +50,7 @@ Hide student identities from graders to reduce bias. Graders see anonymous IDs; 
 
 ### Programmatic access
 
-Upload submissions, download grades, and automate workflows via the [Python SDK](/docs/programmatic-comments) or the [REST API](/api/schema/swagger-ui/).
+Upload submissions, download grades, and automate workflows via the [Python SDK](/docs/programmatic-comments) or the [REST API](https://codepost-api.cs.rutgers.edu/api/schema/swagger-ui/).
 
 ---
 

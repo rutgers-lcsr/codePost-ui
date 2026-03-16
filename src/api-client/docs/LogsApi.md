@@ -1,20 +1,16 @@
 # LogsApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**logCreate**](LogsApi.md#logcreate) | **POST** /logs/log/ |  |
-| [**logErrorCreate**](LogsApi.md#logerrorcreate) | **POST** /logs/logError/ |  |
-| [**logHappinessCreate**](LogsApi.md#loghappinesscreate) | **POST** /logs/logHappiness/ |  |
-
-
+| Method                                                  | HTTP request                 | Description |
+| ------------------------------------------------------- | ---------------------------- | ----------- |
+| [**logCreate**](LogsApi.md#logcreate)                   | **POST** /logs/log/          |             |
+| [**logErrorCreate**](LogsApi.md#logerrorcreate)         | **POST** /logs/logError/     |             |
+| [**logHappinessCreate**](LogsApi.md#loghappinesscreate) | **POST** /logs/logHappiness/ |             |
 
 ## logCreate
 
 > LogSuccessResponse logCreate(logDumpRequest)
-
-
 
 ### Example
 
@@ -27,7 +23,7 @@ import type { LogCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -59,10 +55,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **logDumpRequest** | [LogDumpRequest](LogDumpRequest.md) |  | [Optional] |
+| Name               | Type                                | Description | Notes      |
+| ------------------ | ----------------------------------- | ----------- | ---------- |
+| **logDumpRequest** | [LogDumpRequest](LogDumpRequest.md) |             | [Optional] |
 
 ### Return type
 
@@ -77,22 +72,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## logErrorCreate
 
 > LogSuccessResponse logErrorCreate(logErrorRequest)
 
-
-
-Request body includes: error, errorInfo.  Notifies codePost of any uncaught UI errors. Initiated via globally-scoped ErrorBoundary on the frontend. https://reactjs.org/docs/error-boundaries.html
+Request body includes: error, errorInfo. Notifies codePost of any uncaught UI errors. Initiated via globally-scoped ErrorBoundary on the frontend. https://reactjs.org/docs/error-boundaries.html
 
 ### Example
 
@@ -105,7 +97,7 @@ import type { LogErrorCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -137,10 +129,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **logErrorRequest** | [LogErrorRequest](LogErrorRequest.md) |  | [Optional] |
+| Name                | Type                                  | Description | Notes      |
+| ------------------- | ------------------------------------- | ----------- | ---------- |
+| **logErrorRequest** | [LogErrorRequest](LogErrorRequest.md) |             | [Optional] |
 
 ### Return type
 
@@ -155,20 +146,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## logHappinessCreate
 
 > LogSuccessResponse logHappinessCreate(logHappinessRequest)
-
-
 
 Notifies codePost of any happiness occurring on the frontend (by authenticated users).
 
@@ -183,7 +171,7 @@ import type { LogHappinessCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -215,10 +203,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **logHappinessRequest** | [LogHappinessRequest](LogHappinessRequest.md) |  | [Optional] |
+| Name                    | Type                                          | Description | Notes      |
+| ----------------------- | --------------------------------------------- | ----------- | ---------- |
+| **logHappinessRequest** | [LogHappinessRequest](LogHappinessRequest.md) |             | [Optional] |
 
 ### Return type
 
@@ -233,11 +220,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

@@ -1,17 +1,13 @@
-
 # TestExecutionRequest
 
 Request serializer for running tests
 
 ## Properties
 
-Name | Type
------------- | -------------
-`testId` | number
-`submissionId` | number
-`fileOverrides` | { [key: string]: string | undefined; }
-
+| Name            | Type                    |
+| --------------- | ----------------------- | ------------ |
+| `testId`        | number                  |
+| `submissionId`  | number                  |
+| `fileOverrides` | { [key: string]: string | undefined; } |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-

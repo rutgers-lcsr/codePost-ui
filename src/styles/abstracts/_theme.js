@@ -14,7 +14,7 @@
 // --------------- COLORS --------------- //
 
 // Brand Colors
-const brandPrimary = '#24be85';
+const brandPrimary = '#198665';
 const brandLight = '#f0fff6';
 const brandVibrant = '#48cc98';
 const brandDark = '#17996e';
@@ -25,7 +25,7 @@ const brandBlackHighlight = '#0f0f0f';
 // Action Colors
 const actionBlue = '#1890ff';
 const actionBlueFade = '#40a9ff';
-const actionGreen = '#24be85';
+const actionGreen = '#198665';
 const actionGreenFade = '#48cc98'; // Should these be fades?
 const actionYellow = '#ffbf00';
 const actionYellowFade = '#ffd129';
@@ -38,7 +38,7 @@ const green2 = '#caf2df';
 const green3 = '#9ce6c3';
 const green4 = '#71d9ac';
 const green5 = '#48cc98'; // $brandVibrant
-const green6 = '#24be85'; // $brandPrimary
+const green6 = '#198665'; // $brandPrimary (WCAG AA)
 const green7 = '#17996e'; // $brandDark
 const green8 = '#0d7354';
 const green9 = '#034d39';

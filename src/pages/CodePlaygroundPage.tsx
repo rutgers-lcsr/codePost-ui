@@ -7,12 +7,12 @@ const { Title } = Typography;
 
 const CodePlaygroundPage: React.FC = () => {
   return (
-    <div style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Title level={2}>Code Playground</Title>
+    <main style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Title level={1}>Code Playground</Title>
       <div style={{ flex: 1, minHeight: 0 }}>
         <InteractiveCodeConsole />
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -1,5 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-export type DocCategory = 'Getting Started' | 'Instructor Workflows' | 'Role Guides' | 'Reference' | 'Changelog';
+export type DocCategory =
+  | 'Getting Started'
+  | 'Instructor Workflows'
+  | 'Role Guides'
+  | 'Python SDK'
+  | 'Reference'
+  | 'Changelog';
 
 export interface DocRoute {
   key: string;
@@ -103,11 +109,25 @@ export const docRoutes: DocRoute[] = [
     category: 'Role Guides',
   },
   {
+    key: 'sdk-overview',
+    path: 'sdk-overview',
+    title: 'Overview',
+    fileName: 'sdk_overview.md',
+    category: 'Python SDK',
+  },
+  {
+    key: 'sdk-grading-workflow',
+    path: 'sdk-grading-workflow',
+    title: 'Grading Workflow',
+    fileName: 'sdk_grading_workflow.md',
+    category: 'Python SDK',
+  },
+  {
     key: 'programmatic-comments',
     path: 'programmatic-comments',
     title: 'Programmatic Comments',
     fileName: 'sdk_programmatic_comments.md',
-    category: 'Role Guides',
+    category: 'Python SDK',
   },
   {
     key: 'features',

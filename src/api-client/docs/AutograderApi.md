@@ -1,44 +1,40 @@
 # AutograderApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**environmentsBuildPartialUpdate**](AutograderApi.md#environmentsbuildpartialupdate) | **PATCH** /autograder/environments/{id}/build/ |  |
-| [**environmentsBuildStatusRetrieve**](AutograderApi.md#environmentsbuildstatusretrieve) | **GET** /autograder/environments/{id}/build_status/ |  |
-| [**environmentsCleanupCreate**](AutograderApi.md#environmentscleanupcreate) | **POST** /autograder/environments/{environmentId}/cleanup/ |  |
-| [**environmentsConvertToManualCreate**](AutograderApi.md#environmentsconverttomanualcreate) | **POST** /autograder/environments/{environmentId}/convert-to-manual/ |  |
-| [**environmentsCreate**](AutograderApi.md#environmentscreate) | **POST** /autograder/environments/ |  |
-| [**environmentsDestroy**](AutograderApi.md#environmentsdestroy) | **DELETE** /autograder/environments/{id}/ |  |
-| [**environmentsDockerfileRetrieve**](AutograderApi.md#environmentsdockerfileretrieve) | **GET** /autograder/environments/{id}/dockerfile/ |  |
-| [**environmentsEjectRetrieve**](AutograderApi.md#environmentsejectretrieve) | **GET** /autograder/environments/{id}/eject/ |  |
-| [**environmentsList**](AutograderApi.md#environmentslist) | **GET** /autograder/environments/ |  |
-| [**environmentsPartialUpdate**](AutograderApi.md#environmentspartialupdate) | **PATCH** /autograder/environments/{id}/ |  |
-| [**environmentsPreviewCreate**](AutograderApi.md#environmentspreviewcreate) | **POST** /autograder/environments/{id}/preview/ |  |
-| [**environmentsRetrieve**](AutograderApi.md#environmentsretrieve) | **GET** /autograder/environments/{id}/ |  |
-| [**environmentsRollbackCreate**](AutograderApi.md#environmentsrollbackcreate) | **POST** /autograder/environments/{environmentId}/rollback/ |  |
-| [**environmentsRunAllPartialUpdate**](AutograderApi.md#environmentsrunallpartialupdate) | **PATCH** /autograder/environments/{id}/runAll/ |  |
-| [**environmentsRunPartialUpdate**](AutograderApi.md#environmentsrunpartialupdate) | **PATCH** /autograder/environments/{id}/run/ |  |
-| [**environmentsStatusRetrieve**](AutograderApi.md#environmentsstatusretrieve) | **GET** /autograder/environments/{environmentId}/status/ |  |
-| [**environmentsUpdate**](AutograderApi.md#environmentsupdate) | **PUT** /autograder/environments/{id}/ |  |
-| [**executeCodeCreate**](AutograderApi.md#executecodecreate) | **POST** /autograder/execute/code/ |  |
-| [**executeFileAsyncCreate**](AutograderApi.md#executefileasynccreate) | **POST** /autograder/execute/file/async/ |  |
-| [**executeFileCacheCheckRetrieve**](AutograderApi.md#executefilecachecheckretrieve) | **GET** /autograder/execute/file/cache/check/ |  |
-| [**executeFileCreate**](AutograderApi.md#executefilecreate) | **POST** /autograder/execute/file/ |  |
-| [**executeFileStreamingCreate**](AutograderApi.md#executefilestreamingcreate) | **POST** /autograder/execute/file/streaming/ |  |
-| [**executeNotebookCellCreate**](AutograderApi.md#executenotebookcellcreate) | **POST** /autograder/execute/notebook-cell/ |  |
-| [**executeNotebookCreate**](AutograderApi.md#executenotebookcreate) | **POST** /autograder/execute/notebook/ |  |
-| [**shellMetricsRetrieve**](AutograderApi.md#shellmetricsretrieve) | **GET** /autograder/shell/metrics/ |  |
-| [**tasksRetrieve**](AutograderApi.md#tasksretrieve) | **GET** /autograder/tasks/{id}/ |  |
-| [**v2RunCreate**](AutograderApi.md#v2runcreate) | **POST** /autograder/v2/run/ |  |
-
-
+| Method                                                                                      | HTTP request                                                         | Description |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------- |
+| [**environmentsBuildPartialUpdate**](AutograderApi.md#environmentsbuildpartialupdate)       | **PATCH** /autograder/environments/{id}/build/                       |             |
+| [**environmentsBuildStatusRetrieve**](AutograderApi.md#environmentsbuildstatusretrieve)     | **GET** /autograder/environments/{id}/build_status/                  |             |
+| [**environmentsCleanupCreate**](AutograderApi.md#environmentscleanupcreate)                 | **POST** /autograder/environments/{environmentId}/cleanup/           |             |
+| [**environmentsConvertToManualCreate**](AutograderApi.md#environmentsconverttomanualcreate) | **POST** /autograder/environments/{environmentId}/convert-to-manual/ |             |
+| [**environmentsCreate**](AutograderApi.md#environmentscreate)                               | **POST** /autograder/environments/                                   |             |
+| [**environmentsDestroy**](AutograderApi.md#environmentsdestroy)                             | **DELETE** /autograder/environments/{id}/                            |             |
+| [**environmentsDockerfileRetrieve**](AutograderApi.md#environmentsdockerfileretrieve)       | **GET** /autograder/environments/{id}/dockerfile/                    |             |
+| [**environmentsEjectRetrieve**](AutograderApi.md#environmentsejectretrieve)                 | **GET** /autograder/environments/{id}/eject/                         |             |
+| [**environmentsList**](AutograderApi.md#environmentslist)                                   | **GET** /autograder/environments/                                    |             |
+| [**environmentsPartialUpdate**](AutograderApi.md#environmentspartialupdate)                 | **PATCH** /autograder/environments/{id}/                             |             |
+| [**environmentsPreviewCreate**](AutograderApi.md#environmentspreviewcreate)                 | **POST** /autograder/environments/{id}/preview/                      |             |
+| [**environmentsRetrieve**](AutograderApi.md#environmentsretrieve)                           | **GET** /autograder/environments/{id}/                               |             |
+| [**environmentsRollbackCreate**](AutograderApi.md#environmentsrollbackcreate)               | **POST** /autograder/environments/{environmentId}/rollback/          |             |
+| [**environmentsRunAllPartialUpdate**](AutograderApi.md#environmentsrunallpartialupdate)     | **PATCH** /autograder/environments/{id}/runAll/                      |             |
+| [**environmentsRunPartialUpdate**](AutograderApi.md#environmentsrunpartialupdate)           | **PATCH** /autograder/environments/{id}/run/                         |             |
+| [**environmentsStatusRetrieve**](AutograderApi.md#environmentsstatusretrieve)               | **GET** /autograder/environments/{environmentId}/status/             |             |
+| [**environmentsUpdate**](AutograderApi.md#environmentsupdate)                               | **PUT** /autograder/environments/{id}/                               |             |
+| [**executeCodeCreate**](AutograderApi.md#executecodecreate)                                 | **POST** /autograder/execute/code/                                   |             |
+| [**executeFileAsyncCreate**](AutograderApi.md#executefileasynccreate)                       | **POST** /autograder/execute/file/async/                             |             |
+| [**executeFileCacheCheckRetrieve**](AutograderApi.md#executefilecachecheckretrieve)         | **GET** /autograder/execute/file/cache/check/                        |             |
+| [**executeFileCreate**](AutograderApi.md#executefilecreate)                                 | **POST** /autograder/execute/file/                                   |             |
+| [**executeFileStreamingCreate**](AutograderApi.md#executefilestreamingcreate)               | **POST** /autograder/execute/file/streaming/                         |             |
+| [**executeNotebookCellCreate**](AutograderApi.md#executenotebookcellcreate)                 | **POST** /autograder/execute/notebook-cell/                          |             |
+| [**executeNotebookCreate**](AutograderApi.md#executenotebookcreate)                         | **POST** /autograder/execute/notebook/                               |             |
+| [**shellMetricsRetrieve**](AutograderApi.md#shellmetricsretrieve)                           | **GET** /autograder/shell/metrics/                                   |             |
+| [**tasksRetrieve**](AutograderApi.md#tasksretrieve)                                         | **GET** /autograder/tasks/{id}/                                      |             |
+| [**v2RunCreate**](AutograderApi.md#v2runcreate)                                             | **POST** /autograder/v2/run/                                         |             |
 
 ## environmentsBuildPartialUpdate
 
 > EnvironmentBuildResponse environmentsBuildPartialUpdate(id, patchedEnvironmentBuildRequest)
-
-
 
 list: Return a list of all the testFiles.
 
@@ -53,7 +49,7 @@ import type { EnvironmentsBuildPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -87,11 +83,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **patchedEnvironmentBuildRequest** | [PatchedEnvironmentBuildRequest](PatchedEnvironmentBuildRequest.md) |  | [Optional] |
+| Name                               | Type                                                                | Description                                          | Notes                     |
+| ---------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                             | `number`                                                            | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **patchedEnvironmentBuildRequest** | [PatchedEnvironmentBuildRequest](PatchedEnvironmentBuildRequest.md) |                                                      | [Optional]                |
 
 ### Return type
 
@@ -106,45 +101,39 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-| **500** | Async build dispatch failed |  -  |
+
+| Status code | Description                 | Response headers |
+| ----------- | --------------------------- | ---------------- |
+| **200**     |                             | -                |
+| **500**     | Async build dispatch failed | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsBuildStatusRetrieve
 
 > EnvironmentBuildStatusResponse environmentsBuildStatusRetrieve(id)
-
-
 
 list: Return a list of all the testFiles.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsBuildStatusRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -167,9 +156,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                          | Notes                     |
+| ------ | -------- | ---------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
 
 ### Return type
@@ -185,23 +173,20 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-| **500** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+| **500**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsCleanupCreate
 
 > EnvironmentCleanupResponse environmentsCleanupCreate(environmentId, environmentCleanupRequest)
 
-
-
-Cleanup old Docker images for environment.  POST /autograder/environments/&lt;id&gt;/cleanup/ Body: {\&quot;keep_count\&quot;: 2}  (optional, defaults to 3)
+Cleanup old Docker images for environment. POST /autograder/environments/&lt;id&gt;/cleanup/ Body: {\&quot;keep_count\&quot;: 2} (optional, defaults to 3)
 
 ### Example
 
@@ -214,7 +199,7 @@ import type { EnvironmentsCleanupCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -248,11 +233,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **environmentId** | `number` |  | [Defaults to `undefined`] |
-| **environmentCleanupRequest** | [EnvironmentCleanupRequest](EnvironmentCleanupRequest.md) |  | [Optional] |
+| Name                          | Type                                                      | Description | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | ----------- | ------------------------- |
+| **environmentId**             | `number`                                                  |             | [Defaults to `undefined`] |
+| **environmentCleanupRequest** | [EnvironmentCleanupRequest](EnvironmentCleanupRequest.md) |             | [Optional]                |
 
 ### Return type
 
@@ -267,22 +251,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsConvertToManualCreate
 
 > EnvironmentConvertToManualResponse environmentsConvertToManualCreate(environmentId, environmentConvertToManualRequest)
 
-
-
-Convert auto-detect environment to manual configuration.  POST /autograder/environments/&lt;id&gt;/convert-to-manual/ Body: {\&quot;from_version\&quot;: 2}  (optional, uses current if not specified)
+Convert auto-detect environment to manual configuration. POST /autograder/environments/&lt;id&gt;/convert-to-manual/ Body: {\&quot;from_version\&quot;: 2} (optional, uses current if not specified)
 
 ### Example
 
@@ -295,7 +276,7 @@ import type { EnvironmentsConvertToManualCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -329,11 +310,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **environmentId** | `number` |  | [Defaults to `undefined`] |
-| **environmentConvertToManualRequest** | [EnvironmentConvertToManualRequest](EnvironmentConvertToManualRequest.md) |  | [Optional] |
+| Name                                  | Type                                                                      | Description | Notes                     |
+| ------------------------------------- | ------------------------------------------------------------------------- | ----------- | ------------------------- |
+| **environmentId**                     | `number`                                                                  |             | [Defaults to `undefined`] |
+| **environmentConvertToManualRequest** | [EnvironmentConvertToManualRequest](EnvironmentConvertToManualRequest.md) |             | [Optional]                |
 
 ### Return type
 
@@ -348,20 +328,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsCreate
 
 > Environment environmentsCreate(environment)
-
-
 
 list: Return a list of all the testFiles.
 
@@ -376,7 +353,7 @@ import type { EnvironmentsCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -408,10 +385,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **environment** | [Environment](Environment.md) |  | |
+| Name            | Type                          | Description | Notes |
+| --------------- | ----------------------------- | ----------- | ----- |
+| **environment** | [Environment](Environment.md) |             |       |
 
 ### Return type
 
@@ -426,44 +402,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsDestroy
 
 > environmentsDestroy(id)
-
-
 
 list: Return a list of all the testFiles.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsDestroyRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -486,9 +456,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                          | Notes                     |
+| ------ | -------- | ---------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
 
 ### Return type
@@ -504,44 +473,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsDockerfileRetrieve
 
 > string environmentsDockerfileRetrieve(id)
-
-
 
 list: Return a list of all the testFiles.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsDockerfileRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -564,9 +527,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                          | Notes                     |
+| ------ | -------- | ---------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
 
 ### Return type
@@ -582,44 +544,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsEjectRetrieve
 
 > EnvironmentEjectResponse environmentsEjectRetrieve(id)
-
-
 
 Generates a \&quot;Reproduction Kit\&quot; for debugging locally. Returns the components needed to run tests exactly as the autograder does.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsEjectRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -642,9 +598,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                          | Notes                     |
+| ------ | -------- | ---------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
 
 ### Return type
@@ -660,44 +615,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsList
 
 > Array&lt;Environment&gt; environmentsList()
-
-
 
 list: Return a list of all the testFiles.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -730,20 +679,17 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsPartialUpdate
 
 > Environment environmentsPartialUpdate(id, patchedEnvironment)
-
-
 
 list: Return a list of all the testFiles.
 
@@ -758,7 +704,7 @@ import type { EnvironmentsPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -792,11 +738,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **patchedEnvironment** | [PatchedEnvironment](PatchedEnvironment.md) |  | [Optional] |
+| Name                   | Type                                        | Description                                          | Notes                     |
+| ---------------------- | ------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                 | `number`                                    | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **patchedEnvironment** | [PatchedEnvironment](PatchedEnvironment.md) |                                                      | [Optional]                |
 
 ### Return type
 
@@ -811,20 +756,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsPreviewCreate
 
 > string environmentsPreviewCreate(id, environmentPreviewRequest)
-
-
 
 Generate a preview of the Dockerfile based on provided parameters, without saving changes to the database.
 
@@ -839,7 +781,7 @@ import type { EnvironmentsPreviewCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -873,11 +815,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **environmentPreviewRequest** | [EnvironmentPreviewRequest](EnvironmentPreviewRequest.md) |  | [Optional] |
+| Name                          | Type                                                      | Description                                          | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                        | `number`                                                  | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **environmentPreviewRequest** | [EnvironmentPreviewRequest](EnvironmentPreviewRequest.md) |                                                      | [Optional]                |
 
 ### Return type
 
@@ -892,45 +833,39 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-| **400** | Preview generation failed |  -  |
+
+| Status code | Description               | Response headers |
+| ----------- | ------------------------- | ---------------- |
+| **200**     |                           | -                |
+| **400**     | Preview generation failed | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsRetrieve
 
 > Environment environmentsRetrieve(id)
-
-
 
 list: Return a list of all the testFiles.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -953,9 +888,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                          | Notes                     |
+| ------ | -------- | ---------------------------------------------------- | ------------------------- |
 | **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
 
 ### Return type
@@ -971,22 +905,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsRollbackCreate
 
 > EnvironmentRollbackResponse environmentsRollbackCreate(environmentId, environmentRollbackRequest)
 
-
-
-Rollback environment to a previous image version.  POST /autograder/environments/&lt;id&gt;/rollback/ Body: {\&quot;version\&quot;: 2}  (optional, defaults to previous version)
+Rollback environment to a previous image version. POST /autograder/environments/&lt;id&gt;/rollback/ Body: {\&quot;version\&quot;: 2} (optional, defaults to previous version)
 
 ### Example
 
@@ -999,7 +930,7 @@ import type { EnvironmentsRollbackCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1033,11 +964,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **environmentId** | `number` |  | [Defaults to `undefined`] |
-| **environmentRollbackRequest** | [EnvironmentRollbackRequest](EnvironmentRollbackRequest.md) |  | [Optional] |
+| Name                           | Type                                                        | Description | Notes                     |
+| ------------------------------ | ----------------------------------------------------------- | ----------- | ------------------------- |
+| **environmentId**              | `number`                                                    |             | [Defaults to `undefined`] |
+| **environmentRollbackRequest** | [EnvironmentRollbackRequest](EnvironmentRollbackRequest.md) |             | [Optional]                |
 
 ### Return type
 
@@ -1052,20 +982,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsRunAllPartialUpdate
 
 > EnvironmentRunAllResponse environmentsRunAllPartialUpdate(id, patchedEnvironmentRunAllRequest)
-
-
 
 list: Return a list of all the testFiles.
 
@@ -1080,7 +1007,7 @@ import type { EnvironmentsRunAllPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1114,11 +1041,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **patchedEnvironmentRunAllRequest** | [PatchedEnvironmentRunAllRequest](PatchedEnvironmentRunAllRequest.md) |  | [Optional] |
+| Name                                | Type                                                                  | Description                                          | Notes                     |
+| ----------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                              | `number`                                                              | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **patchedEnvironmentRunAllRequest** | [PatchedEnvironmentRunAllRequest](PatchedEnvironmentRunAllRequest.md) |                                                      | [Optional]                |
 
 ### Return type
 
@@ -1133,20 +1059,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsRunPartialUpdate
 
 > EnvironmentRunResponse environmentsRunPartialUpdate(id, patchedEnvironmentRunRequest)
-
-
 
 Run tests for a submission using the modern TestService architecture. Dispatches run_test_task which calls TestService.run_suite().
 
@@ -1161,7 +1084,7 @@ import type { EnvironmentsRunPartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1195,11 +1118,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **patchedEnvironmentRunRequest** | [PatchedEnvironmentRunRequest](PatchedEnvironmentRunRequest.md) |  | [Optional] |
+| Name                             | Type                                                            | Description                                          | Notes                     |
+| -------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                           | `number`                                                        | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **patchedEnvironmentRunRequest** | [PatchedEnvironmentRunRequest](PatchedEnvironmentRunRequest.md) |                                                      | [Optional]                |
 
 ### Return type
 
@@ -1214,47 +1136,41 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
-| **403** | Forbidden |  -  |
-| **401** | Not authorized |  -  |
-| **400** | Validation error |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **200**     |                  | -                |
+| **403**     | Forbidden        | -                |
+| **401**     | Not authorized   | -                |
+| **400**     | Validation error | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsStatusRetrieve
 
 > EnvironmentStatusResponse environmentsStatusRetrieve(environmentId)
 
-
-
-Get detailed environment status including version history.  GET /autograder/environments/&lt;id&gt;/status/
+Get detailed environment status including version history. GET /autograder/environments/&lt;id&gt;/status/
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { EnvironmentsStatusRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -1277,10 +1193,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **environmentId** | `number` |  | [Defaults to `undefined`] |
+| Name              | Type     | Description | Notes                     |
+| ----------------- | -------- | ----------- | ------------------------- |
+| **environmentId** | `number` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1295,20 +1210,17 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## environmentsUpdate
 
 > Environment environmentsUpdate(id, environment)
-
-
 
 list: Return a list of all the testFiles.
 
@@ -1323,7 +1235,7 @@ import type { EnvironmentsUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1357,11 +1269,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this environment. | [Defaults to `undefined`] |
-| **environment** | [Environment](Environment.md) |  | |
+| Name            | Type                          | Description                                          | Notes                     |
+| --------------- | ----------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**          | `number`                      | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **environment** | [Environment](Environment.md) |                                                      |                           |
 
 ### Return type
 
@@ -1376,22 +1287,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeCodeCreate
 
 > ExecutionResult executeCodeCreate(codeExecutionRequest)
 
-
-
-Execute a code snippet using the autograder executors.  DEPRECATED: Use async endpoints.
+Execute a code snippet using the autograder executors. DEPRECATED: Use async endpoints.
 
 ### Example
 
@@ -1404,7 +1312,7 @@ import type { ExecuteCodeCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1436,10 +1344,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **codeExecutionRequest** | [CodeExecutionRequest](CodeExecutionRequest.md) |  | |
+| Name                     | Type                                            | Description | Notes |
+| ------------------------ | ----------------------------------------------- | ----------- | ----- |
+| **codeExecutionRequest** | [CodeExecutionRequest](CodeExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1454,22 +1361,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeFileAsyncCreate
 
 > AsyncTaskResponse executeFileAsyncCreate(asyncExecutionRequest)
 
-
-
-Async file execution endpoint.  Permissions: - Staff: Can execute freely, including force_execute - Students: Can only retrieve cached results (cache must exist)
+Async file execution endpoint. Permissions: - Staff: Can execute freely, including force_execute - Students: Can only retrieve cached results (cache must exist)
 
 ### Example
 
@@ -1482,7 +1386,7 @@ import type { ExecuteFileAsyncCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1514,10 +1418,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **asyncExecutionRequest** | [AsyncExecutionRequest](AsyncExecutionRequest.md) |  | |
+| Name                      | Type                                              | Description | Notes |
+| ------------------------- | ------------------------------------------------- | ----------- | ----- |
+| **asyncExecutionRequest** | [AsyncExecutionRequest](AsyncExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1532,44 +1435,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeFileCacheCheckRetrieve
 
 > CacheCheckResponse executeFileCacheCheckRetrieve()
-
-
 
 Check if cache exists for file
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { ExecuteFileCacheCheckRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -1602,22 +1499,19 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeFileCreate
 
 > ExecutionResult executeFileCreate(fileExecutionRequest)
 
-
-
-Execute a codePost file - use stream execution instead. This endpoint is used for testing file execution.  DEPRECATED: Use /autograder/async/execute/file/ instead. This view executes synchronously, blocking the request thread. It should not be used in production for long-running tasks.  Permissions: - Codepost staff only: Superusers can execute any file - Course Staff: Can execute with overrides if allowed by assignment  Uses FilePermissions which delegates to appropriate permission class based on file type (SubmissionFile, AssignmentFile, CourseFile)  POST /autograder/execute/file/ {     \&quot;file_id\&quot;: 123,     \&quot;timeout\&quot;: 30 }
+Execute a codePost file - use stream execution instead. This endpoint is used for testing file execution. DEPRECATED: Use /autograder/async/execute/file/ instead. This view executes synchronously, blocking the request thread. It should not be used in production for long-running tasks. Permissions: - Codepost staff only: Superusers can execute any file - Course Staff: Can execute with overrides if allowed by assignment Uses FilePermissions which delegates to appropriate permission class based on file type (SubmissionFile, AssignmentFile, CourseFile) POST /autograder/execute/file/ { \&quot;file_id\&quot;: 123, \&quot;timeout\&quot;: 30 }
 
 ### Example
 
@@ -1630,7 +1524,7 @@ import type { ExecuteFileCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1662,10 +1556,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **fileExecutionRequest** | [FileExecutionRequest](FileExecutionRequest.md) |  | |
+| Name                     | Type                                            | Description | Notes |
+| ------------------------ | ----------------------------------------------- | ----------- | ----- |
+| **fileExecutionRequest** | [FileExecutionRequest](FileExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1680,20 +1573,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeFileStreamingCreate
 
 > executeFileStreamingCreate(fileExecutionRequest)
-
-
 
 Handle streaming execution request
 
@@ -1708,7 +1598,7 @@ import type { ExecuteFileStreamingCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1740,10 +1630,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **fileExecutionRequest** | [FileExecutionRequest](FileExecutionRequest.md) |  | |
+| Name                     | Type                                            | Description | Notes |
+| ------------------------ | ----------------------------------------------- | ----------- | ----- |
+| **fileExecutionRequest** | [FileExecutionRequest](FileExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1758,20 +1647,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Server-Sent Events stream with ExecutionResult data |  -  |
+
+| Status code | Description                                         | Response headers |
+| ----------- | --------------------------------------------------- | ---------------- |
+| **200**     | Server-Sent Events stream with ExecutionResult data | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeNotebookCellCreate
 
 > ExecutionResult executeNotebookCellCreate(notebookCellExecutionRequest)
-
-
 
 Execute a single notebook cell by wrapping it in a minimal notebook.
 
@@ -1786,7 +1672,7 @@ import type { ExecuteNotebookCellCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1818,10 +1704,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **notebookCellExecutionRequest** | [NotebookCellExecutionRequest](NotebookCellExecutionRequest.md) |  | |
+| Name                             | Type                                                            | Description | Notes |
+| -------------------------------- | --------------------------------------------------------------- | ----------- | ----- |
+| **notebookCellExecutionRequest** | [NotebookCellExecutionRequest](NotebookCellExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1836,22 +1721,19 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## executeNotebookCreate
 
 > ExecutionResult executeNotebookCreate(notebookExecutionRequest)
 
-
-
-Execute a full notebook payload.  DEPRECATED: Use async endpoints.
+Execute a full notebook payload. DEPRECATED: Use async endpoints.
 
 ### Example
 
@@ -1864,7 +1746,7 @@ import type { ExecuteNotebookCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -1896,10 +1778,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **notebookExecutionRequest** | [NotebookExecutionRequest](NotebookExecutionRequest.md) |  | |
+| Name                         | Type                                                    | Description | Notes |
+| ---------------------------- | ------------------------------------------------------- | ----------- | ----- |
+| **notebookExecutionRequest** | [NotebookExecutionRequest](NotebookExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -1914,44 +1795,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## shellMetricsRetrieve
 
 > ShellMetricsResponse shellMetricsRetrieve()
-
-
 
 Staff-only shell relay metrics from Redis. GET /autograder/shell/metrics/
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { ShellMetricsRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -1984,44 +1859,38 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## tasksRetrieve
 
 > TaskStatusResponse tasksRetrieve(id)
-
-
 
 A simple ViewSet for retrieving task results
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  AutograderApi,
-} from '';
+import { Configuration, AutograderApi } from '';
 import type { TasksRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new AutograderApi(config);
 
@@ -2044,10 +1913,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `string` |  | [Defaults to `undefined`] |
+| Name   | Type     | Description | Notes                     |
+| ------ | -------- | ----------- | ------------------------- |
+| **id** | `string` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -2062,20 +1930,17 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## v2RunCreate
 
 > TestExecutionResult v2RunCreate(testExecutionRequest)
-
-
 
 API access to the Modern Testing Architecture. Runs a specific TestCase against a Submission.
 
@@ -2090,7 +1955,7 @@ import type { V2RunCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -2122,10 +1987,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **testExecutionRequest** | [TestExecutionRequest](TestExecutionRequest.md) |  | |
+| Name                     | Type                                            | Description | Notes |
+| ------------------------ | ----------------------------------------------- | ----------- | ----- |
+| **testExecutionRequest** | [TestExecutionRequest](TestExecutionRequest.md) |             |       |
 
 ### Return type
 
@@ -2140,11 +2004,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

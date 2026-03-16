@@ -45,7 +45,7 @@ const LandingHero = () => {
           fontSize: 18,
           lineHeight: 1.67,
           fontWeight: 400,
-          color: '#606060',
+          color: '#555555',
           paddingTop: 35,
           paddingBottom: windowSize.width < landingVars.breakpoints.hero ? 30 : 60,
         }}

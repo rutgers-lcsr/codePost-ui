@@ -1,28 +1,24 @@
 # UsersApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**create**](UsersApi.md#create) | **POST** /users/ |  |
-| [**destroy**](UsersApi.md#destroy) | **DELETE** /users/{email}/ |  |
-| [**emailCreate**](UsersApi.md#emailcreate) | **POST** /users/{email}/email/ |  |
-| [**list**](UsersApi.md#list) | **GET** /users/ |  |
-| [**mePartialUpdate**](UsersApi.md#mepartialupdate) | **PATCH** /users/me/ |  |
-| [**meRetrieve**](UsersApi.md#meretrieve) | **GET** /users/me/ |  |
-| [**partialUpdate**](UsersApi.md#partialupdate) | **PATCH** /users/{email}/ |  |
-| [**requestAPITokenCreate**](UsersApi.md#requestapitokencreate) | **POST** /users/requestAPIToken/ |  |
-| [**retrieve**](UsersApi.md#retrieve) | **GET** /users/{email}/ |  |
-| [**update**](UsersApi.md#update) | **PUT** /users/{email}/ |  |
-| [**userCreate**](UsersApi.md#usercreate) | **POST** /users/user/ |  |
-
-
+| Method                                                         | HTTP request                     | Description |
+| -------------------------------------------------------------- | -------------------------------- | ----------- |
+| [**create**](UsersApi.md#create)                               | **POST** /users/                 |             |
+| [**destroy**](UsersApi.md#destroy)                             | **DELETE** /users/{email}/       |             |
+| [**emailCreate**](UsersApi.md#emailcreate)                     | **POST** /users/{email}/email/   |             |
+| [**list**](UsersApi.md#list)                                   | **GET** /users/                  |             |
+| [**mePartialUpdate**](UsersApi.md#mepartialupdate)             | **PATCH** /users/me/             |             |
+| [**meRetrieve**](UsersApi.md#meretrieve)                       | **GET** /users/me/               |             |
+| [**partialUpdate**](UsersApi.md#partialupdate)                 | **PATCH** /users/{email}/        |             |
+| [**requestAPITokenCreate**](UsersApi.md#requestapitokencreate) | **POST** /users/requestAPIToken/ |             |
+| [**retrieve**](UsersApi.md#retrieve)                           | **GET** /users/{email}/          |             |
+| [**update**](UsersApi.md#update)                               | **PUT** /users/{email}/          |             |
+| [**userCreate**](UsersApi.md#usercreate)                       | **POST** /users/user/            |             |
 
 ## create
 
 > User create(user)
-
-
 
 ### Example
 
@@ -35,7 +31,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -67,10 +63,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **user** | [User](User.md) |  | |
+| Name     | Type            | Description | Notes |
+| -------- | --------------- | ----------- | ----- |
+| **user** | [User](User.md) |             |       |
 
 ### Return type
 
@@ -85,42 +80,36 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## destroy
 
 > destroy(email)
 
-
-
 ### Example
 
 ```ts
-import {
-  Configuration,
-  UsersApi,
-} from '';
+import { Configuration, UsersApi } from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new UsersApi(config);
 
@@ -143,10 +132,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **email** | `string` |  | [Defaults to `undefined`] |
+| Name      | Type     | Description | Notes                     |
+| --------- | -------- | ----------- | ------------------------- |
+| **email** | `string` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -161,20 +149,17 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## emailCreate
 
 > User emailCreate(email, user)
-
-
 
 ### Example
 
@@ -187,7 +172,7 @@ import type { EmailCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -221,11 +206,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **email** | `string` |  | [Defaults to `undefined`] |
-| **user** | [User](User.md) |  | |
+| Name      | Type            | Description | Notes                     |
+| --------- | --------------- | ----------- | ------------------------- |
+| **email** | `string`        |             | [Defaults to `undefined`] |
+| **user**  | [User](User.md) |             |                           |
 
 ### Return type
 
@@ -240,42 +224,36 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## list
 
 > PaginatedUserList list(ordering, page, pageSize, search)
 
-
-
 ### Example
 
 ```ts
-import {
-  Configuration,
-  UsersApi,
-} from '';
+import { Configuration, UsersApi } from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new UsersApi(config);
 
@@ -304,13 +282,12 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **ordering** | `string` | Which field to use when ordering the results. | [Optional] [Defaults to `undefined`] |
-| **page** | `number` | A page number within the paginated result set. | [Optional] [Defaults to `undefined`] |
-| **pageSize** | `number` | Number of results to return per page. | [Optional] [Defaults to `undefined`] |
-| **search** | `string` | A search term. | [Optional] [Defaults to `undefined`] |
+| Name         | Type     | Description                                    | Notes                                |
+| ------------ | -------- | ---------------------------------------------- | ------------------------------------ |
+| **ordering** | `string` | Which field to use when ordering the results.  | [Optional] [Defaults to `undefined`] |
+| **page**     | `number` | A page number within the paginated result set. | [Optional] [Defaults to `undefined`] |
+| **pageSize** | `number` | Number of results to return per page.          | [Optional] [Defaults to `undefined`] |
+| **search**   | `string` | A search term.                                 | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -325,20 +302,17 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## mePartialUpdate
 
 > User mePartialUpdate(patchedUser)
-
-
 
 ### Example
 
@@ -351,7 +325,7 @@ import type { MePartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -383,10 +357,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **patchedUser** | [PatchedUser](PatchedUser.md) |  | [Optional] |
+| Name            | Type                          | Description | Notes      |
+| --------------- | ----------------------------- | ----------- | ---------- |
+| **patchedUser** | [PatchedUser](PatchedUser.md) |             | [Optional] |
 
 ### Return type
 
@@ -401,42 +374,36 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## meRetrieve
 
 > User meRetrieve()
 
-
-
 ### Example
 
 ```ts
-import {
-  Configuration,
-  UsersApi,
-} from '';
+import { Configuration, UsersApi } from '';
 import type { MeRetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new UsersApi(config);
 
@@ -469,20 +436,17 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## partialUpdate
 
 > User partialUpdate(email, patchedUser)
-
-
 
 ### Example
 
@@ -495,7 +459,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -529,11 +493,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **email** | `string` |  | [Defaults to `undefined`] |
-| **patchedUser** | [PatchedUser](PatchedUser.md) |  | [Optional] |
+| Name            | Type                          | Description | Notes                     |
+| --------------- | ----------------------------- | ----------- | ------------------------- |
+| **email**       | `string`                      |             | [Defaults to `undefined`] |
+| **patchedUser** | [PatchedUser](PatchedUser.md) |             | [Optional]                |
 
 ### Return type
 
@@ -548,20 +511,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## requestAPITokenCreate
 
 > User requestAPITokenCreate(user)
-
-
 
 ### Example
 
@@ -574,7 +534,7 @@ import type { RequestAPITokenCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -606,10 +566,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **user** | [User](User.md) |  | |
+| Name     | Type            | Description | Notes |
+| -------- | --------------- | ----------- | ----- |
+| **user** | [User](User.md) |             |       |
 
 ### Return type
 
@@ -624,42 +583,36 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## retrieve
 
 > User retrieve(email)
 
-
-
 ### Example
 
 ```ts
-import {
-  Configuration,
-  UsersApi,
-} from '';
+import { Configuration, UsersApi } from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new UsersApi(config);
 
@@ -682,10 +635,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **email** | `string` |  | [Defaults to `undefined`] |
+| Name      | Type     | Description | Notes                     |
+| --------- | -------- | ----------- | ------------------------- |
+| **email** | `string` |             | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -700,20 +652,17 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## update
 
 > User update(email, user)
-
-
 
 ### Example
 
@@ -726,7 +675,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -760,11 +709,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **email** | `string` |  | [Defaults to `undefined`] |
-| **user** | [User](User.md) |  | |
+| Name      | Type            | Description | Notes                     |
+| --------- | --------------- | ----------- | ------------------------- |
+| **email** | `string`        |             | [Defaults to `undefined`] |
+| **user**  | [User](User.md) |             |                           |
 
 ### Return type
 
@@ -779,20 +727,17 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## userCreate
 
 > User userCreate(user)
-
-
 
 Given an email address as a query parameter, return the user object for that email address. This is a non-standard use of a GET request, but it is convenient for the client to be able to look up users by email address.
 
@@ -807,7 +752,7 @@ import type { UserCreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -839,10 +784,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **user** | [User](User.md) |  | |
+| Name     | Type            | Description | Notes |
+| -------- | --------------- | ----------- | ----- |
+| **user** | [User](User.md) |             |       |
 
 ### Return type
 
@@ -857,11 +801,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

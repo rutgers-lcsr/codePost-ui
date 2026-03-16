@@ -22,8 +22,8 @@ const LandingGetStarted = () => {
       className={`display-flex justify-content-space-between flex-direction-${flexDirection}`}
     >
       <div className="display-flex flex-direction-column justify-content-center">
-        <div style={{ fontSize: 30, color: '#707070', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
-        <div style={{ fontSize: 24, color: '#666666' }}>Get started using codePost in minutes.</div>
+        <div style={{ fontSize: 30, color: '#4A4A4A', marginBottom: 5, fontWeight: 600 }}>Ready?</div>
+        <div style={{ fontSize: 24, color: '#595959' }}>Get started using codePost in minutes.</div>
       </div>
       <div
         style={{

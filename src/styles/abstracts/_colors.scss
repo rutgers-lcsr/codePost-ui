@@ -7,7 +7,7 @@
 // When changing colors, update colors.ts first, then update here.
 
 // Brand Colors
-$brandPrimary: #24be85;
+$brandPrimary: #198665; // WCAG AA compliant with white text
 $brandLight: #f0fff6;
 $brandVibrant: #48cc98;
 $brandDark: #17996e;
@@ -18,7 +18,7 @@ $brandBlackHighlight: #0f0f0f;
 // Action Colors
 $actionBlue: #1890ff;
 $actionBlueFade: #40a9ff;
-$actionGreen: #24be85;
+$actionGreen: #198665; // WCAG AA compliant with white text
 $actionGreenFade: #48cc98;
 $actionYellow: #ffbf00;
 $actionYellowFade: #ffd129;
@@ -31,7 +31,7 @@ $green2: #caf2df;
 $green3: #9ce6c3;
 $green4: #71d9ac;
 $green5: #48cc98;
-$green6: #24be85;
+$green6: #198665; // Brand primary (WCAG AA compliant)
 $green7: #17996e;
 $green8: #0d7354;
 $green9: #034d39;
@@ -40,7 +40,7 @@ $green10: #02261e;
 // Neutral Colors - Light Background
 $neutralTitle: rgba(0, 0, 0, 0.8);
 $neutralMainText: rgba(0, 0, 0, 0.7);
-$neutralSecondaryText: rgba(0, 0, 0, 0.5);
+$neutralSecondaryText: rgba(0, 0, 0, 0.6);
 $neutralDisable: rgba(0, 0, 0, 0.3);
 $neutralBorder: rgba(0, 0, 0, 0.2);
 $neutralDivider: rgba(0, 0, 0, 0.1);

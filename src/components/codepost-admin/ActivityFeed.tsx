@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Table, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image } from 'antd';
-import { ReloadOutlined, SearchOutlined, ClearOutlined } from '@ant-design/icons';
+import { Table, Tabs, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image } from 'antd';
+import { ReloadOutlined, SearchOutlined, ClearOutlined, AuditOutlined, BarChartOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
 import dayjs from 'dayjs';
@@ -9,8 +9,24 @@ import type { Dayjs } from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-// All known event categories from core/logging.py
-const EVENT_CATEGORIES = [
+// Audit categories — login, auth, and admin access events
+const AUDIT_CATEGORIES = [
+  'Become User',
+  'Generate One-Time Token',
+  'One-Time Token Generated',
+  'Admin New Request Approved',
+  'Admin New Request Denied',
+  'Admin Change Organization Request',
+  'Admin Already Exists',
+  'Admin New Request Error',
+  'New Org Admin Request',
+  'Existing Org Admin Request',
+  'CIP Activation',
+  'Codepost Registration Error',
+];
+
+// Activity categories — system-level operational events
+const ACTIVITY_CATEGORIES = [
   'Core App Ready',
   'Course Created',
   'Organization Created',
@@ -19,7 +35,6 @@ const EVENT_CATEGORIES = [
   'Email Sent',
   'Email Failed',
   'Late Submission Error',
-  'Become User',
   'UI Error',
   'Bug Report',
   'Display Issue',
@@ -28,19 +43,12 @@ const EVENT_CATEGORIES = [
   'Other',
   'User Happiness',
   'User Dump',
-  'Admin Change Organization Request',
-  'Codepost Registration Error',
-  'Admin Already Exists',
-  'Admin New Request Error',
-  'Admin New Request Denied',
-  'Admin New Request Approved',
-  'Generate One-Time Token',
-  'CIP Activation',
   'Webhook Error',
   'Webhook Connection Error',
   'API Error',
-  'One-Time Token Generated',
 ];
+
+type EventTabType = 'activity' | 'audit';
 
 // Categories that contain diagnostic error detail (browser context, console logs, etc.)
 const DIAGNOSTIC_CATEGORIES = new Set([
@@ -59,6 +67,7 @@ const ActivityFeed: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
+  const [activeTab, setActiveTab] = useState<EventTabType>('activity');
 
   // Filter state
   const [searchText, setSearchText] = useState('');
@@ -67,6 +76,8 @@ const ActivityFeed: React.FC = () => {
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const categoriesForTab = activeTab === 'audit' ? AUDIT_CATEGORIES : ACTIVITY_CATEGORIES;
+
   const fetchLogs = useCallback(
     async (
       pageNum: number,
@@ -74,12 +85,14 @@ const ActivityFeed: React.FC = () => {
       search?: string,
       category?: string,
       dates?: [Dayjs | null, Dayjs | null] | null,
+      tabType?: EventTabType,
     ) => {
       setLoading(true);
       try {
         const params: Parameters<typeof systemApi.activityRetrieve>[0] = {
           page: pageNum,
           pageSize: pSize,
+          type: tabType,
         };
         if (search && search.trim()) params.search = search.trim();
         if (category) params.category = category;
@@ -100,29 +113,39 @@ const ActivityFeed: React.FC = () => {
   );
 
   useEffect(() => {
-    fetchLogs(1, pageSize);
+    fetchLogs(1, pageSize, undefined, undefined, undefined, activeTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleTabChange = (key: string) => {
+    const tab = key as EventTabType;
+    setActiveTab(tab);
+    setSearchText('');
+    setCategoryFilter(undefined);
+    setDateRange(null);
+    setPage(1);
+    fetchLogs(1, pageSize, undefined, undefined, undefined, tab);
+  };
 
   // Debounced search
   const handleSearchChange = (value: string) => {
     setSearchText(value);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
-      fetchLogs(1, pageSize, value, categoryFilter, dateRange);
+      fetchLogs(1, pageSize, value, categoryFilter, dateRange, activeTab);
       setPage(1);
     }, 400);
   };
 
   const handleCategoryChange = (value: string | undefined) => {
     setCategoryFilter(value);
-    fetchLogs(1, pageSize, searchText, value, dateRange);
+    fetchLogs(1, pageSize, searchText, value, dateRange, activeTab);
     setPage(1);
   };
 
   const handleDateRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
     setDateRange(dates);
-    fetchLogs(1, pageSize, searchText, categoryFilter, dates);
+    fetchLogs(1, pageSize, searchText, categoryFilter, dates, activeTab);
     setPage(1);
   };
 
@@ -130,7 +153,7 @@ const ActivityFeed: React.FC = () => {
     setSearchText('');
     setCategoryFilter(undefined);
     setDateRange(null);
-    fetchLogs(1, pageSize);
+    fetchLogs(1, pageSize, undefined, undefined, undefined, activeTab);
     setPage(1);
   };
 
@@ -427,10 +450,68 @@ const ActivityFeed: React.FC = () => {
     );
   };
 
+  const renderLogTable = () => (
+    <>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
+        <Space wrap size="middle" style={{ width: '100%' }}>
+          <Input
+            placeholder="Search description, user, or meta..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            allowClear
+            style={{ width: 300 }}
+          />
+          <Select
+            placeholder="Filter by category"
+            value={categoryFilter}
+            onChange={handleCategoryChange}
+            allowClear
+            style={{ width: 240 }}
+            options={categoriesForTab.map((c) => ({ label: c, value: c }))}
+            showSearch
+            filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+          />
+          <RangePicker
+            value={dateRange as [Dayjs, Dayjs] | null}
+            onChange={(dates) => handleDateRangeChange(dates as [Dayjs | null, Dayjs | null] | null)}
+            allowClear
+            format="MM/DD/YYYY"
+            placeholder={['Start date', 'End date']}
+          />
+        </Space>
+      </div>
+      <Table
+        dataSource={logs}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          current: page,
+          total: total,
+          pageSize: pageSize,
+          onChange: (p, ps) => {
+            setPage(p);
+            setPageSize(ps || 20);
+            fetchLogs(p, ps || 20, searchText, categoryFilter, dateRange, activeTab);
+          },
+          showSizeChanger: true,
+        }}
+        size="middle"
+        expandable={{
+          expandedRowRender: expandedRowRender,
+          rowExpandable: (_) => true,
+        }}
+        tableLayout="fixed"
+        scroll={{ x: 'max-content' }}
+      />
+    </>
+  );
+
   return (
     <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
       <Card
-        title="System Activity Feed"
+        title="System Logs"
         bodyStyle={{ padding: 0 }}
         extra={
           <Space>
@@ -441,65 +522,37 @@ const ActivityFeed: React.FC = () => {
             )}
             <Button
               icon={<ReloadOutlined />}
-              onClick={() => fetchLogs(1, pageSize, searchText, categoryFilter, dateRange)}
+              onClick={() => fetchLogs(1, pageSize, searchText, categoryFilter, dateRange, activeTab)}
             >
               Refresh
             </Button>
           </Space>
         }
       >
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
-          <Space wrap size="middle" style={{ width: '100%' }}>
-            <Input
-              placeholder="Search description, user, or meta..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              allowClear
-              style={{ width: 300 }}
-            />
-            <Select
-              placeholder="Filter by category"
-              value={categoryFilter}
-              onChange={handleCategoryChange}
-              allowClear
-              style={{ width: 240 }}
-              options={EVENT_CATEGORIES.map((c) => ({ label: c, value: c }))}
-              showSearch
-              filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
-            />
-            <RangePicker
-              value={dateRange as [Dayjs, Dayjs] | null}
-              onChange={(dates) => handleDateRangeChange(dates as [Dayjs | null, Dayjs | null] | null)}
-              allowClear
-              format="MM/DD/YYYY"
-              placeholder={['Start date', 'End date']}
-            />
-          </Space>
-        </div>
-        <Table
-          dataSource={logs}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            current: page,
-            total: total,
-            pageSize: pageSize,
-            onChange: (p, ps) => {
-              setPage(p);
-              setPageSize(ps || 20);
-              fetchLogs(p, ps || 20, searchText, categoryFilter, dateRange);
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          style={{ padding: '0 16px' }}
+          items={[
+            {
+              key: 'activity',
+              label: (
+                <span>
+                  <BarChartOutlined /> Activity Logs
+                </span>
+              ),
+              children: renderLogTable(),
             },
-            showSizeChanger: true,
-          }}
-          size="middle"
-          expandable={{
-            expandedRowRender: expandedRowRender,
-            rowExpandable: (_) => true,
-          }}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
+            {
+              key: 'audit',
+              label: (
+                <span>
+                  <AuditOutlined /> Audit Logs
+                </span>
+              ),
+              children: renderLogTable(),
+            },
+          ]}
         />
       </Card>
     </div>

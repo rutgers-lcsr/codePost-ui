@@ -1,11 +1,11 @@
 /* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software. */
 .text-link {
   cursor: pointer;
-  color: #096dd9; // darker blue (>4.5:1 contrast against white)
+  color: #0050b3; // darker blue (>4.5:1 contrast against #f2f2f2)
   text-decoration: underline;
 
   &:hover {
-    text-decoration: none;
-    color: #40a9ff;
+    text-decoration: underline;
+    color: #003a8c; // WCAG AA compliant on #f2f2f2
   }
 }

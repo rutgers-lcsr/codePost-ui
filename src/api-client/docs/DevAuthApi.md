@@ -1,42 +1,35 @@
 # DevAuthApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**loginAsCreate**](DevAuthApi.md#loginascreate) | **POST** /dev-auth/login-as/ |  |
-
-
+| Method                                           | HTTP request                 | Description |
+| ------------------------------------------------ | ---------------------------- | ----------- |
+| [**loginAsCreate**](DevAuthApi.md#loginascreate) | **POST** /dev-auth/login-as/ |             |
 
 ## loginAsCreate
 
 > loginAsCreate()
-
-
 
 Auto-login as a specific role for development purposes. Only available when DEBUG&#x3D;True.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  DevAuthApi,
-} from '';
+import { Configuration, DevAuthApi } from '';
 import type { LoginAsCreateRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new DevAuthApi(config);
 
@@ -69,11 +62,10 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **200**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

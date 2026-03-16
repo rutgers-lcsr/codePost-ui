@@ -194,7 +194,13 @@ const CategoryHeader: React.FC<{ category: TestCategory }> = ({ category }) => {
           {catScore} / {catMax} pts
         </Text>
         <div style={{ width: 70, marginTop: 2 }}>
-          <Progress percent={catPct} size="small" showInfo={false} strokeColor={isComplete ? '#52c41a' : undefined} />
+          <Progress
+            percent={catPct}
+            size="small"
+            showInfo={false}
+            strokeColor={isComplete ? '#52c41a' : undefined}
+            aria-label={`${category.name} progress: ${catScore} of ${catMax} points`}
+          />
         </div>
       </div>
     </div>
@@ -295,6 +301,7 @@ const AutograderModule: React.FC = () => {
               status={failed > 0 ? 'exception' : passed === allTests.length ? 'success' : 'active'}
               format={() => `${totalScore}/${totalMax}`}
               strokeColor={passed === allTests.length ? statusColors.passed.main : undefined}
+              aria-label={`Overall test score: ${totalScore} of ${totalMax} points`}
             />
           </div>
 

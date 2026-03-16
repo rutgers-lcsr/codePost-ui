@@ -1,26 +1,22 @@
 # SectionsApi
 
-All URIs are relative to *http://localhost*
+All URIs are relative to _http://localhost_
 
-| Method | HTTP request | Description |
-|------------- | ------------- | -------------|
-| [**create**](SectionsApi.md#create) | **POST** /sections/ |  |
-| [**destroy**](SectionsApi.md#destroy) | **DELETE** /sections/{id}/ |  |
-| [**list**](SectionsApi.md#list) | **GET** /sections/ |  |
-| [**partialUpdate**](SectionsApi.md#partialupdate) | **PATCH** /sections/{id}/ |  |
-| [**retrieve**](SectionsApi.md#retrieve) | **GET** /sections/{id}/ |  |
-| [**submissionsList**](SectionsApi.md#submissionslist) | **GET** /sections/{id}/submissions/ |  |
-| [**update**](SectionsApi.md#update) | **PUT** /sections/{id}/ |  |
-
-
+| Method                                                | HTTP request                        | Description |
+| ----------------------------------------------------- | ----------------------------------- | ----------- |
+| [**create**](SectionsApi.md#create)                   | **POST** /sections/                 |             |
+| [**destroy**](SectionsApi.md#destroy)                 | **DELETE** /sections/{id}/          |             |
+| [**list**](SectionsApi.md#list)                       | **GET** /sections/                  |             |
+| [**partialUpdate**](SectionsApi.md#partialupdate)     | **PATCH** /sections/{id}/           |             |
+| [**retrieve**](SectionsApi.md#retrieve)               | **GET** /sections/{id}/             |             |
+| [**submissionsList**](SectionsApi.md#submissionslist) | **GET** /sections/{id}/submissions/ |             |
+| [**update**](SectionsApi.md#update)                   | **PUT** /sections/{id}/             |             |
 
 ## create
 
 > Section create(section)
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
@@ -33,7 +29,7 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -65,10 +61,9 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **section** | [Section](Section.md) |  | |
+| Name        | Type                  | Description | Notes |
+| ----------- | --------------------- | ----------- | ----- |
+| **section** | [Section](Section.md) |             |       |
 
 ### Return type
 
@@ -83,44 +78,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **201** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## destroy
 
 > destroy(id)
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  SectionsApi,
-} from '';
+import { Configuration, SectionsApi } from '';
 import type { DestroyRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new SectionsApi(config);
 
@@ -143,9 +132,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                      | Notes                     |
+| ------ | -------- | ------------------------------------------------ | ------------------------- |
 | **id** | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
 
 ### Return type
@@ -161,44 +149,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-
 ### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **204** | No response body |  -  |
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## list
 
 > Array&lt;Section&gt; list()
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  SectionsApi,
-} from '';
+import { Configuration, SectionsApi } from '';
 import type { ListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new SectionsApi(config);
 
@@ -231,22 +213,19 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## partialUpdate
 
 > Section partialUpdate(id, patchedSection)
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
@@ -259,7 +238,7 @@ import type { PartialUpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -293,11 +272,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
-| **patchedSection** | [PatchedSection](PatchedSection.md) |  | [Optional] |
+| Name               | Type                                | Description                                      | Notes                     |
+| ------------------ | ----------------------------------- | ------------------------------------------------ | ------------------------- |
+| **id**             | `number`                            | A unique integer value identifying this section. | [Defaults to `undefined`] |
+| **patchedSection** | [PatchedSection](PatchedSection.md) |                                                  | [Optional]                |
 
 ### Return type
 
@@ -312,44 +290,38 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## retrieve
 
 > Section retrieve(id)
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  SectionsApi,
-} from '';
+import { Configuration, SectionsApi } from '';
 import type { RetrieveRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new SectionsApi(config);
 
@@ -372,9 +344,8 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
+| Name   | Type     | Description                                      | Notes                     |
+| ------ | -------- | ------------------------------------------------ | ------------------------- |
 | **id** | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
 
 ### Return type
@@ -390,44 +361,38 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## submissionsList
 
 > Array&lt;Submission&gt; submissionsList(assignment, id)
-
-
 
 Grab submissions corresponding to students in a section
 
 ### Example
 
 ```ts
-import {
-  Configuration,
-  SectionsApi,
-} from '';
+import { Configuration, SectionsApi } from '';
 import type { SubmissionsListRequest } from '';
 
 async function example() {
-  console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: "YOUR USERNAME",
-    password: "YOUR PASSWORD",
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
     // To configure API key authorization: tokenAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
-    apiKey: "YOUR API KEY",
+    apiKey: 'YOUR API KEY',
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    accessToken: 'YOUR BEARER TOKEN',
   });
   const api = new SectionsApi(config);
 
@@ -452,11 +417,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **assignment** | `number` |  | [Defaults to `undefined`] |
-| **id** | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
+| Name           | Type     | Description                                      | Notes                     |
+| -------------- | -------- | ------------------------------------------------ | ------------------------- |
+| **assignment** | `number` |                                                  | [Defaults to `undefined`] |
+| **id**         | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
 
 ### Return type
 
@@ -471,22 +435,19 @@ example().catch(console.error);
 - **Content-Type**: Not defined
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
 
 ## update
 
 > Section update(id, section)
 
-
-
-list: Return a list of all the sections.  create: Create a new section.  retrieve: Return the given section.  update: Update a section.  partial_update: Update a section.  delete: Delete a section.
+list: Return a list of all the sections. create: Create a new section. retrieve: Return the given section. update: Update a section. partial_update: Update a section. delete: Delete a section.
 
 ### Example
 
@@ -499,7 +460,7 @@ import type { UpdateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
     username: "YOUR USERNAME",
     password: "YOUR PASSWORD",
@@ -533,11 +494,10 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | `number` | A unique integer value identifying this section. | [Defaults to `undefined`] |
-| **section** | [Section](Section.md) |  | |
+| Name        | Type                  | Description                                      | Notes                     |
+| ----------- | --------------------- | ------------------------------------------------ | ------------------------- |
+| **id**      | `number`              | A unique integer value identifying this section. | [Defaults to `undefined`] |
+| **section** | [Section](Section.md) |                                                  |                           |
 
 ### Return type
 
@@ -552,11 +512,10 @@ example().catch(console.error);
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
-
 ### HTTP response details
+
 | Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** |  |  -  |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
