@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Components } from 'react-markdown';
@@ -249,7 +250,7 @@ const DocsContent: React.FC = () => {
       prevRoute: currentIndex > 0 ? docRoutes[currentIndex - 1] : null,
       nextRoute: currentIndex < docRoutes.length - 1 ? docRoutes[currentIndex + 1] : null,
     };
-  }, [currentRoute]);
+  }, [currentRoute, docRoutes]);
 
   if (error) {
     return (

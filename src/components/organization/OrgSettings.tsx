@@ -8,6 +8,20 @@ interface IProps {
   user: UserType;
 }
 
+interface OrgSettingsFormValues {
+  emailDomain?: string | null;
+  ssoEnabled?: boolean;
+  ssoProvider?: string | null;
+  sendWelcomeEmail?: boolean;
+  cas_server_url?: string;
+  cas_version?: string;
+  tenant_id?: string;
+  client_id?: string;
+  client_secret?: string;
+  discovery_url?: string;
+  hosted_domain?: string;
+}
+
 const OrgSettings: React.FC<IProps> = (props) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = React.useState(false);
@@ -46,13 +60,13 @@ const OrgSettings: React.FC<IProps> = (props) => {
     setProvider(value);
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: OrgSettingsFormValues) => {
     if (!props.user.organization) return;
 
     setLoading(true);
     try {
       // Reconstruct sso_config from flat fields based on provider
-      let config: any = {};
+      let config: Record<string, unknown> = {};
 
       if (values.ssoProvider === 'CAS') {
         config = {

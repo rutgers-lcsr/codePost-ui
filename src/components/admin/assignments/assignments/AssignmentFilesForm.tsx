@@ -53,7 +53,7 @@ interface EditableFile extends AssignmentFileType {
 
 function getCodingLanguage(extension: string): string {
   // Map our detected extensions to Monaco editor languages if they differ
-  const lang = CodePostFile.language({ name: `test.${extension}` } as any);
+  const lang = CodePostFile.language({ name: `test.${extension}`, extension });
   if (lang === 'c++') return 'cpp';
   if (lang === 'c') return 'cpp'; // Monaco uses 'cpp' for C/C++ usually or 'c'
   return lang;

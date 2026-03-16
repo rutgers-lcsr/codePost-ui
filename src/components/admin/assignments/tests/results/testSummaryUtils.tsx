@@ -2,6 +2,18 @@
 import { Spin } from 'antd';
 import { TestCategoryType } from '../../../../../types/models';
 
+interface SubmissionRow {
+  [key: string]: number | string | React.ReactNode;
+  passed: number;
+}
+
+interface TestRow {
+  passedValue: number;
+  failedValue: number;
+  errorValue: number;
+  nullValue: number;
+}
+
 export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategoryType[]) => {
   const sortedCategories = [...categories].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
 
@@ -14,7 +26,9 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
     dataIndex: category.name,
     key: category.id.toString(),
     align: 'center' as const,
-    ...(shouldSort && { sorter: (a: any, b: any) => a[category.id] - b[category.id] }),
+    ...(shouldSort && {
+      sorter: (a: SubmissionRow, b: SubmissionRow) => (a[category.id] as number) - (b[category.id] as number),
+    }),
   }));
 
   const summaryColumn =
@@ -25,7 +39,7 @@ export const bySubmissionColumns = (shouldSort: boolean, categories: TestCategor
             dataIndex: 'summary',
             key: 'summary',
             align: 'center' as const,
-            ...(shouldSort && { sorter: (a: any, b: any) => a.passed - b.passed }),
+            ...(shouldSort && { sorter: (a: SubmissionRow, b: SubmissionRow) => a.passed - b.passed }),
           },
         ]
       : [];
@@ -58,27 +72,27 @@ export const byTestColumns = [
     dataIndex: 'passed',
     key: 'passed',
     align: 'center' as const,
-    sorter: (a: any, b: any) => a.passedValue - b.passedValue,
+    sorter: (a: TestRow, b: TestRow) => a.passedValue - b.passedValue,
   },
   {
     title: 'Failed',
     dataIndex: 'failed',
     key: 'failed',
     align: 'center' as const,
-    sorter: (a: any, b: any) => a.failedValue - b.failedValue,
+    sorter: (a: TestRow, b: TestRow) => a.failedValue - b.failedValue,
   },
   {
     title: 'Error',
     dataIndex: 'error',
     key: 'error',
     align: 'center' as const,
-    sorter: (a: any, b: any) => a.errorValue - b.errorValue,
+    sorter: (a: TestRow, b: TestRow) => a.errorValue - b.errorValue,
   },
   {
     title: 'Not run',
     dataIndex: 'notRun',
     key: 'notRun',
     align: 'center' as const,
-    sorter: (a: any, b: any) => a.nullValue - b.nullValue,
+    sorter: (a: TestRow, b: TestRow) => a.nullValue - b.nullValue,
   },
 ];

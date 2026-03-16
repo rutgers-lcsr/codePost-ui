@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable react-refresh/only-export-components */
-import { animated } from 'react-spring';
+import { animated, SpringValue } from 'react-spring';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
@@ -80,7 +80,11 @@ const SimpleCodeBox = (props: { code: string }) => {
   );
 };
 
-const SimpleCodeHighlight = (props: { top: number; left: number; width: any }) => {
+const SimpleCodeHighlight = (props: {
+  top: number;
+  left: number;
+  width: React.CSSProperties['width'] | SpringValue<number>;
+}) => {
   return (
     <div style={{ position: 'absolute', top: props.top, left: props.left }}>
       <animated.div

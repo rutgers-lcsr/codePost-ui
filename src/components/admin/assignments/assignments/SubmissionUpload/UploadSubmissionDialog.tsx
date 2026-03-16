@@ -48,10 +48,11 @@ import ReactMarkdown from 'react-markdown';
 import { assignmentFilesApi, assignmentsApi, autograderApi, submissionsApi } from '../../../../../api-client/clients';
 import { SubmissionTestResultType, TestEditorResultType } from '../../../../../types/autograder';
 import { File as CodePostFile } from '../../../../../utils/file';
-import { Course } from '../../../../../api-client';
+import { Course, TestCase } from '../../../../../api-client';
 import { Assignment, AssignmentStudentType, UploadFile as SubmissionUploadFile } from '../../../../../types/common';
 import {
   AssignmentFileType,
+  StudentTestCaseType,
   StudentSubmissionType,
   SubmissionInfoType,
   SubmissionTestType,
@@ -200,9 +201,38 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   );
   const [submissionTests, setSubmissionTests] = useState<SubmissionTestType[]>([]);
   const [testsLog, setTestsLog] = useState<string | null>(null);
-  const [testCasesState, setTestCasesState] = useState<any[]>([]);
+  const [testCasesState, setTestCasesState] = useState<(StudentTestCaseType & { result?: SubmissionTestType })[]>([]);
   const [activeTab, setActiveTab] = useState<string>('1');
   const [lateSubmissionModalVisible, setLateSubmissionModalVisible] = useState<boolean>(false);
+
+  const normalizeStudentTestCase = useCallback(
+    (
+      test: {
+        id: number;
+        testCategory: number;
+        sortKey?: number;
+        description: string;
+        pointsPass?: number;
+        pointsFail?: number;
+        explanation?: string;
+        exposed?: boolean;
+        rubricItem?: number | null;
+      },
+      result?: SubmissionTestType,
+    ): StudentTestCaseType & { result?: SubmissionTestType } => ({
+      id: test.id,
+      testCategory: test.testCategory,
+      sortKey: test.sortKey ?? 0,
+      description: test.description,
+      pointsPass: test.pointsPass ?? 0,
+      pointsFail: test.pointsFail ?? 0,
+      explanation: test.explanation ?? '',
+      exposed: test.exposed ?? false,
+      rubricItem: test.rubricItem ?? null,
+      ...(result ? { result } : {}),
+    }),
+    [],
+  );
 
   /********************************************************************************************************/
   /* Memoized values
@@ -241,11 +271,13 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           await assignmentsApi.studentTestsRetrieve({ id: assignmentId });
 
         const caseObj: StudentTestCasesByCategory = {};
-        const exposedTestCases = fetchedTestCases.filter((t: any) => t.exposed);
+        const exposedTestCases = fetchedTestCases
+          .filter((t) => t.exposed)
+          .map((test) => normalizeStudentTestCase(test));
         fetchedCategories.forEach((category) => {
           caseObj[category.id] = [];
         });
-        exposedTestCases.forEach((testCase: any) => {
+        exposedTestCases.forEach((testCase) => {
           caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
         });
         setTestCategories(fetchedCategories);
@@ -271,12 +303,9 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           const latestTests = getLatestSubmissionTests(testResults.submissionTests || []);
           const resultMap = new Map(latestTests.map((t) => [t.testCase, t]));
 
-          const testsWithResults = studentTests.testCases.map((test: any) => {
+          const testsWithResults = studentTests.testCases.map((test) => {
             const result = resultMap.get(test.id);
-            if (result) {
-              return { ...test, result };
-            }
-            return test;
+            return normalizeStudentTestCase(test, result);
           });
           setTestCasesState(testsWithResults);
         } catch (e) {
@@ -286,7 +315,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         // No submission yet, just show tests without results
         try {
           const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
-          setTestCasesState(studentTests.testCases as any[]);
+          setTestCasesState(studentTests.testCases.map((test) => normalizeStudentTestCase(test)));
         } catch (e) {
           console.error(e);
         }
@@ -294,7 +323,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     };
 
     updateStudentTests();
-  }, [submission, selectedAssignment, isStudent]);
+  }, [submission, selectedAssignment, isStudent, normalizeStudentTestCase]);
 
   const loadTestResults = useCallback(
     async (sub: StudentSubmissionType | SubmissionInfoType | undefined, _loadLogs: boolean) => {
@@ -569,7 +598,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             exposedOnly: true,
           },
         });
-        awaitTestResult(result.task, setResults);
+        awaitTestResult(result.task, (result: unknown) => setResults(result as SubmissionTestResultType));
       }
     },
     [shouldRunTests, selectedAssignment, setResults],
@@ -623,7 +652,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             exposedOnly: true,
           },
         });
-        awaitTestResult(result.task, setMockResults);
+        awaitTestResult(result.task, (result: unknown) => setMockResults(result as TestEditorResultType));
       }
     },
     [shouldRunTests, selectedAssignment, files, setMockResults],
@@ -706,7 +735,13 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
     setStatus(STATUS.SAVING);
 
-    uploadSubmission(selectedAssignment as any, selectedStudents, files as any, sendMeAConfirmationEmail)
+    uploadSubmission(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      selectedAssignment as any,
+      selectedStudents,
+      files as unknown as SubmissionUploadFile[],
+      sendMeAConfirmationEmail,
+    )
       .then((newSubmission: StudentSubmissionType | SubmissionInfoType) => {
         console.log('Upload response:', newSubmission);
         const shouldRun = shouldRunTests();
@@ -774,11 +809,11 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     }
   }, [selectedAssignment, isStudent, openLateSubmissionModal, handleUpload]);
 
-  const beforeUpload = useCallback(async (file: any, _fileList: UploadFile[]) => {
+  const beforeUpload = useCallback(async (file: UploadFile, _fileList: UploadFile[]) => {
     const ProtoFileUpload: IProtoFileUpload = fileToProtoFileUpload(file);
 
     try {
-      const outputFiles = await readUploadedFile(file);
+      const outputFiles = await readUploadedFile(file.originFileObj ?? (file as unknown as File));
 
       setFileList((prevFileList) => {
         const newFileList = prevFileList.filter((f: UploadFile) => f.name !== ProtoFileUpload.longname);
@@ -1279,7 +1314,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           {showTestsTab && (
             <Tabs.TabPane tab="Tests" key="3">
               <div style={{ minHeight: MIN_TEST_HEIGHT, height: 'calc(100vh - 400px)' }}>
-                <TestsList submissionId={submission?.id || 0} tests={testCasesState} />
+                <TestsList submissionId={submission?.id || 0} tests={testCasesState as unknown as TestCase[]} />
               </div>
             </Tabs.TabPane>
           )}

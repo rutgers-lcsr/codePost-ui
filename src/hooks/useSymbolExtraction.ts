@@ -10,7 +10,7 @@ export type MonacoSuggestion = {
   insertText: string;
   insertTextRules: number;
   documentation?: string;
-  range?: any; // MonacoRange
+  range?: { startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number };
   type?: string;
   origin?: string;
   definitionLine?: number;
@@ -113,7 +113,7 @@ export const useSymbolExtraction = (
         return;
       }
 
-      let tree: any = null;
+      let tree: ReturnType<Parser['parse']> | null = null;
       try {
         tree = parser.parse(code);
 

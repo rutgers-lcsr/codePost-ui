@@ -8,7 +8,7 @@ import { exampleCode1, SimpleCodeBox, SimpleCodeHighlight } from './SimpleCodeBo
 import { SimpleComment } from './SimpleComments';
 
 import { SimpleGradeHeader } from './SimpleGradeHeader';
-import { SimpleGradeMenu } from './SimpleGradeMenu';
+import { getFileItem, SimpleGradeMenu } from './SimpleGradeMenu';
 
 import cursorImg from './cursor.png';
 
@@ -114,15 +114,13 @@ function GradeAnimation() {
         <Sider theme="light" width={150} style={{ background: '#FFFFFF' }}>
           <SimpleGradeMenu
             selectedKeys={['2']}
-            secondFileDeduction={saveCommentSpring.index.interpolate((x: number) => {
-              return Math.round(x) * -1;
-            })}
+            secondFileDeduction={getFileItem('file2.java', -1)}
           />
         </Sider>
         <Layout style={{ maxWidth: 690 }}>
           <Header style={{ background: '#FFFFFF', paddingLeft: 20, paddingRight: 20 }}>
             <SimpleGradeHeader
-              grade={saveCommentSpring.index.interpolate((i: number) => {
+              grade={saveCommentSpring.index.to((i: number) => {
                 return Math.round(i) === 0 ? '20/20' : '19/20';
               })}
             />
@@ -133,10 +131,10 @@ function GradeAnimation() {
               <animated.div
                 style={{
                   top: 164,
-                  left: commentSpring.width.to((x: any) => {
+                  left: commentSpring.width.to((x: number) => {
                     return Number(x) + 350;
                   }),
-                  opacity: commentSpring.width.to((x: any) => {
+                  opacity: commentSpring.width.to((x: number) => {
                     return x === 0 || x === 102 ? 0 : 1;
                   }),
                   position: 'absolute',
@@ -160,7 +158,7 @@ function GradeAnimation() {
                       height: 160,
                       opacity: commentBoxSpring.opacity,
                       overflowX: 'hidden',
-                      transform: commentBoxSpring.opacity.to((x: any) => {
+                      transform: commentBoxSpring.opacity.to((x: number) => {
                         return `translateY(${Number(x) * 30 - 30}px)`;
                       }),
                       display: 'inline-block',

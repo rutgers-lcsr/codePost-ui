@@ -125,7 +125,7 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
 
   let actions: React.ReactNode[] = [];
   let columns: ITableDetailColumn[] = [];
-  let data: any[] = [];
+  let data: Record<string, unknown>[] = [];
 
   if (props.loadComplete) {
     actions = [
@@ -181,10 +181,11 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         dataIndex: 'grader',
         key: 'primary',
         defaultSortOrder: 'ascend' as const,
-        sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a.key as string).localeCompare(b.key as string),
         renderForSearch: (searchText: string) => {
-          return (_: string, record: any) => {
-            const graderEmail = record.grader;
+          return (_: string, record: Record<string, unknown>) => {
+            const graderEmail = record.grader as string;
             const highlightedEmail = (
               <Highlighter
                 highlightStyle={{
@@ -221,7 +222,8 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         dataIndex: 'status',
         key: 'status',
         align: aligner,
-        sorter: (a: any, b: any) => (a.superGrader === b.superGrader ? 0 : a.superGrader ? -1 : 1),
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          a.superGrader === b.superGrader ? 0 : a.superGrader ? -1 : 1,
       },
       {
         title: (
@@ -233,7 +235,8 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         dataIndex: 'rubricEditorStatus',
         key: 'rubricEditorStatus',
         align: aligner,
-        sorter: (a: any, b: any) => (a.isRubricEditor === b.isRubricEditor ? 0 : a.isRubricEditor ? -1 : 1),
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          a.isRubricEditor === b.isRubricEditor ? 0 : a.isRubricEditor ? -1 : 1,
       },
       {
         title: 'Actions',

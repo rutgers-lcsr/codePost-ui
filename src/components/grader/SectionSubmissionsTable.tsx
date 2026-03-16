@@ -9,6 +9,7 @@ import * as React from 'react';
 /* ant imports */
 import { CodeOutlined, MailOutlined, MenuOutlined, MinusCircleTwoTone } from '@ant-design/icons';
 import { Dropdown, message, Spin, Table } from 'antd';
+import type { MenuProps, TableColumnsType, TableProps } from 'antd';
 
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
@@ -24,8 +25,8 @@ type alignType = 'left' | 'right' | 'center';
 interface ISubmissionsTableProps {
   isLoading: boolean;
   submissions: { [student: string]: SubmissionType | null };
-  onRowSelect: (selectedRowKeys: any[]) => void;
-  selectedSubmissions: number[];
+  onRowSelect: (selectedRowKeys: React.Key[]) => void;
+  selectedSubmissions: React.Key[];
   showEmails: boolean;
   assignment: AssignmentType;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
@@ -36,16 +37,19 @@ interface ISubmissionsTableProps {
 
 /* for type checking functions that operate on table rows */
 interface ITableRow extends ISubDataBasic {
-  key: string;
+  key: React.Key;
   student: string;
-  viewIcon: string | React.ReactElement;
+  viewIcon: React.ReactNode;
   partners: string;
+  open: React.ReactNode;
+  disableCheck: boolean;
+  options: React.ReactNode;
 }
 
 const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
-  const rowSelection = {
+  const rowSelection: TableProps<ITableRow>['rowSelection'] = {
     onChange: props.onRowSelect,
-    getCheckboxProps: (row: any) => {
+    getCheckboxProps: (row: ITableRow) => {
       return {
         disabled: row.disableCheck,
       };
@@ -63,7 +67,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
 
   const centerAlign: alignType = 'center';
 
-  const columns = [
+  const columns: TableColumnsType<ITableRow> = [
     {
       title: 'Open',
       dataIndex: 'open',
@@ -94,7 +98,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
     {
       title: 'Grader',
       dataIndex: 'grader',
-      sorter: (a: any, b: any) => compare(true, a.grader, b.grader),
+      sorter: (a: ITableRow, b: ITableRow) => compare(true, a.grader, b.grader),
       align: centerAlign,
     },
     {
@@ -115,11 +119,11 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
     { title: 'Options', dataIndex: 'options', align: centerAlign },
   ];
 
-  let data: any[] = [];
+  let data: ITableRow[] = [];
   if (props.submissions !== undefined) {
     data = Object.keys(props.submissions).map((student) => {
       const submission = props.submissions[student];
-      const shownStudent = props.showEmails || !submission ? student : submission.id;
+      const shownStudent = props.showEmails || !submission ? student : String(submission.id);
 
       let partners = '--';
       if (props.showEmails && submission) {
@@ -160,7 +164,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
         return;
       };
 
-      const menuItems = [
+      const menuItems: NonNullable<MenuProps['items']> = [
         ...(submission && submission.grader === props.me
           ? [
               {
@@ -200,7 +204,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
           <div>{getViewIcon(submission, props.viewsBySubmission, student)}</div>
         ) : null,
         open: submission ? <CodeOutlined onClick={openGradePage.bind({}, submission)} /> : null,
-        disableCheck: !submission || submission.grader,
+        disableCheck: !submission || !!submission.grader,
         options: (
           <Dropdown menu={{ items: menuItems }} trigger={['click']}>
             <MenuOutlined />

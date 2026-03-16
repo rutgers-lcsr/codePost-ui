@@ -44,7 +44,7 @@ function ViewUpload(props: IProps) {
 
   const syntaxHighlightTheme = useMemo(() => consoleTheme.codeTheme ?? googlecode, [consoleTheme]);
 
-  const onDocumentLoadSuccess = (pdf: any) => {
+  const onDocumentLoadSuccess = (pdf: { numPages: number }) => {
     setNumPages(pdf.numPages);
   };
 

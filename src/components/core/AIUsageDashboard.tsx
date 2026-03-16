@@ -27,7 +27,7 @@ import {
 } from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import { AIUsageChart, formatNumber, formatCost } from '../core/AIUsageChart';
-import type { AIUsageSummary } from '../../api-client';
+import type { AIUsageBreakdown, AIUsageSummary } from '../../api-client';
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -93,7 +93,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'requestCount',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.requestCount - b.requestCount,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.requestCount - b.requestCount,
     },
     {
       title: 'Input Tokens',
@@ -101,7 +101,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'inputTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.inputTokens - b.inputTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.inputTokens - b.inputTokens,
     },
     {
       title: 'Output Tokens',
@@ -109,7 +109,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'outputTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.outputTokens - b.outputTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.outputTokens - b.outputTokens,
     },
     {
       title: 'Total Tokens',
@@ -117,7 +117,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'totalTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.totalTokens - b.totalTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.totalTokens - b.totalTokens,
       defaultSortOrder: 'descend' as const,
     },
     {
@@ -125,8 +125,8 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       dataIndex: 'estimatedCost',
       key: 'estimatedCost',
       align: 'right' as const,
-      render: (v: string) => formatCost(v),
-      sorter: (a: any, b: any) => parseFloat(a.estimatedCost) - parseFloat(b.estimatedCost),
+      render: (v: string | number) => formatCost(v),
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
   ];
 
@@ -143,7 +143,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'requestCount',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.requestCount - b.requestCount,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.requestCount - b.requestCount,
     },
     {
       title: 'Input Tokens',
@@ -151,7 +151,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'inputTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.inputTokens - b.inputTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.inputTokens - b.inputTokens,
     },
     {
       title: 'Output Tokens',
@@ -159,7 +159,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'outputTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.outputTokens - b.outputTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.outputTokens - b.outputTokens,
     },
     {
       title: 'Total Tokens',
@@ -167,7 +167,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       key: 'totalTokens',
       align: 'right' as const,
       render: (v: number) => formatNumber(v),
-      sorter: (a: any, b: any) => a.totalTokens - b.totalTokens,
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.totalTokens - b.totalTokens,
       defaultSortOrder: 'descend' as const,
     },
     {
@@ -175,8 +175,8 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       dataIndex: 'estimatedCost',
       key: 'estimatedCost',
       align: 'right' as const,
-      render: (v: string) => formatCost(v),
-      sorter: (a: any, b: any) => parseFloat(a.estimatedCost) - parseFloat(b.estimatedCost),
+      render: (v: string | number) => formatCost(v),
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
   ];
 

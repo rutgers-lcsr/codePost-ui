@@ -70,7 +70,7 @@ const BulkUpload: FC<IProps> = (props) => {
 
   // Helper to build student map
   const buildNewStudentMap = useCallback((studentList: string[], submissionList: SubmissionInfoType[]) => {
-    const newMap: any = {};
+    const newMap: Record<string, STUDENT_STATUS> = {};
     for (const student of studentList) {
       newMap[student.toLowerCase()] = STUDENT_STATUS.MISSING;
     }
@@ -155,6 +155,7 @@ const BulkUpload: FC<IProps> = (props) => {
             newSub.students = (newSub.students as (string | null)[]).filter((el) => {
               return el && !isEqual(el, student);
             }) as string[];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             toChange.push(newSub as any);
           }
         }
@@ -274,7 +275,7 @@ const BulkUpload: FC<IProps> = (props) => {
       : protoSubmissions.filter((el) => !el.isCollision);
 
     const uploadAndPop = (submission: IProtoSubmission): Promise<void> => {
-      const files: any[] = [];
+      const files: UploadFile[] = [];
       const submitter = submission.students.join(',');
 
       if (currentFileMap[submitter]) {
@@ -284,7 +285,8 @@ const BulkUpload: FC<IProps> = (props) => {
           const filePath = pathDirs.length > 3 ? pathDirs.slice(2, pathDirs.length - 1).join('/') : null;
           const payload = {
             name: fileName,
-            data: currentFileMap[submitter][fullname],
+            extension: fileName.includes('.') ? fileName.split('.').slice(-1)[0] : '',
+            data: typeof currentFileMap[submitter][fullname] === 'string' ? currentFileMap[submitter][fullname] : '',
             path: filePath,
           };
           files.push(payload);

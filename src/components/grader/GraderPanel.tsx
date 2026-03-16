@@ -8,6 +8,7 @@ import * as React from 'react';
 
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
+import type { TableProps } from 'antd';
 
 /* other library imports */
 
@@ -30,8 +31,8 @@ interface IParentProps {
   actions: React.ReactElement[];
   title: string;
   isLoading: boolean;
-  data: any[];
-  columns: any;
+  data: Record<string, unknown>[];
+  columns: TableProps<Record<string, unknown>>['columns'];
 }
 
 interface IDetailProps {

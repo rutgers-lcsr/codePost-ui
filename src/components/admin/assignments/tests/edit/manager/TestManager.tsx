@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button, Empty, Spin, message, Tooltip, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { testCategoriesApi } from '../../../../../../api-client/clients';
-import { AssignmentType, TestCategoryType } from '../../../../../../types/models';
+import { AssignmentFileType, AssignmentType, TestCategoryType } from '../../../../../../types/models';
 import { TestCategoryUI } from './TestCategoryUI';
 import { loadIDList } from '../../../../../../utils/generics';
 import styles from '../../../rubric/RubricSideBar.module.css'; // Reusing styles
@@ -11,7 +11,7 @@ import styles from '../../../rubric/RubricSideBar.module.css'; // Reusing styles
 interface IProps {
   assignment: AssignmentType;
   onSave?: () => void;
-  helpers?: any[]; // AssignmentFileType[]
+  helpers?: AssignmentFileType[];
 }
 
 export const TestManager = (props: IProps) => {

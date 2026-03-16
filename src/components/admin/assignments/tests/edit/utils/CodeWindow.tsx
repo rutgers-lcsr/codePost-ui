@@ -23,7 +23,7 @@ interface IProps {
   onDelete?: () => void;
   theme?: themeType;
   height?: string;
-  onMount?: (editor: any, monaco: any) => void;
+  onMount?: (editor: unknown, monaco: unknown) => void;
   language?: EditorProps['language'];
 }
 

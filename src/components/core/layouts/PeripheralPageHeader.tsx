@@ -19,7 +19,7 @@ import { tooltips } from '../../core/tooltips';
 
 interface IProps {
   user: UserType;
-  handleLogout: any;
+  handleLogout: () => void;
   subtitle?: string;
 }
 

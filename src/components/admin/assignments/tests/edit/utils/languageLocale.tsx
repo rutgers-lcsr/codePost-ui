@@ -1,5 +1,18 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-const locale: { [language: string]: { [attr: string]: any } } = {
+import type { ReactNode } from 'react';
+
+export interface LanguageLocaleEntry {
+  base: boolean;
+  installCmd: string;
+  environment: ReactNode;
+  dependencyFile?: string;
+  dependencyMode?: string;
+  dependencyHelp?: ReactNode;
+  pseudoterminal: ReactNode;
+  name?: string;
+}
+
+const locale: Record<string, LanguageLocaleEntry> = {
   java: {
     base: false,
     installCmd: 'apk add',

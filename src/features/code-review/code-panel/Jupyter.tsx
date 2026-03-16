@@ -80,7 +80,7 @@ declare global {
 }
 
 const turndown = new TurndownService();
-turndown.use(turndownPluginGfm.tables);
+turndown.use((turndownPluginGfm as { tables: unknown }).tables as Parameters<typeof turndown.use>[0]);
 
 export const normalizeNotebookJson = (content: unknown, visited: Set<unknown> = new Set()): Notebook | null => {
   if (content === null || content === undefined) {

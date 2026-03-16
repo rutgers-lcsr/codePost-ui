@@ -28,6 +28,7 @@ const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ open, onC
         sendWelcomeEmail: false,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await api.create({ organization: payload as any }); // Cast if needed for missing opt fields
       message.success('Organization created successfully');
       form.resetFields();

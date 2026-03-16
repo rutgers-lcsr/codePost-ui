@@ -53,6 +53,8 @@ interface IRubricMenuCategoryUIProps extends IRubricCategoryManagerProps {
   commentIndex: number;
 }
 
+type MenuRowElement = React.ReactElement<{ children?: React.ReactNode; style?: React.CSSProperties }>;
+
 const RubricMenuCategoryUI = ({
   props,
   state,
@@ -65,7 +67,7 @@ const RubricMenuCategoryUI = ({
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const [openKeys, setOpenKeys] = React.useState<string[]>([`category-${props.rubricCategory.id}`]);
 
-  const onOpenChange = (keys: any) => {
+  const onOpenChange = (keys: string[]) => {
     setOpenKeys(keys);
   };
 
@@ -99,11 +101,11 @@ const RubricMenuCategoryUI = ({
           props.startEditing(rubricComment.id);
         };
 
-        const onChangeText = (e: any) => {
+        const onChangeText = (e: React.ChangeEvent<HTMLInputElement>) => {
           helpers.updateRubricComment(rubricComment.id, 'text', e);
         };
 
-        const onChangePointDelta = (e: any) => {
+        const onChangePointDelta = (e: number | null) => {
           helpers.updateRubricComment(rubricComment.id, 'pointDelta', e);
         };
 
@@ -215,7 +217,7 @@ const RubricMenuCategoryUI = ({
     </Tag>
   ) : null;
 
-  const changeName = (e: any) => {
+  const changeName = (e: React.ChangeEvent<HTMLInputElement>) => {
     props.turnOffReload();
     helpers.changeName(e);
   };
@@ -225,7 +227,7 @@ const RubricMenuCategoryUI = ({
     helpers.saveCategory();
   };
 
-  const onClick = (e: any) => {
+  const onClick = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -323,11 +325,14 @@ const RubricMenuCategoryUI = ({
         </div>
       ),
       children: [
-        ...rows.map((row: any) => ({
-          key: row.key,
-          label: row.props.children,
-          style: row.props.style,
-        })),
+        ...rows.map((row) => {
+          const typedRow = row as MenuRowElement;
+          return {
+            key: typedRow.key,
+            label: typedRow.props.children,
+            style: typedRow.props.style,
+          };
+        }),
         ...(props.editRubricMode && props.searchTerm.length === 0
           ? [
               {
@@ -390,15 +395,15 @@ const RubricMenuCategoryUI = ({
 interface IRubricMenuCommentElementProps {
   rubricComment: RubricComment;
   hasActiveComment: boolean;
-  linkToComment: any;
+  linkToComment: (rubricComment: RubricComment) => void;
   editing: boolean;
-  startEditing: any;
+  startEditing: () => void;
   textInput: React.ReactNode;
   pointInput: React.ReactNode;
   text: string;
   pointDelta: number;
-  deleteComment: any;
-  assignment: any;
+  deleteComment: () => void;
+  assignment: AssignmentType;
   editRubricMode: boolean;
   cursored: boolean;
 
@@ -445,7 +450,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
   };
 
   React.useEffect(() => {
-    const handleKeydown = (e: any) => {
+    const handleKeydown = (e: KeyboardEvent) => {
       if (props.cursored && e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();

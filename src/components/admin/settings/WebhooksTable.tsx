@@ -1,7 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { DownOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Dropdown, Form, Input, message, Popconfirm, Table, Tag } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { InputRef, MenuProps } from 'antd';
+import type { ColumnType, ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import React, { useContext, useEffect, useRef, useState } from 'react';
@@ -14,9 +15,12 @@ import { VALID_WEBHOOKS } from '../../../utils/webhooks';
 import { PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
 import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
-const EditableContext = React.createContext<any>(null);
+const EditableContext = React.createContext<ReturnType<typeof Form.useForm>[0] | null>(null);
 
-const EditableRow: React.FC<any> = ({ index: _index, ...props }) => {
+const EditableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement> & { index?: number }> = ({
+  index: _index,
+  ...props
+}) => {
   const [form] = Form.useForm();
   return (
     <Form form={form} component={false}>
@@ -31,9 +35,9 @@ interface EditableCellProps {
   title: string;
   editable: boolean;
   children: React.ReactNode;
-  dataIndex: string;
-  record: any;
-  handleSave: (record: any) => void;
+  dataIndex: keyof DataSourceType;
+  record: DataSourceType;
+  handleSave: (record: DataSourceType) => void;
 }
 
 const EditableCell: React.FC<EditableCellProps> = ({
@@ -46,7 +50,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false);
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<InputRef>(null);
   const form = useContext(EditableContext);
 
   useEffect(() => {
@@ -57,16 +61,19 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
   const toggleEdit = () => {
     setEditing(!editing);
-    form.setFieldsValue({
+    form?.setFieldsValue({
       [dataIndex]: record[dataIndex],
     });
   };
 
   const save = async () => {
     try {
+      if (!form) {
+        return;
+      }
       const values = await form.validateFields();
       toggleEdit();
-      handleSave({ ...record, ...values });
+      handleSave({ ...record, ...(values as Partial<DataSourceType>) });
     } catch (errInfo) {
       console.log('Save failed:', errInfo);
     }
@@ -103,7 +110,7 @@ interface IWebhooksTableProps {
   course: Course;
 }
 
-interface DataSourceType {
+interface DataSourceType extends Record<string, unknown> {
   key: string;
   webhook: Webhook;
   enabled: boolean;
@@ -113,6 +120,11 @@ interface DataSourceType {
   lastTriggered: React.ReactNode;
   status: React.ReactNode;
 }
+
+type EditableColumn = ColumnType<DataSourceType> & {
+  editable?: boolean;
+  dataIndex?: keyof DataSourceType;
+};
 
 const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
   const [dataSource, setDataSource] = useState<DataSourceType[]>(() =>
@@ -150,7 +162,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     }
   };
 
-  const handleAdd = async (e: any) => {
+  const handleAdd = async (e: { keyPath: string[] }) => {
     const event = `${e.keyPath[1]}.${e.keyPath[0]}`;
 
     const payload: CreateRequest['webhook'] = {
@@ -211,12 +223,12 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     value: obj,
   }));
 
-  const columns: ColumnsType<DataSourceType> = [
+  const columns: EditableColumn[] = [
     {
       title: 'Enabled',
       dataIndex: 'enabled',
       render: (enabled: boolean, record: DataSourceType) => {
-        const onChange = (e: any) => {
+        const onChange = (e: { target: { checked: boolean } }) => {
           const update = { ...record, enabled: e.target.checked };
           handleSave(update);
         };
@@ -243,6 +255,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
       title: 'Target',
       dataIndex: 'target',
       width: '30%',
+      editable: true,
     },
     {
       title: 'Last Triggered',
@@ -271,15 +284,9 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
     },
   };
 
-  const mappedColumns = columns.map((col: any) => {
-    if (!col.editable) {
-      return {
-        ...col,
-        onCell: (record: DataSourceType) => ({
-          record,
-          handleSave,
-        }),
-      };
+  const mappedColumns: ColumnsType<DataSourceType> = columns.map((col) => {
+    if (!col.editable || !col.dataIndex) {
+      return col;
     }
 
     return {
@@ -287,14 +294,14 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
       onCell: (record: DataSourceType) => ({
         record,
         editable: col.editable,
-        dataIndex: col.dataIndex,
-        title: col.title,
+        dataIndex: col.dataIndex as keyof DataSourceType,
+        title: String(col.title ?? ''),
         handleSave,
       }),
-    };
+    } as ColumnType<DataSourceType>;
   });
 
-  const menuItems = Object.keys(VALID_WEBHOOKS).map((obj: string) => ({
+  const menuItems: NonNullable<MenuProps['items']> = Object.keys(VALID_WEBHOOKS).map((obj: string) => ({
     key: obj,
     label: obj,
     children: VALID_WEBHOOKS[obj].map((hook: string) => ({

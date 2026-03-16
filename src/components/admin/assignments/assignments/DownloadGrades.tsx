@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 
 /* ant imports */
 import { Divider, Modal, Radio, Typography } from 'antd';
+import type { RadioChangeEvent } from 'antd';
 
 /* codePost imports */
 
@@ -83,11 +84,11 @@ const DownloadGrades = (props: IProps) => {
     props.onCancel();
   };
 
-  const changeMissingAsZero = (e: any) => {
+  const changeMissingAsZero = (e: RadioChangeEvent) => {
     setMissingAsZero(e.target.value);
   };
 
-  const changeUngradedAsZero = (e: any) => {
+  const changeUngradedAsZero = (e: RadioChangeEvent) => {
     setUngradedAsZero(e.target.value);
   };
 

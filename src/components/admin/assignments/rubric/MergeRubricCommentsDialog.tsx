@@ -10,6 +10,8 @@ import { Assignment, IRubricCategoryToRubricCommentsMap } from '../../../../type
 import { RubricCommentInstanceList } from '../../../../types/rubric';
 import CPButton from '../../../../components/core/CPButton';
 
+type RubricCommentOption = { label: string | undefined; value: number; comment: RubricComment };
+
 interface IMergeRubricCommentsDialogProps {
   rubricCategories: RubricCategory[];
   rubricComments: IRubricCategoryToRubricCommentsMap;
@@ -43,7 +45,7 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
     setVisible(false);
   }, []);
 
-  const onChangeFromComment = useCallback(async (selected: any) => {
+  const onChangeFromComment = useCallback(async (selected: RubricCommentOption | null) => {
     if (!selected) {
       setFromComment(null);
       setFromCommentInstances([]);
@@ -57,7 +59,7 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
     setFromCommentInstances(instanceList);
   }, []);
 
-  const onChangeToComment = useCallback((selected: any) => {
+  const onChangeToComment = useCallback((selected: RubricCommentOption | null) => {
     setToComment(selected ? selected.comment : null);
   }, []);
 

@@ -85,7 +85,7 @@ interface ISubmissionInfoWriteProps {
     submission: AnonymousSubmissionType,
     graderUsername: string | undefined,
   ) => Promise<AnonymousSubmissionType>;
-  addLateDayCreditComment: any;
+  addLateDayCreditComment: (val: number) => Promise<boolean> | void;
   graderEmail?: string;
   onUpdateRegrade?: (
     submission: AnonymousSubmissionType,
@@ -115,7 +115,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
         const daysLate = props.submission.dateUploaded ? dayjs(props.submission.dateUploaded).diff(due, 'days') + 1 : 0;
 
         if (props.courseLateDayCreditsAllowable !== null && isLate) {
-          const onChange = async (val: any) => {
+          const onChange = async (val: number) => {
             const success = await props.addLateDayCreditComment(val);
             if (success) {
               setLateDaySelectValue(val);
@@ -234,14 +234,20 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
     props.assignment.studentsCanSeeGraders === true ||
     (props.assignment.studentsCanSeeGraders === null && props.courseStudentsCanSeeGraders === true);
 
-  const hasGraderField = (sub: any): sub is { grader?: string | null } => {
-    return sub && typeof sub === 'object' && 'grader' in sub;
+  const hasGraderField = (sub: unknown): sub is { grader?: string | null } => {
+    return !!sub && typeof sub === 'object' && 'grader' in sub;
+  };
+
+  const hasHasGraderField = (sub: unknown): sub is { hasGrader?: boolean } => {
+    return sub !== null && typeof sub === 'object' && 'hasGrader' in sub;
   };
 
   const readOnlyGrader =
     props.readOnlySubmission && hasGraderField(props.readOnlySubmission) ? props.readOnlySubmission.grader : undefined;
   const readOnlyHasGrader =
-    props.readOnlySubmission && 'hasGrader' in props.readOnlySubmission ? props.readOnlySubmission.hasGrader : false;
+    props.readOnlySubmission && hasHasGraderField(props.readOnlySubmission)
+      ? !!props.readOnlySubmission.hasGrader
+      : false;
 
   const graderEmail = props.submission?.grader ?? readOnlyGrader;
   const graderLabel =

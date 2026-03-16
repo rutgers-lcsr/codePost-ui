@@ -266,13 +266,13 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
 export type IntegrationType = {
   key: string;
   name: string;
-  logo: any;
+  logo: string;
   description: React.ReactElement;
 };
 
 interface IIntegrationsProps {
   integrations: string[];
-  onClick?: any;
+  onClick?: (integration: string) => void;
 }
 
 const Integrations = (props: IIntegrationsProps) => {
@@ -290,7 +290,7 @@ const Integrations = (props: IIntegrationsProps) => {
         return null;
       }
     })
-    .filter((card: any) => {
+    .filter((card) => {
       return card !== null;
     });
 
@@ -299,7 +299,7 @@ const Integrations = (props: IIntegrationsProps) => {
 
 interface IIntegrationCardProps {
   integration: IntegrationType;
-  onClick: any;
+  onClick: () => void;
 }
 
 const IntegrationCard = (props: IIntegrationCardProps) => {
@@ -338,7 +338,7 @@ const IntegrationCard = (props: IIntegrationCardProps) => {
 interface IIntegrationButtonProps {
   integration: IntegrationType;
   active: boolean;
-  onClick: any;
+  onClick: (key: string) => void;
 }
 
 export const IntegrationButton = (props: IIntegrationButtonProps) => {

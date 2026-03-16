@@ -234,7 +234,6 @@ Object.defineProperty(window, 'getComputedStyle', {
 });
 
 if (globalThis.HTMLCanvasElement) {
-  // eslint-disable-next-line no-extend-native
   globalThis.HTMLCanvasElement.prototype.getContext = vi.fn(() => {
     // minimal stub; enough for libraries that just check for a truthy context
     return {

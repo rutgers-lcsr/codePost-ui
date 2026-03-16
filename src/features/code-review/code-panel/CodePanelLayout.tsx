@@ -6,10 +6,10 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 
 import ErrorBoundary from '../../../components/core/ErrorBoundary';
 import SplitScreen from '../../../components/utils/SplitScreen.js';
-import { SubmissionFile } from 'api-client/index.js';
+import type { FileType } from '../../../utils/file';
 // import { Divider } from 'antd';
 interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
-  file: SubmissionFile;
+  file: FileType;
   toolbarWidgets: React.ReactNode[];
   code: (onHighlightClick: (e: React.MouseEvent) => void) => React.ReactNode;
   comments: React.ReactNode;
@@ -66,7 +66,11 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
       : { backgroundColor: isDarkTheme ? consoleTheme.mainBg : 'rgb(242, 242, 242)' };
 
   return (
-    <ErrorBoundary type="codepanel" submissionID={props.file.submission} file={props.file}>
+    <ErrorBoundary
+      type="codepanel"
+      submissionID={typeof props.file.submission === 'number' ? props.file.submission : undefined}
+      file={props.file}
+    >
       <div style={{ position: 'relative', height: '100%', width: '100%' }}>
         <div
           style={{

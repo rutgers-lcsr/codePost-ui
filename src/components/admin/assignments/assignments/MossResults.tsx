@@ -88,18 +88,18 @@ const MossResults = (props: IProps) => {
       key: 'similarity',
       align: aligner,
       defaultSortOrder: 'descend' as 'ascend' | 'descend',
-      sorter: (a: any, b: any) => a.similarity - b.similarity,
+      sorter: (a: { similarity: number }, b: { similarity: number }) => a.similarity - b.similarity,
     },
     {
       title: 'Lines Matched',
       dataIndex: 'linesMatched',
       key: 'linesMatched',
       align: aligner,
-      sorter: (a: any, b: any) => a.linesMatched - b.linesMatched,
+      sorter: (a: { linesMatched: number }, b: { linesMatched: number }) => a.linesMatched - b.linesMatched,
     },
   ];
 
-  const data = props.results.map((result: any, index: number) => {
+  const data = props.results.map((result: IMossResult, index: number) => {
     return {
       key: index,
       inspect: result.matchURL,

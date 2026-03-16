@@ -61,6 +61,7 @@ interface CheckRowProps {
 }
 
 const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const row = check as any;
 
   const badgeStatus = row ? STATUS_BADGE[row.status as StatusDfeEnum] : 'processing';

@@ -188,7 +188,7 @@ export const HelperFileSelector: React.FC<IProps> = ({
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                     <FileTextOutlined style={{ marginRight: 8, color: '#1890ff' }} />
                     <span style={{ marginRight: 8 }}>{item.name}</span>
-                    {(item as any).hidden && (
+                    {((item as unknown as { hidden?: boolean }).hidden ?? false) && (
                       <Tag color="warning" style={{ fontSize: 10, lineHeight: '18px', padding: '0 4px' }}>
                         Hidden
                       </Tag>
@@ -224,7 +224,7 @@ export const HelperFileSelector: React.FC<IProps> = ({
               <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                 <DatabaseOutlined style={{ marginRight: 8, color: '#722ed1' }} />
                 <span style={{ marginRight: 8, fontWeight: 500 }}>{item.name}</span>
-                {(item as any).hidden && (
+                {((item as unknown as { hidden?: boolean }).hidden ?? false) && (
                   <Tag color="warning" style={{ fontSize: 10, lineHeight: '18px', padding: '0 4px' }}>
                     Hidden
                   </Tag>

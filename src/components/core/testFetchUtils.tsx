@@ -155,7 +155,7 @@ export const fetchTestsBySubmission = async (submissions: (AnonymousSubmissionTy
           // New: submissionsApi.SubmissionTestsRetrieve
           const res = (await submissionsApi.submissionTestsList({
             id: submission.id,
-          })) as unknown as any;
+          })) as unknown as SubmissionTestType[] | { submissionTests: SubmissionTestType[] };
 
           // Handle potential different response structures
           // If it returns a list directly or an object with submissionTests

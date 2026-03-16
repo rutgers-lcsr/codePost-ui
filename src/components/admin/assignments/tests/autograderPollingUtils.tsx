@@ -5,7 +5,11 @@ import { message } from 'antd';
 const MAX_TRIES_RUN = 150;
 
 // Running a test
-export function awaitTestResult(id: string, callback: (result: any) => any, progressCallback?: (progress: any) => any) {
+export function awaitTestResult(
+  id: string,
+  callback: (result: unknown) => void,
+  progressCallback?: (progress: unknown) => void,
+) {
   let tries = 0;
   const interval = setInterval(() => {
     pollTestResult(id, interval, callback, progressCallback);
@@ -27,9 +31,9 @@ export function awaitTestResult(id: string, callback: (result: any) => any, prog
 
 async function pollTestResult(
   id: string,
-  interval: any,
-  callback: (result: any) => any,
-  progressCallback?: (progress: any) => any,
+  interval: ReturnType<typeof setInterval>,
+  callback: (result: unknown) => void,
+  progressCallback?: (progress: unknown) => void,
 ) {
   const res = await fetch(`${process.env.REACT_APP_API_URL}/autograder/tasks/${id}/`, {
     headers: {

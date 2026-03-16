@@ -16,7 +16,7 @@ const { Header, Content } = Layout;
 /**********************************************************************************************************************/
 
 interface ICPAdminRubricProps {
-  goBack: any;
+  goBack: () => void;
   title: string;
   actions: React.ReactNode[];
   content: React.ReactNode;

@@ -8,6 +8,12 @@ import type {
   CourseAISettings,
   PatchedCourseAISettings,
 } from '../api-client';
+import { AiUsageRetrieveGranularityEnum as OrgGranularityEnum } from '../api-client/apis/OrganizationsApi';
+import { AiUsageRetrieveGranularityEnum as CourseGranularityEnum } from '../api-client/apis/CoursesApi';
+import {
+  AiUsageRetrieveGranularityEnum as SystemGranularityEnum,
+  AiModelsRetrieveProviderEnum,
+} from '../api-client/apis/SystemApi';
 
 type Granularity = 'hourly' | 'daily' | 'monthly';
 
@@ -51,7 +57,7 @@ export class AIUsageService {
   public static getOrgUsage = (orgId: number, params: UsageQueryParams = {}): Promise<AIUsageSummary> =>
     organizationsApi.aiUsageRetrieve({
       id: orgId,
-      granularity: params.granularity as any,
+      granularity: params.granularity as OrgGranularityEnum | undefined,
       startDate: params.startDate,
       endDate: params.endDate,
     });
@@ -59,7 +65,7 @@ export class AIUsageService {
   public static getCourseUsage = (courseId: number, params: UsageQueryParams = {}): Promise<AIUsageSummary> =>
     coursesApi.aiUsageRetrieve({
       id: courseId,
-      granularity: params.granularity as any,
+      granularity: params.granularity as CourseGranularityEnum | undefined,
       startDate: params.startDate,
       endDate: params.endDate,
     });
@@ -68,7 +74,7 @@ export class AIUsageService {
     params: UsageQueryParams & { organizationId?: number } = {},
   ): Promise<AIUsageSummary> =>
     systemApi.aiUsageRetrieve({
-      granularity: params.granularity as any,
+      granularity: params.granularity as SystemGranularityEnum | undefined,
       startDate: params.startDate,
       endDate: params.endDate,
       organizationId: params.organizationId,
@@ -78,7 +84,7 @@ export class AIUsageService {
 
   /** Get the curated model list for all providers (or a specific one). */
   public static getModels = (provider?: string): Promise<AIProviderModelsList> =>
-    systemApi.aiModelsRetrieve({ provider: provider as any });
+    systemApi.aiModelsRetrieve({ provider: provider as AiModelsRetrieveProviderEnum | undefined });
 
   /** Get models for the org's configured provider, including live-queried models. */
   public static getOrgModels = (orgId: number): Promise<AIProviderModelsList> =>

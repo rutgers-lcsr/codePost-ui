@@ -23,12 +23,13 @@ function openSubmissionInSameTab(submissionID: number | string) {
 // This is to prevent slowness for our submission load and not to overload our db
 // It keeps the aspect ratio, and sets the max(width, height) = MAX_IMAGE_SIZE
 const MAX_IMAGE_SIZE = 1500; // Max pixels for width or height
-const resizeImage = (imageStringInBase64: string) => {
-  return new Promise(function (resolved, _rejected) {
+const resizeImage = (imageStringInBase64: string): Promise<string> => {
+  return new Promise(function (resolve) {
     const i = new Image();
     i.onload = function () {
       if (i.width < MAX_IMAGE_SIZE && i.height < MAX_IMAGE_SIZE) {
-        resolved(imageStringInBase64);
+        resolve(imageStringInBase64);
+        return;
       } else {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -43,12 +44,12 @@ const resizeImage = (imageStringInBase64: string) => {
           ctx.drawImage(i, 0, 0, canvas.width, canvas.height);
 
           // encode image to data-uri with base64 version of compressed image
-          resolved(canvas.toDataURL());
+          resolve(canvas.toDataURL());
         } else {
-          resolved(imageStringInBase64);
+          resolve(imageStringInBase64);
         }
+        return;
       }
-      resolved({ w: i.width, h: i.height });
     };
     i.src = imageStringInBase64;
   });

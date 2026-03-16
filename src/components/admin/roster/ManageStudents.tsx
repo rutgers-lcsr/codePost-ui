@@ -102,8 +102,8 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
 
   const renderStudentCell = useCallback(
     (searchText: string) => {
-      return (_: string, record: { student: string }) => {
-        const studentEmail = record.student;
+      return (_: string, record: Record<string, unknown>) => {
+        const studentEmail = record.student as string;
         const highlightedEmail = (
           <Highlighter
             highlightStyle={{
@@ -134,8 +134,8 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
 
   const renderSectionCell = useCallback(
     (searchText: string) => {
-      return (_: string, record: { key: string }) => {
-        const student = record.key;
+      return (_: string, record: Record<string, unknown>) => {
+        const student = record.key as string;
         if (!props.sectionsLoadComplete) {
           return <Spin />;
         }

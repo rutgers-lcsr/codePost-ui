@@ -24,7 +24,7 @@ const VideoModal = (props: IProps) => {
       <span>
         Check out the video below to learn the basis of codePost. You can skip around to sections that interest you on
         the right. <br />
-        <br /> <Video containerWidth={modalWidth} location="" />
+        <br /> <Video containerWidth={modalWidth} location={{ search: '' }} />
       </span>
     </Modal>
   );

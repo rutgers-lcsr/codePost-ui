@@ -113,6 +113,14 @@ import { DETAIL_TYPE } from './types';
 
 type alignType = 'left' | 'right' | 'center';
 
+interface AssignmentRow extends Record<string, unknown> {
+  key: number;
+  assignment: React.ReactNode;
+  status: React.ReactNode;
+  progress: React.ReactNode;
+  actions: React.ReactNode;
+}
+
 /**********************************************************************************************************************/
 /* Constants
 /**********************************************************************************************************************/
@@ -524,301 +532,303 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   /* ... data mapping ... */
 
-  const data = sortedOrder.map((id: number) => {
-    const assignment = assignments.find((el) => el.id === id);
-    if (assignment === undefined) {
-      return null;
-    }
-    const statsForRow = assignmentStats[assignment.id];
-    const encodedName = encodeForLink(assignment.name);
+  const data: AssignmentRow[] = sortedOrder
+    .map<AssignmentRow | null>((id: number) => {
+      const assignment = assignments.find((el) => el.id === id);
+      if (assignment === undefined) {
+        return null;
+      }
+      const statsForRow = assignmentStats[assignment.id];
+      const encodedName = encodeForLink(assignment.name);
 
-    // --- Actions Menu ---
+      // --- Actions Menu ---
 
-    const configItems = [
-      {
-        key: 'settings',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/settings`}>
-            <SettingOutlined /> &nbsp; Settings
-          </Link>
-        ),
-      },
-      {
-        key: 'onboarding',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/onboarding`}>
-            <CompassOutlined /> &nbsp; Get started
-          </Link>
-        ),
-      },
-      {
-        key: 'bulk-edit',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/bulk-edit`}>
-            <EditOutlined /> &nbsp; Bulk edit
-          </Link>
-        ),
-      },
-    ];
+      const configItems = [
+        {
+          key: 'settings',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/settings`}>
+              <SettingOutlined /> &nbsp; Settings
+            </Link>
+          ),
+        },
+        {
+          key: 'onboarding',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/onboarding`}>
+              <CompassOutlined /> &nbsp; Get started
+            </Link>
+          ),
+        },
+        {
+          key: 'bulk-edit',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/bulk-edit`}>
+              <EditOutlined /> &nbsp; Bulk edit
+            </Link>
+          ),
+        },
+      ];
 
-    const uploadItems = [
-      {
-        key: '0.1',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/upload/single`}>
-            <FileOutlined /> &nbsp; Single submission
-          </Link>
-        ),
-      },
-      {
-        key: '0.2',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/upload/multiple`}>
-            <FolderOutlined /> &nbsp; Multiple submissions
-          </Link>
-        ),
-      },
-      {
-        key: '0.3',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/upload/import`}>
-            <ImportOutlined /> &nbsp; Import
-          </Link>
-        ),
-      },
-    ];
+      const uploadItems = [
+        {
+          key: '0.1',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/upload/single`}>
+              <FileOutlined /> &nbsp; Single submission
+            </Link>
+          ),
+        },
+        {
+          key: '0.2',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/upload/multiple`}>
+              <FolderOutlined /> &nbsp; Multiple submissions
+            </Link>
+          ),
+        },
+        {
+          key: '0.3',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/upload/import`}>
+              <ImportOutlined /> &nbsp; Import
+            </Link>
+          ),
+        },
+      ];
 
-    const dataItems = [
-      {
-        key: 'stats',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/stats`}>
-            <BarChartOutlined /> &nbsp; View stats
-          </Link>
-        ),
-      },
-      {
-        key: 'download',
-        label: (
-          <Link to={`${baseURL}/${encodedName}/download/grades`}>
-            {!fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />} &nbsp; Download grades
-          </Link>
-        ),
-      },
-      ...(assignment.allowRegradeRequests
-        ? [
-            {
-              key: 'regrades',
-              label: (
-                <Link to={`${baseURL}/${encodedName}/regrades`}>
-                  <MessageOutlined /> &nbsp; View Regrades
-                </Link>
-              ),
-            },
-          ]
-        : []),
-    ];
+      const dataItems = [
+        {
+          key: 'stats',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/stats`}>
+              <BarChartOutlined /> &nbsp; View stats
+            </Link>
+          ),
+        },
+        {
+          key: 'download',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/download/grades`}>
+              {!fullSubmissionsLoadComplete ? <Spin size="small" /> : <DownloadOutlined />} &nbsp; Download grades
+            </Link>
+          ),
+        },
+        ...(assignment.allowRegradeRequests
+          ? [
+              {
+                key: 'regrades',
+                label: (
+                  <Link to={`${baseURL}/${encodedName}/regrades`}>
+                    <MessageOutlined /> &nbsp; View Regrades
+                  </Link>
+                ),
+              },
+            ]
+          : []),
+      ];
 
-    // --- Helpers ---
-    const publishToggleText = getPublishConfirmText(assignment);
-    const onConfirmPublish = () => toggleAssignmentPublish(assignment);
-    const toggleVisible = () => toggleAssignmentVisibility(assignment);
+      // --- Helpers ---
+      const publishToggleText = getPublishConfirmText(assignment);
+      const onConfirmPublish = () => toggleAssignmentPublish(assignment);
+      const toggleVisible = () => toggleAssignmentVisibility(assignment);
 
-    const notifyButton = (toggleDialog: () => void) => {
-      return (
-        <CPButton size="small" icon={<MailOutlined />} onClick={toggleDialog}>
-          Notify
-        </CPButton>
-      );
-    };
+      const notifyButton = (toggleDialog: () => void) => {
+        return (
+          <CPButton cpType="secondary" size="small" icon={<MailOutlined />} onClick={toggleDialog}>
+            Notify
+          </CPButton>
+        );
+      };
 
-    // --- New Status Logic ---
-    let statusBadge: 'success' | 'warning' | 'default' = 'default';
-    let statusText = 'Draft';
+      // --- New Status Logic ---
+      let statusBadge: 'success' | 'warning' | 'default' = 'default';
+      let statusText = 'Draft';
 
-    if (assignment.isReleased) {
-      statusBadge = 'success';
-      statusText = 'Published';
-    } else if (assignment.isVisible) {
-      statusBadge = 'warning';
-      statusText = 'Visible';
-    }
+      if (assignment.isReleased) {
+        statusBadge = 'success';
+        statusText = 'Published';
+      } else if (assignment.isVisible) {
+        statusBadge = 'warning';
+        statusText = 'Visible';
+      }
 
-    const statusContent = (
-      <div style={{ width: 300 }}>
-        <Flex vertical gap="middle">
-          <Flex justify="space-between" align="center">
-            <span style={{ fontSize: '14px' }}>
-              Visible to Students
-              <CPTooltip
-                title={'If visible, students can see the assignment in the Student Console.'}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
-              />
-            </span>
-            <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" />
-          </Flex>
+      const statusContent = (
+        <div style={{ width: 300 }}>
+          <Flex vertical gap="middle">
+            <Flex justify="space-between" align="center">
+              <span style={{ fontSize: '14px' }}>
+                Visible to Students
+                <CPTooltip
+                  title={'If visible, students can see the assignment in the Student Console.'}
+                  infoIcon={true}
+                  hideThisOnHideTips={true}
+                  iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
+                />
+              </span>
+              <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" />
+            </Flex>
 
-          <Flex justify="space-between" align="center">
-            <span style={{ fontSize: '14px' }}>
-              Published
-              <CPTooltip
-                title={tooltips.admin.assignments.published}
-                infoIcon={true}
-                hideThisOnHideTips={true}
-                iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
-              />
-            </span>
-            {!assignment.isVisible && !assignment.isReleased ? (
-              <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
-                <Switch disabled={true} checked={assignment.isReleased} size="small" />
-              </Tooltip>
-            ) : (
-              <Popconfirm onConfirm={onConfirmPublish} title={publishToggleText} icon={<QuestionCircleOutlined />}>
-                <Switch checked={assignment.isReleased} size="small" />
-              </Popconfirm>
+            <Flex justify="space-between" align="center">
+              <span style={{ fontSize: '14px' }}>
+                Published
+                <CPTooltip
+                  title={tooltips.admin.assignments.published}
+                  infoIcon={true}
+                  hideThisOnHideTips={true}
+                  iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
+                />
+              </span>
+              {!assignment.isVisible && !assignment.isReleased ? (
+                <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
+                  <Switch disabled={true} checked={assignment.isReleased} size="small" />
+                </Tooltip>
+              ) : (
+                <Popconfirm onConfirm={onConfirmPublish} title={publishToggleText} icon={<QuestionCircleOutlined />}>
+                  <Switch checked={assignment.isReleased} size="small" />
+                </Popconfirm>
+              )}
+            </Flex>
+
+            {assignment.isReleased && (
+              <div style={{ textAlign: 'right' }}>
+                <SendEmailModal
+                  buttonText={'Notify students'}
+                  title="Notify students via email"
+                  template="publish_assignment"
+                  course={currentCourse}
+                  assignment={assignment}
+                  me={myEmail}
+                  emails={students}
+                  body={<div>Notify students via email that {assignment.name} has been published.</div>}
+                  button={notifyButton}
+                />
+              </div>
             )}
           </Flex>
+        </div>
+      );
 
-          {assignment.isReleased && (
-            <div style={{ textAlign: 'right' }}>
-              <SendEmailModal
-                buttonText={'Notify students'}
-                title="Notify students via email"
-                template="publish_assignment"
-                course={currentCourse}
-                assignment={assignment}
-                me={myEmail}
-                emails={students}
-                body={<div>Notify students via email that {assignment.name} has been published.</div>}
-                button={notifyButton}
+      // --- New Progress Logic ---
+      const totalSubmissions = statsForRow.numSubmissions;
+      const graded = statsForRow.numGraded;
+      const missing = statsForRow.numMissing;
+
+      // Calculate percentage for progress bar
+      const percent = totalSubmissions > 0 ? Math.round((graded / totalSubmissions) * 100) : 0;
+
+      return {
+        key: assignment.id,
+        assignment: (
+          <Space orientation="vertical" size={0}>
+            <Text strong style={{ fontSize: '16px' }}>
+              {assignment.name}
+              {(assignment.hideFrom ?? []).length > 0 && (
+                <Tooltip
+                  title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom ?? [])}`}
+                >
+                  <EyeInvisibleOutlined style={{ marginLeft: 5, color: colors.neutralMainText }} />
+                </Tooltip>
+              )}
+            </Text>
+            {assignment.allowStudentUpload && assignment.uploadDueDate ? (
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Due {dayjs(assignment.uploadDueDate).tz(currentCourse.timezone).format('MMM D, h:mm A z')}
+              </Text>
+            ) : (
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                {assignment.allowStudentUpload ? 'No due date' : 'No upload required'}
+              </Text>
+            )}
+          </Space>
+        ),
+        status: (
+          <Popover content={statusContent} trigger="click" title="Assignment Status" styles={{ root: { width: 320 } }}>
+            <div style={{ cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
+              <Badge status={statusBadge} text={statusText} />{' '}
+              <SettingOutlined style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
+            </div>
+          </Popover>
+        ),
+        progress: (
+          <div style={{ paddingRight: 20 }}>
+            <div className="display-flex align-items-center" style={{ marginBottom: 4 }}>
+              <Space separator={<span style={{ color: colors.neutralBorder }}>|</span>}>
+                <Text
+                  type={totalSubmissions === 0 ? 'secondary' : undefined}
+                  className={totalSubmissions > 0 ? 'text-link' : ''}
+                  onClick={totalSubmissions > 0 ? () => openDrawer(assignment, DRAWER_TYPE.Submitted) : undefined}
+                >
+                  {totalSubmissions} Submissions
+                </Text>
+                <Text
+                  type="secondary"
+                  className={missing > 0 ? 'text-link' : ''}
+                  onClick={() => openDrawer(assignment, DRAWER_TYPE.Missing)}
+                >
+                  {missing} Missing
+                </Text>
+                <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                  {percent}% Graded
+                </Text>
+              </Space>
+            </div>
+            <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
+              <Progress
+                percent={percent}
+                showInfo={false}
+                strokeColor={colors.brandPrimary}
+                railColor={colors.brandLight}
+                size="small"
               />
             </div>
-          )}
-        </Flex>
-      </div>
-    );
-
-    // --- New Progress Logic ---
-    const totalSubmissions = statsForRow.numSubmissions;
-    const graded = statsForRow.numGraded;
-    const missing = statsForRow.numMissing;
-
-    // Calculate percentage for progress bar
-    const percent = totalSubmissions > 0 ? Math.round((graded / totalSubmissions) * 100) : 0;
-
-    return {
-      key: assignment.id,
-      assignment: (
-        <Space orientation="vertical" size={0}>
-          <Text strong style={{ fontSize: '16px' }}>
-            {assignment.name}
-            {(assignment.hideFrom ?? []).length > 0 && (
-              <Tooltip
-                title={`Assignment hidden from the following sections: ${getSectionNames(assignment.hideFrom ?? [])}`}
-              >
-                <EyeInvisibleOutlined style={{ marginLeft: 5, color: colors.neutralMainText }} />
-              </Tooltip>
-            )}
-          </Text>
-          {assignment.allowStudentUpload && assignment.uploadDueDate ? (
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              Due {dayjs(assignment.uploadDueDate).tz(currentCourse.timezone).format('MMM D, h:mm A z')}
-            </Text>
-          ) : (
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              {assignment.allowStudentUpload ? 'No due date' : 'No upload required'}
-            </Text>
-          )}
-        </Space>
-      ),
-      status: (
-        <Popover content={statusContent} trigger="click" title="Assignment Status" styles={{ root: { width: 320 } }}>
-          <div style={{ cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
-            <Badge status={statusBadge} text={statusText} />{' '}
-            <SettingOutlined style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
           </div>
-        </Popover>
-      ),
-      progress: (
-        <div style={{ paddingRight: 20 }}>
-          <div className="display-flex align-items-center" style={{ marginBottom: 4 }}>
-            <Space separator={<span style={{ color: colors.neutralBorder }}>|</span>}>
-              <Text
-                type={totalSubmissions === 0 ? 'secondary' : undefined}
-                className={totalSubmissions > 0 ? 'text-link' : ''}
-                onClick={totalSubmissions > 0 ? () => openDrawer(assignment, DRAWER_TYPE.Submitted) : undefined}
-              >
-                {totalSubmissions} Submissions
-              </Text>
-              <Text
-                type="secondary"
-                className={missing > 0 ? 'text-link' : ''}
-                onClick={() => openDrawer(assignment, DRAWER_TYPE.Missing)}
-              >
-                {missing} Missing
-              </Text>
-              <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-                {percent}% Graded
-              </Text>
-            </Space>
-          </div>
-          <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
-            <Progress
-              percent={percent}
-              showInfo={false}
-              strokeColor={colors.brandPrimary}
-              railColor={colors.brandLight}
-              size="small"
-            />
-          </div>
-        </div>
-      ),
-      actions: (
-        <Space>
-          <Tooltip title="Configure assignment">
-            <Dropdown menu={{ items: configItems }} trigger={['click']}>
-              <Button shape="circle" icon={<SettingOutlined />} />
-            </Dropdown>
-          </Tooltip>
-          <Tooltip title="Edit rubric">
-            <Link to={`${baseURL}/rubrics/${encodedName}`}>
-              <Button shape="circle" icon={<OrderedListOutlined />} />
-            </Link>
-          </Tooltip>
-          <Tooltip title="Environment & Tests">
-            <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-              <Button shape="circle" icon={<FileDoneOutlined />} />
-            </Link>
-          </Tooltip>
-          <Tooltip title="Manage submissions">
-            <Dropdown menu={{ items: uploadItems }} trigger={['click']}>
-              <Button shape="circle" icon={<UploadOutlined />} />
-            </Dropdown>
-          </Tooltip>
-          <Tooltip title={assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}>
-            <Button
-              shape="circle"
-              icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-              onClick={() => toggleSubmissionsReleased(assignment)}
-              danger={assignment.feedbackReleased}
-            />
-          </Tooltip>
-          <Tooltip title="Analyze grades & stats">
-            <Dropdown menu={{ items: dataItems }} trigger={['click']}>
-              <Button shape="circle" icon={<BarChartOutlined />} />
-            </Dropdown>
-          </Tooltip>
-          <Tooltip title="Delete assignment">
-            <Link to={`${baseURL}/${encodedName}/delete`}>
-              <Button shape="circle" danger icon={<DeleteOutlined />} />
-            </Link>
-          </Tooltip>
-        </Space>
-      ),
-    };
-  });
+        ),
+        actions: (
+          <Space>
+            <Tooltip title="Configure assignment">
+              <Dropdown menu={{ items: configItems }} trigger={['click']}>
+                <Button shape="circle" icon={<SettingOutlined />} />
+              </Dropdown>
+            </Tooltip>
+            <Tooltip title="Edit rubric">
+              <Link to={`${baseURL}/rubrics/${encodedName}`}>
+                <Button shape="circle" icon={<OrderedListOutlined />} />
+              </Link>
+            </Tooltip>
+            <Tooltip title="Environment & Tests">
+              <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+                <Button shape="circle" icon={<FileDoneOutlined />} />
+              </Link>
+            </Tooltip>
+            <Tooltip title="Manage submissions">
+              <Dropdown menu={{ items: uploadItems }} trigger={['click']}>
+                <Button shape="circle" icon={<UploadOutlined />} />
+              </Dropdown>
+            </Tooltip>
+            <Tooltip title={assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}>
+              <Button
+                shape="circle"
+                icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                onClick={() => toggleSubmissionsReleased(assignment)}
+                danger={assignment.feedbackReleased}
+              />
+            </Tooltip>
+            <Tooltip title="Analyze grades & stats">
+              <Dropdown menu={{ items: dataItems }} trigger={['click']}>
+                <Button shape="circle" icon={<BarChartOutlined />} />
+              </Dropdown>
+            </Tooltip>
+            <Tooltip title="Delete assignment">
+              <Link to={`${baseURL}/${encodedName}/delete`}>
+                <Button shape="circle" danger icon={<DeleteOutlined />} />
+              </Link>
+            </Tooltip>
+          </Space>
+        ),
+      };
+    })
+    .filter((assignment): assignment is AssignmentRow => assignment !== null);
 
   const tableActions: React.ReactNode[] = [
     <NewAssignmentDialog
@@ -1078,10 +1088,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
         hideSearch={true}
         components={components}
-        onRow={(_record: { key: number }, index: number) => ({
-          index,
-          moveRow: moveRow,
-        })}
+        onRow={(_record: Record<string, unknown>, index?: number) =>
+          ({
+            index: index ?? 0,
+            moveRow: moveRow,
+          }) as React.HTMLAttributes<HTMLElement>
+        }
         pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
       />
     </div>

@@ -63,12 +63,11 @@ import {
   TestCaseType,
   TestCategoryType,
 } from '../../types/models';
-import { File, FileType } from '../../utils/file';
+import { File, FileType, FileWithId } from '../../utils/file';
 import { brandColors } from '../../theme/colors';
 import { Submission as SubmissionService } from '../../services/submission';
 import { getLatestSubmissionTests } from '../../utils/submissionTests';
 
-type FileWithId = FileType & { id: number; comments?: number[] };
 type CursorSnapshot = { startLine: number; endLine?: number; startChar?: number; endChar?: number };
 type RubricMenuUIProps = React.ComponentProps<typeof RubricMenuUI>['props'];
 
@@ -285,7 +284,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       wordWrap,
       // temporaryFileContent removed from state object to prevent re-renders
       // casting as any to satisfy interface without subscribing to store
-      temporaryFileContent: {} as any,
+      temporaryFileContent: {} as { [fileId: number]: string },
     }),
     [
       permissionLevel,
@@ -611,7 +610,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           ? loadDemoStudent(filesToLoad, props.user.email!)
           : loadDemoGrader(filesToLoad, props.user.email!);
 
-      setState((prev) => ({ ...prev, ...demoState }));
+      setState((prev) => ({ ...prev, ...(demoState as Partial<ICodeConsoleState>) }));
     },
     [props.user.email, setState],
   );
@@ -882,7 +881,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
           if (selectedFile === undefined && typeof queryValues.comment === 'string') {
             const matchingFile = files.find((el) =>
-              el.comments?.some((c: number) => c === parseInt(queryValues.comment as string)),
+              el.comments?.some((c) => typeof c === 'number' && c === parseInt(queryValues.comment as string, 10)),
             );
             selectedFile = matchingFile || files[0];
           } else if (selectedFile === undefined) {
@@ -1018,7 +1017,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
           if (selectedFile === undefined && typeof queryValues.comment === 'string') {
             const matchingFile = files.find((el) =>
-              el.comments?.some((c: number) => c === parseInt(queryValues.comment as string)),
+              el.comments?.some((c) => typeof c === 'number' && c === parseInt(queryValues.comment as string, 10)),
             );
             selectedFile = matchingFile || files[0];
           } else if (selectedFile === undefined) {
@@ -1258,19 +1257,19 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     // * Unfocus the new comment
 
     if (state.course === undefined || state.course.lateDayCreditsAllowable === null) {
-      return;
+      return false;
     }
 
     if (assignment === undefined || !assignment.allowStudentUpload) {
-      return;
+      return false;
     }
 
     if (submission === undefined) {
-      return;
+      return false;
     }
 
     if (files.length === 0) {
-      return;
+      return false;
     }
 
     const firstFile = files[0];
@@ -2381,7 +2380,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               })}
               verticalOffset={state.codeVerticalOffset}
               updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
-              studentFeedbackOn={assignment.commentFeedback}
+              studentFeedbackOn={assignment.commentFeedback ?? false}
               hideAuthor={
                 assignment.studentsCanSeeGraders !== null
                   ? !assignment.studentsCanSeeGraders
@@ -2501,7 +2500,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               oldCommentIDs={state.oldCommentIDs}
               verticalOffset={state.codeVerticalOffset}
               updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
-              studentFeedbackOn={assignment.commentFeedback}
+              studentFeedbackOn={assignment.commentFeedback ?? false}
               hideAuthor={
                 assignment.studentsCanSeeGraders !== null
                   ? !assignment.studentsCanSeeGraders
@@ -2509,8 +2508,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                     ? !state.course.studentsCanSeeGraders
                     : true
               }
-              additiveGrading={assignment.additiveGrading}
-              forcedRubricMode={assignment.forcedRubricMode}
+              additiveGrading={assignment.additiveGrading ?? false}
+              forcedRubricMode={assignment.forcedRubricMode ?? false}
               rubricCategories={rubricCategories}
               showCursor={state.showCursor}
               aiEnabled={state.aiEnabled}
@@ -2721,7 +2720,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             })}
             verticalOffset={state.codeVerticalOffset}
             updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
-            studentFeedbackOn={assignment.commentFeedback}
+            studentFeedbackOn={assignment.commentFeedback ?? false}
             hideAuthor={
               assignment.studentsCanSeeGraders !== null
                 ? !assignment.studentsCanSeeGraders
@@ -2978,7 +2977,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             oldCommentIDs={state.oldCommentIDs}
             verticalOffset={state.codeVerticalOffset}
             updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
-            studentFeedbackOn={assignment.commentFeedback}
+            studentFeedbackOn={assignment.commentFeedback ?? false}
             hideAuthor={
               assignment.studentsCanSeeGraders !== null
                 ? !assignment.studentsCanSeeGraders
@@ -2986,8 +2985,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
                   ? !state.course.studentsCanSeeGraders
                   : true
             }
-            additiveGrading={assignment.additiveGrading}
-            forcedRubricMode={assignment.forcedRubricMode}
+            additiveGrading={assignment.additiveGrading ?? false}
+            forcedRubricMode={assignment.forcedRubricMode ?? false}
             rubricCategories={rubricCategories}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}

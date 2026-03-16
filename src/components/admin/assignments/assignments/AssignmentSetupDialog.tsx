@@ -108,8 +108,8 @@ export const AssignmentSetupDialog = (props: IProps) => {
   const timeline = (
     <Timeline
       items={steps
-        .filter((step: any) => !step.hide)
-        .map((step: any, index: number) => {
+        .filter((step) => !step.hide)
+        .map((step, index: number) => {
           const title = step.isOptional ? `${step.title} (optional)` : step.title;
           return {
             key: index,
@@ -118,7 +118,7 @@ export const AssignmentSetupDialog = (props: IProps) => {
               title
             ) : (
               <div>
-                <a href={step.url}>
+                <a href={step.url ?? '#'}>
                   <Button type={step.isOptional ? 'default' : 'primary'}>{title}</Button>
                 </a>
                 <p>

@@ -24,6 +24,8 @@ import { DIRECTION, IRubricCategoryToRubricCommentsMap, Assignment } from '../..
 import { useRubricStore, RESOLUTION, IFeedbackScore } from '../../../stores/useRubricStore';
 import { useShallow } from 'zustand/react/shallow';
 
+type RubricSaveResult = { rubricCategories: RubricCategory[]; rubricComments: IRubricCategoryToRubricCommentsMap };
+
 /**********************************************************************************************************************/
 
 // Re-export for backwards compatibility
@@ -68,7 +70,7 @@ export interface IRubricManagerHelpers {
     resolved: Record<number, RESOLUTION>,
     instanceLists: Record<number, number[]>,
   ) => { edited: RubricComment[]; deleted: RubricComment[] };
-  onSave: (fnc?: (rubric: any) => void, demoMode?: boolean) => Promise<void>;
+  onSave: (fnc?: (rubric: RubricSaveResult) => void, demoMode?: boolean) => Promise<void>;
   buildCommentMap: (categories: RubricCategory[], comments: RubricComment[]) => IRubricCategoryToRubricCommentsMap;
   moveCategory: (category: RubricCategory, direction: DIRECTION) => void;
   updateRubricCategory: (category: RubricCategory, hasError?: boolean) => void;
@@ -78,9 +80,13 @@ export interface IRubricManagerHelpers {
   deleteRubricComment: (comment: RubricComment) => void;
   addRubricComment: (category: RubricCategory) => void;
   onLinkedAlertCancel: () => void;
-  onLinkedCommentsResolve: (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: any) => void) => void;
+  onLinkedCommentsResolve: (
+    comment: RubricComment,
+    resolution: RESOLUTION,
+    fnc?: (rubric: RubricSaveResult) => void,
+  ) => void;
   onLinkedConfirmCancel: () => void;
-  onLinkedConfirmAccept: (fnc?: (rubric: any) => void) => void;
+  onLinkedConfirmAccept: (fnc?: (rubric: RubricSaveResult) => void) => void;
   onBack: () => void;
   onUnload: (event: BeforeUnloadEvent) => void;
   toggleLock: () => void;
@@ -374,15 +380,17 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         : categories.map((category) => {
             if (category.id < 0) {
               const { id, ...payload } = category;
-              return rubricCategoriesApi.create({ rubricCategory: payload as any }).then((newCategory) => {
-                const commentList = comments[category.id];
-                const innerPromises = commentList.map((comment) => {
-                  const { id: cId, ...cPayload } = comment;
-                  cPayload.category = newCategory.id;
-                  return rubricCommentsApi.create({ rubricComment: cPayload as any });
+              return rubricCategoriesApi
+                .create({ rubricCategory: payload as Omit<RubricCategory, 'id' | 'rubricComments'> })
+                .then((newCategory) => {
+                  const commentList = comments[category.id];
+                  const innerPromises = commentList.map((comment) => {
+                    const { id: cId, ...cPayload } = comment;
+                    cPayload.category = newCategory.id;
+                    return rubricCommentsApi.create({ rubricComment: cPayload as Omit<RubricComment, 'id'> });
+                  });
+                  return Promise.all(innerPromises);
                 });
-                return Promise.all(innerPromises);
-              });
             } else {
               const categoryNeedsSaving = unsavedCategories.some((el) => el.id === category.id);
               let categoryPromise: Promise<unknown> = Promise.resolve();
@@ -403,7 +411,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
               const commentPromises = commentList.map((comment) => {
                 if (comment.id < 0) {
                   const { id: cId, ...cPayload } = comment;
-                  return rubricCommentsApi.create({ rubricComment: cPayload as any });
+                  return rubricCommentsApi.create({ rubricComment: cPayload as Omit<RubricComment, 'id'> });
                 } else {
                   const commentNeedsSaving = unsavedComments.some((el) => el.id === comment.id);
                   if (commentNeedsSaving) {
@@ -423,7 +431,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
           });
 
       // Delete comments
-      const deleteCommentPromises: Promise<any>[] = demoMode
+      const deleteCommentPromises: Promise<unknown>[] = demoMode
         ? []
         : deletedComments.map((rubricComment) => {
             if (Object.keys(resolved).includes(rubricComment.id.toString())) {
@@ -474,7 +482,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // On save - use getState() for fresh reads to avoid stale closures
   const onSave = useCallback(
-    async (fnc?: (rubric: any) => void, demoMode?: boolean) => {
+    async (fnc?: (rubric: RubricSaveResult) => void, demoMode?: boolean) => {
       const currentState = useRubricStore.getState();
 
       if (currentState.errorObjects.length > 0) {
@@ -606,7 +614,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
   // Linked comments resolution
   const onLinkedCommentsResolve = useCallback(
-    (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: any) => void) => {
+    (comment: RubricComment, resolution: RESOLUTION, fnc?: (rubric: RubricSaveResult) => void) => {
       const s = useRubricStore.getState();
       s.setResolution(comment.id, resolution);
 
@@ -621,7 +629,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   );
 
   const onLinkedConfirmAccept = useCallback(
-    (fnc?: (rubric: any) => void) => {
+    (fnc?: (rubric: RubricSaveResult) => void) => {
       const s = useRubricStore.getState();
       s.setShowConfirmDialog(false);
       s.setConfirmedPropagation(true);

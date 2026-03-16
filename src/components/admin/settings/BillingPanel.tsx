@@ -26,8 +26,23 @@ interface IProps {
   currentCourse: Course;
 }
 
+interface BillingIntent {
+  amount: number;
+  status: string;
+  created: string;
+  receipt_email: string;
+}
+
+interface BillingDetails {
+  show_payment_buttons?: boolean;
+  waiver_requested?: boolean;
+  total_paid_cents?: number;
+  total_active_students?: number;
+  payment_intents?: BillingIntent[];
+}
+
 const BillingPanel = (props: IProps) => {
-  const [details, setDetails] = React.useState<any>({});
+  const [details, setDetails] = React.useState<BillingDetails | undefined>(undefined);
   // const [showWaiver, setShowWaiver] = React.useState(false);
 
   React.useEffect(() => {
@@ -58,9 +73,9 @@ const BillingPanel = (props: IProps) => {
         if (res.ok) {
           return res.json();
         }
-        return {};
+        return undefined;
       })
-      .then((data) => {
+      .then((data: BillingDetails | undefined) => {
         setDetails(data);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,7 +150,7 @@ const BillingPanel = (props: IProps) => {
           <div>
             {details.waiver_requested ? (
               <Text strong>Payment waiver approved.</Text>
-            ) : details.total_paid_cents > 0 ? (
+            ) : (details.total_paid_cents ?? 0) > 0 ? (
               <Text>Please choose your plan. You will only be billed for students added since the last payment.</Text>
             ) : (
               <Text strong>Please choose your plan.</Text>
@@ -243,7 +258,7 @@ const BillingPanel = (props: IProps) => {
       />
       <br />
       <div style={{ display: 'flex' }}>
-        <Statistic title="Total Active Students" value={details && details.total_active_students} />
+        <Statistic title="Total Active Students" value={details?.total_active_students ?? 0} />
       </div>
       <br />
       {action}

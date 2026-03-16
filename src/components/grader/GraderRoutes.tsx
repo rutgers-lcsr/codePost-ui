@@ -18,7 +18,20 @@ import RubricOverview from '../admin/assignments/rubric/RubricOverview';
 import { encodeForRoute } from '../core/URLutils';
 import { useLocation, useParams } from 'react-router-dom';
 
-const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElement }) => {
+interface LegacyRouteProps {
+  match: { params: Record<string, string | undefined>; url: string; path: string; isExact: boolean };
+  location: ReturnType<typeof useLocation>;
+  history: {
+    push: (path: string) => void;
+    replace: (path: string) => void;
+    go: (n: number) => void;
+    goBack: () => void;
+    goForward: () => void;
+    location: ReturnType<typeof useLocation>;
+  };
+}
+
+const RoutePropsWrapper = ({ render }: { render: (props: LegacyRouteProps) => React.ReactElement }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -28,11 +41,11 @@ const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElem
   const history = {
     push: (path: string) => navigate(path),
     replace: (path: string) => navigate(path, { replace: true }),
-    go: (n: number) => navigate(n),
+    go: (n: number) => navigate(n as number),
     goBack: () => navigate(-1),
     goForward: () => navigate(1),
     location,
-  } as any;
+  };
 
   return render({ match, location, history });
 };
@@ -67,7 +80,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="my_submissions/*"
           element={
             <MySubmissionsPanel
-              assignments={assignments as any}
+              assignments={assignments as unknown as Assignment[]}
               course={currentCourse}
               graderEmail={user.email!}
               isAdmin={isAdmin}
@@ -81,10 +94,10 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="my_sections/*"
           element={
             <SectionPanel
-              assignments={assignments as any}
+              assignments={assignments as unknown as Assignment[]}
               course={currentCourse}
               graderEmail={user.email!}
-              sections={localSectionsLed as any}
+              sections={localSectionsLed as unknown as Section[]}
               isAdmin={isAdmin}
             />
           }
@@ -94,7 +107,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
         <Route
           key="all_submissions"
           path="all_submissions/*"
-          element={<ViewAllPanel course={currentCourse} assignments={assignments as any} />}
+          element={<ViewAllPanel course={currentCourse} assignments={assignments as unknown as Assignment[]} />}
         />
       )}
       {someRegrades && (
@@ -104,7 +117,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           element={
             <RegradesPanel
               course={currentCourse}
-              assignments={assignments as any}
+              assignments={assignments as unknown as Assignment[]}
               user={user}
               isAnonymous={false}
               isAdmin={isAdmin}
@@ -119,7 +132,10 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
           path="rubrics/*"
           element={
             <Routes>
-              <Route index element={<RubricOverview assignments={assignments as any} course={currentCourse} />} />
+              <Route
+                index
+                element={<RubricOverview assignments={assignments as unknown as Assignment[]} course={currentCourse} />}
+              />
               {assignments.map((assignment) => {
                 const encodedName = encodeForRoute(assignment.name);
                 return (
@@ -128,10 +144,10 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
                     path={`${encodedName}/*`}
                     element={
                       <RoutePropsWrapper
-                        render={(subprops: any) => (
+                        render={(subprops: LegacyRouteProps) => (
                           <RubricManager
                             {...subprops}
-                            assignment={assignment as any}
+                            assignment={assignment as unknown as Assignment}
                             submissions={[]}
                             onCancel={() => {}}
                             shouldLoadFeedback={false}

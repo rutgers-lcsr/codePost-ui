@@ -16,7 +16,7 @@ interface IProps {
 const ExplanationModal = (props: IProps) => {
   const [draft, setDraft] = React.useState(props.startText);
 
-  const onChange = (event: any) => {
+  const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDraft(event.target.value);
   };
 

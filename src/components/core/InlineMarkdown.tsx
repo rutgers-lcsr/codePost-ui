@@ -55,11 +55,11 @@ const InlineMarkdown = (props: IInlineMarkdownProps) => {
 const useInlineMarkdownRenderers = () => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
-  const paragraphRenderer = (props: any) => {
+  const paragraphRenderer = (props: { children?: React.ReactNode }) => {
     return <div style={{ marginBottom: '3px' }}>{props.children}</div>;
   };
 
-  const inlineCodeRenderer = (props: any) => {
+  const inlineCodeRenderer = (props: { children?: React.ReactNode }) => {
     const style = {
       backgroundColor: consoleTheme.commentCode, // #e3e3e3
       color: consoleTheme.text,

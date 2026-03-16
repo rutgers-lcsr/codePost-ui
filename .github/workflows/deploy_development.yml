@@ -2,7 +2,7 @@ name: Deploy Development with Docker
 
 on:
   push:
-    branches: [render]
+    branches: [development]
 
 concurrency:
   group: deploy-development

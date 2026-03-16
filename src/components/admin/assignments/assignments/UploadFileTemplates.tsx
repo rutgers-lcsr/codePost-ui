@@ -57,7 +57,12 @@ const UploadFileTemplates: React.FC<IProps> = ({ isReplacement, updateTemplate, 
 
   return (
     <div>
-      <Upload showUploadList={false} onChange={onChange} customRequest={customRequest as any}>
+      <Upload
+        showUploadList={false}
+        onChange={onChange}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        customRequest={customRequest as any}
+      >
         <Button>
           <UploadOutlined /> {isReplacement ? 'Replace' : 'Upload'}
         </Button>

@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+import React from 'react';
 import useWindowSize from '../../../core/useWindowSize';
 
 import landingVars from '../../../../styles/pages/_landingVars';
@@ -8,7 +9,7 @@ import * as Icons from '@ant-design/icons';
 import { Popover } from 'antd';
 
 // Map legacy icon names to new antd icon components
-const iconMap: { [key: string]: any } = {
+const iconMap: { [key: string]: React.ComponentType<{ style?: React.CSSProperties }> } = {
   import: Icons.ImportOutlined,
   'cloud-upload': Icons.CloudUploadOutlined,
   message: Icons.MessageOutlined,

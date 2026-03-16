@@ -175,18 +175,21 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
             original.name !== ft.name ||
             original.extension !== ft.extension ||
             original.path !== ft.path ||
-            (original as any).data !== (ft as any).data ||
-            (original as any).description !== (ft as any).description ||
-            (original as any).required !== (ft as any).required;
+            (original as unknown as Record<string, unknown>).data !== (ft as unknown as Record<string, unknown>).data ||
+            (original as unknown as Record<string, unknown>).description !==
+              (ft as unknown as Record<string, unknown>).description ||
+            (original as unknown as Record<string, unknown>).required !==
+              (ft as unknown as Record<string, unknown>).required;
 
           if (hasChanged) {
             fileTemplatePromises.push(
               assignmentFilesApi
                 .partialUpdate({
                   id: ft.id,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   patchedAssignmentFile: ft as any,
                 })
-                .then((res: any) => res as unknown as AssignmentFileType),
+                .then((res) => res as unknown as AssignmentFileType),
             );
           }
         } else {
@@ -201,8 +204,8 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
                   path: ft.path,
                   required: ft.required,
                   description: ft.description || '',
-                  data: (ft as any).data,
-                  hidden: (ft as any).hidden,
+                  data: (ft as unknown as Record<string, unknown>).data as string,
+                  hidden: (ft as unknown as Record<string, unknown>).hidden as boolean,
                 },
               })
               .then((res) => res as unknown as AssignmentFileType),
@@ -285,10 +288,10 @@ interface IFormValues {
   studentsCanSeeGraders: boolean | null;
   commentFeedback: boolean;
   allowRegradeRequests: boolean;
-  regradeDeadline: any;
+  regradeDeadline: dayjs.Dayjs | null;
   allowStudentUpload: boolean;
   allowStudentUploadWithPartners: boolean;
-  uploadDueDate: any;
+  uploadDueDate: dayjs.Dayjs | null;
   maxLateDays: number;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;

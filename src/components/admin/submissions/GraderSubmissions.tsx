@@ -97,7 +97,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
     setMeans(newMeans);
   }, [submissionsByAssignment]);
 
-  const sortFunction = React.useCallback((a: any, b: any) => {
+  const sortFunction = React.useCallback((a: unknown, b: unknown) => {
     if (typeof a === 'number' && typeof b === 'number') {
       return b - a;
     } else if (typeof a === 'number') {
@@ -160,7 +160,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                 sorter: (a, b) => a.key.localeCompare(b.key),
                 renderForSearch: (searchText: string) => {
                   return (_: string, record) => {
-                    const grader = record.grader;
+                    const grader = record.grader as string;
                     const content =
                       graders.indexOf(grader) > -1 ? (
                         <Typography.Text strong>
@@ -240,7 +240,7 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
             }
 
             data = rowValues.map((graderEmail) => {
-              const toRet: any = {
+              const toRet: Record<string, unknown> = {
                 key: graderEmail,
                 grader: graderEmail,
               };

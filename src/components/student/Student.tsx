@@ -29,8 +29,12 @@ import CPFlex from '../core/CPFlex';
 
 import { USER_TYPE } from '../../types/common';
 
-import { Assignment } from '../../types/common';
+import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/common';
 import { AssignmentsApi, Configuration, Course, StudentSubmission, Submission } from '../../api-client';
+import type {
+  StudentUploadCreateRequest,
+  StudentUploadPartialUpdateRequest,
+} from '../../api-client/apis/AssignmentsApi';
 import { getAuthToken } from '../../utils/auth';
 import { getHeaders } from '../../utils/generics';
 
@@ -79,6 +83,11 @@ enum CURRENT_PANEL {
   ADDFILES,
 }
 
+interface SubmissionHistoryItem {
+  student: string;
+  hasViewed: boolean;
+}
+
 // Constants
 const CODE_IN_PLACE_COURSE_ID = 925;
 
@@ -114,7 +123,7 @@ const fetchSubmissions = async (assignmentId: number, student: string): Promise<
   return [];
 };
 
-const fetchHistory = async (submissionId: number, student: string): Promise<any[]> => {
+const fetchHistory = async (submissionId: number, student: string): Promise<SubmissionHistoryItem[]> => {
   const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionId}/history/?student=${student}`, {
     headers: getHeaders(),
     method: 'GET',
@@ -125,7 +134,11 @@ const fetchHistory = async (submissionId: number, student: string): Promise<any[
   return [];
 };
 
-const updateHistory = async (submissionId: number, payload: any, urlArgs: any): Promise<any> => {
+const updateHistory = async (
+  submissionId: number,
+  payload: Record<string, unknown>,
+  urlArgs: Record<string, string>,
+): Promise<unknown> => {
   const params = Object.keys(urlArgs)
     .map((key, i) => (i === 0 ? `?${key}=${urlArgs[key]}` : `&${key}=${urlArgs[key]}`))
     .join('');
@@ -160,13 +173,19 @@ const toSubmission = (submission: StudentSubmission): Submission => {
   };
 };
 
-const createStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
+const createStudentUpload = async (
+  assignmentId: number,
+  payload: StudentUploadCreateRequest['assignment'],
+): Promise<Submission> => {
   const api = getAssignmentsApi();
   const created = await api.studentUploadCreate({ id: assignmentId, assignment: payload });
   return toSubmission(created);
 };
 
-const updateStudentUpload = async (assignmentId: number, payload: any): Promise<Submission> => {
+const updateStudentUpload = async (
+  assignmentId: number,
+  payload: NonNullable<StudentUploadPartialUpdateRequest['patchedAssignment']>,
+): Promise<Submission> => {
   const api = getAssignmentsApi();
   const updated = await api.studentUploadPartialUpdate({ id: assignmentId, patchedAssignment: payload });
   return toSubmission(updated);
@@ -402,10 +421,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       });
 
       const payload = {
-        id: assignment.id,
         files: formattedFiles,
         sendConfirmationEmail,
-      };
+      } as unknown as StudentUploadCreateRequest['assignment'];
 
       const submission1 = isNew
         ? createStudentUpload(assignment.id, payload)
@@ -1011,17 +1029,26 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           submissions={
             (detailSubmission
               ? { [user.email!]: { [detailSubmission.assignment]: detailSubmission } }
-              : { [user.email!]: {} }) as any
+              : { [user.email!]: {} }) as unknown as Record<string, Record<number, StudentSubmission>>
           }
           uploadSubmission={
-            ((assignment: any, partners: any, files: any, sendConfirmationEmail: any) =>
+            (
+              assignment: Assignment,
+              partners: string[],
+              files: SubmissionUploadFile[],
+              sendConfirmationEmail?: boolean,
+            ) =>
               uploadSubmission(
                 currentPanel !== CURRENT_PANEL.ADDFILES,
                 assignment,
                 partners,
-                files,
-                sendConfirmationEmail,
-              )) as any
+                files.map((file) => ({
+                  name: file.name,
+                  data: file.data ?? '',
+                  path: file.path ?? '',
+                })),
+                sendConfirmationEmail ?? false,
+              )
           }
           disableStudentSelect={true}
           onSuccess={onUploadSuccess}

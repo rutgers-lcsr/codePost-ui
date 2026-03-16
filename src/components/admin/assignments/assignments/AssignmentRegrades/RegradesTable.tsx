@@ -33,6 +33,20 @@ const { TextArea } = Input;
 const { Text } = Typography;
 const { confirm } = Modal;
 
+interface RegradeRow {
+  key: number;
+  students: React.ReactNode;
+  studentSort: string;
+  dateDisplay: React.ReactNode;
+  dateSort: string;
+  request: React.ReactNode;
+  statusTag: React.ReactNode;
+  statusSort: string;
+  responder: string;
+  responderSort: string;
+  actions: React.ReactNode;
+}
+
 interface IRegradesTableProps {
   /* assignment data */
   assignment: Assignment;
@@ -82,7 +96,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
   const updateSubmissionField = (
     submission: SubmissionInfoType | AnonymousSubmissionInfoType,
     field: string,
-    newValue: any,
+    newValue: string | boolean | null,
   ) => {
     const newSubmission = JSON.parse(JSON.stringify(submission));
     newSubmission[field] = newValue;
@@ -158,7 +172,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       dataIndex: 'students',
       key: 'students',
       width: 200,
-      sorter: (a: any, b: any) => (a.studentSort ?? '').localeCompare(b.studentSort ?? ''),
+      sorter: (a: RegradeRow, b: RegradeRow) => (a.studentSort ?? '').localeCompare(b.studentSort ?? ''),
     },
     {
       title: 'Request',
@@ -170,7 +184,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       dataIndex: 'dateDisplay',
       key: 'date',
       width: 140,
-      sorter: (a: any, b: any) => (a.dateSort ?? '').localeCompare(b.dateSort ?? ''),
+      sorter: (a: RegradeRow, b: RegradeRow) => (a.dateSort ?? '').localeCompare(b.dateSort ?? ''),
     },
     {
       title: 'Status',
@@ -178,20 +192,20 @@ const RegradesTable = (props: IRegradesTableProps) => {
       key: 'statusTag',
       width: 100,
       align: 'center' as const,
-      sorter: (a: any, b: any) => (a.statusSort ?? '').localeCompare(b.statusSort ?? ''),
+      sorter: (a: RegradeRow, b: RegradeRow) => (a.statusSort ?? '').localeCompare(b.statusSort ?? ''),
       defaultSortOrder: 'ascend' as const,
       filters: [
         { text: 'Open', value: 'Open' },
         { text: 'Closed', value: 'Closed' },
       ],
-      onFilter: (value: any, record: any) => record.statusSort === value,
+      onFilter: (value: string | number | boolean | React.Key, record: RegradeRow) => record.statusSort === value,
     },
     {
       title: 'Responder',
       dataIndex: 'responder',
       key: 'responder',
       width: 180,
-      sorter: (a: any, b: any) => (a.responderSort ?? '').localeCompare(b.responderSort ?? ''),
+      sorter: (a: RegradeRow, b: RegradeRow) => (a.responderSort ?? '').localeCompare(b.responderSort ?? ''),
     },
     {
       title: 'Actions',
@@ -223,7 +237,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       submission.students && !props.isAnonymous ? submission.students.toString() : `#${submission.id}`;
 
     const handleClaim = () => {
-      if (submission.questionResponder === null) {
+      if (submission.questionResponder === null && props.user.email) {
         updateSubmissionField(submission, 'questionResponder', props.user.email);
       } else {
         confirmClear(submission, false);

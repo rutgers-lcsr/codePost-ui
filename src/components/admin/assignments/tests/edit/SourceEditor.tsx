@@ -83,7 +83,7 @@ export const SourceEditor = (props: IProps) => {
   const runTest = async () => {
     if (props.env) {
       setRunning(true);
-      let result: any;
+      let result: { task: string } | undefined;
       if (fileToRun === 'main.sh') {
         // Run all tests
         result = await autograderApi.environmentsRunPartialUpdate({
@@ -94,7 +94,9 @@ export const SourceEditor = (props: IProps) => {
           },
         });
       }
-      awaitTestResult(result.task, callback);
+      if (result) {
+        awaitTestResult(result.task, (response: unknown) => callback(response as TestEditorResultType));
+      }
     }
   };
 
@@ -198,7 +200,7 @@ export const SourceEditor = (props: IProps) => {
       </Row>
       <TestsChangeModal
         checkChanges={saving}
-        currentFile={props.currentFile! as any}
+        currentFile={props.currentFile as unknown as { id: number; name: string; code: string }}
         currentFileCode={draftCode}
         categories={props.categories}
         casesByCategory={props.casesByCategory}

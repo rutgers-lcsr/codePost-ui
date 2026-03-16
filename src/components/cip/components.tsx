@@ -212,7 +212,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
               onChange={(newVal: string) => setOrg(newVal)}
               style={{ width: '100%' }}
             >
-              {universities.map((university: any) => (
+              {universities.map((university: { value: string; label: string }) => (
                 <Select.Option value={university.value}>{university.label}</Select.Option>
               ))}
             </Select>
@@ -256,7 +256,7 @@ const CIPAdminModal = (props: IAdminModalProps) => {
         <span>
           Check out the video below to learn the basis of codePost. You can skip around to sections that interest you on
           the right. <br />
-          <br /> <Video containerWidth={modalSize} location="" />
+          <br /> <Video containerWidth={modalSize} location={{ search: '' }} />
         </span>
       );
       break;

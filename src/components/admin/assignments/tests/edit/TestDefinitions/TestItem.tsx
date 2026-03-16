@@ -63,7 +63,7 @@ export const TestItem = (props: ITestItemProps) => {
 
   // TODO: investigate and remove if so (also remove related imports)
   /******************************* State Variables ****************************/
-  const [testOutput, setTestOutput] = useState<any | undefined>(undefined);
+  const [testOutput, setTestOutput] = useState<unknown>(undefined);
   const [isRunning, setIsRunning] = useState(false);
 
   const mapValuesToTestCase = (values: IFullTestValues): TestCaseType => {
@@ -76,6 +76,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
     testCaseCopy.explanation = values.explanation;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     testCaseCopy.targetCellId = (values.targetCellId as any) || null;
     testCaseCopy.testCode = values.testCode || '';
     testCaseCopy.testCode = values.testCode || '';
@@ -153,6 +154,7 @@ export const TestItem = (props: ITestItemProps) => {
         });
 
         // The response is now AsyncTaskResponse
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const taskId = (response as any).taskId || (response as any).task_id;
 
         if (!taskId) {
@@ -162,6 +164,7 @@ export const TestItem = (props: ITestItemProps) => {
         const runResult = await pollTask(taskId);
 
         // result.result contains the actual test result data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = runResult.result as any;
         const success = runResult.success as boolean;
 

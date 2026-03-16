@@ -3,7 +3,7 @@ import { Divider, Modal, Progress, Typography } from 'antd';
 
 import { TestCaseType } from '../../../../../types/models';
 
-interface IResultsType {
+export interface IResultsType {
   [id: number]: {
     passed: number;
     failed: number;

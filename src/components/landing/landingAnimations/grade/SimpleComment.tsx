@@ -52,6 +52,7 @@ interface ISimpleCommentState {
 }
 
 class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public constructor(props: ISimpleCommentProps, context: any) {
     super(props, context);
     this.state = this.init();
@@ -116,8 +117,8 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
   };
 
   // Ant type bug https://cl.ly/c5094e2c4526
-  public onChangePointInput = (value: any) => {
-    const parsed = parseFloat(value);
+  public onChangePointInput = (value: number | string | null) => {
+    const parsed = value === null ? NaN : typeof value === 'number' ? value : parseFloat(value);
     const points = isNaN(parsed) ? this.state.points : parsed;
 
     if (points !== UiComment.points(this.props.comment, this.props.rubricComment)) {
@@ -173,7 +174,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     }
   };
 
-  public delete = async (e: any) => {
+  public delete = async (e: React.MouseEvent) => {
     try {
       e.preventDefault();
       e.stopPropagation();
@@ -190,8 +191,7 @@ class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentS
     this.setState({ status: 'idle' });
   };
 
-  // FIXME: Type React.KeyboardEventHandler<HTMLTextAreaElement>
-  public handleShiftEnter = (e: any) => {
+  public handleShiftEnter = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && e.shiftKey) {
       e.preventDefault(); // skip OnChange method
       this.save();

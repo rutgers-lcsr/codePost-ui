@@ -104,7 +104,7 @@ const allStudentsValid = (candidates: string[], students: string[]) => {
 };
 
 const noDuplicates = (candidates: string[]) => {
-  const seenCandidates: any = {};
+  const seenCandidates: Record<string, boolean> = {};
   for (const candidate of candidates) {
     if (seenCandidates[candidate]) {
       return false;
@@ -132,9 +132,9 @@ const validateStudents = (
   studentMap: { [student: string]: STUDENT_STATUS },
   files: codePostFile[],
   getStudentsFromFile: (file: IProtoFileUpload) => string[],
-) => {
+): [Record<string, { files: codePostFile[]; students: string[]; isCollision: boolean }>, string[]] => {
   const alreadySeen: { [student: string]: boolean } = {};
-  const folderMap: any = {};
+  const folderMap: Record<string, { files: codePostFile[]; students: string[]; isCollision: boolean }> = {};
   const errors: string[] = [];
 
   files.forEach((newFile: codePostFile) => {

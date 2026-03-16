@@ -11,7 +11,7 @@ export function getAuthToken(): string {
 /**
  * Gets Decoded Token Payload
  */
-export function getDecodedTokenPayload(): any | null {
+export function getDecodedTokenPayload(): Record<string, unknown> | null {
   const token = getAuthToken();
   if (!token) return null;
 

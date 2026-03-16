@@ -14,7 +14,7 @@ enum STATUS {
   SAVED,
 }
 
-const shallowListEquals = (list1: any[], list2: any[]) => {
+const shallowListEquals = (list1: unknown[], list2: unknown[]) => {
   if (list1.length !== list2.length) {
     return false;
   }
@@ -28,7 +28,7 @@ const shallowListEquals = (list1: any[], list2: any[]) => {
   return true;
 };
 
-const statusChange = (oldProps: any[], newProps: any[], currStatus: STATUS) => {
+const statusChange = (oldProps: unknown[], newProps: unknown[], currStatus: STATUS) => {
   switch (currStatus) {
     case STATUS.UNSAVED:
       if (shallowListEquals(oldProps, newProps)) {

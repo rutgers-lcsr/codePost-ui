@@ -2,7 +2,7 @@
 // import LandingOld from './Landing.tsx';
 import LandingNew from './newlanding/Landing.tsx';
 
-const Landing = (props: any) => {
+const Landing = (props: Record<string, unknown>) => {
   // Set up an A/B Test
   // FIXME: Standardize this code to make a standard A/B test function
   // Commented out for now while A/B test is turned off

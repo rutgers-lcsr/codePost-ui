@@ -564,7 +564,9 @@ export const ResultDetail = (props: IProps) => {
         const hide = message.loading('Starting test run...', 0);
         try {
           const payload = { submissionId: subId, testId: null };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const response = await autograderApi.v2RunCreate({ testExecutionRequest: payload as any });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const taskId = (response as any).taskId || (response as any).task_id;
           if (!taskId) throw new Error('No task ID returned');
 

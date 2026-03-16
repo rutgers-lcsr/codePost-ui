@@ -24,9 +24,17 @@ export interface IProtoFileUpload extends IBaseFileUpload {
 
 export interface IProtoSubmission {
   students: string[];
-  files: File[];
+  files: Array<File | codePostFile>;
   isCollision: boolean /* true if any student has an existing submission */;
 }
+
+const isProtoFileUploadArray = (value: unknown): value is IProtoFileUpload[] => {
+  return Array.isArray(value);
+};
+
+const isFile = (value: unknown): value is File => {
+  return value instanceof File;
+};
 
 export interface codePostFile extends UploadFile {
   // Field to set the path of a file
@@ -110,20 +118,20 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
 
         zipper
           .loadAsync(reader.result)
-          .then((zip: any) => {
+          .then((zip: JSZip) => {
             // JSZip doesn't have a 'map' function over the files
             // which makes it difficult to do asynchronous work
             // Here we do two loops over the zip contents so that we can
             // use the Array.map functionality
-            const listOfZippedFiles: [string, any][] = [];
-            zip.forEach((relativePath: string, zippedFile: any) => {
+            const listOfZippedFiles: [string, JSZip.JSZipObject][] = [];
+            zip.forEach((relativePath: string, zippedFile: JSZip.JSZipObject) => {
               listOfZippedFiles.push([relativePath, zippedFile]);
             });
 
             return listOfZippedFiles;
           })
-          .then((listOfZippedFiles: [string, any][]) => {
-            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, any]) => {
+          .then((listOfZippedFiles: [string, JSZip.JSZipObject][]) => {
+            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, JSZip.JSZipObject]) => {
               if (relativePath.startsWith('__MACOSX')) {
                 return Promise.resolve();
               }
@@ -151,18 +159,14 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
               }
             });
 
-            Promise.all(promises).then((dirtyUnzippedFiles: any) => {
+            Promise.all(promises).then((dirtyUnzippedFiles) => {
               // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
-              const unzippedFiles = dirtyUnzippedFiles
-                .filter((f: IProtoFileUpload | undefined) => {
-                  return f !== undefined;
-                })
-                .flat(Infinity);
+              const unzippedFiles = dirtyUnzippedFiles.filter(isProtoFileUploadArray).flat();
               resolve(unzippedFiles);
             });
           });
       } else {
-        let data: any = readerResult;
+        let data: string | ArrayBuffer = readerResult ?? '-';
 
         if (outputFile.extension === '') {
           if (typeof data === 'string') {
@@ -232,20 +236,20 @@ export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
 
         zipper
           .loadAsync(reader.result)
-          .then((zip: any) => {
+          .then((zip: JSZip) => {
             // JSZip doesn't have a 'map' function over the files
             // which makes it difficult to do asynchronous work
             // Here we do two loops over the zip contents so that we can
             // use the Array.map functionality
-            const listOfZippedFiles: [string, any][] = [];
-            zip.forEach((relativePath: string, zippedFile: any) => {
+            const listOfZippedFiles: [string, JSZip.JSZipObject][] = [];
+            zip.forEach((relativePath: string, zippedFile: JSZip.JSZipObject) => {
               listOfZippedFiles.push([relativePath, zippedFile]);
             });
 
             return listOfZippedFiles;
           })
-          .then((listOfZippedFiles: [string, any][]) => {
-            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, any]) => {
+          .then((listOfZippedFiles: [string, JSZip.JSZipObject][]) => {
+            const promises = listOfZippedFiles.map(async ([relativePath, zippedFile]: [string, JSZip.JSZipObject]) => {
               if (relativePath.startsWith('__MACOSX')) {
                 return Promise.resolve();
               }
@@ -259,13 +263,9 @@ export const readZipTopLevel = (inputFile: File): Promise<File[]> => {
               }
             });
 
-            Promise.all(promises).then((dirtyUnzippedFiles: any) => {
+            Promise.all(promises).then((dirtyUnzippedFiles) => {
               // dirtyUnzippedFiles includes ignored files (undefined) and nested unzips
-              const unzippedFiles = dirtyUnzippedFiles
-                .filter((f: IProtoFileUpload | undefined) => {
-                  return f !== undefined;
-                })
-                .flat(Infinity);
+              const unzippedFiles = dirtyUnzippedFiles.filter(isFile);
               resolve(unzippedFiles);
             });
           });

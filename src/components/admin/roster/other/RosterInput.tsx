@@ -10,9 +10,9 @@ import type { RcFile } from 'antd/es/upload';
 const { TextArea } = Input;
 
 interface IRosterInputProps {
-  onRosterUpload: any;
-  roleType: any;
-  sections: any;
+  onRosterUpload: (rosterString: string) => void;
+  roleType: string;
+  sections: string[];
   rosterInput: string;
   emailNewUsers: boolean;
 }
@@ -55,7 +55,7 @@ ${props.roleType}3@myschool.edu,P02
     setRosterString(key === 'without' ? rosterStringWithoutSections(rosterString) : props.rosterInput);
   };
 
-  const onChange = (e: any) => {
+  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setRosterString(e.target.value);
   };
 

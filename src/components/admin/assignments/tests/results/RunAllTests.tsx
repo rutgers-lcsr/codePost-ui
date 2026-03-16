@@ -10,6 +10,7 @@ import { Button, Checkbox, Modal } from 'antd';
 /* codePost object imports */
 import { AssignmentType, EnvironmentType } from '../../../../../types/models';
 import RunAllProgressModal from './RunAllProgressModal';
+import type { IResultsType } from './RunAllProgressModal';
 
 /* codePost util imports */
 import { TestCasesByCategory } from '../../../../core/testFetchUtils';
@@ -35,7 +36,7 @@ enum MODAL_STATUS {
 const RunAllTests = (props: IProps) => {
   // ******************************************** State Variables ************************************
   // Run all specific
-  const [progress, setProgress] = useState<any>(null);
+  const [progress, setProgress] = useState<IResultsType | null>(null);
   const [sendEmail, setSendEmail] = useState(true);
 
   // Page state
@@ -50,7 +51,11 @@ const RunAllTests = (props: IProps) => {
 
   //   Callback for run progress
   const progressCallback = (progress: string) => {
-    setProgress(progress);
+    try {
+      setProgress(JSON.parse(progress) as IResultsType);
+    } catch {
+      setProgress(null);
+    }
   };
 
   //   Callback for run finish
@@ -101,7 +106,12 @@ const RunAllTests = (props: IProps) => {
 
   return (
     <div>
-      <Button type="default" disabled={!canRun} onClick={onTrigger} loading={props.env && (props.env as any).isRunning}>
+      <Button
+        type="default"
+        disabled={!canRun}
+        onClick={onTrigger}
+        loading={Boolean((props.env as unknown as { isRunning?: boolean } | undefined)?.isRunning)}
+      >
         Run all tests
       </Button>
       <RunAllProgressModal

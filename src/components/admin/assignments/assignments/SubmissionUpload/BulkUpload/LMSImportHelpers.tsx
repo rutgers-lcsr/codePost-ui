@@ -37,9 +37,14 @@ export const getIdentifierFromFolder = (folderName: string, idIndex: number) => 
 //     2. Our normal upload is an n^2 operation, all files are added on every upload.
 //        This is too slow for a typical 400-500 person course, so changing it to an O(n) operation.
 //     3. Drag to upload doesn't seem to work for a directory of zips, so mandating users have to click to upload
-export const beforeLMSImport = (files: UploadFile[], acceptZipsOnly: boolean, callback: any) => {
+export const beforeLMSImport = (
+  files: UploadFile[],
+  acceptZipsOnly: boolean,
+  callback: (files: codePostFile[]) => void,
+) => {
   const copyFile = (f: File, parentPath: string) => {
     // We can't set the path of a file, so need to do a path override
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cPFile: codePostFile = new File([f], f.name) as any;
     cPFile['uid'] = '';
     cPFile['pathOverride'] = `${parentPath}/${f.name}`;

@@ -11,6 +11,7 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
 import { Form, Input, message, Modal } from 'antd';
+import type { FormInstance } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
@@ -75,7 +76,7 @@ const AddSectionDialog: React.FC<IProps> = ({ sections, addSection }) => {
 };
 
 interface IModalProps {
-  form: any;
+  form: FormInstance;
   open: boolean;
   onCreate: () => void;
   onCancel: () => void;
@@ -99,7 +100,7 @@ const CollectionCreateFormModal: React.FC<IModalProps> = ({ form, open, onCreate
     };
   }, [open, onCreate]);
 
-  const handleConfirmSection = (_: any, value: string) => {
+  const handleConfirmSection = (_: unknown, value: string) => {
     // Test 1: does name correspond to an existing section?
     if (sections.some((el) => el.name === value)) {
       return Promise.reject(new Error('A section with this name already exists within this course.'));

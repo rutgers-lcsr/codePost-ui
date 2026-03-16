@@ -97,8 +97,10 @@ const Code = (props: CodePropsWithoutComments) => {
     if (targetLine === null) return null;
 
     let targetChar = 0;
-    if ((document as any).caretRangeFromPoint) {
-      const range = (document as any).caretRangeFromPoint(e.clientX, e.clientY);
+    if ('caretRangeFromPoint' in document) {
+      const range = (
+        document as unknown as { caretRangeFromPoint: (x: number, y: number) => Range }
+      ).caretRangeFromPoint(e.clientX, e.clientY);
       if (range) {
         const lineElement = document.getElementById(`line-${targetLine}`);
         if (lineElement) {
@@ -335,7 +337,7 @@ const Code = (props: CodePropsWithoutComments) => {
     return null;
   };
 
-  const onMouseUp = async (_: any) => {
+  const onMouseUp = async (_: MouseEvent | React.MouseEvent<HTMLDivElement>) => {
     try {
       const selection = window.getSelection();
       const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;

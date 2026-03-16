@@ -102,7 +102,7 @@ export const TestDefinitions = (props: IProps) => {
     } else if (runContextMode === 'submission' && activeSubmission && activeSubmission.files) {
       // Submission mode - run against student's file
       const fname = getTestFileName(testCase);
-      const subFile = (activeSubmission.files as any[]).find((f) => f.name === fname);
+      const subFile = (activeSubmission.files as Array<{ id: number; name: string }>).find((f) => f.name === fname);
       if (subFile) {
         fileId = subFile.id;
         contextName = `Submission (${activeSubmission.students?.join(', ') || activeSubmission.id})`;
@@ -139,8 +139,8 @@ export const TestDefinitions = (props: IProps) => {
         },
       });
       message.success(`Execution queued against ${contextName} (Task: ${res.taskId}). Checking results...`);
-    } catch (e: any) {
-      message.error(`Failed to run script: ${e.message || 'Unknown error'}`);
+    } catch (e: unknown) {
+      message.error(`Failed to run script: ${e instanceof Error ? e.message : 'Unknown error'}`);
     } finally {
       setIsRunning(false);
     }
@@ -272,6 +272,7 @@ export const TestDefinitions = (props: IProps) => {
     try {
       const updated = await testCasesApi.partialUpdate({
         id: testCtx.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         patchedTestCase: testCtx as any,
       });
       setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
@@ -548,7 +549,7 @@ export const TestDefinitions = (props: IProps) => {
                   }}
                   language={(() => {
                     const fname = getTestFileName(fileTest!) || activeFile;
-                    const rawLang = CodePostFile.language({ name: fname } as any);
+                    const rawLang = CodePostFile.language({ name: fname, extension: CodePostFile.extension(fname) });
                     if (rawLang === 'jupyter notebook' || CodePostFile.extension(fname) === 'ipynb') {
                       return 'python';
                     }
@@ -605,7 +606,7 @@ export const TestDefinitions = (props: IProps) => {
         open={isBuilderOpen}
         onCancel={() => setIsBuilderOpen(false)}
         language={(() => {
-          const rawLang = CodePostFile.language({ name: activeFile } as any);
+          const rawLang = CodePostFile.language({ name: activeFile, extension: CodePostFile.extension(activeFile) });
           if (rawLang === 'jupyter notebook' || CodePostFile.extension(activeFile) === 'ipynb') {
             return 'python';
           }

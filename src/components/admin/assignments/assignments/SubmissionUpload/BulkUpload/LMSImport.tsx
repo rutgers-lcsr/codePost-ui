@@ -26,6 +26,7 @@ import {
   Typography,
   Upload,
 } from 'antd';
+import type { RadioChangeEvent } from 'antd';
 
 import ReactMarkdown from 'react-markdown';
 
@@ -93,7 +94,7 @@ export const LMSImport = (props: IUploadFormProps) => {
     setUserIndex(0);
   };
 
-  const onDelimiterChange = (e: any) => {
+  const onDelimiterChange = (e: RadioChangeEvent) => {
     setDelimiter(e.target.value);
   };
 
@@ -252,7 +253,7 @@ interface IStepZeroProps {
   uploadType: IMPORT_TYPE;
   toggleUploadType: () => void;
   delimiter: string;
-  onDelimiterChange: (e: any) => void;
+  onDelimiterChange: (e: RadioChangeEvent) => void;
 }
 
 const StepZeroChooseType = (props: IStepZeroProps) => {
@@ -390,7 +391,7 @@ const StepTwoSelectUserName = (props: IStepTwoProps) => {
   };
 
   //************* Change component state *********
-  const handleChange = (e: any) => {
+  const handleChange = (e: number) => {
     setSliderIndex(e);
   };
 
@@ -599,25 +600,32 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newMapping]);
 
+  interface MappingRow {
+    name: string;
+    identifier: string;
+    email: React.ReactNode;
+    emailValue: string | undefined;
+  }
+
   const columns = [
     {
       title: 'File name',
       dataIndex: 'name',
       key: 'name',
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
+      sorter: (a: MappingRow, b: MappingRow) => a.name.localeCompare(b.name),
     },
     {
       title: 'Student ID',
       dataIndex: 'identifier',
       key: 'identifier',
-      sorter: (a: any, b: any) => a.identifier.localeCompare(b.identifier),
+      sorter: (a: MappingRow, b: MappingRow) => a.identifier.localeCompare(b.identifier),
       defaultSortOrder: 'ascend' as const,
     },
     {
       title: 'codePost email',
       dataIndex: 'email',
       key: 'email',
-      sorter: (a: any, b: any) => {
+      sorter: (a: MappingRow, b: MappingRow) => {
         if (!a.emailValue) return 1;
         if (!b.emailValue) return -1;
         return a.emailValue.localeCompare(b.emailValue);
@@ -684,7 +692,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
 
   const onUpload = async () => {
     // Save the map in the api, in case updates were made via selectors
-    const latestMap: any = {};
+    const latestMap: Record<string, string | null> = {};
     Object.keys(props.folderMap).forEach((folderName) => {
       if (props.folderMap[folderName]) {
         const id = getIdentifierFromFolder(folderName, props.idIndex);

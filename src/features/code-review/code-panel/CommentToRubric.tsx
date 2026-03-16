@@ -39,7 +39,7 @@ const CommentToRubric = (props: IProps) => {
     props.onCancel();
   };
 
-  const onChange = (e: any) => {
+  const onChange = (e: number) => {
     setCategory(e);
   };
 
@@ -51,7 +51,10 @@ const CommentToRubric = (props: IProps) => {
       onOk={makeRubricComment}
       okButtonProps={{ disabled: category === undefined, loading: isLoading }}
     >
-      <Input.TextArea defaultValue={props.initialText} onChange={(e: any) => setText(e.target.value)} />
+      <Input.TextArea
+        defaultValue={props.initialText}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
+      />
       <br />
       <br />
       Category:{' '}

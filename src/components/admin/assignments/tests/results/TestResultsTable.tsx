@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 
 /* library imports */
+import type { RadioChangeEvent } from 'antd';
 import { Dropdown, Radio, Skeleton, Tooltip } from 'antd';
 
 /* codePost object imports */
@@ -82,7 +83,11 @@ const TestResultsTable = (props: IProps) => {
     const fetchData = async () => {
       if (props.submissions.length > 0 && props.assignment) {
         setIsProcessing(true);
-        const [passed, failed, error]: any = getTestsByCase(props.testsBySubmission, props.testCasesByCategory);
+        const [passed, failed, error] = getTestsByCase(props.testsBySubmission, props.testCasesByCategory) as [
+          TestsByCase,
+          TestsByCase,
+          TestsByCase,
+        ];
         setPassedByCase(passed);
         setFailedByCase(failed);
         setErrorByCase(error);
@@ -106,7 +111,7 @@ const TestResultsTable = (props: IProps) => {
     setShowDetail(true);
   };
 
-  const onSummaryTypeChange = (e: any) => {
+  const onSummaryTypeChange = (e: RadioChangeEvent) => {
     const newType = SUMMARY_TYPE[e.target.value as keyof typeof SUMMARY_TYPE];
     if (newType !== undefined) {
       setSummaryType(newType);
@@ -143,8 +148,10 @@ const TestResultsTable = (props: IProps) => {
     />
   );
 
-  let columns: any = [];
-  let data: any = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let columns: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data: any[] = [];
 
   if (!props.isLoading) {
     const totalTests = Object.values(props.testCasesByCategory).flat().length;
@@ -154,7 +161,7 @@ const TestResultsTable = (props: IProps) => {
         const allowSort = !props.resultsLoading && !props.isLoading;
         columns = bySubmissionColumns(allowSort, props.categories);
         if (props.submissions === undefined) {
-          data = null;
+          data = [];
           break;
         }
         data = props.submissions.map((submission: SubmissionInfoType) => {
@@ -179,7 +186,7 @@ const TestResultsTable = (props: IProps) => {
             },
           ];
 
-          const toRet: any = {
+          const toRet: Record<string, unknown> = {
             students: submission.students.join(','),
             key: `submission-${submission.id}`,
             actions: props.subsLoading.includes(submission.id) ? (

@@ -14,8 +14,8 @@ import type { AssignmentStudentType } from '../../types/models';
 interface ILateSubmissionModalProps {
   open: boolean;
   assignment: AssignmentStudentType;
-  onOk: any;
-  onCancel: any;
+  onOk: () => void;
+  onCancel: () => void;
 }
 
 const LateSubmissionModal = (props: ILateSubmissionModalProps) => {

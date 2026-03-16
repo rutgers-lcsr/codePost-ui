@@ -930,7 +930,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
   commentElements.share = (
     <span className="comment-share">
       <CPButton
-        type="secondary"
+        cpType="secondary"
         onClick={shareComment}
         icon={<LinkOutlined />}
         style={{ cursor: 'pointer', border: '0px', backgroundColor: 'transparent', marginLeft: '-9px' }}

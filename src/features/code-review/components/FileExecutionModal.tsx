@@ -30,7 +30,7 @@ const LogViewer: React.FC<{
   content: string;
   language?: string;
   placeholder?: string;
-  theme: any; // react-syntax-highlighter theme type
+  theme: { [key: string]: React.CSSProperties };
   wrapLines?: boolean;
   maxHeight?: number | string;
 }> = ({ content, language = 'text', placeholder = 'No output', theme, wrapLines = true, maxHeight = '60vh' }) => {
@@ -281,7 +281,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
     const systemLogs = (() => {
       if (result?.system_logs && result.system_logs.length > 0) return result.system_logs;
       if (result?.output_data && typeof result.output_data === 'object') {
-        const logs = (result.output_data as any).system_logs;
+        const logs = (result.output_data as Record<string, unknown>).system_logs;
         if (Array.isArray(logs) && logs.length > 0) return logs.map(String);
       }
       return [];

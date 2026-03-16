@@ -159,7 +159,7 @@ export class NodeScanner extends LanguageScanner {
   }
 
   generateManifest(packages: Set<string>): string {
-    const deps: any = {};
+    const deps: Record<string, string> = {};
     packages.forEach((k) => (deps[k] = '*'));
     return JSON.stringify({ dependencies: deps }, null, 2);
   }

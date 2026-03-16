@@ -117,7 +117,11 @@ const LMSRosterMapUpload = (props: IMappingUploadProps) => {
           </Button>
         </Upload>
       </div>
-      <Input.TextArea rows={6} value={stringMap} onChange={(e: any) => setStringMap(e.target.value)} />
+      <Input.TextArea
+        rows={6}
+        value={stringMap}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStringMap(e.target.value)}
+      />
     </Modal>
   );
 };

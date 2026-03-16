@@ -97,7 +97,7 @@ export const left = (
     } else if (optionKey) {
       const regexp = /\s/g;
       const spaces = line.matchAll(regexp);
-      const spaceIndices = [...spaces].filter((match: any) => {
+      const spaceIndices = [...spaces].filter((match: RegExpExecArray) => {
         return match.index < cursor.startChar - 1;
       });
 
@@ -170,7 +170,7 @@ export const right = (
     } else if (optionKey) {
       const regexp = /\s/g;
       const spaces = line.matchAll(regexp);
-      const spaceIndices = [...spaces].filter((match: any) => {
+      const spaceIndices = [...spaces].filter((match: RegExpExecArray) => {
         return match.index > cursor.endChar;
       });
 

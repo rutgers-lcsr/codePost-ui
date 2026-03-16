@@ -44,12 +44,14 @@ interface IProps {
   fullSubmissionsLoadComplete: boolean;
 }
 
+type EnvironmentState = EnvironmentType & { isRunning?: boolean };
+
 export const TestingSummary = (props: IProps) => {
   const location = useLocation();
 
   // ************************** State Variables ******************************
   // objects
-  const [env, setEnv] = useState<EnvironmentType | undefined>(undefined);
+  const [env, setEnv] = useState<EnvironmentState | undefined>(undefined);
   const [categories, setCategories] = useState<TestCategoryType[]>([]);
 
   // Calculated data structures
@@ -88,7 +90,10 @@ export const TestingSummary = (props: IProps) => {
     const fetchData = async () => {
       if (props.currentAssignment) {
         setFetchLoading(true);
-        const [categories, casesByCategory]: any = await fetchTestData(props.currentAssignment);
+        const [categories, casesByCategory] = (await fetchTestData(props.currentAssignment)) as [
+          TestCategoryType[],
+          TestCasesByCategory,
+        ];
         setCategories(categories);
         setTestCasesByCategory(casesByCategory);
         const currEnv = await fetchEnvironment(props.currentAssignment);
@@ -114,18 +119,19 @@ export const TestingSummary = (props: IProps) => {
     fetchPaginatedResults();
     // Reset isRunning on the frontend env after completion
     if (env) {
-      setEnv({ ...env, isRunning: false } as any);
+      setEnv({ ...env, isRunning: false });
     }
   };
 
   const runAllSubmissions = async (
-    progressCallback: (progress: any) => void,
+    progressCallback: (progress: string) => void,
     onFinishCallback: () => void,
     sendEmail: boolean,
   ) => {
     if (env) {
       const result = (await autograderApi.environmentsRunAllPartialUpdate({
         id: env.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         patchedEnvironmentRunAllRequest: { sendEmail: sendEmail } as any,
       })) as unknown as { task: string };
       awaitTestResult(
@@ -134,13 +140,13 @@ export const TestingSummary = (props: IProps) => {
           runAllCallback();
           onFinishCallback();
         },
-        progressCallback,
+        (progress: unknown) => progressCallback(String(progress)),
       );
-      setEnv({ ...env, isRunning: true } as any);
+      setEnv({ ...env, isRunning: true });
     }
   };
 
-  const runSubmissionCallback = async (sub: SubmissionInfoType, _result: any) => {
+  const runSubmissionCallback = async (sub: SubmissionInfoType, _result: unknown) => {
     // Re-fetch this submission's tests from the backend after run completes
     const tests = await fetchTestsBySubmission([sub]);
     const newTestBySub = { ...testsBySubmission };
@@ -160,9 +166,10 @@ export const TestingSummary = (props: IProps) => {
         patchedEnvironmentRunRequest: {
           submission: sub.id,
           simulate: false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       })) as unknown as { task: string };
-      awaitTestResult(result.task, (result: any) => runSubmissionCallback(sub, result));
+      awaitTestResult(result.task, (result: unknown) => runSubmissionCallback(sub, result));
     }
   };
 

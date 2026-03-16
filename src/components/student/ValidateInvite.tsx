@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import { colors } from '../../theme/colors';
 import PreAuthLayout from '../pre-auth/PreAuthLayout';
 
+import { StudentSubmission } from '../../api-client';
 import { Submission } from '../../services/submission';
 
 interface IValidateInviteProps {
@@ -22,7 +23,7 @@ enum STATUS {
 
 const ValidateInvite = (props: IValidateInviteProps) => {
   const params = useParams<{ sid: string; token: string }>();
-  const [submission, setSubmission] = React.useState<any>(undefined);
+  const [submission, setSubmission] = React.useState<StudentSubmission | undefined>(undefined);
   const [status, setStatus] = React.useState<STATUS>(STATUS.IDLE);
 
   React.useEffect(() => {

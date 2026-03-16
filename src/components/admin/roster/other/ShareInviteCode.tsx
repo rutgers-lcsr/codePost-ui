@@ -7,9 +7,10 @@ import { CopyOutlined, QrcodeOutlined, RedoOutlined } from '@ant-design/icons';
 import { Button, Modal, Input, Tooltip, Checkbox, message } from 'antd';
 
 import { coursesApi } from '../../../../api-client/clients';
+import type { Course } from '../../../../api-client';
 
 interface IProps {
-  course: any;
+  course: Course;
 }
 
 const ShareInviteCode = (props: IProps) => {
@@ -32,20 +33,24 @@ const ShareInviteCode = (props: IProps) => {
       title: "Are you sure you want to reset this course's invite code?",
       content: "The old code will no longer work, and you won't be able to undo this.",
       onOk() {
-        return api
-          .changeInviteCodePartialUpdate({ id: props.course.id })
-          .then((res: any) => {
-            // Check return type; assuming string based on legacy
-            const newCode = res as unknown as string;
-            // Legacy mutation to keep parent in sync without refetch
-            (props.course as any).inviteCode = newCode;
-            setInviteCode(newCode);
-            message.success('Invite code reset');
-          })
-          .catch((err: any) => {
-            console.error(err);
-            message.error('Failed to reset invite code');
-          });
+        return (
+          api
+            .changeInviteCodePartialUpdate({ id: props.course.id })
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .then((res: any) => {
+              // Check return type; assuming string based on legacy
+              const newCode = res as unknown as string;
+              // Legacy mutation to keep parent in sync without refetch
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (props.course as any).inviteCode = newCode;
+              setInviteCode(newCode);
+              message.success('Invite code reset');
+            })
+            .catch((err: unknown) => {
+              console.error(err);
+              message.error('Failed to reset invite code');
+            })
+        );
       },
     });
   };

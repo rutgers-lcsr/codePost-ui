@@ -73,14 +73,15 @@ export const useFileExecutionAsync = () => {
 
         console.log('Async response:', asyncResponse);
         // Check if taskId is present, handle potential snake_case from raw response
-        const taskId = asyncResponse.taskId || (asyncResponse as any).task_id;
+        const asyncResponseRecord = asyncResponse as unknown as Record<string, unknown>;
+        const taskId = asyncResponse.taskId || asyncResponseRecord.task_id;
 
         if (!taskId) {
           throw new Error('Failed to start execution: No task ID returned');
         }
 
         // 2. Poll for Result
-        const rawResult = await pollTask(taskId);
+        const rawResult = await pollTask(String(taskId));
 
         // 3. Normalize and Set Result
         const normalized = normalizeExecutionResult(rawResult);

@@ -109,7 +109,7 @@ const Referral = (props: IProps) => {
 };
 
 interface IFormProps {
-  form: any;
+  form: ReturnType<typeof Form.useForm>[0];
   open: boolean;
   submit: () => void;
   onCancel: () => void;

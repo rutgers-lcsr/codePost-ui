@@ -29,7 +29,7 @@ function getFileItem(name: string, points: number) {
 const AnimatedMenu = animated(Menu);
 const AnimatedItem = animated(Menu.Item);
 
-const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: any }) => {
+const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: React.ReactNode }) => {
   return (
     <div className="SimpleGradeMenu" style={{ height: 530 }}>
       <div style={{ padding: '13px 20px 0px 16px' }}>
@@ -46,11 +46,7 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
         className="sider-menu"
       >
         <Menu.Item key="1">{getFileItem('file1.java', -1)}</Menu.Item>
-        <AnimatedItem key="2">
-          {props.secondFileDeduction.interpolate((x: number) => {
-            return getFileItem('file2.java', x);
-          })}
-        </AnimatedItem>
+        <AnimatedItem key="2">{props.secondFileDeduction}</AnimatedItem>
         <Menu.Item key="3">{getFileItem('file3.ipynb', 1)}</Menu.Item>
       </AnimatedMenu>
       <div style={{ padding: '40px 20px 0px 16px' }}>
@@ -86,4 +82,4 @@ const SimpleGradeMenu = (props: { selectedKeys: string[]; secondFileDeduction: a
   );
 };
 
-export { SimpleGradeMenu };
+export { getFileItem, SimpleGradeMenu };

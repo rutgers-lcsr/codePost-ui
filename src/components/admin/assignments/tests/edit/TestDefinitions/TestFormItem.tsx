@@ -7,6 +7,7 @@ import { EditOutlined } from '@ant-design/icons';
 import Form, { LegacyFormController } from '../../../../../core/legacyForm';
 
 /* antd imports */
+import type { RadioChangeEvent } from 'antd';
 import { Button, Card, Col, Input, InputNumber, Radio, Row, Select, Space, Switch } from 'antd';
 
 /* codePost object imports */
@@ -36,11 +37,27 @@ const { Option } = Select;
 interface ITestFormItemProps {
   form: LegacyFormController;
   testCase: TestCaseType;
-  saveTest: (values: any) => void;
+  saveTest: (values: Record<string, unknown>) => void;
   deleteTest: () => Promise<void>;
 
-  log?: any;
-  runTest: (values: any) => void;
+  log?: {
+    success: boolean;
+    stdout?: string;
+    stderr?: string;
+    error?: string;
+    execution_time?: number;
+    output_data?: {
+      cells?: unknown[];
+      stdout?: string;
+      stderr?: string;
+      error?: string;
+      [key: string]: unknown;
+    };
+    cached?: boolean;
+    executed_at?: string;
+    executed_by?: string;
+  };
+  runTest: (values: Record<string, unknown>) => void;
   isRunning: boolean;
   language: string;
   submissions: SubmissionInfoType[];
@@ -104,7 +121,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
     setCommandText(newType ? testCase.text : testTemplates[template][type]);
   };
 
-  const onTypeChangeRadio = (e: any) => {
+  const onTypeChangeRadio = (e: RadioChangeEvent) => {
     onTypeChange(e.target.value as TypeEnum);
   };
 
@@ -357,5 +374,5 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
   );
 };
 
-const WrappedTestFormItem: any = Form.create()(TestFormItem);
+const WrappedTestFormItem = Form.create()(TestFormItem);
 export default WrappedTestFormItem;

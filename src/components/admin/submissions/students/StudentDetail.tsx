@@ -254,6 +254,14 @@ const StudentDetail: React.FC<IProps> = (props) => {
     );
   };
 
+  interface StudentRow {
+    key: string;
+    _submittedRaw: number;
+    _statusRaw: number;
+    _gradeRaw: number;
+    _graderRaw: string;
+  }
+
   const aligner: 'left' | 'center' | 'right' = 'center';
   const columns = [
     {
@@ -261,20 +269,20 @@ const StudentDetail: React.FC<IProps> = (props) => {
       dataIndex: 'assignment',
       key: 'assignment',
       defaultSortOrder: 'ascend' as const,
-      sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+      sorter: (a: StudentRow, b: StudentRow) => a.key.localeCompare(b.key),
     },
     {
       title: 'Submitted',
       dataIndex: 'submitted',
       key: 'submitted',
       align: aligner,
-      sorter: (a: any, b: any) => a._submittedRaw - b._submittedRaw,
+      sorter: (a: StudentRow, b: StudentRow) => a._submittedRaw - b._submittedRaw,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      sorter: (a: any, b: any) => a._statusRaw - b._statusRaw,
+      sorter: (a: StudentRow, b: StudentRow) => a._statusRaw - b._statusRaw,
     },
     {
       title: 'Partners',
@@ -287,14 +295,14 @@ const StudentDetail: React.FC<IProps> = (props) => {
       dataIndex: 'grade',
       key: 'grade',
       align: aligner,
-      sorter: (a: any, b: any) => a._gradeRaw - b._gradeRaw,
+      sorter: (a: StudentRow, b: StudentRow) => a._gradeRaw - b._gradeRaw,
     },
     {
       title: 'Grader',
       dataIndex: 'grader',
       key: 'grader',
       align: aligner,
-      sorter: (a: any, b: any) => a._graderRaw.localeCompare(b._graderRaw),
+      sorter: (a: StudentRow, b: StudentRow) => a._graderRaw.localeCompare(b._graderRaw),
     },
     {
       title: (

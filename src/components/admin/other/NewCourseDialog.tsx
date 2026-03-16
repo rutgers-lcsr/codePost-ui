@@ -84,7 +84,7 @@ const CollectionCreateFormModal: React.FC<IFormModalProps> = ({ open, onCreate, 
   const [form] = Form.useForm();
   const [modifier, setModifier] = useState('public');
 
-  const validateName = (_: any, value: string) => {
+  const validateName = (_: unknown, value: string) => {
     const isInvalid = ['/', '?', '\\'].some((token: string) => {
       return value.indexOf(token) >= 0;
     });

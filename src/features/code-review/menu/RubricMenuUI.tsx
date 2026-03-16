@@ -59,6 +59,11 @@ enum EDITING_STATUS {
   EDITING,
 }
 
+type DragResultLike = {
+  destination?: { droppableId: string; index: number } | null;
+  source: { index: number };
+};
+
 interface IRubricMenuUIProps extends IRubricManagerProps {
   /* is the user allowed to edit the rubric? */
   canUserEdit: boolean;
@@ -94,6 +99,7 @@ const RubricMenuUI = ({
   state: IRubricManagerState;
   helpers: IRubricManagerHelpers;
 }) => {
+  type RubricMenuCategoryProps = React.ComponentProps<typeof RubricMenuCategoryUI>['props'];
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const { token } = theme.useToken();
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -150,7 +156,7 @@ const RubricMenuUI = ({
       }
     };
 
-    const handleKeydown = async (e: any) => {
+    const handleKeydown = async (e: KeyboardEvent) => {
       const el = document.getElementById('rubric-search');
       let searchIsFocused = false;
       if (el !== null) {
@@ -237,7 +243,7 @@ const RubricMenuUI = ({
       });
       commentSearchTerm = searchTerm
         .split(' ')
-        .filter((el: any) => {
+        .filter((el: string) => {
           return !el.includes('category:');
         })
         .join(' ');
@@ -251,7 +257,7 @@ const RubricMenuUI = ({
     let commentIndex = 0;
 
     return filteredCatgories.map((cat: RubricCategory, catIndex: number) => {
-      const savedCategory = state.savedRubricCategories.find((el: any) => {
+      const savedCategory = state.savedRubricCategories.find((el: RubricCategory) => {
         return el.id === cat.id;
       });
 
@@ -294,13 +300,19 @@ const RubricMenuUI = ({
           onCommentEdit={helpers.onCommentEdit}
           onCommentUndo={helpers.onCommentUndo}
           activateCommentExplorer={helpers.activateCommentExplorer}
-          onCommentDragEnd={helpers.onCommentDragEnd}
+          onCommentDragEnd={(...args: unknown[]) => helpers.onCommentDragEnd(args[0] as DragResultLike)}
           moveCategory={helpers.moveCategory}
           index={catIndex}
           numCategories={state.rubricCategories.length}
           otherCategories={state.rubricCategories}
           feedbackScores={state.feedbackScores}
-          commentFeedbackOn={props.assignment.commentFeedback}
+          commentFeedbackOn={props.assignment.commentFeedback ?? false}
+          showPointLimits={true}
+          showHelpText={true}
+          showExplanations={true}
+          showInstructions={true}
+          showAtMostOnce={true}
+          instanceLists={state.instanceLists}
         >
           {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
             const propsz = {
@@ -319,8 +331,13 @@ const RubricMenuUI = ({
               cursorIndex: cursorIndex,
               commentIndex: thisIndex,
             };
-            // @ts-expect-error — legacy type incompatibility
-            return <RubricMenuCategoryUI props={propsz} state={statez} helpers={helperz} />;
+            return (
+              <RubricMenuCategoryUI
+                props={propsz as unknown as RubricMenuCategoryProps}
+                state={statez}
+                helpers={helperz}
+              />
+            );
           }}
         </RubricCategoryManager>
       );
@@ -521,7 +538,7 @@ const RubricMenuUI = ({
           <Typography.Text>
             Create your rubric either by clicking the edit icon above, or visiting the{' '}
             <Typography.Link
-              href={`/${getRubricURL(props.course, props.assignment as any)}`}
+              href={`/${getRubricURL(props.course, props.assignment)}`}
               target="_blank"
               rel="noopener noreferrer"
             >

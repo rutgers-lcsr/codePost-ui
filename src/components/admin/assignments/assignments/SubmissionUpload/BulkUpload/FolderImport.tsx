@@ -34,7 +34,7 @@ interface IFolderImportProps {
 
 /******************************* Folder import helpers ***********************************/
 
-const beforeUploadDirectory = (files: UploadFile[], callback: any) => {
+const beforeUploadDirectory = (files: UploadFile[], callback: (files: UploadFile[]) => void) => {
   const beforeUpload = async (file: UploadFile, fileList: UploadFile[]) => {
     if (fileList.length > 1) {
       // Case 1: use has selected a folder via menu, which will place all files into

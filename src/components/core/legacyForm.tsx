@@ -15,25 +15,32 @@ export interface LegacyFormController {
   getFieldDecorator: (name: string, options?: DecoratorOptions) => (node: React.ReactElement) => React.ReactElement;
   setFieldsValue: FormInstance['setFieldsValue'];
   getFieldValue: FormInstance['getFieldValue'];
-  validateFields: (callback: (err: any, values: any) => void) => void;
+  validateFields: (
+    callback: (
+      err: { errorFields: { name: string[]; errors: string[] }[] } | null,
+      values: Record<string, unknown>,
+    ) => void,
+  ) => void;
   resetFields: FormInstance['resetFields'];
 }
 
-type WrappedComponentRef = ((instance: any) => void) | React.MutableRefObject<any>;
+type WrappedComponentRef = ((instance: unknown) => void) | React.MutableRefObject<unknown>;
 
 type CreateOptions = {
   name?: string;
 };
 
 const create = (options?: CreateOptions) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- inherently generic HOC
   return (Component: React.ComponentType<any>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- inherently generic HOC
     const Wrapped = forwardRef<any, any>((props, ref) => {
       const { wrappedComponentRef, ...rest } = props as { wrappedComponentRef?: WrappedComponentRef } & Record<
         string,
         unknown
       >;
       const [form] = AntdForm.useForm();
-      const innerRef = useRef<any>(null);
+      const innerRef = useRef<unknown>(null);
 
       React.useImperativeHandle(ref, () => innerRef.current);
 
@@ -76,6 +83,7 @@ const create = (options?: CreateOptions) => {
         resetFields: form.resetFields,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- legacy HOC props spread
       const componentProps = { ...rest, form: legacyForm } as any;
 
       return (
@@ -87,6 +95,7 @@ const create = (options?: CreateOptions) => {
 
     Wrapped.displayName = options?.name || Component.displayName || Component.name || 'LegacyFormWrapper';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- legacy HOC type erasure
     return Wrapped as any;
   };
 };
@@ -98,7 +107,7 @@ const Form = (props: FormProps) => {
 
   return (
     <AntdForm {...rest} form={resolvedForm}>
-      {children as any}
+      {children as React.ReactNode}
     </AntdForm>
   );
 };

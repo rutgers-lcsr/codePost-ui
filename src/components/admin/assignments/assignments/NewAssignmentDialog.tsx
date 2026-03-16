@@ -120,13 +120,13 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
         },
       });
       return Promise.resolve(data);
-    } catch (err: any) {
-      if (err.json) {
+    } catch (err: unknown) {
+      if (err instanceof Response) {
         const data = await err.json();
         message.error(JSON.stringify(data));
         return Promise.reject(data);
       }
-      message.error(err.message || 'Failed to clone assignment');
+      message.error(err instanceof Error ? err.message : 'Failed to clone assignment');
       return Promise.reject(err);
     }
   };
@@ -157,7 +157,7 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
             studentsCanUpload,
             isAssignmentVisible,
             values.uploadDueDate
-              ? dayjs.tz((values.uploadDueDate as any).format('YYYY-MM-DD HH:mm:ss'), props.timezone).format()
+              ? dayjs.tz((values.uploadDueDate as dayjs.Dayjs).format('YYYY-MM-DD HH:mm:ss'), props.timezone).format()
               : null,
           );
 

@@ -394,7 +394,9 @@ export const StatsDrawer = (props: {
         title: 'Students',
         dataIndex: 'students',
         key: 'students',
-        ...(props.loadComplete && { sorter: (a: any, b: any) => a.students.localeCompare(b.students) }),
+        ...(props.loadComplete && {
+          sorter: (a: Record<string, string>, b: Record<string, string>) => a.students.localeCompare(b.students),
+        }),
       },
       {
         title: actionLabel,

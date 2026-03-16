@@ -119,7 +119,7 @@ class Settings extends Component<IProps, IState> {
       // Backend returns 200 or 400 (both are "success" in UX terms). Generated client throws on 400.
       .catch((err) => {
         // Treat 400 as success (e.g., email not found) to avoid account enumeration.
-        if ((err as any)?.response?.status === 400) {
+        if ((err as { response?: { status?: number } })?.response?.status === 400) {
           return;
         }
         throw err;

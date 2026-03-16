@@ -22,9 +22,9 @@ export type UploadFile = Omit<SubmissionFileCreateRequest['submissionFile'], 'su
 
 // Extended Assignment Type to bridge legacy and generated types
 export type Assignment = Omit<AssignmentGenerated, 'environment' | 'files' | 'fileTemplates'> & {
-  environment?: number | null;
-  files?: any[];
-  fileTemplates?: number[];
+  readonly environment: number;
+  readonly files: number[];
+  readonly fileTemplates: number[];
   submissions_inprogress_count?: number;
   submissions_finalized_count?: number;
   submissions_unclaimed_count?: number;
@@ -38,7 +38,7 @@ export type Assignment = Omit<AssignmentGenerated, 'environment' | 'files' | 'fi
   created?: string;
   modified?: string;
   names?: string[]; // Sometimes attached?
-  test_analysis?: any; // Sometimes attached?
+  test_analysis?: Record<string, unknown>; // Sometimes attached?
   runFilesOnSubmit?: boolean;
   runTestsOnSubmit?: boolean;
   testsAffectGrade?: boolean;

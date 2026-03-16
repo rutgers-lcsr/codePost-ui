@@ -14,8 +14,7 @@ export interface ExecutionProgress {
 
 export interface ExecutionResult {
   success: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cells?: any[]; // For notebooks (legacy, use output_data)
+  cells?: unknown[]; // For notebooks (legacy, use output_data)
   stdout?: string; // For code (legacy, use output_data)
   stderr?: string; // For code (legacy, use output_data)
   error?: string;
@@ -29,8 +28,8 @@ export interface ExecutionResult {
   timestamp?: string; // ISO timestamp from fresh execution
   system_logs?: string[];
   output_data?: {
-    cells?: any[];
-    [key: string]: any;
+    cells?: unknown[];
+    [key: string]: unknown;
   };
 }
 

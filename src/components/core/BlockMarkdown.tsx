@@ -34,15 +34,15 @@ const useBlockMarkdownRenderers = (extraRenderers: Partial<Components> | undefin
     };
   };
 
-  const headingRenderer = (props: any) => {
+  const headingRenderer = (props: { level?: number; children?: React.ReactNode }) => {
     return createElement(`h${props.level}`, blockProps(), props.children);
   };
 
-  const linkRenderer = (props: any) => {
+  const linkRenderer = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
     return <a {...props} target="_blank" rel="noopener noreferrer" />;
   };
 
-  const codeRenderer = (props: any) => {
+  const codeRenderer = (props: React.HTMLAttributes<HTMLElement> & ExtraProps & { inline?: boolean }) => {
     const { children, className, inline } = props;
     const language = className ? className.replace('language-', '') : '';
     const codeContent = String(children || '').replace(/\n$/, '');

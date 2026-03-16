@@ -32,10 +32,10 @@ interface IProps {
 class ForgotPasswordForm extends React.Component<IProps, State> {
   public readonly state: State = initialState;
 
-  public handleChange = (name: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  public handleChange = (name: keyof State, event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState: any = { ...prevstate };
+      const newState = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });

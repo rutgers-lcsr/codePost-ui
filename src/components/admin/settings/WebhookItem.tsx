@@ -6,6 +6,7 @@
 /* external imports */
 import * as React from 'react';
 import { Checkbox, Input, message } from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 /* codePost imports */
 import type { Webhook } from '../../../api-client';
@@ -16,14 +17,14 @@ import { webhooksApi } from '../../../api-client/clients';
 
 interface IProps {
   webhook: Webhook;
-  setJustSaved: any;
+  setJustSaved: (value: boolean) => void;
 }
 
 const WebhookItem = (props: IProps) => {
   const [isActive, setIsActive] = React.useState<boolean>(!!props.webhook.isActive);
   const [target, setTarget] = React.useState<string>(props.webhook.target);
 
-  const onChangeCheckbox = async (e: any) => {
+  const onChangeCheckbox = async (e: CheckboxChangeEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setIsActive(e.target.checked);
@@ -40,11 +41,11 @@ const WebhookItem = (props: IProps) => {
     }
   };
 
-  const onChangeInput = (e: any) => {
+  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTarget(e.target.value);
   };
 
-  const onBlurInput = async (e: any) => {
+  const onBlurInput = async (e: React.FocusEvent<HTMLInputElement>) => {
     setTarget(e.target.value);
 
     const payload: NonNullable<PartialUpdateRequest['patchedWebhook']> = {
@@ -71,8 +72,8 @@ const WebhookItem = (props: IProps) => {
           value={target}
           onChange={onChangeInput}
           onBlur={onBlurInput}
-          onPressEnter={(e: any) => {
-            e.target.blur();
+          onPressEnter={(e: React.KeyboardEvent<HTMLInputElement>) => {
+            (e.target as HTMLInputElement).blur();
           }}
         />
       </div>

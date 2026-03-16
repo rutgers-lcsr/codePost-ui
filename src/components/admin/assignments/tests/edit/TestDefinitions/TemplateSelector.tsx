@@ -30,7 +30,7 @@ const dataSource = [
   },
 ];
 
-const codeMap: { [id: string]: any } = {
+const codeMap: Record<string, Record<string, string>> = {
   '1': {
     java: `javac *.java && TestOutput true "Compiled!" || TestOutput false "Didn't compile"`,
     ['c/c++']: `g++ -o hello hello.cpp && TestOutput true "Compiled!" || TestOutput false "Didn't compile"`,
@@ -154,7 +154,12 @@ export const TemplateSelector = (props: IProps) => {
     })
     .filter((el) => el.code);
 
-  const expandedRowRender = (record: any, _index: number, _indent: any, _expanded: boolean) => {
+  const expandedRowRender = (
+    record: { key: string; test: string; code: string },
+    _index: number,
+    _indent: number,
+    _expanded: boolean,
+  ) => {
     const columns = [{ title: `Code`, dataIndex: 'code', key: 'code' }];
     const data = [
       {

@@ -13,7 +13,14 @@ import {
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { RubricCategory, SubmissionTest, TestCase, TestCategory } from '../../../api-client';
+import {
+  RubricCategory,
+  RubricComment,
+  SubmissionTest,
+  TestCase,
+  TestCategory,
+  TestExecutionRequest,
+} from '../../../api-client';
 import { autograderApi, submissionsApi } from '../../../api-client/clients';
 import { useTaskPolling } from '../../../hooks/useTaskPolling';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
@@ -161,19 +168,19 @@ function parseTestLogs(logs: string): ParsedTestResult[] {
     const raw = JSON.parse(logs);
     const normalized = Array.isArray(raw) ? raw : raw?.results;
     if (Array.isArray(normalized)) {
-      return normalized.map((data: any) => ({
-        name: data.name || 'Unknown Test',
-        passed: data.passed ?? data.status === 'passed',
-        score: typeof data.score === 'number' ? data.score : parseFloat(data.score || '0'),
+      return normalized.map((data: Record<string, unknown>) => ({
+        name: (data.name as string) || 'Unknown Test',
+        passed: (data.passed as boolean) ?? (data.status as string) === 'passed',
+        score: typeof data.score === 'number' ? data.score : parseFloat((data.score as string) || '0'),
         maxScore:
           typeof data.maxScore === 'number'
             ? data.maxScore
             : typeof data.max_score === 'number'
               ? data.max_score
-              : parseFloat(data.maxScore || data.max_score || '0'),
-        error: data.error,
-        message: data.message,
-        description: data.description,
+              : parseFloat((data.maxScore as string) || (data.max_score as string) || '0'),
+        error: data.error as string | undefined,
+        message: data.message as string | undefined,
+        description: typeof data.description === 'string' ? data.description : undefined,
       }));
     }
   } catch {
@@ -342,12 +349,15 @@ const TestsList: React.FC<TestsListProps> = ({
       if (fileOverrides && Object.keys(fileOverrides).length > 0) {
         payload.fileOverrides = fileOverrides;
       }
-      const response = await autograderApi.v2RunCreate({ testExecutionRequest: payload as any });
+      const response = await autograderApi.v2RunCreate({
+        testExecutionRequest: payload as unknown as TestExecutionRequest,
+      });
 
-      const taskId = (response as any).taskId || (response as any).task_id;
+      const responseRecord = response as unknown as Record<string, unknown>;
+      const taskId = responseRecord.taskId || responseRecord.task_id;
       if (!taskId) throw new Error('No task ID returned');
 
-      await pollTask(taskId);
+      await pollTask(String(taskId));
 
       // Optimistic update or message?
       if (testId) {
@@ -383,19 +393,19 @@ const TestsList: React.FC<TestsListProps> = ({
 
     // Prefer structured results from DB
     if (result.results && Array.isArray(result.results)) {
-      return result.results.map((r: any) => ({
-        name: r.name || 'Unknown Test',
-        passed: r.passed,
-        score: typeof r.score === 'number' ? r.score : parseFloat(r.score || '0'),
+      return (result.results as Record<string, unknown>[]).map((r: Record<string, unknown>) => ({
+        name: (r.name as string) || 'Unknown Test',
+        passed: r.passed as boolean,
+        score: typeof r.score === 'number' ? r.score : parseFloat((r.score as string) || '0'),
         maxScore:
           typeof r.maxScore === 'number'
             ? r.maxScore
             : typeof r.max_score === 'number'
               ? r.max_score
-              : parseFloat(r.maxScore || r.max_score || '0'),
-        error: r.error,
-        message: r.message,
-        description: r.description,
+              : parseFloat((r.maxScore as string) || (r.max_score as string) || '0'),
+        error: r.error as string | undefined,
+        message: r.message as string | undefined,
+        description: r.description as string | undefined,
       }));
     }
 
@@ -752,7 +762,7 @@ const TestsList: React.FC<TestsListProps> = ({
               // Find the rubric item details... logic omitted for brevity as implementation is same
               // Re-implementing concise logic:
               const itemDetails = rubricCategories
-                .flatMap((c) => (c.rubricComments as any[]) || [])
+                .flatMap((c) => (c.rubricComments as unknown as RubricComment[]) || [])
                 .find((rc) => rc.id === definition.rubricItem);
               if (!itemDetails) return null;
 

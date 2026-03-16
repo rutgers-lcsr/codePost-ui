@@ -175,7 +175,7 @@ interface ITemplateCardProps {
   currentUserEmail: string;
   onApply: () => void;
   onRefresh: () => void;
-  theme: any;
+  theme: typeof consoleThemes.light;
   isDarkTheme: boolean;
   isReadOnly: boolean;
 }
@@ -387,7 +387,7 @@ const TemplateCard: React.FC<ITemplateCardProps> = ({
                 </Tooltip>
                 <Popconfirm
                   title="Delete pinned comment?"
-                  onConfirm={(e) => handleDelete(e as any)}
+                  onConfirm={(e) => handleDelete(e)}
                   onCancel={(e) => e?.stopPropagation()}
                 >
                   <Tooltip title="Delete">

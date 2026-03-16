@@ -8,10 +8,18 @@ interface IProps {
   language: string;
 }
 
+interface TestBuilderValues {
+  name: string;
+  points: number;
+  logic: string;
+  description?: string;
+  timeout?: number;
+}
+
 export const TestBuilderModal = (props: IProps) => {
   const [form] = Form.useForm();
 
-  const generateSnippet = (values: any) => {
+  const generateSnippet = (values: TestBuilderValues) => {
     const { name, points, logic, description } = values;
     const rawLanguage = props.language.toLowerCase();
     const lang = (() => {

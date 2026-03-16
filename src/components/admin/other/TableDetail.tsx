@@ -18,8 +18,11 @@ import useDefaultPageSize from '../../utils/useDefaultPageSize';
 /* Types
 /**********************************************************************************************************************/
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ITableDetailColumn extends ColumnProps<any> {
-  renderForSearch?: (searchText: string) => (text: string, record: any, index: number) => React.ReactNode;
+  renderForSearch?: (
+    searchText: string,
+  ) => (text: string, record: Record<string, unknown>, index: number) => React.ReactNode;
 }
 
 interface IProps {
@@ -30,16 +33,16 @@ interface IProps {
   emptyNode: React.ReactNode;
   actions: React.ReactNode[];
   columns: ITableDetailColumn[];
-  data: any[];
-  tableProps?: any;
+  data: Record<string, unknown>[];
+  tableProps?: Record<string, unknown>;
   drawer?: React.ReactNode;
-  pagination?: any;
+  pagination?: Record<string, unknown> | false;
   hideSearch?: boolean;
   titleInfo?: string | React.ReactNode;
-  onRowClick?: (record: any) => void;
+  onRowClick?: (record: Record<string, unknown>) => void;
   detail?: React.ReactNode;
-  components?: any;
-  onRow?: any;
+  components?: Record<string, unknown>;
+  onRow?: (record: Record<string, unknown>, index?: number) => React.HTMLAttributes<HTMLElement>;
   expandAllRows?: boolean;
   tableOnly?: boolean;
 }
@@ -91,7 +94,7 @@ const getDefaultRenderFunction = (searchText: string) => {
 /**
  * Filter data based on search text
  */
-const filterData = (data: any[], searchText: string): any[] => {
+const filterData = (data: Record<string, unknown>[], searchText: string): Record<string, unknown>[] => {
   if (searchText === '') {
     return data;
   }
@@ -199,7 +202,7 @@ const TableDetail: React.FC<IProps> = ({
       return onRow;
     }
     if (onRowClick !== undefined) {
-      return (record: any, _rowIndex: number) => ({
+      return (record: Record<string, unknown>, _rowIndex?: number) => ({
         onClick: (_event: React.MouseEvent) => {
           if (onRowClick) {
             return onRowClick(record);

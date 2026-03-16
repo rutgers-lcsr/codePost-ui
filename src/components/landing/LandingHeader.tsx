@@ -26,7 +26,7 @@ function LandingHeader() {
     cursor: 'pointer',
   };
 
-  const expandIcon = (_: any) => {
+  const expandIcon = () => {
     return <MenuOutlined style={{ marginRight: 10 }} />;
   };
 

@@ -5,7 +5,7 @@ interface IAWSLambdaProps {
   accessKey: string;
   secretAccessKey: string;
   arn: string;
-  payload: any;
+  payload: Record<string, unknown>;
 }
 
 const invokeAWSLambda = async (props: IAWSLambdaProps) => {
@@ -24,7 +24,7 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
   };
 
   // This function invokes a lambda function based on a service lambda, arn, and payload
-  const invokeLambda = (lambda: any, arn: string, payload: any) => {
+  const invokeLambda = (lambda: AWS.Lambda, arn: string, payload: Record<string, unknown>) => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(function () {
         resolve('DELAY');
@@ -35,7 +35,7 @@ const invokeAWSLambda = async (props: IAWSLambdaProps) => {
         Payload: JSON.stringify(payload),
       };
 
-      const genericCallback = (err: any, data: any) => {
+      const genericCallback = (err: AWS.AWSError, data: AWS.Lambda.Types.InvocationResponse) => {
         if (err) {
           clearTimeout(timeout);
           reject(err);

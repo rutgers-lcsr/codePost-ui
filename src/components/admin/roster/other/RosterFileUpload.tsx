@@ -238,8 +238,8 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
       promises.push(
         props.changeRoster(toAdd, toRemove, USER_APP.Student).then(() => {
           // build new sections
-          const sectionMap: any = {};
-          const innerPromises: Array<Promise<any>> = [];
+          const sectionMap: Record<string, string[]> = {};
+          const innerPromises: Array<Promise<unknown>> = [];
 
           // Pre-fill sections to account for students whose sections we aren't
           // updating.
@@ -370,8 +370,8 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
       const newList: string[] = Array.from(Object.keys(nextRoster));
 
       /* calculate changed users and removed users */
-      const deletedList: any = {};
-      const changedList: any = {};
+      const deletedList: IUserMap = {};
+      const changedList: Record<string, { old: IUserProperties; new: IUserProperties }> = {};
       for (const user of oldList) {
         if (!newList.includes(user)) {
           deletedList[user] = oldRoster[user];
@@ -390,7 +390,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
       }
 
       /* calculate added users */
-      const addedList: any = {};
+      const addedList: IUserMap = {};
       for (const user of newList) {
         if (!oldList.includes(user)) {
           addedList[user] = nextRoster[user];
@@ -419,7 +419,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
 
   const transformOldRoster = useCallback(
     (userType: string, users: string[], sectionsByStudent: { [studentEmail: string]: Section }): IUserMap => {
-      const userMap: any = {};
+      const userMap: IUserMap = {};
       users.forEach((user) => {
         switch (userType) {
           case 'student':
@@ -686,7 +686,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
         <RosterInput
           onRosterUpload={onRosterUpload}
           roleType={props.roleType}
-          sections={props.sections}
+          sections={props.sections.map((section) => section.name)}
           rosterInput={rosterInput}
           emailNewUsers={props.emailNewUsers}
         />

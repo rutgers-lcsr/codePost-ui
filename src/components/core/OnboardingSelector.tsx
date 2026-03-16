@@ -294,7 +294,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
   } else {
     // call prop function onClick which triggers tour
     const uploadFile = (
-      <CPButton cpType="secondary" block onClick={setUploading.bind(true)}>
+      <CPButton cpType="secondary" block onClick={() => setUploading(true)}>
         Upload your own code to annotate
       </CPButton>
     );

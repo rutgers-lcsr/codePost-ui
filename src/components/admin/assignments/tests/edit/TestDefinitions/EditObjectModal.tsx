@@ -34,16 +34,16 @@ export const EditObjectModal = (props: IUploadProps) => {
   };
 
   /******************************* State Change Functions ****************************/
-  const toggleVisible = (_e: any) => {
+  const toggleVisible = (_e: React.MouseEvent<HTMLElement>) => {
     setVisible(!visible);
   };
 
-  const onChange = (e: any) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
 
   React.useEffect(() => {
-    const handleKeydown = (e: any) => {
+    const handleKeydown = (e: KeyboardEvent) => {
       if (visible && e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();

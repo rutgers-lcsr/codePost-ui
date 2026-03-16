@@ -31,12 +31,12 @@ export const AddCategoryModal = (props: IUploadProps) => {
     setVisible(!visible);
   };
 
-  const onChange = (e: any) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   };
 
   React.useEffect(() => {
-    const handleKeydown = (e: any) => {
+    const handleKeydown = (e: KeyboardEvent) => {
       if (visible && e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();

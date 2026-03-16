@@ -20,7 +20,7 @@ interface IProps {
   title: string;
   features: Array<string | React.ReactElement>;
   captions: Array<string | React.ReactElement>;
-  spotlights: any[];
+  spotlights: React.ReactElement[];
   isFlipped: boolean;
   name: string;
   maxPictureWidth: number;

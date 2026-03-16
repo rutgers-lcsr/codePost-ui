@@ -63,7 +63,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
   const [showInactive, setShowInactive] = useState(false);
 
   /* Helper Functions */
-  const sortFunction = (a: any, b: any) => {
+  const sortFunction = (a: string | number, b: string | number) => {
     if (typeof a === 'number' && typeof b === 'number') {
       return b - a;
     } else if (typeof a === 'number') {
@@ -129,7 +129,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
         index
         element={React.createElement(() => {
           let columns: ITableDetailColumn[] = [];
-          let data: any[] = [];
+          let data: Record<string, unknown>[] = [];
           if (props.loadComplete) {
             const aligner: 'left' | 'center' | 'right' = 'center';
             columns = [
@@ -138,10 +138,11 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                 dataIndex: 'student',
                 key: 'primary',
                 defaultSortOrder: 'ascend' as const,
-                sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+                sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+                  (a.key as string).localeCompare(b.key as string),
                 renderForSearch: (searchText: string) => {
-                  return (_text: string, record: any, _index: number) => {
-                    const student = record.student;
+                  return (_text: string, record: Record<string, unknown>, _index: number) => {
+                    const student = record.student as string;
                     const content =
                       props.students.indexOf(student) > -1 ? (
                         <Typography.Text strong>
@@ -181,18 +182,21 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
                   title: assignment.name,
                   dataIndex: assignment.name,
                   key: assignment.name,
-                  sorter: (a: any, b: any) => {
-                    return sortFunction(a[`${assignment.name}_sort`], b[`${assignment.name}_sort`]);
+                  sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
+                    return sortFunction(
+                      a[`${assignment.name}_sort`] as string | number,
+                      b[`${assignment.name}_sort`] as string | number,
+                    );
                   },
                   align: aligner,
                   className: 'student-table',
                   renderForSearch: () => {
-                    return (_text: string, record: any, _index: number) => {
-                      const score: string | number = record[assignment.name];
+                    return (_text: string, record: Record<string, unknown>, _index: number) => {
+                      const score = record[assignment.name] as string | number;
                       if (score === '--') {
                         return '--';
                       } else {
-                        const studentSubmissions = props.submissionsByStudent[record.student];
+                        const studentSubmissions = props.submissionsByStudent[record.student as string];
                         if (!studentSubmissions) {
                           return null;
                         }
@@ -241,7 +245,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
             }
 
             data = rowValues.map((studentEmail) => {
-              const toRet: any = {
+              const toRet: Record<string, unknown> = {
                 student: studentEmail,
                 key: studentEmail,
               };

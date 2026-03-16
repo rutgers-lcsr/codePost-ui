@@ -2,11 +2,14 @@
 import * as React from 'react';
 
 // Source: https://usehooks.com/useOnClickOutside/
-const useOnClickOutside = (ref: any, handler: any) => {
+const useOnClickOutside = (
+  ref: React.RefObject<HTMLElement | null>,
+  handler: (event: MouseEvent | TouchEvent) => void,
+) => {
   React.useEffect(() => {
-    const listener = (event: any) => {
+    const listener = (event: MouseEvent | TouchEvent) => {
       // Do nothing
-      if (!ref.current || ref.current.contains(event.target)) {
+      if (!ref.current || ref.current.contains(event.target as Node | null)) {
         return;
       }
 

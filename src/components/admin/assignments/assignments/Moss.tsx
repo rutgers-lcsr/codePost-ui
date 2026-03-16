@@ -52,6 +52,7 @@ import queryString from 'query-string';
 import { encodeForLink } from '../../../core/URLutils';
 
 import { ChangeEvent, ReactNode, useEffect, useState } from 'react';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { trackFeature } from '../../../../components/utils/Fullstory';
 
 const { Option } = Select;
@@ -223,11 +224,11 @@ const Moss = (props: IMossProps) => {
     }
   };
 
-  const onChangeMossID = (e: any) => {
+  const onChangeMossID = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMossID(e.currentTarget.value);
   };
 
-  const onChangeUrlID = (e: any) => {
+  const onChangeUrlID = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrlID(e.currentTarget.value);
   };
 
@@ -282,6 +283,7 @@ const Moss = (props: IMossProps) => {
         from_url: window.location.href.split('?')[0],
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',
         secretAccessKey: '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',
@@ -397,7 +399,7 @@ const Moss = (props: IMossProps) => {
     </div>
   );
 
-  const onChangeFileTemplateCheckbox = (e: any) => {
+  const onChangeFileTemplateCheckbox = (e: CheckboxChangeEvent) => {
     setIncludeFileTemplates(e.target.checked);
   };
 
@@ -572,7 +574,7 @@ const Moss = (props: IMossProps) => {
   );
 };
 
-const ProgressBar = (props: any) => {
+const ProgressBar = (props: { time: number }) => {
   const timerTime = props.time; // milliseconds, AWS timeout
 
   const [counter, setCounter] = useState(0);

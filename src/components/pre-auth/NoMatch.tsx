@@ -30,7 +30,7 @@ interface IProps {
 interface IState {
   likes: number;
   dislikes: number;
-  action: any;
+  action: string | null;
   intercomOpen: boolean;
   quote: IQuoteType;
 }
@@ -96,8 +96,10 @@ class NoMatch extends React.Component<IProps, IState> {
 
   public openIntercom = () => {
     if (this.state.intercomOpen) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).Intercom('hide');
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).Intercom('show');
     }
     this.setState({ intercomOpen: !this.state.intercomOpen });

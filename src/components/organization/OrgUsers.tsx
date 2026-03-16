@@ -26,7 +26,7 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
   const [pageSize, setPageSize] = useDefaultPageSize();
   const [actionLoading, setActionLoading] = React.useState<number | null>(null);
 
-  const performAction = async (endpoint: string, body: any, successMessage: string) => {
+  const performAction = async (endpoint: string, body: Record<string, string>, successMessage: string) => {
     setActionLoading(1);
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/organizations/${orgId}/${endpoint}/`, {

@@ -138,7 +138,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
   } else {
     graderPanelContent = (
       <GraderRoutes
-        currentCourse={currentCourse as any}
+        currentCourse={currentCourse}
         assignments={assignments}
         user={props.user}
         localSectionsLed={localSectionsLed}
@@ -165,12 +165,10 @@ const Grader: React.FC<IComponentProps> = (props) => {
       <Routes>
         <Route
           path=":panel/:assignment"
-          // @ts-expect-error — legacy type incompatibility
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
         <Route
           path=":panel"
-          // @ts-expect-error — legacy type incompatibility
           element={<AssignmentMenu currentCourse={currentCourse} assignments={assignments} baseURL={graderBaseURL} />}
         />
       </Routes>

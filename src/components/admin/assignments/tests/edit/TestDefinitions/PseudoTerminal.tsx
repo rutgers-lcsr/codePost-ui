@@ -126,7 +126,8 @@ export const PseudoTerminal = (props: IResultProps) => {
       : props.env.buildType === 'default'
         ? props.env.language
         : props.env.buildType;
-  const envSpecText = lookupValue && locale[lookupValue] !== undefined ? locale[lookupValue].pseudoterminal : null;
+  const envSpecText: React.ReactNode =
+    lookupValue && locale[lookupValue] !== undefined ? locale[lookupValue].pseudoterminal : null;
 
   const logElem = (
     <div
@@ -230,7 +231,11 @@ export const PseudoTerminal = (props: IResultProps) => {
         size="small"
         showSearch
         defaultValue={props.activeSubmission !== undefined ? props.activeSubmission.id.toString() : '0'}
-        filterOption={(input, option: any) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .indexOf(input.toLowerCase()) >= 0
+        }
       >
         {props.submissions.map((sub, i) => (
           <Select.Option key={i} value={sub.id.toString()}>

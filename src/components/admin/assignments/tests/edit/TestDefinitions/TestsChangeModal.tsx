@@ -101,7 +101,10 @@ export const TestsChangeModal = (props: IProps) => {
     return parsedTests;
   };
 
-  const compareDiff = (parsedTests: { [categoryName: string]: Set<string> }, casesByCategory: TestCasesByCategory) => {
+  const compareDiff = (
+    parsedTests: { [categoryName: string]: Set<string> },
+    casesByCategory: TestCasesByCategory,
+  ): [ICaseNamesByCategoryName, ICaseNamesByCategoryName, ICaseNamesByCategoryName, ICasesByCategoryName] => {
     // 1. Pre-process data to make comparison faster
     //    a) We get categories by id for fast lookup
     //    b) We get test cases by name by category name. That way we can find the
@@ -236,7 +239,7 @@ export const TestsChangeModal = (props: IProps) => {
       } else {
         // No errors
         const parsedTests = parseTests(props.currentFileCode);
-        const [newCategories, deletedCategories, newTests, deletedTests]: any = compareDiff(
+        const [newCategories, deletedCategories, newTests, deletedTests] = compareDiff(
           parsedTests,
           props.casesByCategory,
         );

@@ -52,7 +52,11 @@ import { compareRubricCategories, compareRubricComments } from './RubricUtils';
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
   baseURL: string;
-  history: any;
+  history: {
+    push: (path: string) => void;
+    replace?: (path: string) => void;
+    goBack?: () => void;
+  };
 }
 
 const RubricUI = ({
@@ -135,7 +139,7 @@ const RubricUI = ({
   if (loadComplete) {
     const changesMade = helpers.changesMade();
 
-    const onSave = (_e: any) => {
+    const onSave = (_e?: React.SyntheticEvent) => {
       helpers.onSave(undefined);
     };
 
@@ -515,13 +519,20 @@ const RubricUI = ({
                 onCommentEdit={helpers.onCommentEdit}
                 onCommentUndo={helpers.onCommentUndo}
                 activateCommentExplorer={helpers.activateCommentExplorer}
-                onCommentDragEnd={helpers.onCommentDragEnd}
+                onCommentDragEnd={(result: unknown) =>
+                  helpers.onCommentDragEnd(
+                    result as {
+                      destination?: { droppableId: string; index: number } | null;
+                      source: { index: number };
+                    },
+                  )
+                }
                 moveCategory={helpers.moveCategory}
                 index={activeCategoryIndex}
                 numCategories={sortedCategories.length}
                 otherCategories={sortedCategories}
                 feedbackScores={state.feedbackScores}
-                commentFeedbackOn={props.assignment.commentFeedback}
+                commentFeedbackOn={props.assignment.commentFeedback ?? false}
                 showPointLimits={showPointLimits}
                 showHelpText={showHelpText}
                 showExplanations={showExplanations}
@@ -577,7 +588,7 @@ const RubricUI = ({
           actions={actions}
           title="Rubric"
           content={content}
-          goBack={null}
+          goBack={() => {}}
           isEmpty={state.rubricCategories.length === 0}
           emptyNode={
             <Empty

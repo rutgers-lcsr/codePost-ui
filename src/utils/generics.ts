@@ -93,6 +93,7 @@ async function handleErrorResponse(res: Response): Promise<never> {
     try {
       const tokenPayload = getDecodedTokenPayload();
       if (!tokenPayload) throw new Error('Invalid token');
+      if (typeof tokenPayload.exp !== 'number') throw new Error('Invalid token expiration');
 
       const tokenExpiration = tokenPayload.exp * 1000; // Convert to milliseconds
       const isTokenExpired = tokenExpiration < Date.now();

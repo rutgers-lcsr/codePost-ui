@@ -15,7 +15,7 @@ import ThemeToggle from '../ThemeToggle';
 
 interface IStandardConsoleHeaderProps {
   user: UserType;
-  handleLogout: any;
+  handleLogout: () => void;
   thisApp?: USER_TYPE;
 }
 

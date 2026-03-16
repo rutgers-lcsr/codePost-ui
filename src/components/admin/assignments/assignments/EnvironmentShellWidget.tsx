@@ -142,7 +142,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
 
               // Build dynamic welcome message
               const mounts = parsed.mounts || [];
-              const datasetMounts = mounts.filter((m: any) => m.type === 'dataset');
+              const datasetMounts = mounts.filter((m: { type: string }) => m.type === 'dataset');
 
               let message = '\r\n';
               message += '\x1b[90m----------------- Codepost Environment -----------------\x1b[0m\r\n';
@@ -157,7 +157,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
               }
               if (datasetMounts.length > 0) {
                 message += `  \x1b[32m✓\x1b[0m ${datasetMounts.length} dataset${datasetMounts.length > 1 ? 's' : ''} (mounted)\r\n`;
-                datasetMounts.forEach((m: any) => {
+                datasetMounts.forEach((m: { container: string }) => {
                   message += `    \x1b[90m→\x1b[0m ${m.container}\r\n`;
                 });
               }

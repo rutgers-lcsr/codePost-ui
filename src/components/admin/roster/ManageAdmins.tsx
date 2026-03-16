@@ -34,7 +34,7 @@ import SendEmailModal from '../other/SendEmailModal';
 
 const confirm = Modal.confirm;
 
-interface IAdminTableData {
+interface IAdminTableData extends Record<string, unknown> {
   key: string;
   admin: string;
   actions: React.ReactNode;
@@ -153,8 +153,8 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         defaultSortOrder: 'ascend' as const,
         sorter: (a: { key: string }, b: { key: string }) => a.key.localeCompare(b.key),
         renderForSearch: (searchText: string) => {
-          return (_text: string, record: { admin: string; key: string }, _index: number) => {
-            const adminEmail = record.admin;
+          return (_text: string, record: Record<string, unknown>, _index: number) => {
+            const adminEmail = record.admin as string;
             const highlightedEmail = (
               <Highlighter
                 highlightStyle={{

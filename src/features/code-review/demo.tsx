@@ -493,7 +493,7 @@ const demoTestCases: TestCasesByCategory = {
 const buildDemoSubmission = (user: string | null, fileIds: number[]): AnonymousSubmissionType => ({
   id: DEMO_SUBMISSION_ID,
   isFinalized: false,
-  files: fileIds as any,
+  files: fileIds as unknown as AnonymousSubmissionType['files'],
   students: ['student1@example.edu'],
   assignment: DEMO_ASSIGNMENT_ID,
   dateEdited: '',
@@ -534,9 +534,11 @@ const normalizeUploadFile = (file: DemoUploadFile | null | undefined, index: num
   };
 };
 
-const buildUploadedFiles = (files: DemoUploadFile[]): { fileList: FileType[]; commentMap: Record<number, any[]> } => {
+const buildUploadedFiles = (
+  files: DemoUploadFile[],
+): { fileList: FileType[]; commentMap: Record<number, unknown[]> } => {
   const fileList: FileType[] = [];
-  const commentMap: Record<number, any[]> = {};
+  const commentMap: Record<number, unknown[]> = {};
 
   files.forEach((rawFile, index) => {
     const file = normalizeUploadFile(rawFile, index);
@@ -561,7 +563,7 @@ const buildUploadedFiles = (files: DemoUploadFile[]): { fileList: FileType[]; co
   return { fileList, commentMap };
 };
 
-const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<number, any[]> } => {
+const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<number, unknown[]> } => {
   const fileList: FileType[] = [];
   fileList[0] = demoFilesGrader[0] as FileType;
   fileList[1] = demoFilesGrader[1] as FileType;
@@ -591,8 +593,8 @@ const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<n
 
 const buildDefaultStudentFiles = (): {
   fileList: FileType[];
-  commentMap: Record<number, any[]>;
-  commentRubricComments: Record<number, any>;
+  commentMap: Record<number, unknown[]>;
+  commentRubricComments: Record<number, unknown>;
 } => {
   const fileList: FileType[] = [];
   fileList[0] = demoFilesStudent[0] as FileType;
@@ -735,7 +737,7 @@ export const getDemoPinnedTemplates = (currentUserEmail: string): CommentTemplat
   ];
 };
 
-export const loadDemoGrader = (files: any[], user: string | null) => {
+export const loadDemoGrader = (files: DemoUploadFile[], user: string | null) => {
   const demoAssignment = { ...demoAssignmentBase };
   const demoCourse = { ...demoCourseBase };
 
@@ -764,7 +766,7 @@ export const loadDemoGrader = (files: any[], user: string | null) => {
   };
 };
 
-export const loadDemoStudent = (files: any[], user: string | null) => {
+export const loadDemoStudent = (files: DemoUploadFile[], user: string | null) => {
   const demoAssignment = { ...demoAssignmentBase, studentsCanSeeGraders: true };
   const demoCourse = { ...demoCourseBase };
 

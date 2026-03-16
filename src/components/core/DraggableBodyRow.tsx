@@ -3,12 +3,9 @@ import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 
-interface IBodyRowProps {
+interface IBodyRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   moveRow: (dragIndex: number, hoverIndex: number) => void;
   index: number;
-  style?: React.CSSProperties;
-  className?: string;
-  [key: string]: any;
 }
 
 interface DragItem {

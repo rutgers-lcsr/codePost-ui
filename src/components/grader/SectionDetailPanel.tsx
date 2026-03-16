@@ -54,7 +54,7 @@ interface IState {
   /* Anonymous grading contorl */
   showStudentEmails: boolean;
 
-  selectedSubmissions: number[];
+  selectedSubmissions: React.Key[];
 }
 
 class SectionDetailPanel extends Component<IProps, IState> {
@@ -106,9 +106,9 @@ class SectionDetailPanel extends Component<IProps, IState> {
   // load all the sections (in order to get the name and students), and for each
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
-    const submissionMap: any = {};
+    const submissionMap: Record<number, Record<string, SubmissionType | null>> = {};
     for (const section of this.props.sections) {
-      const mapValue: any = {};
+      const mapValue: Record<string, SubmissionType | null> = {};
       const submissions = await sectionsApi.submissionsList({
         id: section.id,
         assignment: this.props.assignment.id,
@@ -117,7 +117,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
 
       for (const student of section.students) {
         if (student) {
-          mapValue[student] = submissions.find((el) => el.students && el.students.indexOf(student) > -1);
+          mapValue[student] = submissions.find((el) => el.students && el.students.indexOf(student) > -1) ?? null;
         }
       }
 
@@ -129,7 +129,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
 
   public loadHistories = async (submissions: SubmissionType[]) => {
     this.setState({ viewsLoading: true });
-    const toRet: any = {};
+    const toRet: Record<number, Record<string, string>> = {};
     const promises = submissions.map((submission) => {
       toRet[submission.id] = {};
       return Submission.readHistory(submission.id).then((histories: SubmissionHistoryType[]) => {
@@ -148,7 +148,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
     return toRet;
   };
 
-  public claimSubmissions = async (toHandle: number[], unclaim: boolean | undefined) => {
+  public claimSubmissions = async (toHandle: number[], unclaim: boolean) => {
     const promises = toHandle.map((id) => {
       return Submission.update({ id: id, isFinalized: false, grader: unclaim ? '' : this.props.email });
     });
@@ -197,7 +197,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
     }
   };
 
-  public onRowSelect = (selectedRowKeys: any[]) => {
+  public onRowSelect = (selectedRowKeys: React.Key[]) => {
     this.setState({ selectedSubmissions: selectedRowKeys });
   };
 
@@ -266,7 +266,10 @@ class SectionDetailPanel extends Component<IProps, IState> {
         type="primary"
         disabled={this.state.selectedSubmissions.length === 0}
         onClick={() => {
-          this.claimSubmissions(this.state.selectedSubmissions, false);
+          this.claimSubmissions(
+            this.state.selectedSubmissions.map((key) => Number(key)).filter((key) => !Number.isNaN(key)),
+            false,
+          );
         }}
       >
         Claim Selected

@@ -10,8 +10,8 @@ import Editor from '@monaco-editor/react';
 interface IRegradeInstructionsModalProps {
   open: boolean;
   instructions: string;
-  cancel: any;
-  save: any;
+  cancel: () => void;
+  save: (instructions: string) => void;
 }
 
 const RegradeInstructionsModal = (props: IRegradeInstructionsModalProps) => {

@@ -25,6 +25,7 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSucc
   }) => {
     setIsSubmitting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const payload: any = {
         name: values.name,
         period: values.period,

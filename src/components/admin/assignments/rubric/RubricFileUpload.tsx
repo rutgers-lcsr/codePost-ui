@@ -66,7 +66,7 @@ const RubricFileUpload: FC<IProps> = ({
   const parseRubric = useCallback(
     (rubric: IDownloadCategory[]) => {
       const categories: RubricCategory[] = [];
-      const comments: any = {};
+      const comments: Record<number, RubricComment[]> = {};
 
       let categoryID = -1;
       let commentID = -1;
@@ -186,7 +186,7 @@ const RubricFileUpload: FC<IProps> = ({
   }, [onRubricUpload, newCategories, newComments, toggleStatus]);
 
   const beforeUpload = useCallback(
-    (file: any) => {
+    (file: File) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {

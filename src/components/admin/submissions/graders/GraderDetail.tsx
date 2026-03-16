@@ -40,6 +40,15 @@ interface IProps {
 const GraderDetail = (props: IProps) => {
   const aligner: 'left' | 'center' | 'right' = 'center';
 
+  interface GraderRow {
+    key: string;
+    _claimedRaw: number;
+    _finalizedRaw: number;
+    _unfinalizedRaw: number;
+    _graderAverageRaw: number;
+    _assignmentAverageRaw: number;
+  }
+
   return (
     <Routes>
       <Route
@@ -51,42 +60,42 @@ const GraderDetail = (props: IProps) => {
               dataIndex: 'assignment',
               key: 'assignment',
               defaultSortOrder: 'ascend' as const,
-              sorter: (a: any, b: any) => a.key.localeCompare(b.key),
+              sorter: (a: GraderRow, b: GraderRow) => a.key.localeCompare(b.key),
             },
             {
               title: 'Claimed',
               dataIndex: 'claimed',
               key: 'claimed',
               align: aligner,
-              sorter: (a: any, b: any) => a._claimedRaw - b._claimedRaw,
+              sorter: (a: GraderRow, b: GraderRow) => a._claimedRaw - b._claimedRaw,
             },
             {
               title: 'Finalized',
               dataIndex: 'finalized',
               key: 'finalized',
               align: aligner,
-              sorter: (a: any, b: any) => a._finalizedRaw - b._finalizedRaw,
+              sorter: (a: GraderRow, b: GraderRow) => a._finalizedRaw - b._finalizedRaw,
             },
             {
               title: 'Unfinalized',
               dataIndex: 'unfinalized',
               key: 'unfinalized',
               align: aligner,
-              sorter: (a: any, b: any) => a._unfinalizedRaw - b._unfinalizedRaw,
+              sorter: (a: GraderRow, b: GraderRow) => a._unfinalizedRaw - b._unfinalizedRaw,
             },
             {
               title: 'Avg. Grade',
               dataIndex: 'graderAverage',
               key: 'graderAverage',
               align: aligner,
-              sorter: (a: any, b: any) => a._graderAverageRaw - b._graderAverageRaw,
+              sorter: (a: GraderRow, b: GraderRow) => a._graderAverageRaw - b._graderAverageRaw,
             },
             {
               title: 'Assignment Avg.',
               dataIndex: 'assignmentAverage',
               key: 'assignmentAverage',
               align: aligner,
-              sorter: (a: any, b: any) => a._assignmentAverageRaw - b._assignmentAverageRaw,
+              sorter: (a: GraderRow, b: GraderRow) => a._assignmentAverageRaw - b._assignmentAverageRaw,
             },
           ];
 

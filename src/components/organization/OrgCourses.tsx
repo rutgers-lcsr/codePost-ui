@@ -47,6 +47,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       timezone: course.timezone,
       emailNewUsers: course.emailNewUsers,
       anonymousGradingDefault: course.anonymousGradingDefault,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       allowGradersToEditRubric: (course as any).allowGradersToEditRubric || false, // Check if this exists in generated model
       minComments: course.minComments,
       studentsCanSeeGraders: course.studentsCanSeeGraders,
@@ -134,7 +135,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
         { text: 'Active', value: false },
         { text: 'Archived', value: true },
       ],
-      onFilter: (value: any, record: Course) => record.archived === value,
+      onFilter: (value: boolean | React.Key, record: Course) => record.archived === value,
     },
     {
       title: 'Actions',

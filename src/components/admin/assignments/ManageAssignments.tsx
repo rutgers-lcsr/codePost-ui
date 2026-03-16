@@ -102,7 +102,20 @@ export interface IManageAssignmentsProps {
 
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
-const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElement }) => {
+interface LegacyRouteProps {
+  match: { params: Record<string, string | undefined>; url: string; path: string; isExact: boolean };
+  location: ReturnType<typeof useLocation>;
+  history: {
+    push: (path: string) => void;
+    replace: (path: string) => void;
+    go: (n: number) => void;
+    goBack: () => void;
+    goForward: () => void;
+    location: ReturnType<typeof useLocation>;
+  };
+}
+
+const RoutePropsWrapper = ({ render }: { render: (props: LegacyRouteProps) => React.ReactElement }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
@@ -112,11 +125,11 @@ const RoutePropsWrapper = ({ render }: { render: (props: any) => React.ReactElem
   const history = {
     push: (path: string) => navigate(path),
     replace: (path: string) => navigate(path, { replace: true }),
-    go: (n: number) => navigate(n),
+    go: (n: number) => navigate(n as number),
     goBack: () => navigate(-1),
     goForward: () => navigate(1),
     location,
-  } as any;
+  };
 
   return render({ match, location, history });
 };
@@ -149,7 +162,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`rubrics/${encodedName}`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) => (
+                render={(subprops: LegacyRouteProps) => (
                   <Suspense fallback={<Loading />}>
                     <RubricManager
                       {...subprops}
@@ -191,7 +204,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/stats`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -223,7 +236,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/regrades`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -250,7 +263,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/settings`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) => (
+                render={(subprops: LegacyRouteProps) => (
                   <AssignmentsTable
                     {...props}
                     {...subprops}
@@ -271,7 +284,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/download/grades`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -296,7 +309,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/delete`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) => (
+                render={(subprops: LegacyRouteProps) => (
                   <AssignmentsTable
                     {...props}
                     {...subprops}
@@ -317,7 +330,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/upload/single`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -342,7 +355,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/upload/multiple`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -367,7 +380,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/upload/import`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -392,7 +405,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/bulk-edit`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.fullSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -417,7 +430,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`${encodedName}/onboarding`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) =>
+                render={(subprops: LegacyRouteProps) =>
                   !props.partialSubmissionsLoadComplete ? (
                     <Loading />
                   ) : (
@@ -442,7 +455,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`environment/${encodedName}/*`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) => (
+                render={(subprops: LegacyRouteProps) => (
                   <Suspense fallback={<Loading />}>
                     <AssignmentTests
                       {...subprops}
@@ -463,7 +476,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
             path={`plagiarism/${encodedName}`}
             element={
               <RoutePropsWrapper
-                render={(subprops: any) => (
+                render={(subprops: LegacyRouteProps) => (
                   <Suspense fallback={<Loading />}>
                     <Moss
                       {...subprops}
@@ -486,7 +499,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         path="environment"
         element={
           <RoutePropsWrapper
-            render={(subprops: any) => (
+            render={(subprops: LegacyRouteProps) => (
               <Suspense fallback={<Loading />}>
                 <TestsOverview {...subprops} assignments={props.assignments} />
               </Suspense>
@@ -498,7 +511,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         path="rubrics"
         element={
           <RoutePropsWrapper
-            render={(subprops: any) => (
+            render={(subprops: LegacyRouteProps) => (
               <Suspense fallback={<Loading />}>
                 <RubricOverview {...subprops} assignments={props.assignments} course={props.currentCourse} />
               </Suspense>
@@ -510,7 +523,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         path="download/grades"
         element={
           <RoutePropsWrapper
-            render={(subprops: any) =>
+            render={(subprops: LegacyRouteProps) =>
               !props.submissionsByUserLoadComplete ? (
                 <Loading />
               ) : (
@@ -533,7 +546,7 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
         path="overview"
         element={
           <RoutePropsWrapper
-            render={(subprops: any) => {
+            render={(subprops: LegacyRouteProps) => {
               return (
                 <AssignmentsTable
                   {...props}

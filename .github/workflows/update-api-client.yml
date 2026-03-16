@@ -1,0 +1,81 @@
+# Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
+name: Update API Client
+
+on:
+  repository_dispatch:
+    types: [api-release]
+  workflow_dispatch:
+    inputs:
+      schema_url:
+        description: 'URL to the OpenAPI schema'
+        required: true
+        default: 'https://codepost-api.cs.rutgers.edu/api/schema/'
+
+jobs:
+  update-client:
+    name: Regenerate TypeScript Client
+    runs-on: testing-codepost
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+
+      - name: Determine schema URL and version
+        id: schema
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "url=${{ github.event.client_payload.schema_url }}" >> "$GITHUB_OUTPUT"
+            echo "version=${{ github.event.client_payload.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=${{ github.event.inputs.schema_url }}" >> "$GITHUB_OUTPUT"
+            echo "version=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download schema
+        run: curl -fSL -o /tmp/schema.yaml "${{ steps.schema.outputs.url }}"
+
+      - name: Generate TypeScript client
+        run: |
+          npx @openapitools/openapi-generator-cli generate \
+            -i /tmp/schema.yaml \
+            -g typescript-fetch \
+            -o src/api-client \
+            --additional-properties=typescriptThreePlus=true \
+            --additional-properties=supportsES6=true \
+            --additional-properties=nullSafeAdditionalProps=true \
+            --additional-properties=withoutRuntimeChecks=true \
+            --additional-properties=removeOperationIdPrefix=true \
+            --additional-properties=stringEnums=true
+
+      - name: Format generated client
+        run: npx prettier --write src/api-client || true
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git add src/api-client/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="chore/update-api-client-${{ steps.schema.outputs.version }}"
+          git checkout -b "$BRANCH"
+          git commit -m "chore: update API client to ${{ steps.schema.outputs.version }}"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base development \
+            --head "$BRANCH" \
+            --title "chore: update API client to ${{ steps.schema.outputs.version }}" \
+            --body "Auto-generated from API release ${{ steps.schema.outputs.version }}.
+
+          Review the generated client changes and merge when ready."

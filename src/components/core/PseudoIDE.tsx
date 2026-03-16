@@ -141,7 +141,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
         id: selectedTestCase.id,
         testCaseRunRequest: payload,
       });
-      awaitTestResult(result.task, callback.bind({}, selectedTestCase));
+      awaitTestResult(result.task, (response: unknown) => callback(selectedTestCase, response as TestEditorResultType));
     }
   };
 

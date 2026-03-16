@@ -1,16 +1,17 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 declare module 'react-window' {
-  export const FixedSizeList: any;
-  export type FixedSizeListProps = any;
+  import type { ComponentType } from 'react';
+  export const FixedSizeList: ComponentType<Record<string, unknown>>;
+  export type FixedSizeListProps = Record<string, unknown>;
 }
 
 declare module 'turndown-plugin-gfm' {
-  const plugin: any;
+  const plugin: unknown;
   export = plugin;
 }
 
 declare module 'remark-disable-tokenizers' {
-  const remarkDisableTokenizers: any;
+  const remarkDisableTokenizers: unknown;
   export default remarkDisableTokenizers;
 }
 
@@ -22,12 +23,12 @@ declare module 'react-router-hash-link' {
 
 declare module 'react-player/lib/players/Wistia' {
   import type { ComponentType } from 'react';
-  const WistiaPlayer: ComponentType<any>;
+  const WistiaPlayer: ComponentType<Record<string, unknown>>;
   export default WistiaPlayer;
 }
 
 declare module 'react-syntax-highlighter/dist/styles/hljs' {
-  export const googlecode: any;
+  export const googlecode: Record<string, unknown>;
 }
 
 declare module 'lang-map' {
@@ -39,5 +40,5 @@ declare module 'lang-map' {
 }
 
 declare module 'rollup-plugin-visualizer' {
-  export function visualizer(options?: any): any;
+  export function visualizer(options?: Record<string, unknown>): unknown;
 }

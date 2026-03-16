@@ -427,7 +427,7 @@ interface ISidebarIconButtonProps {
   icon: React.ReactNode;
   active: boolean;
   onClick: () => void;
-  theme: any;
+  theme: typeof consoleThemes.light;
 }
 
 const SidebarIconButton = ({ title, icon, active, onClick, theme }: ISidebarIconButtonProps) => {

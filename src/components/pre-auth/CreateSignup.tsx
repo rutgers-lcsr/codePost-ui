@@ -109,8 +109,8 @@ class CreateSignup extends React.Component<IProps, IState> {
     isNewOrg: false,
   };
 
-  private interval: any;
-  private progressInterval: any;
+  private interval: ReturnType<typeof setInterval> | undefined;
+  private progressInterval: ReturnType<typeof setInterval> | undefined;
 
   public componentDidUpdate(_oldProps: IProps, _oldState: IState) {
     if (!_oldState.createNewOrg && this.state.createNewOrg) {
@@ -131,6 +131,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
@@ -145,6 +146,7 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newState: any = { ...prevstate };
       // @ts-expect-error: legacy-ts-ignore
       newState[label] = !this.state[label];

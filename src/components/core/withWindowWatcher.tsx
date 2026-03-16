@@ -6,13 +6,14 @@ export interface IWithWindowWatcherProps {
   windowheight: number;
 }
 
+type WithoutWindowWatcherProps<P extends IWithWindowWatcherProps> = Omit<P, keyof IWithWindowWatcherProps>;
+
 const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
   return class WrappedComponent extends React.Component<
-    // @ts-expect-error: legacy-ts-ignore
-    Subtract<P, IWithWindowWatcherProps>,
-    any
+    WithoutWindowWatcherProps<P>,
+    { width: number; height: number }
   > {
-    public constructor(props: any) {
+    public constructor(props: WithoutWindowWatcherProps<P>) {
       super(props);
       this.state = { width: 0, height: 0 };
       this.updateWindowDimensions = this.updateWindowDimensions.bind(this);

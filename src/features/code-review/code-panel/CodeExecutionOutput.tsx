@@ -36,7 +36,7 @@ interface CodeExecutionOutputProps {
       stdout?: string;
       stderr?: string;
       error?: string;
-      [key: string]: any; // Allow other keys like image/png
+      [key: string]: unknown; // Allow other keys like image/png
     };
     cached?: boolean;
     executed_at?: string;
@@ -44,6 +44,8 @@ interface CodeExecutionOutputProps {
   };
   onClearOutputs?: () => void;
 }
+
+const isString = (value: unknown): value is string => typeof value === 'string';
 
 // Helper Component for Terminal Block
 const TerminalBlock = ({ content, type }: { content: string; type: 'stdout' | 'stderr' }) => (
@@ -121,8 +123,10 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
   const stdout = executionResult.stdout || executionResult.output_data?.stdout || '';
   const stderr = executionResult.stderr || executionResult.output_data?.stderr || '';
   const error = executionResult.error || executionResult.output_data?.error || '';
-  const outputImage = executionResult.output_data?.['image/png'];
-  const outputImages = executionResult.output_data?.['images'] as string[] | undefined;
+  const rawOutputImage = executionResult.output_data?.['image/png'];
+  const outputImage = isString(rawOutputImage) ? rawOutputImage : undefined;
+  const rawOutputImages = executionResult.output_data?.['images'];
+  const outputImages = Array.isArray(rawOutputImages) ? rawOutputImages.filter(isString) : undefined;
   const success = executionResult.success;
   const executionTime = executionResult.execution_time || 0;
 

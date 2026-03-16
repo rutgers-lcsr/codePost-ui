@@ -13,7 +13,7 @@ import LandingNew from '../landing/newlanding/Landing.tsx';
 
 /**********************************************************************************************************************/
 
-const RemoteAuthRedirect = (props: any) => {
+const RemoteAuthRedirect = (props: Record<string, unknown>) => {
   const [showModal, setShowModal] = React.useState(true);
 
   const close = () => {

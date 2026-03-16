@@ -5,6 +5,7 @@ import { AuditOutlined, InfoCircleOutlined, UserSwitchOutlined, TeamOutlined } f
 import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 
 import { Dropdown, theme } from 'antd';
+import type { MenuProps } from 'antd';
 
 import type { UserType } from '../../types/models';
 import { USER_TYPE } from '../../types/common';
@@ -30,7 +31,7 @@ const RoleMenu = (props: IProps) => {
     return <div />;
   }
 
-  const menuItems: any[] = [];
+  const menuItems: NonNullable<MenuProps['items']> = [];
 
   if (showStudent) {
     menuItems.push({

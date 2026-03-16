@@ -45,8 +45,8 @@ const JoinSignup = (props: { email?: string }) => {
   const [invalidCode, setInvalidCode] = React.useState(false);
   const [invalidEmail, setInvalidEmail] = React.useState(false);
 
-  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSignup = (e?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLElement>) => {
+    e?.preventDefault();
     setHasSubmitted(true);
     const payload = {
       username: email,

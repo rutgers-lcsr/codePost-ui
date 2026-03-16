@@ -18,11 +18,11 @@ interface IProps {
 const ForgotPasswordForm: React.FC<IProps> = ({ handleSubmit }) => {
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { password1: string; password2: string }) => {
     handleSubmit(values.password1);
   };
 
-  const doPasswordsMatch = (_: any, value: string) => {
+  const doPasswordsMatch = (_: unknown, value: string) => {
     // Test 1: Do the passwords match?
     if (form.getFieldValue('password1') !== value) {
       return Promise.reject(new Error("Passwords don't match!"));

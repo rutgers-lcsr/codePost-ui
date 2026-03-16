@@ -6,7 +6,7 @@ import { SettingOutlined } from '@ant-design/icons';
 
 interface IStandardManagementHeaderProps {
   email: string;
-  handleLogout: any;
+  handleLogout: () => void;
 }
 
 const StandardManagementHeader = (props: IStandardManagementHeaderProps) => {

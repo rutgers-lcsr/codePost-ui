@@ -3,11 +3,11 @@ import { colors } from '../../theme/colors';
 import { Logger } from '../../utils/logger';
 
 // Deprecated: use Logger.error instead
-export const slack = (url: string, payload: any) => {
+export const slack = (url: string, payload: Record<string, unknown>) => {
   // For backward compatibility, we'll try to map this to Logger.
   // Ideally callers should switch to Logger.error directly.
   if (url.includes('logError')) {
-    Logger.error(payload.error, payload.errorDetail);
+    Logger.error(payload.error as string, payload.errorDetail as string);
   } else {
     // Fallback for other custom slack calls if any
     fetch(url, {

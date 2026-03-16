@@ -11,7 +11,7 @@ import { EmailSubscribe } from './EmailSubscribe';
 const Video = React.lazy(() => import('./Video'));
 
 interface IProps {
-  location: any;
+  location: string;
   topBar: React.ReactNode;
   hero: React.ReactNode;
   testimonial: React.ReactNode;
@@ -64,7 +64,7 @@ const LandingLayout = (props: IProps) => {
     width: '100%',
   };
 
-  const absolutePosition: any = 'absolute';
+  const absolutePosition: React.CSSProperties['position'] = 'absolute';
   const backgroundImageStyle = {
     zIndex: -1,
     position: absolutePosition,
@@ -164,7 +164,7 @@ const LandingLayout = (props: IProps) => {
       <div style={{ ...sectionStyle }} className={sectionClass}>
         <div style={{ ...panelStyle, maxWidth: '1920px', textAlign: 'center' }}>
           <Suspense fallback={<div style={{ width: '100%', height: 400 }} />}>
-            <Video location={props.location} />
+            <Video location={{ search: props.location }} />
           </Suspense>
         </div>
       </div>

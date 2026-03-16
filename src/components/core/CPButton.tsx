@@ -6,10 +6,10 @@ import { colors } from '../../theme/colors';
 import CPTooltip from './CPTooltip';
 import withWindowWatcher, { IWithWindowWatcherProps } from './withWindowWatcher';
 
-export type CPButtonType = 'primary' | 'secondary' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
+export type CPButtonType = 'primary' | 'secondary' | 'default' | 'dark' | 'danger' | 'highlight' | 'disabled' | 'link';
 
 export interface ICPButtonProps extends IWithWindowWatcherProps {
-  cpType: CPButtonType;
+  cpType?: CPButtonType;
   fallbackIcon?: ReactNode;
   small?: boolean;
   isLoading?: boolean;
@@ -19,7 +19,7 @@ export interface ICPButtonProps extends IWithWindowWatcherProps {
 type CPButtonFullProps = ButtonProps & ICPButtonProps;
 
 const CPButton: React.FC<CPButtonFullProps> = ({
-  cpType,
+  cpType = 'secondary',
   fallbackIcon,
   fallbackWidth = 900,
   isLoading,
@@ -69,6 +69,10 @@ const CPButton: React.FC<CPButtonFullProps> = ({
 
   // Compute button type for Ant Design
   const buttonType = useMemo(() => {
+    if (cpType === 'default') {
+      return 'default';
+    }
+
     if (['primary', 'danger', 'link'].includes(cpType)) {
       return cpType as ButtonProps['type'];
     }
