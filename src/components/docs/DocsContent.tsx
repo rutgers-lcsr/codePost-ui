@@ -513,7 +513,7 @@ const DocsContent: React.FC = () => {
     },
     code({ node: _node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
-      const uniqueId = React.useMemo(() => Math.random().toString(36).substr(2, 9), []);
+      const uniqueId = Math.random().toString(36).substr(2, 9);
       return !inline && match ? (
         <div
           role="region"
