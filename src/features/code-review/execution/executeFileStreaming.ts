@@ -58,7 +58,7 @@ export async function executeFileWithStreaming(
   options: ExecutionOptions = {},
   callbacks: ExecutionCallbacks = {},
 ): Promise<void> {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.REACT_APP_API_URL;
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -158,7 +158,7 @@ export async function executeFileWithStreaming(
  * @returns Promise with execution result
  */
 export async function executeFile(fileId: number, options: ExecutionOptions = {}): Promise<ExecutionResult> {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.REACT_APP_API_URL;
   const token = localStorage.getItem('token');
 
   if (!token) {

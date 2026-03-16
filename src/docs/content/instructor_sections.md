@@ -1,3 +1,11 @@
+---
+key: instructor-sections
+path: instructor-sections
+title: Managing Sections
+category: Instructor Workflows
+order: 8
+---
+
 # Managing Sections
 
 Sections let you divide the course roster into named groups (e.g., recitation sections, lab slots, lecture tracks). You can assign graders as section **leaders** and use sections to scope grading work or filter the submission view.

@@ -116,7 +116,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
         return;
       }
 
-      const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
+      const baseUrl = process.env.REACT_APP_API_URL!;
       const wsBase = baseUrl.replace(/^http/i, 'ws');
       const qs = new URLSearchParams({
         token,

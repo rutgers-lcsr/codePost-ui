@@ -1,3 +1,11 @@
+---
+key: sdk-overview
+path: sdk-overview
+title: Overview
+category: Python SDK
+order: 14
+---
+
 # Python SDK
 
 The codePost Python SDK lets you automate course management, submission uploads, grading, and feedback programmatically.
@@ -44,13 +52,13 @@ with ApiClient(config) as api_client:
 
 ## Quick Comparison
 
-|                  | `codepost` (wrapper)                                                                                 | `codepost_api_client` (full client)                              |
-| ---------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Import**       | `from codepost import CodePost`                                                                      | `from codepost_api_client import ApiClient, Configuration`       |
-| **Auth setup**   | `CodePost(api_key="...")` or `CODEPOST_API_KEY` env var                                              | Manual `Configuration` + `ApiClient`                             |
-| **Method style** | `client.courses.list()`                                                                              | `CoursesApi(client).courses_list()`                              |
-| **Coverage**     | Courses, assignments, submissions, files, comments, rubric, sections, users, organizations, webhooks | All API endpoints including autograder, SSO, dashboard, system   |
-| **Models**       | Imported from `codepost` (re-exported)                                                               | Direct imports from `codepost_api_client`                        |
+|                  | `codepost` (wrapper)                                                                                 | `codepost_api_client` (full client)                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Import**       | `from codepost import CodePost`                                                                      | `from codepost_api_client import ApiClient, Configuration`     |
+| **Auth setup**   | `CodePost(api_key="...")` or `CODEPOST_API_KEY` env var                                              | Manual `Configuration` + `ApiClient`                           |
+| **Method style** | `client.courses.list()`                                                                              | `CoursesApi(client).courses_list()`                            |
+| **Coverage**     | Courses, assignments, submissions, files, comments, rubric, sections, users, organizations, webhooks | All API endpoints including autograder, SSO, dashboard, system |
+| **Models**       | Imported from `codepost` (re-exported)                                                               | Direct imports from `codepost_api_client`                      |
 
 > **Note:** Both layers use the same model classes. In the wrapper, import everything from `codepost` for convenience.
 

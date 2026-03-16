@@ -1,3 +1,11 @@
+---
+key: instructor-environment-testing
+path: instructor-environment-testing
+title: Environment & Testing Ops
+category: Instructor Workflows
+order: 11
+---
+
 # Environment & Testing Ops
 
 This page explains how to run assignment code reliably and use tests effectively.

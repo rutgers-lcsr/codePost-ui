@@ -1,3 +1,11 @@
+---
+key: features
+path: features
+title: Features
+category: Reference
+order: 17
+---
+
 # Features Guide
 
 This guide covers advanced features available in codePost.

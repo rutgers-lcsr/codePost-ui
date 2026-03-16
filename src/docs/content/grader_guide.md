@@ -1,3 +1,11 @@
+---
+key: grader
+path: grader
+title: Grader Guide
+category: Role Guides
+order: 5
+---
+
 # Grader Guide
 
 This guide helps graders and TAs work efficiently in codePost while staying aligned with instructor policy.

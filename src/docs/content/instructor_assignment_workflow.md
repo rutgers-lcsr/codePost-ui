@@ -1,3 +1,11 @@
+---
+key: instructor-assignment-workflow
+path: instructor-assignment-workflow
+title: Assignment Workflow
+category: Instructor Workflows
+order: 9
+---
+
 # Assignment Workflow
 
 This page covers the full instructor lifecycle for assignments — from creation through grading and grade release.

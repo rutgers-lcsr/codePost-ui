@@ -1,3 +1,11 @@
+---
+key: faq
+path: faq
+title: FAQ
+category: Getting Started
+order: 3
+---
+
 # Frequently Asked Questions
 
 ## Missing Email

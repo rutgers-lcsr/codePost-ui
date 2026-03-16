@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Input } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
-import { docRoutes, DocCategory } from './DocsConfig';
+import { DocCategory } from './DocsConfig';
 import {
   AppstoreOutlined,
   CodeOutlined,
@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 import { colors } from '../../theme/colors';
 import CPLogo from '../core/CPLogo';
-import { getAllDocs } from './DocsLoader';
+import { getAllDocs, getDocRoutes } from './DocsLoader';
 import Fuse from 'fuse.js';
 
 const { Sider } = Layout;
@@ -26,7 +26,7 @@ const DocsSidebar: React.FC = () => {
   // Determine selected key based on URL
   const getSelectedKey = () => {
     const path = location.pathname.split('/docs/')[1] || '';
-    const match = docRoutes.find((r) => r.path === path);
+    const match = getDocRoutes().find((r) => r.path === path);
     return match ? match.key : 'overview';
   };
 
@@ -109,7 +109,7 @@ const DocsSidebar: React.FC = () => {
   }, [searchText, allDocs]);
 
   // Group routes by category for normal view
-  const categories: Record<DocCategory, typeof docRoutes> = {
+  const categories: Record<DocCategory, ReturnType<typeof getDocRoutes>> = {
     'Getting Started': [],
     Changelog: [],
     'Instructor Workflows': [],
@@ -118,7 +118,7 @@ const DocsSidebar: React.FC = () => {
     Reference: [],
   };
 
-  docRoutes.forEach((route) => {
+  getDocRoutes().forEach((route) => {
     if (categories[route.category]) {
       categories[route.category].push(route);
     }

@@ -1,3 +1,11 @@
+---
+key: student
+path: student
+title: Student Guide
+category: Role Guides
+order: 4
+---
+
 # Student Guide
 
 ## Dashboard Overview

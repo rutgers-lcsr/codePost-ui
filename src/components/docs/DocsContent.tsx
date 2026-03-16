@@ -4,8 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { visit } from 'unist-util-visit';
-import { docRoutes } from './DocsConfig';
-import { getDocByPath } from './DocsLoader';
+import { getDocByPath, getDocRoutes } from './DocsLoader';
 import { Image, Typography, Alert, Breadcrumb, Divider } from 'antd';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { colors } from '../../theme/colors';
@@ -197,6 +196,7 @@ const DocsContent: React.FC = () => {
   };
 
   const currentPath = splat || '';
+  const docRoutes = getDocRoutes();
   const currentRoute = docRoutes.find((r) => r.path === currentPath);
 
   let content = '';

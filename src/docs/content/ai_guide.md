@@ -1,3 +1,11 @@
+---
+key: ai-guide
+path: ai-guide
+title: AI Settings & Usage
+category: Reference
+order: 18
+---
+
 # AI Settings & Usage Guide
 
 This guide covers how to configure AI features at the **organization** and **course** levels, how inheritance works between them, and how to monitor AI usage across your platform.

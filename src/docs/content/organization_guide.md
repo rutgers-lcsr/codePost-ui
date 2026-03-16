@@ -1,3 +1,11 @@
+---
+key: organization
+path: organization
+title: Organization Guide
+category: Role Guides
+order: 12
+---
+
 # Organization Admin Guide
 
 This guide is designed for **Organization Administrators**. It covers how to manage your organization's settings, users, and courses within codePost.

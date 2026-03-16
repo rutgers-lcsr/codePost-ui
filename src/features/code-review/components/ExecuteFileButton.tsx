@@ -73,7 +73,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
 
     const checkCache = async () => {
       try {
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const API_URL = process.env.REACT_APP_API_URL;
         const token = localStorage.getItem('token');
 
         if (!token) return;

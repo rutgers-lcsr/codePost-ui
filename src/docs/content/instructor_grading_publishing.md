@@ -1,3 +1,11 @@
+---
+key: instructor-grading-publishing
+path: instructor-grading-publishing
+title: Grading, Release & Exports
+category: Instructor Workflows
+order: 10
+---
+
 # Grading, Release & Exports
 
 Use this page for day-to-day grading operations and release management.

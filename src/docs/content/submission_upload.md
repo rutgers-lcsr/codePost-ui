@@ -1,3 +1,11 @@
+---
+key: submission-upload
+path: submission-upload
+title: Uploading Submissions
+category: Role Guides
+order: 13
+---
+
 # Uploading Submissions
 
 This guide covers how to upload student submissions to codePost, both for students and instructors.

@@ -1,3 +1,11 @@
+---
+key: programmatic-comments
+path: programmatic-comments
+title: Programmatic Comments
+category: Python SDK
+order: 16
+---
+
 # Programmatically Placing Comments
 
 Automating feedback can save significant time. You can use the codePost Python SDK to programmatically place comments on student submissions. This is useful for:

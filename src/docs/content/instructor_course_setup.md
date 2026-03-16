@@ -1,3 +1,11 @@
+---
+key: instructor-course-setup
+path: instructor-course-setup
+title: Course Setup & Roster
+category: Instructor Workflows
+order: 7
+---
+
 # Course Setup & Roster
 
 Use this page when launching a new course or preparing for a new term.

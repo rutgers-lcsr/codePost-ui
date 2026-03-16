@@ -1,3 +1,11 @@
+---
+key: getting-started
+path: getting-started
+title: Quick Start
+category: Getting Started
+order: 2
+---
+
 # Getting Started with codePost
 
 ## System Requirements

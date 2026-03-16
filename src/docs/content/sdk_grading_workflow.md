@@ -1,3 +1,11 @@
+---
+key: sdk-grading-workflow
+path: sdk-grading-workflow
+title: Grading Workflow
+category: Python SDK
+order: 15
+---
+
 # SDK Grading Workflow
 
 A complete walkthrough of managing the grading lifecycle with the codePost Python SDK — from creating an assignment to exporting final grades.

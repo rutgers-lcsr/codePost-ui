@@ -1,3 +1,11 @@
+---
+key: changelog
+path: changelog
+title: Changelog
+category: Changelog
+order: 20
+---
+
 # Changelog
 
 Stay up to date with new features, improvements, and fixes in codePost.

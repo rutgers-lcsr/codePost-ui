@@ -1,3 +1,11 @@
+---
+key: testing-guide
+path: testing-guide
+title: Testing Guide
+category: Reference
+order: 19
+---
+
 # Testing Guide
 
 This guide is the source of truth for script-based test syntax in codePost.

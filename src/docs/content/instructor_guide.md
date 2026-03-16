@@ -1,3 +1,11 @@
+---
+key: instructor
+path: instructor
+title: Instructor Overview
+category: Instructor Workflows
+order: 6
+---
+
 # Instructor Overview
 
 This page is the instructor home base for codePost docs. If you are setting up a course for the first time, start here and then follow the workflow pages below.
