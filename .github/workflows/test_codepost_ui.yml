@@ -95,9 +95,9 @@ jobs:
         run: |
           echo "## Bundle Size Report" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          du -sh dist/ >> "$GITHUB_STEP_SUMMARY"
+          du -sh build/ >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          find dist/assets -type f \( -name '*.js' -o -name '*.css' \) | sort | while read -r f; do
+          find build/assets -type f \( -name '*.js' -o -name '*.css' \) | sort | while read -r f; do
             size=$(du -h "$f" | cut -f1)
             printf '%-60s %s\n' "$f" "$size" >> "$GITHUB_STEP_SUMMARY"
           done
