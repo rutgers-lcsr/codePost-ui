@@ -16,18 +16,21 @@ interface IAssignmentNameRef {
 // The URL will by default consider foo/bar to represent two index: foo and bar.
 // Only we as the app owner can disambiguate. To do this, we pre-emptively encode
 // foo/bar according to https://www.w3schools.com/tags/ref_urlencode.asp
-export const encodeForLink = (pathComponent: string) => {
-  return pathComponent
-    .replace(/%/g, '%25')
-    .replace(/\//g, '%2F')
-    .replace(/#/g, '%23')
-    .replace(/\?/g, '%3F')
-    .replace(/&/g, '%26')
-    .replace(/\+/g, '%2B')
-    .replace(/,/g, '%2C')
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29');
+// React Router will brake routing if space is encoded.
+const encodeMap: Record<string, string> = {
+  '%': '%25',
+  '/': '%2F',
+  '#': '%23',
+  '?': '%3F',
+  '&': '%26',
+  '+': '%2B',
+  ',': '%2C',
+  '(': '%28',
+  ')': '%29',
 };
+const encodeRe = /[%/#?&+,()]/g;
+
+export const encodeForLink = (pathComponent: string) => pathComponent.replace(encodeRe, (ch) => encodeMap[ch]);
 
 // Parentheses must be esscaped to use literally in a route
 // https://github.com/ReactTraining/react-router/blob/v3/docs/guides/RouteMatching.md
