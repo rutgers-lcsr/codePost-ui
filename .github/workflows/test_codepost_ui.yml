@@ -61,7 +61,15 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npx vitest run --coverage
+        run: npx vitest run --coverage --reporter=default --reporter=junit --outputFile=test-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: test-results.xml
+          retention-days: 7
 
       - name: Upload coverage report
         if: always()
@@ -70,3 +78,27 @@ jobs:
           name: ui-coverage-report
           path: coverage/
           retention-days: 7
+
+  build:
+    name: Build Verification
+    runs-on: testing-codepost
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Report bundle size
+        run: |
+          echo "## Bundle Size Report" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          du -sh dist/ >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          find dist/assets -type f \( -name '*.js' -o -name '*.css' \) | sort | while read -r f; do
+            size=$(du -h "$f" | cut -f1)
+            printf '%-60s %s\n' "$f" "$size" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

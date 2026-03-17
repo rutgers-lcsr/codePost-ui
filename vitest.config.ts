@@ -20,11 +20,17 @@ export default defineConfig({
     css: true,
     pool: 'threads',
     minThreads: 1,
-    maxThreads: 1,
+    maxThreads: 4,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
       exclude: ['src/api-client/**', 'node_modules/**', 'src/**/__tests__/**', 'src/**/*.test.{ts,tsx}'],
+      thresholds: {
+        statements: 50,
+        branches: 50,
+        functions: 50,
+        lines: 50,
+      },
     },
   },
 });
