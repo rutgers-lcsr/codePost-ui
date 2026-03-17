@@ -1,41 +1,41 @@
-### 🤔 This is a ...
+## Description
 
-- [ ] New feature
-- [ ] Bug fix
-- [ ] Site / document update
-- [ ] Component style update
-- [ ] TypeScript definition update
-- [ ] Refactoring
-- [ ] Code style optimization
-- [ ] Test case
-- [ ] Branch merge
-- [ ] Other (about what?)
+<!-- A clear summary of what this PR does and why. -->
 
-### 🔗 Related issue link
+## Type of Change
+
+- [ ] Feature — new functionality
+- [ ] Bug fix — corrects an issue
+- [ ] Refactor — code restructuring, no behavior change
+- [ ] Style — UI/CSS changes only
+- [ ] Chore — build, config, dependencies, CI
+- [ ] Docs — documentation only
+- [ ] Test — adding or updating tests
+
+## Related Issues
+
+<!-- Link any related issues: Fixes #123, Relates to #456 -->
+
+## Changes Made
+
+<!-- Describe the key changes. For UI work, include screenshots or a short recording. -->
+
+## How to Test
 
 <!--
-1. Describe the source of requirement, like related issue link.
+Steps for reviewers to verify:
+1. Go to '...'
+2. Click on '...'
+3. Observe '...'
 -->
 
-### 💡 Background and solution
+## Checklist
 
-<!--
-1. Describe the problem and the scenario.
-2. GIF or snapshot should be provided if includes UI/interactive modification.
-3. If this is a bug fix, describe how to fix the problem. Otherwise, describe final API implementation.
--->
-
-### 📝 Should this change be included in our public changelog?
-- [ ] Yes
-- [ ] No
-
-<!--
-If yes, please draft the message announcing this change to include in our changelog.
---->
-
-### ☑️ Self-check before merge
-
-- [ ] Doc is updated/provided or not needed
-- [ ] Demo is updated/provided or not needed
-- [ ] TypeScript definition is updated/provided or not needed
-- [ ] Changelog is provided or not needed
+- [ ] I have tested this change locally
+- [ ] UI changes include screenshots or a recording
+- [ ] API schema was regenerated if endpoints changed
+- [ ] No `src/api-client/` files were manually edited
+- [ ] TypeScript compiles without new errors (`npx tsc --noEmit`)
+- [ ] Lint passes (`npm run lint:fix`)
+- [ ] Tests pass (`npx vitest run`)
+- [ ] Changelog entry added (if user-facing)
