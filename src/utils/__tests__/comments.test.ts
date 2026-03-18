@@ -1,12 +1,12 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect } from 'vitest';
 import { CommentIO, UiComment } from '../comments';
-import type { CommentType } from '../comments';
+import { RubricComment, Comment } from '../../api-client';
 
 // ---------------------------------------------------------------------------
 // Factory helper
 // ---------------------------------------------------------------------------
-function makeComment(overrides: Partial<CommentType> = {}): CommentType {
+function makeComment(overrides: Partial<Comment> = {}): Comment {
   return {
     id: 1,
     text: 'Test comment',
@@ -20,7 +20,7 @@ function makeComment(overrides: Partial<CommentType> = {}): CommentType {
     submission: 1,
     author: 'test@example.com',
     ...overrides,
-  } as CommentType;
+  } as Comment;
 }
 
 // ---------------------------------------------------------------------------
@@ -145,12 +145,12 @@ describe('UiComment.points', () => {
   });
 
   it('returns rubricComment pointDelta when provided', () => {
-    const rubricComment = { pointDelta: -5 } as any;
+    const rubricComment = { pointDelta: -5 } as unknown as RubricComment;
     expect(UiComment.points(makeComment({ pointDelta: -1 }), rubricComment)).toBe(-5);
   });
 
   it('returns 0 when pointDelta is null', () => {
-    expect(UiComment.points(makeComment({ pointDelta: null } as any))).toBe(0);
+    expect(UiComment.points(makeComment({ pointDelta: null }))).toBe(0);
   });
 });
 
@@ -162,8 +162,8 @@ describe('UiComment.isEmpty', () => {
     expect(UiComment.isEmpty(makeComment({ text: '', pointDelta: 0, rubricComment: null }))).toBe(true);
   });
 
-  it('returns true when text is null', () => {
-    expect(UiComment.isEmpty(makeComment({ text: null, pointDelta: 0, rubricComment: null } as any))).toBe(true);
+  it('returns true when text is undefined', () => {
+    expect(UiComment.isEmpty(makeComment({ text: undefined, pointDelta: 0, rubricComment: null }))).toBe(true);
   });
 
   it('returns false when text has content', () => {
@@ -175,6 +175,6 @@ describe('UiComment.isEmpty', () => {
   });
 
   it('returns false when rubricComment is set', () => {
-    expect(UiComment.isEmpty(makeComment({ text: '', pointDelta: 0, rubricComment: 42 } as any))).toBe(false);
+    expect(UiComment.isEmpty(makeComment({ text: '', pointDelta: 0, rubricComment: 42 }))).toBe(false);
   });
 });

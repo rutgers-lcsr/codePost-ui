@@ -93,7 +93,9 @@ describe('ComponentManager', () => {
   });
 
   it('redirects to default course when stored default matches', async () => {
-    const { LOCAL_SETTINGS } = (await import('../../utils/LocalSettings')) as any;
+    const { LOCAL_SETTINGS } = (await import('../../utils/LocalSettings')) as unknown as {
+      LOCAL_SETTINGS: { defaultCourse: { getter: { mockReturnValue: (v: number) => void } } };
+    };
     LOCAL_SETTINGS.defaultCourse.getter.mockReturnValue(1);
 
     const Managed = ComponentManager(TestComponent, 'overview');
@@ -118,7 +120,9 @@ describe('ComponentManager', () => {
   });
 
   it('supports defaultPage as a function', async () => {
-    const { LOCAL_SETTINGS } = (await import('../../utils/LocalSettings')) as any;
+    const { LOCAL_SETTINGS } = (await import('../../utils/LocalSettings')) as unknown as {
+      LOCAL_SETTINGS: { defaultCourse: { getter: { mockReturnValue: (v: number) => void } } };
+    };
     LOCAL_SETTINGS.defaultCourse.getter.mockReturnValue(1);
 
     const defaultPageFn = (c: Course) => (c.name === 'CS101' ? 'my_submissions' : 'overview');

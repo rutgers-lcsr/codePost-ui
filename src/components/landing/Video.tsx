@@ -169,6 +169,7 @@ class Video extends React.Component<IVideoProps, IVideoState> {
 
       if (values.video !== '1') {
         const sections = managementSections;
+        // oxlint-disable-next-line react/no-did-mount-set-state -- initializing from URL params
         this.setState({ selectedVideo: 'management', videoSections: managementSections });
 
         if (values.section !== undefined) {

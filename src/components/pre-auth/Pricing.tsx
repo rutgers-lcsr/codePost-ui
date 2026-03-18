@@ -91,7 +91,7 @@ const Pricing = (props: IProps) => {
   ];
 
   const enterpriseFeatures = [
-    <span>
+    <span key="teach" style={{ fontWeight: 'bold' }}>
       Everything in <b>Teach</b>
     </span>,
     'Tools for managing large, high-velocity courses + training sessions',
@@ -121,8 +121,10 @@ const Pricing = (props: IProps) => {
               </Button>
             </Link>
             <Divider />
-            {freeFeatures.map((el) => (
-              <div style={{ margin: '10px 0' }}>{el}</div>
+            {freeFeatures.map((el, index) => (
+              <div key={index} style={{ margin: '10px 0' }}>
+                {el}
+              </div>
             ))}
           </div>
           <div style={premiumStyle}>
@@ -137,8 +139,10 @@ const Pricing = (props: IProps) => {
               </Button>
             </a>
             <Divider />
-            {enterpriseFeatures.map((el) => (
-              <div style={{ margin: '10px 0' }}>{el}</div>
+            {enterpriseFeatures.map((el, index) => (
+              <div key={index} style={{ margin: '10px 0' }}>
+                {el}
+              </div>
             ))}
           </div>
         </div>

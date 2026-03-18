@@ -17,7 +17,7 @@ const VideoModal = (props: IProps) => {
     <Modal
       open={props.open}
       onCancel={props.onCancel}
-      footer={[<Button onClick={props.onCancel}>Cancel</Button>]}
+      footer={[<Button key="cancel" onClick={props.onCancel}>Cancel</Button>]}
       okText={null}
       width={modalWidth}
     >

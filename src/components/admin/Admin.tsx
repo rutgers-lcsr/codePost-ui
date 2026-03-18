@@ -1139,6 +1139,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     </CPTooltip>,
     logout,
     <AdminOnboardingSelector
+      key="onboarding"
       open={onboardingModalVisible}
       onCancel={closeModal}
       email={props.user.email!}

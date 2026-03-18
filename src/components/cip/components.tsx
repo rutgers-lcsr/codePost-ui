@@ -213,7 +213,9 @@ const CIPAdminModal = (props: IAdminModalProps) => {
               style={{ width: '100%' }}
             >
               {universities.map((university: { value: string; label: string }) => (
-                <Select.Option value={university.value}>{university.label}</Select.Option>
+                <Select.Option key={university.value} value={university.value}>
+                  {university.label}
+                </Select.Option>
               ))}
             </Select>
           </div>
@@ -306,8 +308,12 @@ const CIPAdminModal = (props: IAdminModalProps) => {
       onCancel={panel === 0 ? undefined : props.onClose}
       closable={panel !== 0}
       footer={[
-        panel > 1 && <Button onClick={onBack}>Back</Button>,
-        <Button disabled={!canContinue} onClick={onContinue} type="primary">
+        panel > 1 && (
+          <Button key="back" onClick={onBack}>
+            Back
+          </Button>
+        ),
+        <Button key="continue" disabled={!canContinue} onClick={onContinue} type="primary">
           {panel === 0 ? 'Set password' : 'Continue'}
         </Button>,
       ]}
@@ -362,7 +368,11 @@ const CIPGraderModal = (props: IGraderModalProps) => {
       open={props.open}
       title="Create your own course"
       onCancel={props.onClose}
-      footer={[<Button onClick={props.onClose}>Maybe later</Button>]}
+      footer={[
+        <Button key="later" onClick={props.onClose}>
+          Maybe later
+        </Button>,
+      ]}
       width={700}
     >
       <div style={{ fontSize: 15 }}>

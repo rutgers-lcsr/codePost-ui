@@ -99,7 +99,7 @@ export const consoleThemes = {
   },
 };
 
-function togglePlaceholder(toTheme) {
+function togglePlaceholder(_toTheme) {
   // @ts-ignore
   // tslint:disable-next-line
   console.log('placeholder toggle');

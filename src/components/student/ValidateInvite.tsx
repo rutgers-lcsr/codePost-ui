@@ -88,7 +88,7 @@ const ValidateInvite = (props: IValidateInviteProps) => {
           <div>
             <ul>
               {submission.students.map((email: string) => {
-                return <li>{email}</li>;
+                return <li key={email}>{email}</li>;
               })}
             </ul>
             <br />

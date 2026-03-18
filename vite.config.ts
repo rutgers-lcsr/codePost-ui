@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
-import packageJson from './package.json';
+import packageJson from './package.json' with { type: 'json' };
 
 export default defineConfig(async (config) => {
   const { mode } = config;
@@ -72,16 +72,23 @@ export default defineConfig(async (config) => {
       target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
       rolldownOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'antd-vendor': ['antd', '@ant-design/icons'],
-            'aws-vendor': ['aws-sdk'],
-            'pdf-vendor': ['react-pdf'],
-            'icons-vendor': ['react-icons'],
-            'jszip-vendor': ['jszip'],
-            'dayjs-vendor': ['dayjs'],
-            'monaco-vendor': ['@monaco-editor/react', 'monaco-editor'],
-            'markdown-vendor': ['react-markdown', 'remark-gfm'],
+          manualChunks(id) {
+            const chunks: Record<string, string[]> = {
+              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'antd-vendor': ['antd', '@ant-design/icons'],
+              'aws-vendor': ['aws-sdk'],
+              'pdf-vendor': ['react-pdf'],
+              'icons-vendor': ['react-icons'],
+              'jszip-vendor': ['jszip'],
+              'dayjs-vendor': ['dayjs'],
+              'monaco-vendor': ['@monaco-editor/react', 'monaco-editor'],
+              'markdown-vendor': ['react-markdown', 'remark-gfm'],
+            };
+            for (const [chunkName, deps] of Object.entries(chunks)) {
+              if (deps.some((dep) => id.includes(`node_modules/${dep}/`) || id.includes(`node_modules/${dep}\0`))) {
+                return chunkName;
+              }
+            }
           },
         },
       },

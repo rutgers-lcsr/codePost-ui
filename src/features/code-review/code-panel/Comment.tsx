@@ -977,10 +977,10 @@ const Comment: React.FC<ICommentProps> = (props) => {
       <CPFlex
         left={[]}
         right={[
-          <CPButton cpType="secondary" size="small" style={{ width: '60px' }} onClick={confirmCancelDelete}>
+          <CPButton key="no" cpType="secondary" size="small" style={{ width: '60px' }} onClick={confirmCancelDelete}>
             No
           </CPButton>,
-          <CPButton cpType="danger" size="small" style={{ width: '60px' }} onClick={confirmDelete}>
+          <CPButton key="yes" cpType="danger" size="small" style={{ width: '60px' }} onClick={confirmDelete}>
             Yes
           </CPButton>,
         ]}

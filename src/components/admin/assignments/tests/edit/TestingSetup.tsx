@@ -258,7 +258,7 @@ export const TestingSetup = (props: IProps) => {
   );
 
   const actions = [
-    <Button type="primary">
+    <Button key="view-results" type="primary">
       <Link to={location.pathname.replace(/\/edit.*$/, '/results')}>View results</Link>
     </Button>,
   ];

@@ -285,7 +285,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         setLoadingTests(false);
       }
     },
-    [isStudent],
+    [isStudent, normalizeStudentTestCase],
   );
 
   // Update student tests (merged with results) when submission or assignment changes

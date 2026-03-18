@@ -840,8 +840,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       createAssignment={createAssignment}
       timezone={currentCourse.timezone || 'UTC'}
     />,
-    <Link to={`${baseURL}/download/grades`}>
-      <CPButton cpType="secondary" key={2} icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
+    <Link key={2} to={`${baseURL}/download/grades`}>
+      <CPButton cpType="secondary" icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
         Download grades
       </CPButton>
     </Link>,

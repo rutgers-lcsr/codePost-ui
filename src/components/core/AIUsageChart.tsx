@@ -87,7 +87,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({ timeSeries, granularity, ch
           <XAxis dataKey="period" tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} />
           <YAxis tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} tickFormatter={(v) => formatCost(v)} />
           <Tooltip
-            formatter={(value: number | undefined) => [formatCost(value ?? 0), 'Cost']}
+            formatter={(value) => [formatCost(Number(value) || 0), 'Cost']}
             contentStyle={{
               borderRadius: 8,
               border: `1px solid ${colors.neutralBorder}`,
@@ -113,7 +113,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({ timeSeries, granularity, ch
         <XAxis dataKey="period" tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} />
         <YAxis tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} tickFormatter={formatNumber} />
         <Tooltip
-          formatter={(value: number | undefined, name: string | undefined) => [formatNumber(value ?? 0), name ?? '']}
+          formatter={(value, name) => [formatNumber(Number(value) || 0), String(name ?? '')]}
           contentStyle={{
             borderRadius: 8,
             border: `1px solid ${colors.neutralBorder}`,

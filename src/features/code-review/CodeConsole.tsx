@@ -1087,6 +1087,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       }
     }
   }, [
+    location.pathname,
     isCourseAdmin,
     loadDemoData,
     location.search,
@@ -2382,7 +2383,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               file={selectedFile!}
               fileIDs={fileIDs}
               verticalOffset={state.codeVerticalOffset}
-              updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+              updateFeedback={updateFeedback.bind(null, selectedFile!.id)}
               studentFeedbackOn={assignment.commentFeedback ?? false}
               hideAuthor={
                 assignment.studentsCanSeeGraders !== null
@@ -2500,7 +2501,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               removeRubricComment={removeRubricComment}
               oldCommentIDs={state.oldCommentIDs}
               verticalOffset={state.codeVerticalOffset}
-              updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+              updateFeedback={updateFeedback.bind(null, selectedFile!.id)}
               studentFeedbackOn={assignment.commentFeedback ?? false}
               hideAuthor={
                 assignment.studentsCanSeeGraders !== null
@@ -2718,7 +2719,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             file={selectedFile!}
             fileIDs={fileIDs}
             verticalOffset={state.codeVerticalOffset}
-            updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+            updateFeedback={updateFeedback.bind(null, selectedFile!.id)}
             studentFeedbackOn={assignment.commentFeedback ?? false}
             hideAuthor={
               assignment.studentsCanSeeGraders !== null
@@ -2973,7 +2974,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             removeRubricComment={removeRubricComment}
             oldCommentIDs={state.oldCommentIDs}
             verticalOffset={state.codeVerticalOffset}
-            updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
+            updateFeedback={updateFeedback.bind(null, selectedFile!.id)}
             studentFeedbackOn={assignment.commentFeedback ?? false}
             hideAuthor={
               assignment.studentsCanSeeGraders !== null

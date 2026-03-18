@@ -152,7 +152,7 @@ export const PseudoTerminal = (props: IResultProps) => {
           <br />
           {logList.length > 1 ? (
             logList.map((log) => (
-              <span>
+              <span key={log.testCaseName}>
                 {log.testCaseName.length > 0 ? (
                   <span style={{ color: '#A9A9A9' }}>
                     ################################################### <br />

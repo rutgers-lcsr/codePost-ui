@@ -133,11 +133,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                   size="small"
                   style={{ width: 60 }}
                   disabled={props.submission.isFinalized}
-                >
-                  {arr.map((index: number) => {
-                    return <Select.Option value={index.toString()}>{index}</Select.Option>;
-                  })}
-                </Select>
+                  options={arr.map((index: number) => ({ label: index.toString(), value: index.toString() }))}
+                ></Select>
               </span>
               <span>Late Days</span>
             </div>

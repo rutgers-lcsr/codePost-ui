@@ -34,7 +34,7 @@ export const EditObjectModal = (props: IUploadProps) => {
   };
 
   /******************************* State Change Functions ****************************/
-  const toggleVisible = (_e: React.MouseEvent<HTMLElement>) => {
+  const toggleVisible = () => {
     setVisible(!visible);
   };
 

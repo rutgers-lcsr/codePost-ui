@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-function parseNumbers(csvLine) {
+function parseNumbers(_csvLine) {
     // TODO(student): parse comma-separated integers.
     return [];
 }

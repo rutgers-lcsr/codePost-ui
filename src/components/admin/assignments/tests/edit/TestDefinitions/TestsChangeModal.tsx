@@ -217,9 +217,9 @@ export const TestsChangeModal = (props: IProps) => {
           title: 'TestOutput syntax errors',
           content: (
             <div>
-              {errors.map((error) => {
+              {errors.map((error, index) => {
                 return (
-                  <div>
+                  <div key={index}>
                     Line {error.lineNumber}: {error.log}
                   </div>
                 );

@@ -404,10 +404,11 @@ const AllTestimonials = (props: IProps) => {
         </Typography.Title>
         {toRender.map((row, i) => {
           return (
-            <div style={{ display: 'flex', justifyContent: justifyRow, padding: rowPadding }}>
+            <div key={i} style={{ display: 'flex', justifyContent: justifyRow, padding: rowPadding }}>
               {row.map((rowItem: TestimonialData, j) => {
                 return (
                   <AltTestimonial
+                    key={j}
                     text={rowItem.text}
                     thumbnail={rowItem.thumbnail}
                     name={rowItem.name}

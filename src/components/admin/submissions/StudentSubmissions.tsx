@@ -323,7 +323,7 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
               columns={columns}
               data={data}
               actions={[
-                <Tooltip title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
+                <Tooltip key="showActive" title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
                   <Button
                     shape="circle"
                     icon={showInactive ? <UserAddOutlined /> : <UserAddOutlined style={{ color: '#ccc' }} />}

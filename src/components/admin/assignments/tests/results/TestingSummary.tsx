@@ -179,13 +179,14 @@ export const TestingSummary = (props: IProps) => {
     ? []
     : [
         <RunAllTests
+          key="run-all"
           numSubmissions={props.submissions.length}
           testCasesByCategory={testCasesByCategory}
           runAllSubmissions={runAllSubmissions}
           assignment={props.currentAssignment}
           env={env}
         />,
-        <Button type="primary">
+        <Button key="edit-tests" type="primary">
           <Link to={location.pathname.replace(/\/results.*$/, '/edit')}>Edit tests</Link>
         </Button>,
       ];

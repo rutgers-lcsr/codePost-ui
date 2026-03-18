@@ -424,7 +424,7 @@ const StepTwoSelectUserName = (props: IStepTwoProps) => {
         these folders:
         <div>
           {shortFolders.map((f) => (
-            <div>{f}</div>
+            <div key={f}>{f}</div>
           ))}
         </div>
       </div>
@@ -442,7 +442,7 @@ const StepTwoSelectUserName = (props: IStepTwoProps) => {
         <div>
           {elems.map((el, i) => {
             return (
-              <span>
+              <span key={i}>
                 <span style={i === sliderIndex ? highlightedStyle : normalStyle}>{el}</span>
                 <span>{i < elems.length - 1 ? props.delimiter : ''}</span>
               </span>

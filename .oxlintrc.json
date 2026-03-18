@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react"],
+  "categories": {},
+  "rules": {
+    "eslint/no-control-regex": "error",
+    "eslint/no-unused-expressions": "error",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/jsx-key": "warn",
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "ignoreRestSiblings": true }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/components/code-review/**"],
+            "message": "Use @code-review/ alias instead"
+          },
+          {
+            "group": ["**/hooks/useExecuteFileAsync"],
+            "message": "Restricted to code-review feature boundary"
+          },
+          {
+            "group": ["**/hooks/useExecuteFileStreaming"],
+            "message": "Restricted to code-review feature boundary"
+          },
+          {
+            "group": ["**/utils/executeFileStreaming"],
+            "message": "Restricted to code-review feature boundary"
+          },
+          {
+            "group": ["**/utils/execution"],
+            "message": "Restricted to code-review feature boundary"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [
+    "dist",
+    "build",
+    "src/api-client/**",
+    "src/__tests__/test_submission/node/scenarios/failure_cases/syntax_error.js",
+    "src/__tests__/apiClient.test.ts"
+  ]
+}

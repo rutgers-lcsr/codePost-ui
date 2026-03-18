@@ -276,7 +276,7 @@ const CodeConsoleOnboardingSelector = (props: ICodeConsoleOnboardingProps) => {
         Back
       </Button>,
       files.length < MIN_FILES_FOR_DEMO ? (
-        <Tooltip title={`Upload at least ${MIN_FILES_FOR_DEMO} files to continue`}>
+        <Tooltip key="error" title={`Upload at least ${MIN_FILES_FOR_DEMO} files to continue`}>
           <span>
             {' '}
             &nbsp;

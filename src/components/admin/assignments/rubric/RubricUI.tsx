@@ -334,7 +334,7 @@ const RubricUI = ({
     /************************************************************************/
 
     const actions = [
-      <CPButton cpType="secondary" icon={<SettingOutlined />} onClick={() => setSettingsOpen(!settingsOpen)}>
+      <CPButton key="0" cpType="secondary" icon={<SettingOutlined />} onClick={() => setSettingsOpen(!settingsOpen)}>
         Settings
       </CPButton>,
       <RubricFileUpload
