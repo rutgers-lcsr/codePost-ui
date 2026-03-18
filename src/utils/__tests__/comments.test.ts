@@ -66,6 +66,34 @@ describe('CommentIO.sortComments', () => {
     expect(sorted.map((c) => c.id)).toEqual([5, -1]);
   });
 
+  it('sorts two new comments (both negative ids) on the same line', () => {
+    const comments = [
+      makeComment({ id: -2, startLine: 1, startChar: 0 }),
+      makeComment({ id: -1, startLine: 1, startChar: 0 }),
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    // Both negative: comparator returns a.id + b.id (always negative), so order reverses
+    expect(sorted.map((c) => c.id)).toEqual([-1, -2]);
+  });
+
+  it('puts new comment (negative id) after existing comment (positive id) when b is negative', () => {
+    const comments = [
+      makeComment({ id: 5, startLine: 1, startChar: 0 }),
+      makeComment({ id: -1, startLine: 1, startChar: 0 }),
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    expect(sorted.map((c) => c.id)).toEqual([5, -1]);
+  });
+
+  it('treats null startChar as 0', () => {
+    const comments = [
+      makeComment({ id: 1, startLine: 1, startChar: null as unknown as number }),
+      makeComment({ id: 2, startLine: 1, startChar: 5 }),
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    expect(sorted[1].startChar).toBe(5);
+  });
+
   it('handles empty array', () => {
     expect(CommentIO.sortComments([])).toEqual([]);
   });
@@ -96,6 +124,30 @@ describe('CommentIO.compare', () => {
   it('compares by id when line and char are the same', () => {
     const a = makeComment({ id: 3, startLine: 1, startChar: 0 });
     const b = makeComment({ id: 7, startLine: 1, startChar: 0 });
+    expect(CommentIO.compare(a, b)).toBeLessThan(0);
+  });
+
+  it('sums ids when both are negative (new comments)', () => {
+    const a = makeComment({ id: -2, startLine: 1, startChar: 0 });
+    const b = makeComment({ id: -3, startLine: 1, startChar: 0 });
+    expect(CommentIO.compare(a, b)).toBeLessThan(0);
+  });
+
+  it('returns positive when a is new (negative) and b is existing (positive)', () => {
+    const a = makeComment({ id: -1, startLine: 1, startChar: 0 });
+    const b = makeComment({ id: 5, startLine: 1, startChar: 0 });
+    expect(CommentIO.compare(a, b)).toBeGreaterThan(0);
+  });
+
+  it('returns negative when a is existing (positive) and b is new (negative)', () => {
+    const a = makeComment({ id: 5, startLine: 1, startChar: 0 });
+    const b = makeComment({ id: -1, startLine: 1, startChar: 0 });
+    expect(CommentIO.compare(a, b)).toBeLessThan(0);
+  });
+
+  it('treats null startChar as 0', () => {
+    const a = makeComment({ id: 1, startLine: 1, startChar: null as unknown as number });
+    const b = makeComment({ id: 2, startLine: 1, startChar: 0 });
     expect(CommentIO.compare(a, b)).toBeLessThan(0);
   });
 });

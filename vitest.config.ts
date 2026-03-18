@@ -18,8 +18,8 @@ export default defineConfig({
     setupFiles: './src/setupTests.ts',
     css: true,
     pool: 'threads',
-    maxConcurrency: 4,
-    maxWorkers: 4,
+    maxConcurrency: 10,
+    maxWorkers: '75%',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
