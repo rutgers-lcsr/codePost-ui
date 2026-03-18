@@ -3,7 +3,7 @@ import { BookOutlined, GlobalOutlined, LoginOutlined, TeamOutlined, UserOutlined
 import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
-import _ from 'lodash';
+import groupBy from 'lodash/groupBy';
 
 import { colors } from '../../theme/colors';
 import { Organization } from '../../api-client';
@@ -103,7 +103,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
 
   // Group admins by email
   const groupedAdmins: GroupedAdminData[] = useMemo(() => {
-    const grouped = _.groupBy(admins, 'email');
+    const grouped = groupBy(admins, 'email');
     return Object.keys(grouped).map((email) => {
       const records = grouped[email];
 
