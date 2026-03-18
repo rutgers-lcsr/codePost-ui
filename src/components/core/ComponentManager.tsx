@@ -5,6 +5,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { useEffect } from 'react';
 
 /* other library imports */
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
@@ -89,7 +90,19 @@ const ComponentManager = (
     return <MyComponent {...props} currentCourse={undefined} />;
   };
 
-  return (props: IComponentManagerProps) => {
+  const CourseRouteElement = ({ course, ...rest }: IComponentManagerProps & { course: Course }) => {
+    useEffect(() => {
+      LOCAL_SETTINGS.defaultCourse.setter(course.id);
+    }, [course.id]);
+
+    return (
+      <CourseContext.Provider value={course}>
+        <MyComponent key={`course-${course.id}`} {...rest} currentCourse={course} />
+      </CourseContext.Provider>
+    );
+  };
+
+  return React.memo((props: IComponentManagerProps) => {
     return (
       <Routes>
         {props.initialCourses.map((course) => {
@@ -99,22 +112,14 @@ const ComponentManager = (
             <Route
               key={course.id.toString()}
               path={routePath}
-              element={React.createElement(() => {
-                LOCAL_SETTINGS.defaultCourse.setter(course.id);
-                // No need to convert, course is already Course type
-                return (
-                  <CourseContext.Provider value={course}>
-                    <MyComponent key={`course-${course.id}`} {...props} currentCourse={course} />
-                  </CourseContext.Provider>
-                );
-              })}
+              element={<CourseRouteElement course={course} {...props} />}
             />
           );
         })}
         <Route path="*" element={<CatchAllElement {...props} />} />
       </Routes>
     );
-  };
+  });
 };
 
 export default ComponentManager;

@@ -18,13 +18,13 @@ describe('code console demo fixtures', () => {
     expect(notebook.cells.length).toBeGreaterThanOrEqual(3);
     expect(notebook.cells[2].outputs.some((output: any) => output.output_type === 'display_data')).toBe(true);
 
-    expect(state.rubricCategories.length).toBe(3);
-    expect(Object.values(state.rubricComments).flat().length).toBeGreaterThanOrEqual(5);
-    expect(state.testCategories.length).toBe(3);
+    expect(state.rubricCategories.length).toBe(4);
+    expect(Object.values(state.rubricComments).flat().length).toBeGreaterThanOrEqual(7);
+    expect(state.testCategories.length).toBe(4);
     const allTestCases = Object.values(state.testCases).flat();
-    expect(allTestCases.length).toBeGreaterThanOrEqual(7);
+    expect(allTestCases.length).toBeGreaterThanOrEqual(9);
     expect(allTestCases.every((testCase: any) => (testCase.pointsPass ?? 0) > 0)).toBe(true);
-    expect(state.tests.length).toBeGreaterThanOrEqual(7);
+    expect(state.tests.length).toBeGreaterThanOrEqual(9);
 
     const pdfFile = state.files.find((file) => file.name === 'assignment.pdf');
     expect(pdfFile).toBeDefined();
@@ -38,7 +38,7 @@ describe('code console demo fixtures', () => {
   it('loads student demo with mapped rubric comments and tests visible', () => {
     const state = loadDemoStudent([], 'student@example.edu');
 
-    expect(state.files.length).toBe(4);
+    expect(state.files.length).toBe(5);
 
     const pdfFile = state.files.find((file) => file.name === 'assignment.pdf');
     expect(pdfFile).toBeDefined();
@@ -48,9 +48,9 @@ describe('code console demo fixtures', () => {
     expect(state.comments[2].length).toBeGreaterThan(0);
     expect(state.comments[3].length).toBeGreaterThan(0);
     expect(Object.keys(state.commentRubricComments).length).toBeGreaterThan(0);
-    expect(state.testCategories.length).toBe(3);
+    expect(state.testCategories.length).toBe(4);
     const allTestCases = Object.values(state.testCases).flat();
-    expect(allTestCases.length).toBeGreaterThanOrEqual(7);
+    expect(allTestCases.length).toBeGreaterThanOrEqual(9);
     expect(allTestCases.every((testCase: any) => (testCase.pointsPass ?? 0) > 0)).toBe(true);
 
     const notebookFile = state.files.find((file) => file.name === 'analysis_notebook.ipynb');

@@ -31,12 +31,38 @@ import WhyUse from './WhyUse';
 
 import Logout from '../core/Logout';
 
+import { User } from '../../api-client';
 import { ADMIN, CODE, CODE_DEMO, GRADER, STUDENT } from '../../routes';
 
 /**********************************************************************************************************************/
 
 const AsyncLanding = React.lazy(() => import('../landing/LandingABTest'));
 const AsyncDocs = React.lazy(() => import('../docs/DocsPage'));
+const AsyncGrade = React.lazy(() => import('../../features/code-review/CodeConsole'));
+const AsyncDemoLanding = React.lazy(() => import('../../features/code-review/DemoLanding'));
+const AsyncDemoAdmin = React.lazy(() => import('../../features/code-review/DemoAdmin'));
+const AsyncDemoGrader = React.lazy(() => import('../../features/code-review/DemoGrader'));
+
+const anonymousUser: User = {
+  email: 'anonymous@university.edu',
+  id: -1,
+  token: '',
+  password: '',
+  organization: 1,
+  canCreateCourses: false,
+  canModifyRosters: false,
+  apiToken: null,
+  studentCourses: [],
+  graderCourses: [],
+  superGraderCourses: [],
+  courseadminCourses: [],
+  leaderSections: [],
+  studentSections: [],
+  showProductTips: true,
+  codePostAdmin: false,
+  hasCredentials: false,
+  isOrgStaff: false,
+};
 
 interface IndexManagerProps {
   error: string;
@@ -122,7 +148,56 @@ class IndexManager extends React.Component<IndexManagerProps> {
 
           <Route path="/invite/:sid/:token" element={<ValidateInvite isLoggedIn={this.props.isLoggedIn} />} />
 
-          <Route path={`${CODE_DEMO}/`} element={null} />
+          <Route path={`${CODE_DEMO}/*`}>
+            <Route
+              index
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncDemoLanding />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="grader"
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncGrade user={anonymousUser} handleLogout={this.props.handleLogout} inDemoMode={true} />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="student"
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncGrade user={anonymousUser} handleLogout={this.props.handleLogout} inDemoMode={true} />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="admin"
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncDemoAdmin />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="grader-console"
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncDemoGrader />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <React.Suspense fallback={<div />}>
+                  <AsyncGrade user={anonymousUser} handleLogout={this.props.handleLogout} inDemoMode={true} />
+                </React.Suspense>
+              }
+            />
+          </Route>
 
           {/* Protected routes - show login form when accessed without authentication */}
           <Route path={`${STUDENT}/:courseName?/:period?/:assignmentName?`} element={loginElement} />

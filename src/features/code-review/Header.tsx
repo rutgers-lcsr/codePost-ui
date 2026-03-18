@@ -918,13 +918,13 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     },
     {
       key: 'setting:5',
-      label: <a href="/">Home</a>,
+      label: <Link to="/">Home</Link>,
       style: itemStyle,
       className: 'header-menu',
     },
     {
       key: 'setting:6',
-      label: <a href="/logout">Logout</a>,
+      label: <Link to="/logout">Logout</Link>,
       style: itemStyle,
       className: 'header-menu',
     },

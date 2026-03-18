@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /* other library imports */
 import { Navigate, Route, Routes } from 'react-router-dom';
@@ -53,6 +53,9 @@ const AsyncGrader = lazy(() => import('./components/grader/GraderManager'));
 const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
 const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
 const AsyncGrade = lazy(() => import('./features/code-review/CodeConsole'));
+const AsyncDemoLanding = lazy(() => import('./features/code-review/DemoLanding'));
+const AsyncDemoAdmin = lazy(() => import('./features/code-review/DemoAdmin'));
+const AsyncDemoGrader = lazy(() => import('./features/code-review/DemoGrader'));
 const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
 const AsyncDocs = lazy(() => import('./components/docs/DocsPage'));
 
@@ -553,26 +556,65 @@ Firefox:
     }
   }, [isSuperUser]);
 
+  const consoleProps = useMemo(
+    () => ({
+      user: user ?? anonymousUser,
+      handleLogout,
+      addAssignment,
+      deleteAssignment,
+      addCourse: addCreatedCourse,
+      superGraderCourses: user?.superGraderCourses ?? [],
+      sectionsLed: user?.leaderSections ?? [],
+    }),
+    [user, handleLogout, addAssignment, deleteAssignment, addCreatedCourse],
+  );
+
   // Render
   if (toRedirect) {
     return <Navigate to="/" replace />;
   }
 
-  const renderDemoRoute = () => (
-    <Route
-      path={`${CODE_DEMO}/*`}
-      element={wrapTooltipContext(
-        <AsyncGrade user={user === undefined ? anonymousUser : user} handleLogout={handleLogout} inDemoMode={true} />,
-      )}
-    />
-  );
+  const renderDemoRoute = () => {
+    const demoConsole = wrapTooltipContext(
+      <AsyncGrade user={user === undefined ? anonymousUser : user} handleLogout={handleLogout} inDemoMode={true} />,
+    );
+    const demoLanding = (
+      <Suspense fallback={<RouterLoading />}>
+        <AsyncDemoLanding />
+      </Suspense>
+    );
+    return (
+      <Route path={`${CODE_DEMO}/*`}>
+        <Route index element={demoLanding} />
+        <Route path="grader" element={demoConsole} />
+        <Route path="student" element={demoConsole} />
+        <Route
+          path="admin"
+          element={
+            <Suspense fallback={<RouterLoading />}>
+              <AsyncDemoAdmin />
+            </Suspense>
+          }
+        />
+        <Route
+          path="grader-console"
+          element={
+            <Suspense fallback={<RouterLoading />}>
+              <AsyncDemoGrader />
+            </Suspense>
+          }
+        />
+        {/* Backward compat: bare /demo with ?sample= still works */}
+        <Route path="*" element={demoConsole} />
+      </Route>
+    );
+  };
 
   if (user !== undefined) {
     const courseAdminCourses = user.courseadminCourses;
     const graderCourses = user.graderCourses;
     const studentCourses = user.studentCourses;
     const superGraderCourses = user.superGraderCourses;
-    const sectionsLed = user.leaderSections;
 
     const graderAccessibleCourses = Array.from(
       new Map([...graderCourses, ...superGraderCourses].map((course) => [course.id, course])).values(),
@@ -610,16 +652,6 @@ Firefox:
     } else {
       (window as Window & typeof globalThis & { Intercom?: (...args: unknown[]) => void }).Intercom?.('shutdown');
     }
-
-    const consoleProps = {
-      user,
-      handleLogout,
-      addAssignment,
-      deleteAssignment,
-      addCourse: addCreatedCourse,
-      superGraderCourses,
-      sectionsLed,
-    };
 
     const loginAsRoute = <Route path="/loginAs/*" element={<LogInAs replaceUser={replaceUser} />} />;
 
@@ -803,6 +835,7 @@ Firefox:
       <Route path="/terms-of-service" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="/tos" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="/changelog" element={<ChangeLog isLoggedIn={false} />} />
+      {renderDemoRoute()}
       <Route path="*" element={<div />} />
     </Routes>
   );

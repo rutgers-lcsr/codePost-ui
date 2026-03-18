@@ -265,6 +265,95 @@ def contains_recursive(values: List[int], target: int) -> bool:
     created: '',
     modified: '',
   },
+  {
+    id: 5,
+    name: 'LinkedList.java',
+    extension: 'java',
+    data: `/**
+ * Assignment 4: Singly-Linked List
+ *
+ * Intentional bugs for demo feedback/testing:
+ *  - remove() does not handle removing the head node
+ *  - toString() missing null check for empty list
+ */
+public class LinkedList<T> {
+
+    private static class Node<T> {
+        T data;
+        Node<T> next;
+
+        Node(T data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
+    private Node<T> head;
+    private int size;
+
+    public LinkedList() {
+        head = null;
+        size = 0;
+    }
+
+    /** Append a value to the end of the list. */
+    public void add(T value) {
+        Node<T> newNode = new Node<>(value);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<T> current = head;
+            while (current.next != null) {
+                current = current.next;
+            }
+            current.next = newNode;
+        }
+        size++;
+    }
+
+    /**
+     * Remove the first occurrence of value.
+     * Bug: skips the head node check.
+     */
+    public boolean remove(T value) {
+        Node<T> current = head;
+        while (current.next != null) {
+            if (current.next.data.equals(value)) {
+                current.next = current.next.next;
+                size--;
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
+    }
+
+    /** Return the number of elements. */
+    public int size() {
+        return size;
+    }
+
+    /** Bug: does not guard against empty list when calling head.data. */
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        sb.append(head.data);
+        Node<T> current = head.next;
+        while (current != null) {
+            sb.append(", ").append(current.data);
+            current = current.next;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+}
+`,
+    comments: [],
+    submission: 1,
+    path: null,
+    created: '',
+    modified: '',
+  },
 ];
 
 export const demoFilesStudent = [
@@ -339,6 +428,75 @@ def contains_recursive(values: List[int], target: int) -> bool:
     name: 'analysis_notebook.ipynb',
     extension: 'ipynb',
     data: demoNotebookStudent,
+    comments: [],
+    submission: 1,
+    path: null,
+    created: '',
+    modified: '',
+  },
+  {
+    id: 5,
+    name: 'LinkedList.java',
+    extension: 'java',
+    data: `/**
+ * Student submission for singly-linked list.
+ */
+public class LinkedList<T> {
+
+    private static class Node<T> {
+        T data;
+        Node<T> next;
+        Node(T data) { this.data = data; }
+    }
+
+    private Node<T> head;
+    private int size;
+
+    public LinkedList() {
+        head = null;
+        size = 0;
+    }
+
+    public void add(T value) {
+        Node<T> newNode = new Node<>(value);
+        if (head == null) {
+            head = newNode;
+        } else {
+            Node<T> cur = head;
+            while (cur.next != null) cur = cur.next;
+            cur.next = newNode;
+        }
+        size++;
+    }
+
+    public boolean remove(T value) {
+        Node<T> cur = head;
+        while (cur.next != null) {
+            if (cur.next.data.equals(value)) {
+                cur.next = cur.next.next;
+                size--;
+                return true;
+            }
+            cur = cur.next;
+        }
+        return false;
+    }
+
+    public int size() { return size; }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        sb.append(head.data);
+        Node<T> cur = head.next;
+        while (cur != null) {
+            sb.append(", ").append(cur.data);
+            cur = cur.next;
+        }
+        return sb.append("]").toString();
+    }
+}
+`,
     comments: [],
     submission: 1,
     path: null,

@@ -638,7 +638,13 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       return;
     }
 
-    // Clean up old cached object URLs whenever execution result changes
+    if (!props.executionResult) {
+      setExecutedContent(null);
+
+      return;
+    }
+
+    // Clean up old cached object URLs when replacing with new execution results
     if (window.jupyterImages) {
       window.jupyterImages.forEach((imageInfo) => {
         if (imageInfo.objectUrl) {
@@ -646,12 +652,6 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         }
       });
       window.jupyterImages.clear();
-    }
-
-    if (!props.executionResult) {
-      setExecutedContent(null);
-
-      return;
     }
 
     if (props.executionResult.output_data) {

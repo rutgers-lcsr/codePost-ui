@@ -40,7 +40,7 @@ const demoAssignmentBase: AssignmentType = {
   isReleased: false,
   feedbackReleased: false,
   hideGrades: false,
-  rubricCategories: [1, 2, 3],
+  rubricCategories: [1, 2, 3, 4],
   course: -1,
   sortKey: 0,
   anonymousGrading: false,
@@ -49,7 +49,7 @@ const demoAssignmentBase: AssignmentType = {
   regradeInstructions: '',
   regradeDeadline: '',
   hideGradersFromStudents: false,
-  points: 20,
+  points: 25,
   maxLateDays: 5,
   commentFeedback: true,
   allowStudentUpload: false,
@@ -62,7 +62,7 @@ const demoAssignmentBase: AssignmentType = {
   templateMode: false,
   files: [],
   fileTemplates: [],
-  testCategories: [-1, -2, -3],
+  testCategories: [-1, -2, -3, -4],
   environment: 0,
   showFrequentlyUsedRubricComments: true,
   allowLateUploads: false,
@@ -133,6 +133,16 @@ const demoRubricCategories: RubricCategoryType[] = [
     helpText: 'Solutions should avoid unnecessary repeated work.',
     atMostOnce: false,
   },
+  {
+    id: 4,
+    name: 'Design',
+    rubricComments: [],
+    assignment: DEMO_ASSIGNMENT_ID,
+    pointLimit: 5,
+    sortKey: 3,
+    helpText: 'Data structure choice and edge-case handling.',
+    atMostOnce: false,
+  },
 ];
 
 const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
@@ -198,6 +208,28 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       pointDelta: 1,
       sortKey: 1,
       explanation: '',
+      instructionText: '',
+      templateTextOn: false,
+    },
+  ],
+  4: [
+    {
+      id: 41,
+      text: 'remove() does not handle removing the head element.',
+      category: 4,
+      pointDelta: 2,
+      sortKey: 0,
+      explanation: 'Check if head itself matches before walking the rest of the list.',
+      instructionText: '',
+      templateTextOn: false,
+    },
+    {
+      id: 42,
+      text: 'toString() crashes on an empty list (NullPointerException).',
+      category: 4,
+      pointDelta: 1,
+      sortKey: 1,
+      explanation: 'Guard against head == null before accessing head.data.',
       instructionText: '',
       templateTextOn: false,
     },
@@ -282,6 +314,28 @@ const demoTests: SubmissionTestType[] = [
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
   },
+  {
+    id: -8,
+    submission: DEMO_SUBMISSION_ID,
+    testCase: -8,
+    logs: 'add(1), add(2): size() returned 2',
+    passed: true,
+    testCategory: -4,
+    created: '2026-01-01T00:00:00.000Z',
+    modified: '2026-01-01T00:00:00.000Z',
+    isError: false,
+  },
+  {
+    id: -9,
+    submission: DEMO_SUBMISSION_ID,
+    testCase: -9,
+    logs: 'NullPointerException: Cannot invoke "Object.toString()" on empty list',
+    passed: false,
+    testCategory: -4,
+    created: '2026-01-01T00:00:00.000Z',
+    modified: '2026-01-01T00:00:00.000Z',
+    isError: true,
+  },
 ];
 
 const demoTestCategories: TestCategoryType[] = [
@@ -316,6 +370,17 @@ const demoTestCategories: TestCategoryType[] = [
     maxPoints: undefined,
     sortKey: 2,
     targetFileName: 'analysis_notebook.ipynb',
+    resources: [],
+  },
+  {
+    id: -4,
+    name: 'LinkedList.java',
+    testCases: [-8, -9],
+    assignment: DEMO_ASSIGNMENT_ID,
+    testScript: undefined,
+    maxPoints: undefined,
+    sortKey: 3,
+    targetFileName: 'LinkedList.java',
     resources: [],
   },
 ];
@@ -488,6 +553,54 @@ const demoTestCases: TestCasesByCategory = {
       targetCellId: 'demo-cell-plot',
     } as TestCaseType,
   ],
+  [-4]: [
+    {
+      id: -8,
+      testCategory: -4,
+      sortKey: 0,
+      description: 'add(1), add(2), size() returns 2',
+      type: 'io',
+      pointsFail: 1,
+      pointsPass: 2,
+      text: '',
+      modified: '2026-01-01T00:00:00.000Z',
+      fileName: 'LinkedList.java',
+      checkReturn: true,
+      exposed: true,
+      instances: [DEMO_SUBMISSION_ID],
+      explanation: '',
+      lastSolutionRun: 0,
+      outputIsFile: false,
+      isFlexible: false,
+      outputIsRegexp: false,
+      expectPlot: false,
+      dataSet: null,
+      targetCellId: null,
+    } as TestCaseType,
+    {
+      id: -9,
+      testCategory: -4,
+      sortKey: 1,
+      description: 'toString() on empty list throws NullPointerException',
+      type: 'unit',
+      pointsFail: 2,
+      pointsPass: 3,
+      text: '',
+      modified: '2026-01-01T00:00:00.000Z',
+      fileName: 'LinkedList.java',
+      checkReturn: true,
+      exposed: true,
+      instances: [DEMO_SUBMISSION_ID],
+      explanation: '',
+      lastSolutionRun: 0,
+      outputIsFile: false,
+      isFlexible: false,
+      outputIsRegexp: false,
+      expectPlot: false,
+      dataSet: null,
+      targetCellId: null,
+    } as TestCaseType,
+  ],
 };
 
 const buildDemoSubmission = (user: string | null, fileIds: number[]): AnonymousSubmissionType => ({
@@ -579,6 +692,7 @@ const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<n
     created: '',
     modified: '',
   };
+  fileList[4] = demoFilesGrader[3] as FileType;
 
   return {
     fileList,
@@ -587,6 +701,7 @@ const buildDefaultGraderFiles = (): { fileList: FileType[]; commentMap: Record<n
       2: [],
       3: [],
       4: [],
+      5: [],
     },
   };
 };
@@ -611,6 +726,7 @@ const buildDefaultStudentFiles = (): {
     created: '',
     modified: '',
   };
+  fileList[4] = demoFilesStudent[3] as FileType;
 
   const comments = [
     {
@@ -674,6 +790,7 @@ const buildDefaultStudentFiles = (): {
       2: comments.filter((comment) => comment.file === 2),
       3: comments.filter((comment) => comment.file === 3),
       4: [],
+      5: comments.filter((comment) => comment.file === 5),
     },
     commentRubricComments: {
       1: demoRubricComments[1][1],
