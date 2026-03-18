@@ -79,8 +79,7 @@ export class UiComment {
 
   public static isEmpty = (comment: CommentType) => {
     return (
-      (comment.text === undefined || comment.text.length === 0) &&
-      (comment.text === null || comment.text?.length === 0) &&
+      (!comment.text || comment.text.length === 0) &&
       (comment.pointDelta === null || comment.pointDelta === 0) &&
       (comment.rubricComment === undefined || comment.rubricComment === null)
     );
