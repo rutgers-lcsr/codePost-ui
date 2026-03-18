@@ -216,6 +216,12 @@ Navigate to **Assignments > Rubrics** or open a specific assignment's rubric tab
 2. Inside each category, click **Add Comment** — set a name, point value, and description.
 3. Repeat until your rubric is complete.
 
+### Adding Explanations and Instructions
+
+1. Click **Settings** (gear icon) in the rubric view.
+2. Turn on **Explanations** or **Instructions**.
+3. Add explanations or instructions to individual rubric comments as needed.
+
 ### Import / Export
 
 - **Import**: Upload a rubric file (CSV or JSON) to bulk-create categories and comments.
