@@ -1,7 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
+import isEqual from 'lodash/isEqual';
 
 import { RubricComment } from '../api-client';
 import { STATUS } from '../components/admin/assignments/rubric/RubricUtils';
@@ -70,7 +71,7 @@ export const useRubricCommentStore = create<RubricCommentStoreState>()(
         if (!current && propsComments) {
           const propComment = propsComments.find((c) => c.id === id);
           if (propComment) {
-            current = _.cloneDeep(propComment);
+            current = cloneDeep(propComment);
           }
         }
         if (!current) return undefined;
@@ -118,7 +119,7 @@ export const useRubricCommentStore = create<RubricCommentStoreState>()(
         const statuses: Record<number, STATUS> = {};
 
         comments.forEach((c) => {
-          map[c.id] = _.cloneDeep(c);
+          map[c.id] = cloneDeep(c);
           statuses[c.id] = STATUS.NONE;
         });
 
@@ -135,8 +136,8 @@ export const useRubricCommentStore = create<RubricCommentStoreState>()(
           // Only sync if not marked as UNSAVED (user is actively editing)
           if (currentStatuses[comment.id] !== STATUS.UNSAVED) {
             // Check if comment has actually changed
-            if (!_.isEqual(currentComments[comment.id], comment)) {
-              newComments[comment.id] = _.cloneDeep(comment);
+            if (!isEqual(currentComments[comment.id], comment)) {
+              newComments[comment.id] = cloneDeep(comment);
             }
           }
           // Initialize status if not present

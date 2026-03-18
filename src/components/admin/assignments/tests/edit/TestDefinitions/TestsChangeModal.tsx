@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 /* library imports */
 import { Button, Divider, Modal, Spin, Steps, Table, Tag } from 'antd';
-import _ from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 
 /* codePost object imports */
 import { TestCaseType, TestCategoryType } from '../../../../../../types/models';
@@ -247,12 +247,7 @@ export const TestsChangeModal = (props: IProps) => {
         setCategoriesToDelete(deletedCategories);
         setTestsToAdd(newTests);
         setTestsToDelete(deletedTests);
-        if (
-          _.isEmpty(newCategories) &&
-          _.isEmpty(deletedCategories) &&
-          _.isEmpty(newTests) &&
-          _.isEmpty(deletedTests)
-        ) {
+        if (isEmpty(newCategories) && isEmpty(deletedCategories) && isEmpty(newTests) && isEmpty(deletedTests)) {
           props.onConfirm();
           props.onCancel();
         } else {

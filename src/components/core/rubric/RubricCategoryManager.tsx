@@ -2,7 +2,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { InputRef } from 'antd';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../withWindowWatcher';
 
@@ -116,7 +116,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
   const buildLocalRubricCommentsStructure = useCallback((comments: RubricComment[]) => {
     const toRet: Record<number, RubricComment> = {};
     for (const rubricComment of comments) {
-      toRet[rubricComment.id] = _.cloneDeep(rubricComment);
+      toRet[rubricComment.id] = cloneDeep(rubricComment);
     }
     return toRet;
   }, []);

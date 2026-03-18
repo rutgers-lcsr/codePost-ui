@@ -23,14 +23,42 @@ export function redactSensitiveData(str: string): string {
 export const MAX_CONSOLE_LOGS = 30;
 export const recentConsoleLogs: Array<{ level: string; message: string; at: string }> = [];
 
+function safeToString(value: unknown): string {
+  if (typeof value === 'string') return value;
+
+  try {
+    return String(value);
+  } catch {
+    try {
+      return Object.prototype.toString.call(value);
+    } catch {
+      return '[Unserializable value]';
+    }
+  }
+}
+
+function safeNumberString(value: unknown, formatter?: (num: number) => number | string): string {
+  try {
+    const numericValue = Number(value);
+
+    if (Number.isNaN(numericValue)) {
+      return safeToString(value);
+    }
+
+    return safeToString(formatter ? formatter(numericValue) : numericValue);
+  } catch {
+    return safeToString(value);
+  }
+}
+
 function serializeArg(a: unknown): string {
   if (typeof a === 'string') return a;
   if (a instanceof Error) return `[Error: ${a.message}]`;
   try {
     const s = JSON.stringify(a);
-    return s !== undefined ? s : String(a);
+    return s !== undefined ? s : safeToString(a);
   } catch {
-    return String(a);
+    return safeToString(a);
   }
 }
 
@@ -47,12 +75,12 @@ function formatConsoleArgs(args: unknown[]): string {
         case 'O':
           return serializeArg(val);
         case 's':
-          return String(val);
+          return safeToString(val);
         case 'd':
         case 'i':
-          return String(Math.trunc(Number(val)));
+          return safeNumberString(val, Math.trunc);
         case 'f':
-          return String(Number(val));
+          return safeNumberString(val);
         case 'c':
           return '';
         default:

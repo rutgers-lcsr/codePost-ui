@@ -35,7 +35,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { colors } from '../../theme/colors';
 import useFixedWindow from '../core/useFixedWindow';
 import CPLogo from '../core/CPLogo';
-import _ from 'lodash';
+import uniqBy from 'lodash/uniqBy';
 
 import AdminTable from './AdminTable';
 import SystemHealth from './SystemHealth';
@@ -178,8 +178,8 @@ const Dashboard = () => {
       ]);
 
       setStats(statsData);
-      const uniqueOrgs = _.uniqBy(organizationData, 'id');
-      const uniqueCourses = _.uniqBy(courseData, 'id');
+      const uniqueOrgs = uniqBy(organizationData, 'id');
+      const uniqueCourses = uniqBy(courseData, 'id');
       setOrganizations(uniqueOrgs);
       setCourses(uniqueCourses);
 
@@ -216,7 +216,7 @@ const Dashboard = () => {
       setUsersLoading(true);
       UserIO.list()
         .then((userData) => {
-          const uniqueUsers = _.uniqBy(userData, 'email');
+          const uniqueUsers = uniqBy(userData, 'email');
           setUsers(uniqueUsers);
           setUsersLoaded(true);
         })

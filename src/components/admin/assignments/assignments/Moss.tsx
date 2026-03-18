@@ -37,7 +37,6 @@ import { Assignment } from '../../../../types/common';
 import { AssignmentFileType, SubmissionInfoType, UserType } from '../../../../types/models';
 
 import FileExploror from '../../../../components/core/FileExplorer';
-import invokeAWSLambda from '../../../../components/core/invokeAWSLambda';
 
 import CPAdminDetail from '../../other/CPAdminDetail';
 
@@ -283,6 +282,8 @@ const Moss = (props: IMossProps) => {
         from_url: window.location.href.split('?')[0],
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { default: invokeAWSLambda } = await import('../../../../components/core/invokeAWSLambda');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',

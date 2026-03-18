@@ -12,7 +12,8 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button, Empty } from 'antd';
 
 /* other library imports */
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
+import uniqBy from 'lodash/uniqBy';
 import queryString from 'query-string';
 
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -838,11 +839,11 @@ const Admin: React.FC<IComponentProps> = (props) => {
     const promises = [];
 
     if (newSection) {
-      const updatedSection = _.cloneDeep(newSection);
+      const updatedSection = cloneDeep(newSection);
       updatedSection.students = [...updatedSection.students, studentEmail];
       promises.push(updateSection(updatedSection));
     } else if (oldSection) {
-      const updatedSection = _.cloneDeep(oldSection);
+      const updatedSection = cloneDeep(oldSection);
       updatedSection.students = updatedSection.students.filter((el: string | null) => el !== studentEmail);
       promises.push(updateSection(updatedSection));
     }
@@ -899,7 +900,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         newSubsByGrader[grader][assignment.id] = [];
       });
 
-      const newAssignments = _.uniqBy([...assignments, assignment], (a) => a.name);
+      const newAssignments = uniqBy([...assignments, assignment], (a) => a.name);
 
       setSubmissions((prev) => ({ ...prev, [assignment.id]: [] }));
       setAssignments(newAssignments);

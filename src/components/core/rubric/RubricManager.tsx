@@ -13,7 +13,7 @@ import { osControlKey } from '../operatingSystem';
 
 /* other library imports */
 import { arrayMoveImmutable as arrayMove } from 'array-move';
-import _ from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 import { assignmentsApi, rubricCategoriesApi, rubricCommentsApi, commentsApi } from '../../../api-client/clients';
 import { RubricCategory, RubricComment } from '../../../api-client';
@@ -241,8 +241,8 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         const commentMap = buildCommentMap(rubric.rubricCategories, rubric.rubricComments);
 
         const currentState = useRubricStore.getState();
-        const categoriesChanged = !_.isEqual(currentState.savedRubricCategories, rubric.rubricCategories);
-        const commentsChanged = !_.isEqual(currentState.savedRubricComments, commentMap);
+        const categoriesChanged = !isEqual(currentState.savedRubricCategories, rubric.rubricCategories);
+        const commentsChanged = !isEqual(currentState.savedRubricComments, commentMap);
         const shouldUpdateState = !currentState.loadComplete || categoriesChanged || commentsChanged;
 
         // Notify about new comments

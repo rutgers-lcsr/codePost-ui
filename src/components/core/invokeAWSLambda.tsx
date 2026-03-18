@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import AWS from 'aws-sdk';
+import { LambdaClient, InvokeCommand, type InvokeCommandOutput } from '@aws-sdk/client-lambda';
 
 interface IAWSLambdaProps {
   accessKey: string;
@@ -11,45 +11,35 @@ interface IAWSLambdaProps {
 const invokeAWSLambda = async (props: IAWSLambdaProps) => {
   const FETCH_TIMEOUT = 100000;
 
-  // This function creates a service object to execute AWS actions
-  const createService = () => {
-    if (AWS.config && AWS.config.update) {
-      AWS.config.update({
-        credentials: new AWS.Credentials(props.accessKey, props.secretAccessKey),
-        region: 'us-east-2',
+  const client = new LambdaClient({
+    region: 'us-east-2',
+    credentials: {
+      accessKeyId: props.accessKey,
+      secretAccessKey: props.secretAccessKey,
+    },
+  });
+
+  const command = new InvokeCommand({
+    FunctionName: props.arn,
+    Payload: new TextEncoder().encode(JSON.stringify(props.payload)),
+  });
+
+  return new Promise<InvokeCommandOutput | 'DELAY'>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      resolve('DELAY');
+    }, FETCH_TIMEOUT);
+
+    client
+      .send(command)
+      .then((data) => {
+        clearTimeout(timeout);
+        resolve(data);
+      })
+      .catch((err) => {
+        clearTimeout(timeout);
+        reject(err);
       });
-    }
-
-    return new AWS.Lambda();
-  };
-
-  // This function invokes a lambda function based on a service lambda, arn, and payload
-  const invokeLambda = (lambda: AWS.Lambda, arn: string, payload: Record<string, unknown>) => {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(function () {
-        resolve('DELAY');
-      }, FETCH_TIMEOUT);
-
-      const params = {
-        FunctionName: arn,
-        Payload: JSON.stringify(payload),
-      };
-
-      const genericCallback = (err: AWS.AWSError, data: AWS.Lambda.Types.InvocationResponse) => {
-        if (err) {
-          clearTimeout(timeout);
-          reject(err);
-        } else {
-          clearTimeout(timeout);
-          resolve(data);
-        }
-      };
-      lambda.invoke(params, genericCallback);
-    });
-  };
-
-  const lambdaService = createService();
-  return await invokeLambda(lambdaService, props.arn, props.payload);
+  });
 };
 
 export default invokeAWSLambda;

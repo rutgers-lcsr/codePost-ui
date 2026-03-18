@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { Menu, message, Select, Skeleton, theme } from 'antd';
 
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import { ILogType, PseudoTerminal, RESULT_TYPE } from '../admin/assignments/tests/edit/TestDefinitions/PseudoTerminal';
 import { CodeWindow } from '../admin/assignments/tests/edit/utils/CodeWindow';
 import useWindowSize from './useWindowSize';
@@ -34,7 +34,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
   const { token } = theme.useToken();
   const [loading, setLoading] = React.useState<boolean>(true);
 
-  const [filesCopy, setFilesCopy] = React.useState<FileType[]>(_.cloneDeep(props.files));
+  const [filesCopy, setFilesCopy] = React.useState<FileType[]>(cloneDeep(props.files));
   const [currentFileID, setCurrentFileID] = React.useState<number | undefined>(undefined);
 
   const height = useWindowSize().height * 0.85;
@@ -60,7 +60,7 @@ const PseudoIDE = (props: IPseudoIDEProps) => {
 
   React.useEffect(() => {
     if (props.files.length > 0 && currentFileID === undefined) {
-      setFilesCopy(_.cloneDeep(props.files));
+      setFilesCopy(cloneDeep(props.files));
       setCurrentFileID(props.files[0].id);
     }
   }, [props.files, currentFileID]);

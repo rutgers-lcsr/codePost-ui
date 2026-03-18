@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 import { RubricCategory, RubricComment } from '../api-client';
 import { IRubricCategoryToRubricCommentsMap } from '../types/common';
@@ -132,10 +132,10 @@ export const useRubricStore = create<RubricStore>()(
       initialize: (categories, comments) => {
         set(
           {
-            rubricCategories: _.cloneDeep(categories),
-            rubricComments: _.cloneDeep(comments),
-            savedRubricCategories: _.cloneDeep(categories),
-            savedRubricComments: _.cloneDeep(comments),
+            rubricCategories: cloneDeep(categories),
+            rubricComments: cloneDeep(comments),
+            savedRubricCategories: cloneDeep(categories),
+            savedRubricComments: cloneDeep(comments),
             loadComplete: true,
             unsavedComments: [],
             deletedComments: [],
@@ -396,8 +396,8 @@ export const useRubricStore = create<RubricStore>()(
       resetRubric: () => {
         set(
           (state) => ({
-            rubricCategories: _.cloneDeep(state.savedRubricCategories),
-            rubricComments: _.cloneDeep(state.savedRubricComments),
+            rubricCategories: cloneDeep(state.savedRubricCategories),
+            rubricComments: cloneDeep(state.savedRubricComments),
             deletedCategories: [],
             deletedComments: [],
             unsavedCategories: [],
@@ -415,8 +415,8 @@ export const useRubricStore = create<RubricStore>()(
           {
             rubricCategories: categories,
             rubricComments: comments,
-            savedRubricCategories: _.cloneDeep(categories),
-            savedRubricComments: _.cloneDeep(comments),
+            savedRubricCategories: cloneDeep(categories),
+            savedRubricComments: cloneDeep(comments),
             unsavedComments: [],
             deletedComments: [],
             unsavedCategories: [],

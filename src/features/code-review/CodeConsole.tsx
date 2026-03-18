@@ -18,7 +18,8 @@ import { CloseOutlined, EditOutlined } from '@ant-design/icons';
 
 /* other library imports */
 import { Button, Empty, message, Modal, Tag, Tooltip } from 'antd';
-import _ from 'lodash';
+import flatten from 'lodash/flatten';
+import debounce from 'lodash/debounce';
 import queryString from 'query-string';
 import { useLocation, useParams } from 'react-router-dom';
 
@@ -116,6 +117,8 @@ import {
 import { CodeConsoleOnboardingSelector } from '../../components/core/OnboardingSelector';
 
 import { getDemoPinnedTemplates, loadDemoGrader, loadDemoStudent } from './demo';
+import DemoBanner from './DemoBanner';
+import { CODE_DEMO } from '../../routes';
 
 import RubricManager, { IRubricManagerParams, RubricTooltip } from '../../components/core/rubric/RubricManager';
 
@@ -194,6 +197,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
   // Granular Selectors - Optimization Phase 4
   const files = useCodeConsoleStore((s) => s.files) as FileWithId[];
+  const fileIDs = React.useMemo(() => files.map((file) => file.id), [files]);
   const comments = useCodeConsoleStore((s) => s.comments);
   const permissionLevel = useCodeConsoleStore((s) => s.permissionLevel);
   const activeCommentID = useCodeConsoleStore((s) => s.activeCommentID);
@@ -661,7 +665,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       /* BEGIN: QUERY ARG PARSING
 			/**********************************************************************************/
 
-      if (queryValues.sample && queryValues.sample === '1') {
+      const isStudentPath = location.pathname.endsWith('/student');
+      if (isStudentPath || (queryValues.sample && queryValues.sample === '1')) {
         loadDemoData([], true);
       } else {
         loadDemoData([], false);
@@ -1407,7 +1412,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         // 3. POST returns, saving the comment.
         // Solution: Check if the comment with the OLD negative ID still exists in current state
         if (
-          !_.flatten(Object.values(comments)).find((el: CommentType) => {
+          !flatten(Object.values(comments)).find((el: CommentType) => {
             return el.id === comment.id;
           })
         ) {
@@ -1738,7 +1743,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
    */
   const handleContentChange = React.useMemo(
     () =>
-      _.debounce((content: string) => {
+      debounce((content: string) => {
         const currentSelectedFile = useCodeConsoleStore.getState().selectedFile as FileWithId | undefined;
         if (currentSelectedFile) {
           useCodeConsoleStore.getState().setTemporaryFileContent(currentSelectedFile.id, content);
@@ -2375,9 +2380,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               comments={comments[selectedFile!.id]}
               rubricComments={commentRubricComments}
               file={selectedFile!}
-              fileIDs={files.map((file) => {
-                return (file as FileWithId).id;
-              })}
+              fileIDs={fileIDs}
               verticalOffset={state.codeVerticalOffset}
               updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
               studentFeedbackOn={assignment.commentFeedback ?? false}
@@ -2489,9 +2492,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               rubricComments={commentRubricComments}
               readOnly={!!submission!.isFinalized}
               file={selectedFile!}
-              fileIDs={files.map((file) => {
-                return (file as FileWithId).id;
-              })}
+              fileIDs={fileIDs}
               activeCommentID={activeCommentID}
               changeActive={changeActiveComment}
               deleteComment={deleteComment}
@@ -2589,7 +2590,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             onCancel={onCancel}
             defaultRubric={{
               categories: rubricCategories,
-              comments: _.flatten(Object.values(rubricComments)),
+              comments: flatten(Object.values(rubricComments)),
             }}
           >
             {({ props, state: rubricState, helpers }: IRubricManagerParams) => {
@@ -2715,9 +2716,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             comments={comments[selectedFile!.id]}
             rubricComments={commentRubricComments}
             file={selectedFile!}
-            fileIDs={files.map((file) => {
-              return (file as FileWithId).id;
-            })}
+            fileIDs={fileIDs}
             verticalOffset={state.codeVerticalOffset}
             updateFeedback={updateFeedback.bind(this, selectedFile!.id)}
             studentFeedbackOn={assignment.commentFeedback ?? false}
@@ -2966,9 +2965,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             rubricComments={commentRubricComments}
             readOnly={!!submission!.isFinalized}
             file={selectedFile!}
-            fileIDs={files.map((file) => {
-              return (file as FileWithId).id;
-            })}
+            fileIDs={fileIDs}
             activeCommentID={activeCommentID}
             changeActive={changeActiveComment}
             deleteComment={deleteComment}
@@ -3175,6 +3172,13 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   /*************************************************************************************/
   return (
     <div id="Grade">
+      {props.inDemoMode && assignment && (
+        <DemoBanner
+          isStudentView={state.isStudent}
+          switchLabel={state.isStudent ? 'Switch to Grader' : 'Switch to Student'}
+          switchTo={state.isStudent ? `${CODE_DEMO}/grader-console` : `${CODE_DEMO}/student`}
+        />
+      )}
       <CodeConsoleOnboardingSelector
         open={props.inDemoMode && !assignment}
         onUploadConfirm={loadDemoData}
