@@ -2,7 +2,6 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import packageJson from './package.json';
 
 export default defineConfig(async (config) => {
@@ -28,7 +27,6 @@ export default defineConfig(async (config) => {
       // Enable automatic JSX runtime
       jsxRuntime: 'automatic',
     }),
-    tsconfigPaths(),
   ];
 
   if (mode === 'analyze') {
@@ -55,6 +53,7 @@ export default defineConfig(async (config) => {
       'process.env.REACT_APP_VERSION': JSON.stringify(packageJson.version),
       'process.env.NODE_ENV': JSON.stringify(mode),
     },
+
     server: {
       port: 3000,
       open: true,
@@ -71,7 +70,7 @@ export default defineConfig(async (config) => {
       outDir: 'build',
       sourcemap: true,
       target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           manualChunks: {
             'react-vendor': ['react', 'react-dom', 'react-router-dom'],
@@ -89,14 +88,9 @@ export default defineConfig(async (config) => {
     },
     optimizeDeps: {
       include: ['react', 'react-dom', 'react-router-dom', 'antd'],
-      esbuildOptions: {
-        target: 'es2020',
-        keepNames: true,
-      },
     },
-    esbuild: {
+    oxc: {
       target: 'es2020',
-      keepNames: true,
     },
     css: {
       preprocessorOptions: {
@@ -107,6 +101,7 @@ export default defineConfig(async (config) => {
       },
     },
     resolve: {
+      tsconfigPaths: true,
       alias: [
         { find: 'jszip', replacement: 'jszip/lib/index.js' },
         { find: /^@features\/(.*)$/, replacement: path.resolve(__dirname, 'src/features') + '/$1' },
