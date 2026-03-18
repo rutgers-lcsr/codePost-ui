@@ -266,7 +266,7 @@ const Testimonial = (props: { text: React.ReactElement; thumbnail: string; name:
       className="display-flex flex-direction-column justify-content-flex-start"
     >
       <div className="display-flex flex-direction-row justify-content-flex-start align-items-center">
-        <img alt="" src={props.thumbnail} style={{ width: 40, borderRadius: 20, marginRight: 15 }} />
+        <img alt="" src={props.thumbnail} loading="lazy" style={{ width: 40, borderRadius: 20, marginRight: 15 }} />
         <div className="display-flex flex-direction-column" style={{ fontSize: 17, lineHeight: 1.18 }}>
           <div style={{ fontWeight: 600 }}>{props.name}</div>
           <div>{props.school}</div>
@@ -380,7 +380,7 @@ const AltTestimonial = (props: {
       <div style={{ fontSize: fontSize }}>{props.text}</div>
       <div style={{ height: windowSize.width < landingVars.breakpoints.testimonial ? 10 : 30 }} />
       <div className={`display-flex flex-direction-row justify-content-flex-end align-items-center`}>
-        <img alt="" src={props.thumbnail} style={{ width: 60, borderRadius: 30, marginRight: 15 }} />
+        <img alt="" src={props.thumbnail} loading="lazy" style={{ width: 60, borderRadius: 30, marginRight: 15 }} />
         <div className="display-flex flex-direction-column" style={{ fontSize: 17, lineHeight: 1.18 }}>
           <div style={{ fontWeight: 600 }}>{props.name}</div>
           <div>{props.school}</div>
