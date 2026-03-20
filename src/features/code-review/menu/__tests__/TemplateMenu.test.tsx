@@ -47,7 +47,7 @@ describe('TemplateMenu', () => {
 
     await waitFor(() => expect(screen.getByText('Template 1')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByText('Template 1'));
+    fireEvent.click(screen.getAllByText('Template 1')[0]);
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
 });
