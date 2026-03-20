@@ -469,6 +469,12 @@
   border: 1px solid rgba(27, 94, 32, 0.4);
 }
 
+// Crosshair cursor when Alt is held (region-select mode)
+.pdf-region-cursor,
+.pdf-region-cursor * {
+  cursor: crosshair !important;
+}
+
 // Nuclear override: prevent ANY markdown-block or highlight classes from affecting PDF pages.
 // Comment.tsx and CommentHighlightContext.tsx do direct DOM manipulation that can leak through.
 .react-pdf__Page {

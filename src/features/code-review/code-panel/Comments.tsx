@@ -278,7 +278,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   // Event handlers
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
-      const safeAreaIDs = ['rubric-menu-container'];
+      const safeAreaIDs = ['rubric-menu-container', 'code-panel'];
       const safeAreaClassnames = ['ant-popover-inner'];
       const safeAreasFromIDs = safeAreaIDs.map((id) => document.getElementById(id));
       const safeAreasFromClassnames = safeAreaClassnames

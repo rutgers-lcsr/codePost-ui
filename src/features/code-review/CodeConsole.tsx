@@ -1956,6 +1956,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
     await saveComment(newComment);
     message.success('Comment updated');
+
+    // Re-focus the comment text area after move (focus was lost to the code panel during selection)
+    requestAnimationFrame(() => {
+      const textArea = document.getElementById('comment-text-area');
+      textArea?.focus();
+    });
   };
 
   const handleApplyTemplate = (template: CommentTemplateType) => {

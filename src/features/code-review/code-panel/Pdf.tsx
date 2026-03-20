@@ -86,6 +86,8 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   // Track pages whose text layers are empty (scanned/image PDFs)
   const scannedPages = useRef<Set<number>>(new Set());
+  // Whether every rendered page so far is scanned (no text layer) — drives default crosshair cursor
+  const [isAllScanned, setIsAllScanned] = useState(false);
 
   // ─── Region drag-to-select state (for scanned PDFs) ───────────────────
   const [dragRect, setDragRect] = useState<{
@@ -96,6 +98,23 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     currentY: number;
   } | null>(null);
   const isDraggingRef = useRef(false);
+
+  // Track Alt key for crosshair cursor (signals region-select mode)
+  const [altHeld, setAltHeld] = useState(false);
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') setAltHeld(true);
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.key === 'Alt') setAltHeld(false);
+    };
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+    };
+  }, []);
 
   const hasCommentsForPage = useCallback(
     (pageNumber: number): boolean => {
@@ -152,7 +171,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     [addComment, commentCounter, file, readOnly, setHoveredCommentId, user],
   );
 
-  // ─── Region drag handlers (scanned PDFs) ──────────────────────────────
+  // ─── Region drag handlers (Alt+drag on any page, or plain drag on scanned pages) ───
   const getPageElementAndNumber = useCallback(
     (target: EventTarget): { pageEl: HTMLElement; pageNumber: number } | null => {
       const el = (target as HTMLElement).closest('[data-page-number]') as HTMLElement | null;
@@ -168,8 +187,11 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       if (readOnly) return;
       const info = getPageElementAndNumber(event.target as EventTarget);
       if (!info) return;
-      // Only activate on scanned (no-text) pages
-      if (!scannedPages.current.has(info.pageNumber)) return;
+      // Activate on scanned pages (no text layer) or when Alt key is held
+      if (!scannedPages.current.has(info.pageNumber) && !event.altKey) return;
+
+      // Prevent text selection when Alt-dragging on text pages
+      if (event.altKey) event.preventDefault();
 
       const rect = info.pageEl.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 100;
@@ -255,22 +277,54 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     return null;
   }, []);
 
-  // Compute a flat character offset for `node` at `offset` within the page's .textLayer.
-  // Walks all text-layer spans in DOM order, summing textContent lengths.
-  const getCharOffsetInTextLayer = useCallback((node: Node, offset: number, textLayer: Element): number => {
-    let charOffset = 0;
-    const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
-    let current = walker.nextNode();
-    while (current) {
-      if (current === node) {
-        return charOffset + offset;
+  /**
+   * Compute the flat character offset of a DOM node within a text layer.
+   * Walks text nodes in document order, summing lengths until we reach the target.
+   */
+  const getOffsetInTextLayer = useCallback(
+    (textLayer: Element, targetNode: Node, nodeOffset: number): number | null => {
+      const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+      let charsSoFar = 0;
+      let current = walker.nextNode() as Text | null;
+
+      while (current) {
+        if (current === targetNode) {
+          return charsSoFar + nodeOffset;
+        }
+        charsSoFar += current.textContent?.length ?? 0;
+        current = walker.nextNode() as Text | null;
       }
-      charOffset += current.textContent?.length ?? 0;
-      current = walker.nextNode();
-    }
-    // Fallback: node not found in the text layer — return the total length
-    return charOffset;
-  }, []);
+
+      // targetNode might be an Element; check if it's an ancestor of text nodes
+      if (targetNode.nodeType === Node.ELEMENT_NODE) {
+        // nodeOffset refers to the child index — sum text up to that child
+        const walker2 = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+        let chars = 0;
+        let n = walker2.nextNode() as Text | null;
+        while (n) {
+          // Check if this text node is past the offset-th child of targetNode
+          if (n.parentNode === targetNode || targetNode.contains(n)) {
+            // Count children of targetNode that precede this text node
+            let idx = 0;
+            let child = targetNode.firstChild;
+            while (child && child !== n && !child.contains(n)) {
+              idx++;
+              child = child.nextSibling;
+            }
+            if (idx >= nodeOffset) {
+              return chars;
+            }
+          }
+          chars += n.textContent?.length ?? 0;
+          n = walker2.nextNode() as Text | null;
+        }
+        return chars;
+      }
+
+      return null;
+    },
+    [],
+  );
 
   const handleTextSelection = useCallback(
     (event: React.MouseEvent) => {
@@ -285,36 +339,42 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       const startTextLayer = (
         range.startContainer instanceof HTMLElement ? range.startContainer : range.startContainer.parentElement
       )?.closest('.textLayer');
-      const endTextLayer = (
-        range.endContainer instanceof HTMLElement ? range.endContainer : range.endContainer.parentElement
-      )?.closest('.textLayer');
-      if (!startTextLayer || !endTextLayer) return;
+      if (!startTextLayer) return;
 
       const startPage = getPageNumberFromNode(range.startContainer);
-      const endPage = getPageNumberFromNode(range.endContainer);
-      if (startPage === null || endPage === null) return;
+      if (startPage === null) return;
 
-      // Calculate character offsets within the text layer
-      let startChar = getCharOffsetInTextLayer(range.startContainer, range.startOffset, startTextLayer);
-      let endChar = getCharOffsetInTextLayer(range.endContainer, range.endOffset, endTextLayer);
+      const endPage = getPageNumberFromNode(range.endContainer) ?? startPage;
 
-      // Normalize direction (user may have selected bottom-to-top)
-      let finalStartPage = startPage;
-      let finalEndPage = endPage;
-      if (finalStartPage > finalEndPage || (finalStartPage === finalEndPage && startChar > endChar)) {
-        [finalStartPage, finalEndPage] = [finalEndPage, finalStartPage];
-        [startChar, endChar] = [endChar, startChar];
+      // Compute flat character offsets within the text layer for precise per-line highlights
+      const startCharOffset = getOffsetInTextLayer(startTextLayer, range.startContainer, range.startOffset);
+      if (startCharOffset === null) return;
+
+      // For end offset, find the text layer of the end page
+      let endCharOffset: number | null;
+      if (endPage === startPage) {
+        endCharOffset = getOffsetInTextLayer(startTextLayer, range.endContainer, range.endOffset);
+      } else {
+        const endTextLayer = (
+          range.endContainer instanceof HTMLElement ? range.endContainer : range.endContainer.parentElement
+        )?.closest('.textLayer');
+        if (!endTextLayer) return;
+        endCharOffset = getOffsetInTextLayer(endTextLayer, range.endContainer, range.endOffset);
       }
+      if (endCharOffset === null) return;
+
+      // Ensure we have a valid selection
+      if (startPage === endPage && startCharOffset === endCharOffset) return;
 
       event.preventDefault();
       event.stopPropagation();
 
       const newComment: CommentType = {
         id: commentCounter,
-        startLine: finalStartPage,
-        endLine: finalEndPage,
-        startChar,
-        endChar,
+        startLine: startPage,
+        endLine: endPage,
+        startChar: startCharOffset,
+        endChar: endCharOffset,
         file: file.id ?? 0,
         pointDelta: 0.0,
         text: '',
@@ -337,7 +397,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       addComment,
       commentCounter,
       file,
-      getCharOffsetInTextLayer,
+      getOffsetInTextLayer,
       getPageNumberFromNode,
       readOnly,
       setHoveredCommentId,
@@ -360,27 +420,35 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     document.dispatchEvent(event);
   };
 
-  const handlePageRenderSuccess = useCallback((pageNumber: number) => {
-    dispatch();
-    // Detect whether this page has an actual text layer (empty = scanned/image PDF)
-    const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
-    if (pageEl) {
-      const textLayer = pageEl.querySelector('.textLayer');
-      const hasText = textLayer ? (textLayer.textContent?.trim().length ?? 0) > 0 : false;
-      if (!hasText) {
-        scannedPages.current.add(pageNumber);
-      } else {
-        scannedPages.current.delete(pageNumber);
+  const handlePageRenderSuccess = useCallback(
+    (pageNumber: number) => {
+      dispatch();
+      // Detect whether this page has an actual text layer (empty = scanned/image PDF)
+      const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
+      if (pageEl) {
+        const textLayer = pageEl.querySelector('.textLayer');
+        const hasText = textLayer ? (textLayer.textContent?.trim().length ?? 0) > 0 : false;
+        if (!hasText) {
+          scannedPages.current.add(pageNumber);
+        } else {
+          scannedPages.current.delete(pageNumber);
+        }
       }
-    }
-    setRenderedPages((prev) => {
-      if (prev.has(pageNumber)) return prev;
-      const next = new Set(prev);
-      next.add(pageNumber);
-      return next;
-    });
-    setRenderVersion((v) => v + 1);
-  }, []);
+      setRenderedPages((prev) => {
+        if (prev.has(pageNumber)) return prev;
+        const next = new Set(prev);
+        next.add(pageNumber);
+        return next;
+      });
+      // Update scanned-default cursor: if every rendered page is scanned, show crosshair
+      setIsAllScanned((prev) => {
+        const allScanned = scannedPages.current.size > 0 && scannedPages.current.size >= (numPages ?? 0);
+        return prev !== allScanned ? allScanned : prev;
+      });
+      setRenderVersion((v) => v + 1);
+    },
+    [numPages],
+  );
 
   // PDF pages don't use markdown-block classes — all highlight rendering
   // is handled by PdfHighlightLayer. Using a plain class avoids the
@@ -434,6 +502,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   return (
     <div
       ref={containerRef}
+      className={altHeld || isDraggingRef.current || isAllScanned ? 'pdf-region-cursor' : undefined}
       onMouseUp={handleTextSelection}
       onMouseDown={handleRegionMouseDown}
       onMouseMove={handleRegionMouseMove}
