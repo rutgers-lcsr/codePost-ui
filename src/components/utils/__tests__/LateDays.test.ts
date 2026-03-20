@@ -1,18 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect } from 'vitest';
 import { getDaysLate } from '../LateDays';
+import { makeAssignment as makeAssignmentBase, makeSubmission as makeSubmissionBase } from '../../../test-utils';
 import type { AssignmentType, SubmissionType } from '../../../types/models';
 
-type PartialAssignment = Pick<AssignmentType, 'uploadDueDate'>;
-type PartialSubmission = Pick<SubmissionType, 'dateUploaded'>;
-
-function makeAssignment(uploadDueDate: string | null) {
-  return { uploadDueDate } as PartialAssignment as AssignmentType;
-}
-
-function makeSubmission(dateUploaded: string | null) {
-  return { dateUploaded } as PartialSubmission as SubmissionType;
-}
+const makeAssignment = (uploadDueDate: string | null): AssignmentType => makeAssignmentBase({ uploadDueDate });
+const makeSubmission = (dateUploaded: string | null): SubmissionType => makeSubmissionBase({ dateUploaded });
 
 describe('getDaysLate', () => {
   it('returns 0 when uploadDueDate is null', () => {

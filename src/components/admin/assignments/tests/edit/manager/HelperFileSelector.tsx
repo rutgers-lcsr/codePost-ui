@@ -59,7 +59,6 @@ export const HelperFileSelector: React.FC<IProps> = ({
     if (activeTab === 'datasets') {
       fetchDatasets();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignmentId, activeTab]);
 
   const handleToggleFile = (id: number) => {

@@ -30,7 +30,11 @@
     "baseUrl": "src",
     "paths": {
       "@features/*": ["features/*"],
-      "@code-review/*": ["features/code-review/*"]
+      "@code-review/*": ["features/code-review/*"],
+      "@features": ["src/features/index"],
+      "@code-review": ["src/features/code-review/index"],
+      "@test-utils": ["src/test-utils"],
+      "@api-client": ["src/api-client"]
     },
 
     /* Types */

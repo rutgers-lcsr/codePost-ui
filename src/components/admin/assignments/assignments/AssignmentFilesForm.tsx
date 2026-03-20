@@ -249,7 +249,6 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           }
 
           // Generate ID
-          // eslint-disable-next-line react-hooks/purity
           const newId = -1 * (files.length + newFiles.length + Date.now() + processedCount);
 
           newFiles.push({

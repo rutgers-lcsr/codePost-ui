@@ -86,6 +86,10 @@ docs: update component docs                 → no release
     ```
     Runs on `http://localhost:3000`.
 
+### Linting
+
+This project uses **OxLint** (`.oxlintrc.json`) for linting — **not ESLint**. If you have the ESLint VS Code extension installed, it may report false positives or conflict with OxLint. Disable or uninstall the ESLint extension and use the [oxc](https://marketplace.visualstudio.com/items?itemName=nicolo-ribaudo.oxc) extension instead.
+
 ## Production deployment (Frontend VM)
 
 This repo deploys the frontend as a static build served by Nginx over HTTPS.

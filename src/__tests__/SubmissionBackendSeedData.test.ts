@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- JS module without type declarations
+// JS module without type declarations
 const { buildSeedData } = require('./test_submission/build_backend_seed_data.js');
 
 type ScenarioMatrix = {

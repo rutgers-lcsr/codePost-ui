@@ -216,7 +216,7 @@ const AutograderModule: React.FC = () => {
 
   // Animate cards in one by one
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- animation timer pattern, not cascading render
+    // animation timer pattern, not cascading render
     setVisibleCount(0);
     let i = 0;
     const tick = () => {

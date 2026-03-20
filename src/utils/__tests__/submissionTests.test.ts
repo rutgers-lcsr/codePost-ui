@@ -1,21 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect } from 'vitest';
 import { getLatestSubmissionTests } from '../submissionTests';
-import type { SubmissionTestType } from '../../types/models';
-
-function makeTest(overrides: Partial<SubmissionTestType>): SubmissionTestType {
-  return {
-    id: 1,
-    submission: 100,
-    testCase: 1,
-    logs: '',
-    passed: true,
-    testCategory: 1,
-    created: '2025-01-01T00:00:00Z',
-    modified: '2025-01-01T00:00:00Z',
-    ...overrides,
-  } as SubmissionTestType;
-}
+import { makeSubmissionTest as makeTest } from '../../test-utils';
 
 describe('getLatestSubmissionTests', () => {
   it('returns the latest test per testCase based on modified date', () => {

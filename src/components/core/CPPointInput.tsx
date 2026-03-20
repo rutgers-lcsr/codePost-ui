@@ -77,7 +77,7 @@ const CPPointInput: React.FC<ICPPointInputProps> = ({
 
       // If signs are different (or one is zero and other isn't), this is likely a navigation
       if (prevSign !== newSign || (prevValue === 0 && value !== 0)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- sync point type on navigation
+        // sync point type on navigation
         setPointType(getTypeFromValue(value, defaultToPositive));
       }
     } else if (value !== undefined && prevValue === undefined) {

@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable react-refresh/only-export-components */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { InputRef } from 'antd';
 import cloneDeep from 'lodash/cloneDeep';
@@ -136,7 +135,6 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     return () => {
       // Don't reset on unmount - other components might be using the store
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Component state - now WITHOUT rubricComments and rubricCommentStatus

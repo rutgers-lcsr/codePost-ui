@@ -245,7 +245,6 @@ export function gatherBrowserContext() {
 
   const memory: Record<string, unknown> = {};
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mem = (performance as any).memory;
     if (mem) {
       memory.usedJSHeapSizeMB = Math.round(mem.usedJSHeapSize / 1048576);
@@ -278,8 +277,16 @@ export function gatherBrowserContext() {
     const v = store.getItem(key) ?? '';
     return v.length > 80 ? `${v.slice(0, 80)}…` : v;
   };
+  const storageKeys = (store: Storage): string[] => {
+    const keys: string[] = [];
+    for (let i = 0; i < store.length; i++) {
+      const k = store.key(i);
+      if (k != null) keys.push(k);
+    }
+    return keys;
+  };
   try {
-    Object.keys(localStorage)
+    storageKeys(localStorage)
       .filter((k) => !SENSITIVE_KEY_RE.test(k))
       .forEach((k) => {
         localStorageKeys[k] = storageVal(localStorage, k);
@@ -288,7 +295,7 @@ export function gatherBrowserContext() {
     /* ignore */
   }
   try {
-    Object.keys(sessionStorage)
+    storageKeys(sessionStorage)
       .filter((k) => !SENSITIVE_KEY_RE.test(k))
       .forEach((k) => {
         sessionStorageKeys[k] = storageVal(sessionStorage, k);

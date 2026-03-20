@@ -60,7 +60,6 @@ const UploadFileTemplates: React.FC<IProps> = ({ isReplacement, updateTemplate, 
       <Upload
         showUploadList={false}
         onChange={onChange}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         customRequest={customRequest as any}
       >
         <Button>

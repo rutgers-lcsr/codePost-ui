@@ -146,7 +146,6 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   const renderLeadersCell = useCallback(
     (searchText: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (_: string, record: any) => {
         if (record.section === activeSection) {
           return (
@@ -196,7 +195,6 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         dataIndex: 'section',
         key: 'primary',
         defaultSortOrder: 'ascend' as const,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sorter: (a: any, b: any) => a.section.localeCompare(b.section),
       },
       {
@@ -592,7 +590,6 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const studentOptions = useMemo(() => {
     if (!openSection) return [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any[] = [{ label: 'Students without a section', options: [] }];
 
     const studentsInSections = props.sections.flatMap((section) => section.students);

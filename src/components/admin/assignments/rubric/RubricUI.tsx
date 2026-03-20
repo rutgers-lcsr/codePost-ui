@@ -104,7 +104,6 @@ const RubricUI = ({
     }
   }, [rubricCategories, activeCategoryId]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     for (const cat of rubricCategories) {
       if (!showPointLimits && typeof cat.pointLimit === 'number') {

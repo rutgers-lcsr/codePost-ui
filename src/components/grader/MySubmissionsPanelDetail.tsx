@@ -384,7 +384,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
   // Initial load and interval setup
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     changeAssignment(assignment);
     updateQueueLength();
 

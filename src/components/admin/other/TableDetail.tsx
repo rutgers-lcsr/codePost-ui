@@ -18,7 +18,6 @@ import useDefaultPageSize from '../../utils/useDefaultPageSize';
 /* Types
 /**********************************************************************************************************************/
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ITableDetailColumn extends ColumnProps<any> {
   renderForSearch?: (
     searchText: string,

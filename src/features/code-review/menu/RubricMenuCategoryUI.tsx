@@ -238,7 +238,7 @@ const RubricMenuCategoryUI = ({
       onChange={changeName}
       onBlur={onBlur}
       onClick={onClick}
-      // eslint-disable-next-line react-hooks/refs -- helpers ref-derived object is stable
+      // helpers ref-derived object is stable
       ref={helpers.nameInput}
       style={{
         height: '27px',

@@ -939,7 +939,6 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   switch (regradeStatus) {
     case QUESTION_STATUS.NOT_SUBMITTED: {
       // Case 0: Student has not submitted a question or regrade request
-      // eslint-disable-next-line react-hooks/purity
       if (props.assignment.regradeDeadline && Date.parse(props.assignment.regradeDeadline) <= Date.now()) {
         // Case 1: No regraded summited and deadline has passed
         return (

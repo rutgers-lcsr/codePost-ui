@@ -9,14 +9,7 @@ import {
   PDFExtensions,
   BinaryExtensions,
 } from '../file';
-import type { FileLike } from '../file';
-
-// ---------------------------------------------------------------------------
-// Helper to build a minimal FileLike
-// ---------------------------------------------------------------------------
-function makeFile(overrides: Partial<FileLike> = {}): FileLike {
-  return { name: 'main.py', extension: 'py', ...overrides };
-}
+import { makeFile } from '../../test-utils';
 
 // ---------------------------------------------------------------------------
 // File.extension — extracts the extension from a filename
@@ -191,7 +184,74 @@ describe('getFileContent', () => {
   });
 
   it('returns empty string when data is undefined', () => {
-    expect(getFileContent(makeFile())).toBe('');
+    expect(getFileContent(makeFile({ data: undefined }))).toBe('');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// File.language — detects language from file content/extension
+// ---------------------------------------------------------------------------
+describe('File.language', () => {
+  it('returns language from ipynb metadata.language_info.name', () => {
+    const nb = JSON.stringify({
+      cells: [],
+      metadata: { language_info: { name: 'R' } },
+    });
+    const file = makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: nb });
+    expect(File.language(file)).toBe('r');
+  });
+
+  it('falls back to metadata.kernelspec.language for ipynb', () => {
+    const nb = JSON.stringify({
+      cells: [],
+      metadata: { kernelspec: { language: 'Julia' } },
+    });
+    const file = makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: nb });
+    expect(File.language(file)).toBe('julia');
+  });
+
+  it('returns python for ipynb with no metadata', () => {
+    const nb = JSON.stringify({ cells: [], metadata: {} });
+    const file = makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: nb });
+    expect(File.language(file)).toBe('python');
+  });
+
+  it('returns python for ipynb with no content', () => {
+    const file = makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: '' });
+    expect(File.language(file)).toBe('python');
+  });
+
+  it('returns python for ipynb with malformed JSON', () => {
+    const file = makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: '{bad' });
+    expect(File.language(file)).toBe('python');
+  });
+
+  it('returns the mapped language for regular files', () => {
+    const file = makeFile({ name: 'main.py', extension: 'py' });
+    expect(File.language(file)).toBe('python');
+  });
+
+  it('returns extension when lang-map has no match', () => {
+    const file = makeFile({ name: 'file.zzzz', extension: 'zzzz' });
+    expect(File.language(file)).toBe('zzzz');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// File.getEmptyNotebook — returns default empty notebook structure
+// ---------------------------------------------------------------------------
+describe('File.getEmptyNotebook', () => {
+  it('returns a notebook with empty cells array', () => {
+    const nb = File.getEmptyNotebook();
+    expect(nb.cells).toEqual([]);
+    expect(nb.nbformat).toBe(4);
+    expect(nb.nbformat_minor).toBe(4);
+  });
+
+  it('has python kernelspec metadata', () => {
+    const nb = File.getEmptyNotebook();
+    const ks = nb.metadata?.kernelspec as Record<string, unknown>;
+    expect(ks?.language).toBe('python');
   });
 });
 

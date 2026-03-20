@@ -55,7 +55,6 @@ const randomNormal = () => {
 // Source: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
 // Source for formatting with typescript length restriction: https://stackoverflow.com/a/34755045
 
-/* eslint-disable no-useless-escape */
 const emailRegex = new RegExp(
   [
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))/,
@@ -131,7 +130,6 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newState: any = { ...prevstate };
       newState[name] = newValue;
       return newState;
@@ -146,7 +144,6 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newState: any = { ...prevstate };
       // @ts-expect-error: legacy-ts-ignore
       newState[label] = !this.state[label];

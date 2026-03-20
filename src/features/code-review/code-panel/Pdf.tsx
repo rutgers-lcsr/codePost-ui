@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 /* other library imports */
 import { Document, Page } from 'react-pdf';
@@ -30,7 +30,6 @@ type PdfDocumentProxyLike = {
 
 export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [numPages, setPages] = useState<number | null>(null);
-
   const { addComment, commentCounter, comments, file, readOnly, user } = props;
 
   const commentHighlight = useContext(CommentHighlightContext);
@@ -179,29 +178,31 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     [handleHoverEnterPage, handleHoverLeavePage, handlePageClick, hasCommentsForPage, numPages],
   );
 
-  if (File.codeType(props.file) === 'pdf') {
-    return (
-      <Document
-        file={getFileContent(props.file)}
-        onLoadSuccess={onDocumentLoadSuccess}
-        onLoadError={(error) => console.error('Error loading PDF:', error)}
-      >
-        {pageEventHandlers.map(({ pageNumber, pageHasComments, onMouseEnter, onMouseLeave, onClick }) => (
-          <Page
-            key={`page_${pageNumber}`}
-            className={getPageClassName(pageNumber)}
-            data-has-comment={pageHasComments ? 'true' : undefined}
-            pageNumber={pageNumber}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            onRenderSuccess={dispatch}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            onClick={onClick}
-          />
-        ))}
-      </Document>
-    );
+  if (File.codeType(props.file) !== 'pdf') {
+    // This should never happen, but if it does we don't want to render a broken PDF viewer, so we render an empty block instead.
+    return <div className="markdown-block markdown-block--empty" />;
   }
-  return <div className="markdown-block markdown-block--empty" />;
+
+  return (
+    <Document
+      file={getFileContent(props.file)}
+      onLoadSuccess={onDocumentLoadSuccess}
+      onLoadError={(error) => console.error('Error loading PDF:', error)}
+    >
+      {pageEventHandlers.map(({ pageNumber, pageHasComments, onMouseEnter, onMouseLeave, onClick }) => (
+        <Page
+          key={`page_${pageNumber}`}
+          className={getPageClassName(pageNumber)}
+          data-has-comment={pageHasComments ? 'true' : undefined}
+          pageNumber={pageNumber}
+          renderTextLayer={false}
+          renderAnnotationLayer={false}
+          onRenderSuccess={dispatch}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onClick={onClick}
+        />
+      ))}
+    </Document>
+  );
 };

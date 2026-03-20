@@ -129,7 +129,6 @@ const RubricMenuUI = ({
     if (props.canUserEdit) {
       props.turnOnReload();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {

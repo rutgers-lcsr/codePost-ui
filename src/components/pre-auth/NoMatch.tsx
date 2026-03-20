@@ -96,10 +96,8 @@ class NoMatch extends React.Component<IProps, IState> {
 
   public openIntercom = () => {
     if (this.state.intercomOpen) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).Intercom('hide');
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).Intercom('show');
     }
     this.setState({ intercomOpen: !this.state.intercomOpen });

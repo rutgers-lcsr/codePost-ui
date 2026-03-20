@@ -24,7 +24,6 @@ const LMSRosterMapUpload = (props: IMappingUploadProps) => {
 
   React.useEffect(() => {
     setStringMap(folderMapToString(props.folderMap, props.idIndex));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.isVisible]);
 
   const downloadTemplate = () => {

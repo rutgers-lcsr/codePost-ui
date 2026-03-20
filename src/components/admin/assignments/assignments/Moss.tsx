@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable react-refresh/only-export-components */
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -151,7 +150,6 @@ const Moss = (props: IMossProps) => {
 
       onParse(formattedUrlID);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -282,9 +280,7 @@ const Moss = (props: IMossProps) => {
         from_url: window.location.href.split('?')[0],
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { default: invokeAWSLambda } = await import('../../../../components/core/invokeAWSLambda');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const res: any = await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',
         secretAccessKey: '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',
@@ -591,7 +587,6 @@ const ProgressBar = (props: { time: number }) => {
       clearInterval(interval);
     };
     // Should implement useCallback()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <Progress percent={counter} showInfo={false} />;

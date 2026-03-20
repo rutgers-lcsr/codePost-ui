@@ -84,7 +84,6 @@ const CommentHighlightContext = React.createContext<CommentHighlightContextStore
 /**
  * Access the underlying comment highlight store without subscribing to hover updates.
  */
-// eslint-disable-next-line react-refresh/only-export-components
 export const useCommentHighlightStore = (): CommentHighlightContextStore => {
   const context = React.useContext(CommentHighlightContext);
   if (!context) {
@@ -97,7 +96,6 @@ export const useCommentHighlightStore = (): CommentHighlightContextStore => {
  * Hook to access comment highlight context with hover state subscription
  * Must be used within a CommentHighlightProvider
  */
-// eslint-disable-next-line react-refresh/only-export-components
 export const useCommentHighlight = (): CommentHighlightContextValue => {
   const context = useCommentHighlightStore();
   const hoveredCommentId = React.useSyncExternalStore(
@@ -118,7 +116,6 @@ export const useCommentHighlight = (): CommentHighlightContextValue => {
 /**
  * Subscribe directly to hover state without accessing the rest of the context.
  */
-// eslint-disable-next-line react-refresh/only-export-components
 export const useHoveredCommentId = (): number | null => {
   const context = useCommentHighlightStore();
   return React.useSyncExternalStore(
@@ -132,7 +129,6 @@ export const useHoveredCommentId = (): number | null => {
  * Scroll the first highlight element for a comment into view.
  * Helpful when syncing comment panel interactions with code highlights.
  */
-// eslint-disable-next-line react-refresh/only-export-components
 export const scrollHighlightIntoView = (commentId: number, options?: ScrollIntoViewOptions) => {
   if (typeof document === 'undefined') {
     return;
@@ -292,7 +288,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
         notifyHoverListeners();
       }
     }
-  }, [focusedCommentId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [focusedCommentId]);
 
   const setHoveredCommentId = React.useCallback(
     (id: number | null) => {

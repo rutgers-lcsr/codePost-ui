@@ -10,6 +10,8 @@ export default defineConfig({
       { find: /^@code-review\/(.*)$/, replacement: path.resolve(__dirname, 'src/features/code-review') + '/$1' },
       { find: '@features', replacement: path.resolve(__dirname, 'src/features') },
       { find: '@code-review', replacement: path.resolve(__dirname, 'src/features/code-review') },
+      { find: '@test-utils', replacement: path.resolve(__dirname, 'src/test-utils') },
+      { find: '@api-client', replacement: path.resolve(__dirname, 'src/api-client') },
     ],
   },
   test: {
@@ -19,6 +21,7 @@ export default defineConfig({
     css: true,
     pool: 'threads',
     maxConcurrency: 10,
+    isolate: false,
     maxWorkers: '75%',
     coverage: {
       provider: 'v8',
@@ -33,10 +36,10 @@ export default defineConfig({
         'src/components/utils/demo_subs/**',
       ],
       thresholds: {
-        statements: 26,
-        branches: 15,
-        functions: 19,
-        lines: 26,
+        statements: 31,
+        branches: 20,
+        functions: 25,
+        lines: 31,
       },
     },
   },

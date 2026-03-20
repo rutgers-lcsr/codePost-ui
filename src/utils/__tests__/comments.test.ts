@@ -1,27 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect } from 'vitest';
 import { CommentIO, UiComment } from '../comments';
-import { RubricComment, Comment } from '../../api-client';
-
-// ---------------------------------------------------------------------------
-// Factory helper
-// ---------------------------------------------------------------------------
-function makeComment(overrides: Partial<Comment> = {}): Comment {
-  return {
-    id: 1,
-    text: 'Test comment',
-    startLine: 1,
-    endLine: 1,
-    startChar: 0,
-    endChar: 10,
-    pointDelta: 0,
-    rubricComment: null,
-    file: 1,
-    submission: 1,
-    author: 'test@example.com',
-    ...overrides,
-  } as Comment;
-}
+import { RubricComment } from '../../api-client';
+import { makeComment } from '../../test-utils';
 
 // ---------------------------------------------------------------------------
 // CommentIO.sortComments

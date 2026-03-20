@@ -155,7 +155,6 @@ const BulkUpload: FC<IProps> = (props) => {
             newSub.students = (newSub.students as (string | null)[]).filter((el) => {
               return el && !isEqual(el, student);
             }) as string[];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             toChange.push(newSub as any);
           }
         }
@@ -254,7 +253,6 @@ const BulkUpload: FC<IProps> = (props) => {
 
       await performUploadWithMap(localFileMap);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     protoSubmissions,
     numFiles,

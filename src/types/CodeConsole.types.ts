@@ -208,7 +208,6 @@ export interface ICodeConsoleState {
    * Key: File ID
    * Value: Execution result containing success status, output data, and any errors
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   executionResults: { [fileId: number]: { success: boolean; output_data?: any; error?: string } };
 
   /* ========================================

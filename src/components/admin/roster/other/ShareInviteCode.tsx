@@ -36,12 +36,10 @@ const ShareInviteCode = (props: IProps) => {
         return (
           api
             .changeInviteCodePartialUpdate({ id: props.course.id })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .then((res: any) => {
               // Check return type; assuming string based on legacy
               const newCode = res as unknown as string;
               // Legacy mutation to keep parent in sync without refetch
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (props.course as any).inviteCode = newCode;
               setInviteCode(newCode);
               message.success('Invite code reset');

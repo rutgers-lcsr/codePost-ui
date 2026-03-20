@@ -36,7 +36,6 @@ export const CategorySelectModal = (props: IUploadProps) => {
         toggleVisible();
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
   React.useEffect(() => {

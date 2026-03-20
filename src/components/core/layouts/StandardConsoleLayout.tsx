@@ -136,7 +136,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePanel]);
 
   // Sync internal state with prop if prop changes (optional, but good for consistency)

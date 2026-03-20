@@ -52,7 +52,6 @@ interface ISimpleCommentState {
 }
 
 class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public constructor(props: ISimpleCommentProps, context: any) {
     super(props, context);
     this.state = this.init();

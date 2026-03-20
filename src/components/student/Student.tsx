@@ -354,7 +354,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   // Load data on mount and when uploadShortcut changes
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
   }, [load]);
 
@@ -599,7 +598,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   // See AssignmentCard.tsx for the new card component implementation.
 
   // @ts-expect-error buildAssignmentsTable is kept for reference but no longer used
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _buildAssignmentsTable = useCallback(
     (assignmentList: Assignment[], submissionsMap: Record<number, Submission[]>) => {
       const modifyIf = (modMap: { [statusTarget: number]: number }) => {

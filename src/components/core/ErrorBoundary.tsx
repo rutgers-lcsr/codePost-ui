@@ -268,7 +268,6 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
           name: error.name,
           message: error.message,
           stack: error.stack,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           cause: (error as any).cause ?? null,
           componentStack: errorInfo.componentStack,
           boundaryType: this.props.type,

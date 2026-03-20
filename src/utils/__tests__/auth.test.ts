@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createLocalStorageMock, installLocalStorageMock } from '../../test-utils';
 
 // Mock clearLocalSettings before importing auth
 vi.mock('../../components/utils/LocalSettings', () => ({
@@ -67,18 +67,10 @@ describe('handleUnauthorized', () => {
       clearLocalSettings: vi.fn(),
     }));
 
-    // Re-create localStorage mock with removeItem after resetModules
-    const removeItemSpy = vi.fn();
-    Object.defineProperty(globalThis, 'localStorage', {
-      value: {
-        getItem: vi.fn().mockReturnValue('existing-token'),
-        setItem: vi.fn(),
-        removeItem: removeItemSpy,
-        clear: vi.fn(),
-      },
-      configurable: true,
-      writable: true,
-    });
+    // Use centralized localStorage mock with data persistence
+    const { mock } = createLocalStorageMock();
+    vi.mocked(mock.getItem).mockReturnValue('existing-token');
+    installLocalStorageMock(mock);
 
     // Suppress the redirect
     Object.defineProperty(window, 'location', {
@@ -92,8 +84,8 @@ describe('handleUnauthorized', () => {
 
     authModule.handleUnauthorized();
 
-    expect(removeItemSpy).toHaveBeenCalledWith('token');
-    expect(removeItemSpy).toHaveBeenCalledWith('isSuperUser');
+    expect(localStorage.removeItem).toHaveBeenCalledWith('token');
+    expect(localStorage.removeItem).toHaveBeenCalledWith('isSuperUser');
     expect(localSettingsModule.clearLocalSettings).toHaveBeenCalled();
   });
 
@@ -104,16 +96,9 @@ describe('handleUnauthorized', () => {
       clearLocalSettings: vi.fn(),
     }));
 
-    Object.defineProperty(globalThis, 'localStorage', {
-      value: {
-        getItem: vi.fn().mockReturnValue(null),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn(),
-      },
-      configurable: true,
-      writable: true,
-    });
+    const { mock: lsMock } = createLocalStorageMock();
+    vi.mocked(lsMock.getItem).mockReturnValue(null);
+    installLocalStorageMock(lsMock);
 
     const authModule = await import('../auth');
     const localSettingsModule = await import('../../components/utils/LocalSettings');
@@ -126,5 +111,89 @@ describe('handleUnauthorized', () => {
 
     expect(localStorage.removeItem).not.toHaveBeenCalled();
     expect(localSettingsModule.clearLocalSettings).not.toHaveBeenCalled();
+  });
+
+  it('only fires once due to didHandleUnauthorized guard', async () => {
+    vi.resetModules();
+
+    vi.mock('../../components/utils/LocalSettings', () => ({
+      clearLocalSettings: vi.fn(),
+    }));
+
+    const { mock: lsMock } = createLocalStorageMock();
+    vi.mocked(lsMock.getItem).mockReturnValue('token');
+    installLocalStorageMock(lsMock);
+
+    Object.defineProperty(window, 'location', {
+      value: { href: '/' },
+      writable: true,
+      configurable: true,
+    });
+
+    const authModule = await import('../auth');
+
+    authModule.handleUnauthorized();
+    vi.mocked(localStorage.removeItem).mockClear();
+
+    // Second call should be a no-op
+    authModule.handleUnauthorized();
+    expect(localStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it('survives when localStorage.removeItem throws', async () => {
+    vi.resetModules();
+
+    vi.mock('../../components/utils/LocalSettings', () => ({
+      clearLocalSettings: vi.fn(),
+    }));
+
+    const { mock: lsMock } = createLocalStorageMock();
+    installLocalStorageMock(lsMock);
+    vi.mocked(lsMock.getItem).mockReturnValue('existing-token');
+
+    Object.defineProperty(window, 'location', {
+      value: { href: '/' },
+      writable: true,
+      configurable: true,
+    });
+
+    const authModule = await import('../auth');
+
+    // Only the first removeItem call throws (inside try-catch).
+    // Subsequent calls (isSuperUser removal, redirectToLogin) succeed normally.
+    vi.mocked(lsMock.removeItem).mockImplementationOnce(() => {
+      throw new Error('Storage full');
+    });
+
+    authModule.handleUnauthorized();
+    // Redirect still happens despite the first removeItem failure
+    expect(window.location.href).toBe('/');
+  });
+
+  it('continues even when clearLocalSettings throws', async () => {
+    vi.resetModules();
+
+    vi.mock('../../components/utils/LocalSettings', () => ({
+      clearLocalSettings: vi.fn(() => {
+        throw new Error('Settings error');
+      }),
+    }));
+
+    const { mock: lsMock } = createLocalStorageMock();
+    vi.mocked(lsMock.getItem).mockReturnValue('existing-token');
+    installLocalStorageMock(lsMock);
+
+    Object.defineProperty(window, 'location', {
+      value: { href: '/' },
+      writable: true,
+      configurable: true,
+    });
+
+    const authModule = await import('../auth');
+
+    // Should not throw — catches internally
+    expect(() => authModule.handleUnauthorized()).not.toThrow();
+    // Should still redirect
+    expect(window.location.href).toBe('/');
   });
 });

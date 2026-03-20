@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable react-refresh/only-export-components */
 /**********************************************************************************************************************/
 /* Imports
 /**********************************************************************************************************************/
@@ -98,7 +97,6 @@ export const PseudoTerminal = (props: IResultProps) => {
         setLogs([...logs, [props.log]]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.log]);
 
   /* build pseudo-terminal */

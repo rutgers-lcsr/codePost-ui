@@ -376,4 +376,143 @@ describe('useRubricStore', () => {
       expect(useRubricStore.getState().changeLock).toBe(true);
     });
   });
+
+  describe('updateCategory', () => {
+    it('should update an existing category', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const updated = { ...useRubricStore.getState().rubricCategories[0], name: 'Renamed' };
+      useRubricStore.getState().updateCategory(updated);
+      expect(useRubricStore.getState().rubricCategories[0].name).toBe('Renamed');
+    });
+
+    it('should not change state when category id is not found', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const before = useRubricStore.getState().rubricCategories;
+      useRubricStore.getState().updateCategory({ id: 999, name: 'Ghost' } as RubricCategory);
+      expect(useRubricStore.getState().rubricCategories).toBe(before);
+    });
+
+    it('should track error objects when hasError is true', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const cat = useRubricStore.getState().rubricCategories[0];
+      useRubricStore.getState().updateCategory(cat, true);
+      expect(useRubricStore.getState().errorObjects).toContain(cat.id);
+    });
+
+    it('should remove from error objects when hasError is false', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const cat = useRubricStore.getState().rubricCategories[0];
+      useRubricStore.getState().updateCategory(cat, true);
+      useRubricStore.getState().updateCategory(cat, false);
+      expect(useRubricStore.getState().errorObjects).not.toContain(cat.id);
+    });
+  });
+
+  describe('onCategoryEdit / onCategoryUndo', () => {
+    it('should track edited category in unsavedCategories', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const cat = useRubricStore.getState().rubricCategories[0];
+      useRubricStore.getState().onCategoryEdit(cat);
+      expect(useRubricStore.getState().unsavedCategories).toHaveLength(1);
+    });
+
+    it('should not duplicate if category already tracked', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const cat = useRubricStore.getState().rubricCategories[0];
+      useRubricStore.getState().onCategoryEdit(cat);
+      useRubricStore.getState().onCategoryEdit(cat);
+      expect(useRubricStore.getState().unsavedCategories).toHaveLength(1);
+    });
+
+    it('should remove category from unsavedCategories on undo', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const cat = useRubricStore.getState().rubricCategories[0];
+      useRubricStore.getState().onCategoryEdit(cat);
+      useRubricStore.getState().onCategoryUndo(cat);
+      expect(useRubricStore.getState().unsavedCategories).toHaveLength(0);
+    });
+  });
+
+  describe('updateComment', () => {
+    it('should update a comment in place', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const comment = useRubricStore.getState().rubricComments[1][0];
+      useRubricStore.getState().updateComment({ ...comment, text: 'Updated text' });
+      expect(useRubricStore.getState().rubricComments[1][0].text).toBe('Updated text');
+    });
+
+    it('should not change state for unknown category', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const before = useRubricStore.getState().rubricComments;
+      useRubricStore.getState().updateComment({ id: 10, category: 999, text: 'x' } as RubricComment);
+      expect(useRubricStore.getState().rubricComments).toBe(before);
+    });
+  });
+
+  describe('reorderComments', () => {
+    it('should reorder comments and mark changed ones as unsaved', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const comments = [...useRubricStore.getState().rubricComments[1]];
+      const reversed = [comments[1], comments[0]];
+      useRubricStore.getState().reorderComments(1, reversed);
+      expect(useRubricStore.getState().rubricComments[1][0].id).toBe(comments[1].id);
+      expect(useRubricStore.getState().hasMoved).toBe(true);
+    });
+  });
+
+  describe('onCommentEdit / onCommentUndo', () => {
+    it('should track edited comment', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const comment = useRubricStore.getState().rubricComments[1][0];
+      useRubricStore.getState().onCommentEdit(comment);
+      expect(useRubricStore.getState().unsavedComments).toHaveLength(1);
+    });
+
+    it('should not duplicate edits', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const comment = useRubricStore.getState().rubricComments[1][0];
+      useRubricStore.getState().onCommentEdit(comment);
+      useRubricStore.getState().onCommentEdit(comment);
+      expect(useRubricStore.getState().unsavedComments).toHaveLength(1);
+    });
+
+    it('should remove from unsavedComments on undo', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      const comment = useRubricStore.getState().rubricComments[1][0];
+      useRubricStore.getState().onCommentEdit(comment);
+      useRubricStore.getState().onCommentUndo(comment);
+      expect(useRubricStore.getState().unsavedComments).toHaveLength(0);
+    });
+  });
+
+  describe('UI state setters', () => {
+    it('setActiveComment sets and clears', () => {
+      const comment = { id: 10, text: 'x' } as RubricComment;
+      useRubricStore.getState().setActiveComment(comment);
+      expect(useRubricStore.getState().activeComment).toBe(comment);
+      useRubricStore.getState().setActiveComment(undefined);
+      expect(useRubricStore.getState().activeComment).toBeUndefined();
+    });
+
+    it('setLinkedComments updates list', () => {
+      const comments = [{ id: 10 } as RubricComment];
+      useRubricStore.getState().setLinkedComments(comments);
+      expect(useRubricStore.getState().linkedComments).toEqual(comments);
+    });
+
+    it('setShowConfirmDialog toggles dialog', () => {
+      useRubricStore.getState().setShowConfirmDialog(true);
+      expect(useRubricStore.getState().showConfirmDialog).toBe(true);
+    });
+
+    it('setFeedbackScores updates scores', () => {
+      useRubricStore.getState().setFeedbackScores({ 1: { negative: 2, positive: 5 } });
+      expect(useRubricStore.getState().feedbackScores?.[1]).toEqual({ negative: 2, positive: 5 });
+    });
+
+    it('setInstanceLists updates lists', () => {
+      useRubricStore.getState().setInstanceLists({ 10: [1, 2, 3] });
+      expect(useRubricStore.getState().instanceLists[10]).toEqual([1, 2, 3]);
+    });
+  });
 });

@@ -57,7 +57,7 @@ const TestScriptCardView = (props: IProps) => {
     handleChange([
       ...items,
       {
-        // eslint-disable-next-line react-hooks/purity -- Date.now() only runs on user click, not during render
+        // Date.now() only runs on user click, not during render
         id: `draft-${Date.now()}-${items.length}`,
         type: 'test',
         name: 'New Test',

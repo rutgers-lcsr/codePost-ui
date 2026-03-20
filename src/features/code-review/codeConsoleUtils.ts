@@ -239,7 +239,13 @@ export const pointsPerCategoryWithCaps = (
 };
 
 /**
- * Calculate points from submission tests
+ * Calculate points from submission tests.
+ *
+ * Returns negated earned points so that `calculateGrade` can uniformly subtract
+ * all point sources: `grade = base - comments - categories - testPoints`.
+ * The double negative means passing tests add to the grade.
+ *
+ * Note: `-1 * 0` yields `-0`, which is safe (`-0 === 0` is true).
  */
 export const pointsFromTests = (submissionTests: SubmissionTestType[], testCases: TestCaseType[]): number => {
   const latestTests: SubmissionTestType[] = getLatestSubmissionTests(submissionTests) ?? [];

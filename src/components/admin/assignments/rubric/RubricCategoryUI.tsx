@@ -436,7 +436,7 @@ const RubricCategoryUI: React.FC<{
                             icon={<CloseCircleOutlined />}
                             type="text"
                             onClick={clearPointLimit}
-                            // eslint-disable-next-line react-hooks/refs -- helpers object is stable across renders
+                            // helpers object is stable across renders
                             onBlur={helpers.saveCategory}
                             disabled={state.pointLimit === null}
                             style={{ color: state.pointLimit === null ? 'transparent' : '#bfbfbf' }}
@@ -491,9 +491,9 @@ const RubricCategoryUI: React.FC<{
                   </span>
                   <Input.TextArea
                     value={state.helpText}
-                    // eslint-disable-next-line react-hooks/refs -- helpers object is stable across renders
+                    // helpers object is stable across renders
                     onChange={helpers.changeHelpText}
-                    // eslint-disable-next-line react-hooks/refs -- helpers object is stable across renders
+                    // helpers object is stable across renders
                     onBlur={helpers.saveCategory}
                     autoSize={{ minRows: 2, maxRows: 6 }}
                     placeholder="Enter instructions or guidance for graders using this category..."
@@ -520,7 +520,7 @@ const RubricCategoryUI: React.FC<{
                 {rubricComments.length}
               </Tag>
             </div>
-            {/* eslint-disable-next-line react-hooks/refs -- helpers object is stable across renders */}
+            {/* helpers object is stable across renders */}
             <Button type="primary" icon={<PlusOutlined />} onClick={helpers.addComment}>
               Add Criteria
             </Button>

@@ -112,7 +112,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
 
   // Initial roster input calculation
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs initial state from props; also set by file upload
+    // syncs initial state from props; also set by file upload
     setRosterInput(
       rosterToCsv(
         props.sectionsByStudent,

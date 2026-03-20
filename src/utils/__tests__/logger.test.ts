@@ -13,19 +13,9 @@ vi.mock('../../theme/colors', () => ({
 }));
 
 // Provide a full localStorage mock shared between test and module code
-const storage: Record<string, string> = {};
-vi.stubGlobal('localStorage', {
-  getItem: vi.fn((key: string) => storage[key] ?? null),
-  setItem: vi.fn((key: string, value: string) => {
-    storage[key] = value;
-  }),
-  removeItem: vi.fn((key: string) => {
-    delete storage[key];
-  }),
-  clear: vi.fn(() => {
-    Object.keys(storage).forEach((k) => delete storage[k]);
-  }),
-});
+import { createLocalStorageMock, installLocalStorageMock } from '../../test-utils';
+const { mock: lsMock, store: storage } = createLocalStorageMock();
+installLocalStorageMock(lsMock);
 
 import { Logger, setDiagnosticConsent, getDiagnosticConsent } from '../logger';
 import { logsApi } from '../../api-client/clients';

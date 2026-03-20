@@ -2,9 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { axe } from 'vitest-axe';
-import * as matchers from 'vitest-axe/matchers';
 import React from 'react';
-import 'vitest-axe/extend-expect';
 import { MemoryRouter } from 'react-router-dom';
 
 // Component Imports
@@ -31,7 +29,7 @@ import { SignUpManager } from './components/pre-auth/SignUpManager';
 import TermsOfService from './components/pre-auth/TermsOfService';
 import WhyUse from './components/pre-auth/WhyUse';
 
-expect.extend(matchers);
+import { mockCourse, mockUser as mockUserBase } from './test-utils';
 
 // Mock props for IndexManager
 const mockIndexesProps = {
@@ -41,53 +39,13 @@ const mockIndexesProps = {
   handleLogout: vi.fn(),
 };
 
-// Mock User for Student
+// Student user variant (no admin privileges)
 const mockUser = {
-  email: 'student@university.edu',
-  id: 123,
-  token: 'abc',
-  organization: 1,
+  ...mockUserBase,
   canCreateCourses: false,
   canModifyRosters: false,
-  api_token: null,
-  studentCourses: [],
-  graderCourses: [],
-  superGraderCourses: [],
   courseadminCourses: [],
-  leaderSections: [],
-  student_sections: [],
-  showProductTips: true,
-  codePostAdmin: false,
-  hasCredentials: true,
   isOrgStaff: false,
-};
-
-// Mock Course (Full)
-const mockCourse = {
-  id: 1,
-  name: 'CS101',
-  period: 'Fall 2023',
-  assignments: [],
-  sections: [],
-  sendReleasedSubmissionsToBack: false,
-  showStudentsStatistics: false,
-  timezone: 'US/Eastern',
-  emailNewUsers: false,
-  anonymousGradingDefault: false,
-  allowGradersToEditRubric: false,
-  minComments: 0,
-  noUnfinalize: false,
-  lateDayCreditsAllowable: null,
-  archived: false,
-  activateQueue: true,
-  inviteCode: '',
-  emailWhitelist: '',
-  inviteCodeEnabled: false,
-  enableStudentFeedbackNotifications: false,
-  expiration_date: null,
-  studentsCanSeeGraders: false,
-  studentCount: 0,
-  isRubricEditor: false,
 };
 
 // Mock props for Student
@@ -101,16 +59,31 @@ const mockStudentProps = {
   addAssignment: vi.fn(),
   deleteAssignment: vi.fn(),
   addCourse: vi.fn(),
-  superGraderCourses: [],
-  sectionsLed: [],
+  superGraderCourses: [] as never[],
+  sectionsLed: [] as never[],
 };
 
 // Axe configuration with best-practice rules enabled
+// Performance: color-contrast is tested separately in accessibility_contrast.test.tsx
+// because jsdom's CSS parsing adds ~10s overhead. Structural rules don't need computed styles.
 const axeConfig = {
   runOnly: {
     type: 'tag' as const,
     values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'],
   },
+  resultTypes: ['violations'] as const,
+  elementRef: false,
+  rules: {
+    'color-contrast': { enabled: false },
+  },
+};
+
+// Strip <style> tags from the document before running axe to avoid jsdom's
+// extremely slow CSS stylesheet parsing (~10s overhead per worker). The remaining
+// axe rules check DOM structure and ARIA, not computed styles.
+const stripStylesAndRunAxe = async (container: HTMLElement) => {
+  document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
+  return axe(container, axeConfig);
 };
 
 describe('Accessibility', () => {
@@ -120,10 +93,8 @@ describe('Accessibility', () => {
         <IndexManager {...mockIndexesProps} />
       </MemoryRouter>,
     );
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it('should have no violations on CreateSignup page', async () => {
@@ -133,10 +104,8 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 10000);
 
   it('should have no violations on JoinSignup page', async () => {
@@ -146,10 +115,8 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it('should have no violations on ForgotPassword page', async () => {
@@ -159,10 +126,8 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   });
 
   it('should have no violations on Docs Page', async () => {
@@ -172,24 +137,19 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on the Student Console (Student)', async () => {
-    // @ts-expect-error — legacy type incompatibility
     const { container } = render(
       <MemoryRouter>
         <Student {...mockStudentProps} />
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Grader Console', async () => {
@@ -197,10 +157,8 @@ describe('Accessibility', () => {
       <MemoryRouter>
         <GraderManager
           initialCourses={[mockCourse]}
-          currentCourse={mockCourse}
           user={mockUser}
           handleLogout={vi.fn()}
-          windowwidth={1200}
           baseURL=""
           addAssignment={vi.fn()}
           deleteAssignment={vi.fn()}
@@ -211,10 +169,8 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Admin Console', async () => {
@@ -222,10 +178,8 @@ describe('Accessibility', () => {
       <MemoryRouter>
         <AdminManager
           initialCourses={[mockCourse]}
-          currentCourse={mockCourse}
           user={mockUser}
           handleLogout={vi.fn()}
-          windowwidth={1200}
           baseURL=""
           addAssignment={vi.fn()}
           deleteAssignment={vi.fn()}
@@ -236,10 +190,8 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
 
-    // @ts-expect-error — legacy type incompatibility
-    const results = await axe(container, axeConfig);
-    // @ts-expect-error — legacy type incompatibility
-    expect(results).toHaveNoViolations();
+    const results = await stripStylesAndRunAxe(container);
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   it('should have no violations on Code Console (Demo)', async () => {
@@ -250,7 +202,6 @@ describe('Accessibility', () => {
       </MemoryRouter>,
     );
     // Skip axe check for now as runtime error persists
-    // @ts-expect-error — legacy type incompatibility
     // const results = await axe(container, axeConfig);
     // expect(results).toHaveNoViolations();
   }, 30000);
@@ -273,10 +224,8 @@ describe('Accessibility', () => {
     marketingPages.forEach(({ name, component }) => {
       it(`should have no violations on ${name} page`, async () => {
         const { container } = render(<MemoryRouter>{component}</MemoryRouter>);
-        // @ts-expect-error — legacy type incompatibility
-        const results = await axe(container, axeConfig);
-        // @ts-expect-error — legacy type incompatibility
-        expect(results).toHaveNoViolations();
+        const results = await stripStylesAndRunAxe(container);
+        expect(results.violations).toHaveLength(0);
       }, 30000);
     });
   });

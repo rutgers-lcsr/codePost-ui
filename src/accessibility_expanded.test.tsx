@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
@@ -15,90 +14,11 @@ import RosterManager from './components/admin/roster/RosterManager';
 import ManageAssignments from './components/admin/assignments/ManageAssignments';
 import Dashboard from './components/codepost-admin/Dashboard';
 
-// Mock data
-const mockOrganization = {
-  id: 1,
-  name: 'Test University',
-  sso_enabled: false,
-};
+import { mockOrganization, mockCourse as mockCourseBase, mockUser as mockUserBase, makeAssignment } from './test-utils';
 
-const mockCourse: any = {
-  id: 1,
-  name: 'CS101',
-  period: 'Fall 2023',
-  assignments: [],
-  sections: [],
-  sendReleasedSubmissionsToBack: false,
-  showStudentsStatistics: false,
-  timezone: 'US/Eastern',
-  emailNewUsers: false,
-  anonymousGradingDefault: false,
-  allowGradersToEditRubric: false,
-  minComments: 0,
-  noUnfinalize: false,
-  lateDayCreditsAllowable: null,
-  archived: false,
-  activateQueue: true,
-  inviteCode: '',
-  inviteCodeEnabled: false,
-  emailWhitelist: '',
-  enableStudentFeedbackNotifications: false,
-  expiration_date: null,
-  studentsCanSeeGraders: false,
-  studentCount: 0,
-  isRubricEditor: false,
-  webhooks: [],
-};
-
-const mockAssignment: any = {
-  id: 1,
-  course: 1,
-  name: 'Homework 1',
-  points: 100,
-  isReleased: false,
-  feedbackReleased: false,
-  hideGrades: false,
-  commentFeedback: false,
-  allowStudentUpload: true,
-  allowStudentUploadWithPartners: false,
-  uploadDueDate: null,
-  isVisible: true,
-  lateDeductions: [],
-  rubricCategories: [],
-  sortKey: 1,
-  maxLateDays: null,
-  liveFeedbackMode: false,
-  description: '',
-  files: [],
-  isFinalized: false,
-  maxStudentTestRuns: null,
-  nudgeMode: false,
-  dataSets: [],
-  testCategories: [],
-  environment: null,
-};
-
-const mockUser: any = {
-  email: 'test@university.edu',
-  id: 123,
-  token: 'abc',
-  organization: 1,
-  canCreateCourses: true,
-  canModifyRosters: true,
-  api_token: 'api-token-123',
-  studentCourses: [],
-  graderCourses: [],
-  superGraderCourses: [],
-  courseadminCourses: [mockCourse],
-  leaderSections: [],
-  student_sections: [],
-  showProductTips: true,
-  codePostAdmin: false,
-  hasCredentials: true,
-  isOrgStaff: true,
-  password: '',
-  studentSections: [],
-};
+const mockCourse = mockCourseBase;
+const mockAssignment = makeAssignment();
+const mockUser = { ...mockUserBase, apiToken: 'api-token-123' };
 
 // Mocks
 vi.mock('./api-client/clients', () => ({
@@ -229,7 +149,7 @@ const mockCourseSettingsProps = {
   updateSettings: vi.fn(),
 };
 
-const mockRosterProps: any = {
+const mockRosterProps = {
   notActivated: [],
   sections: [],
   students: ['student1@university.edu'],
@@ -249,7 +169,7 @@ const mockRosterProps: any = {
   deleteSection: vi.fn(),
 };
 
-const mockAssignmentsProps: any = {
+const mockAssignmentsProps = {
   loadComplete: true,
   partialSubmissionsLoadComplete: true,
   fullSubmissionsLoadComplete: true,
@@ -277,10 +197,17 @@ const mockAssignmentsProps: any = {
 };
 
 // Axe config
+// Performance: color-contrast is tested separately in accessibility_contrast.test.tsx
+// because jsdom's CSS parsing adds ~10s overhead. Structural rules don't need computed styles.
 const axeConfig = {
   runOnly: {
     type: 'tag' as const,
     values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'],
+  },
+  resultTypes: ['violations'] as const,
+  elementRef: false,
+  rules: {
+    'color-contrast': { enabled: false },
   },
 };
 
@@ -295,10 +222,14 @@ const renderWithRouter = async (ui: React.ReactElement, routerProps?: React.Comp
   return result!;
 };
 
+// Strip <style> tags from the document before running axe to avoid jsdom's
+// extremely slow CSS stylesheet parsing (~10s overhead per worker). The remaining
+// axe rules check DOM structure and ARIA, not computed styles.
 const runAxe = async (container: HTMLElement) => {
   await act(async () => {
     await Promise.resolve();
   });
+  document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
   return axe(container, axeConfig);
 };
 

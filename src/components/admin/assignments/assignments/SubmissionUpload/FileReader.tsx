@@ -170,7 +170,6 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
 
         if (outputFile.extension === '') {
           if (typeof data === 'string') {
-            // eslint-disable-next-line no-control-regex
             const match = data.match(new RegExp('\u0000', 'g'));
             // If a no-extension file has null characters then it might be an executable
             // Avoid corrupting it by saving as base64
@@ -181,12 +180,10 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
           }
         } else {
           if (typeof data === 'string') {
-            // eslint-disable-next-line no-control-regex
             const match = data.match(new RegExp('\u0000', 'g'));
             // If a file contains a null character and is not on the Binary Whitelist, notify the team and then strip it
             if (match !== null) {
               // sendSlack('Replaced Null Character', `${outputFile.name}`, '#fafafa', 'user_notifications_uploads');
-              // eslint-disable-next-line no-control-regex
               data = data.replace(new RegExp('\u0000', 'g'), '');
             }
           }

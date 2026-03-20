@@ -31,9 +31,9 @@ type CreateOptions = {
 };
 
 const create = (options?: CreateOptions) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- inherently generic HOC
+  // inherently generic HOC
   return (Component: React.ComponentType<any>) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- inherently generic HOC
+    // inherently generic HOC
     const Wrapped = forwardRef<any, any>((props, ref) => {
       const { wrappedComponentRef, ...rest } = props as { wrappedComponentRef?: WrappedComponentRef } & Record<
         string,
@@ -51,7 +51,7 @@ const create = (options?: CreateOptions) => {
         if (typeof wrappedComponentRef === 'function') {
           wrappedComponentRef(innerRef.current);
         } else {
-          // eslint-disable-next-line react-hooks/immutability -- legacy ref forwarding shim
+          // legacy ref forwarding shim
           wrappedComponentRef.current = innerRef.current;
         }
       }, [wrappedComponentRef]);
@@ -83,7 +83,7 @@ const create = (options?: CreateOptions) => {
         resetFields: form.resetFields,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- legacy HOC props spread
+      // legacy HOC props spread
       const componentProps = { ...rest, form: legacyForm } as any;
 
       return (
@@ -95,7 +95,7 @@ const create = (options?: CreateOptions) => {
 
     Wrapped.displayName = options?.name || Component.displayName || Component.name || 'LegacyFormWrapper';
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- legacy HOC type erasure
+    // legacy HOC type erasure
     return Wrapped as any;
   };
 };

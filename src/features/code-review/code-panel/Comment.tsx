@@ -753,7 +753,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
       document.removeEventListener('keydown', handleHotkeysTyped);
     };
     // Empty deps means this only runs once on mount, not on every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ComponentDidUpdate - Handle all prop changes
@@ -1361,7 +1360,6 @@ const Comment: React.FC<ICommentProps> = (props) => {
         });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.onPin, text, points, props.comment.rubricComment, props.comment.id, props.comment.startLine],
   );
 

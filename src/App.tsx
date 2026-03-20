@@ -528,7 +528,7 @@ Firefox:
         clearTimeout(refreshTimerRef.current);
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Trigger tryToLogin when hasToken changes
   useEffect(() => {

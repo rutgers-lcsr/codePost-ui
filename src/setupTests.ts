@@ -3,6 +3,8 @@ import { vi, expect } from 'vitest';
 import * as matchers from 'vitest-axe/matchers';
 import 'vitest-axe/extend-expect';
 import React from 'react';
+import { installLocalStorageMock } from './test-utils';
+import { mockOrganization, mockCourse, mockUser } from './test-utils/factories';
 
 expect.extend(matchers);
 
@@ -11,18 +13,9 @@ expect.extend(matchers);
 // Enzyme setup removed as it causes build errors and is not used.
 
 // ----------- Enable localStorage usage
-
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  clear: vi.fn(),
-};
-
-Object.defineProperty(globalThis, 'localStorage', {
-  value: localStorageMock,
-  configurable: true,
-  writable: true,
-});
+// Uses the centralized mock from src/test-utils/mocks.ts.
+// For tests that need data persistence, use createLocalStorageMock() instead.
+installLocalStorageMock();
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -82,57 +75,10 @@ Object.defineProperty(globalThis, 'fetch', {
       'GET'
     ).toUpperCase();
 
-    // Minimal fixtures used across tests.
-    const mockOrganization = { id: 1, name: 'Test University', sso_enabled: false };
-    const mockCourse = {
-      id: 1,
-      name: 'CS101',
-      period: 'Fall 2023',
-      assignments: [],
-      sections: [],
-      sendReleasedSubmissionsToBack: false,
-      showStudentsStatistics: false,
-      timezone: 'US/Eastern',
-      emailNewUsers: false,
-      anonymousGradingDefault: false,
-      allowGradersToEditRubric: false,
-      minComments: 0,
-      noUnfinalize: false,
-      lateDayCreditsAllowable: null,
-      archived: false,
-      activateQueue: true,
-      inviteCode: '',
-      emailWhitelist: '',
-      inviteCodeEnabled: false,
-      enableStudentFeedbackNotifications: false,
-      expiration_date: null,
-      studentsCanSeeGraders: false,
-      studentCount: 0,
-      isRubricEditor: false,
-    };
-
     let payload: unknown = {};
 
     if (url?.includes('/registration/current_user/')) {
-      payload = {
-        email: 'test@university.edu',
-        token: 'abc',
-        id: 123,
-        organization: 1,
-        canCreateCourses: true,
-        canModifyRosters: true,
-        api_token: null,
-        studentCourses: [],
-        graderCourses: [],
-        superGraderCourses: [],
-        courseadminCourses: [mockCourse],
-        leaderSections: [],
-        student_sections: [],
-        showProductTips: true,
-        codePostAdmin: false,
-        hasCredentials: true,
-        isOrgStaff: true,
-      };
+      payload = mockUser;
     } else if (url?.includes('/organizations/') && method === 'GET') {
       if (url.match(/\/organizations\/?$/) || url.match(/\/organizations\/?\?/)) {
         payload = [mockOrganization];
@@ -154,45 +100,9 @@ Object.defineProperty(globalThis, 'fetch', {
         payload = mockCourse;
       }
     } else if (url?.includes('/users/me/') && (method === 'GET' || method === 'PATCH')) {
-      payload = {
-        email: 'test@university.edu',
-        token: 'abc',
-        id: 123,
-        organization: 1,
-        canCreateCourses: true,
-        canModifyRosters: true,
-        api_token: 'api-token-123',
-        studentCourses: [],
-        graderCourses: [],
-        superGraderCourses: [],
-        courseadminCourses: [mockCourse],
-        leaderSections: [],
-        student_sections: [],
-        showProductTips: true,
-        codePostAdmin: false,
-        hasCredentials: true,
-        isOrgStaff: true,
-      };
+      payload = { ...mockUser, api_token: 'api-token-123' };
     } else if (url?.includes('/users/requestAPIToken/') && method === 'POST') {
-      payload = {
-        email: 'test@university.edu',
-        token: 'abc',
-        id: 123,
-        organization: 1,
-        canCreateCourses: true,
-        canModifyRosters: true,
-        api_token: 'api-token-123',
-        studentCourses: [],
-        graderCourses: [],
-        superGraderCourses: [],
-        courseadminCourses: [mockCourse],
-        leaderSections: [],
-        student_sections: [],
-        showProductTips: true,
-        codePostAdmin: false,
-        hasCredentials: true,
-        isOrgStaff: true,
-      };
+      payload = { ...mockUser, api_token: 'api-token-123' };
     } else if (url?.includes('/registration/emailPasswordReset/') && method === 'POST') {
       payload = { success: true };
     }

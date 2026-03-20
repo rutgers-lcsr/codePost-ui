@@ -234,7 +234,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
   // Update sortedOrder when assignments change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSortedOrder(sortAssignments(props.assignments).map((el) => el.id));
   }, [props.assignments]);
 
@@ -261,7 +260,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
       const title = getDrawerTitle(drawerType, newContent.length, !fullSubmissionsLoadComplete);
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDrawerContent({
         title: thisAssignment.name,
         subtitle: title,

@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
@@ -316,7 +315,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     if (codeScrollArea !== null && prevProps) {
       if (prevFileId !== currentFileId) {
         // Save scroll position for previous file
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- save scroll position on file change
+        // save scroll position on file change
         setFileScrollPositions((prev) => ({
           ...prev,
           [prevFileId]: codeScrollArea.scrollTop,

@@ -57,7 +57,6 @@ export const TestDefinitions = (props: IProps) => {
 
   useEffect(() => {
     fetchTests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentAssignment.id]);
 
   useEffect(() => {
@@ -70,7 +69,6 @@ export const TestDefinitions = (props: IProps) => {
     ) {
       setActiveFile(props.helpers[0].name);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.helpers]);
 
   const [isRunning, setIsRunning] = useState(false);
@@ -272,7 +270,6 @@ export const TestDefinitions = (props: IProps) => {
     try {
       const updated = await testCasesApi.partialUpdate({
         id: testCtx.id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         patchedTestCase: testCtx as any,
       });
       setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));

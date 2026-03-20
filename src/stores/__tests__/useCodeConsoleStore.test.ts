@@ -1,5 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Robust tests for useCodeConsoleStore Zustand store.
  *
@@ -276,6 +275,209 @@ describe('useCodeConsoleStore', () => {
     it('should map current ID to old ID', () => {
       useCodeConsoleStore.getState().setOldCommentID(200, 100);
       expect(useCodeConsoleStore.getState().oldCommentIDs[200]).toBe(100);
+    });
+  });
+
+  describe('additional UI setters', () => {
+    it('setShowCustomCommentExplorer', () => {
+      useCodeConsoleStore.getState().setShowCustomCommentExplorer(true);
+      expect(useCodeConsoleStore.getState().showCustomCommentExplorer).toBe(true);
+    });
+
+    it('setShowInlineTestsModal', () => {
+      useCodeConsoleStore.getState().setShowInlineTestsModal(true);
+      expect(useCodeConsoleStore.getState().showInlineTestsModal).toBe(true);
+    });
+
+    it('setShowHelpModal', () => {
+      useCodeConsoleStore.getState().setShowHelpModal(true);
+      expect(useCodeConsoleStore.getState().showHelpModal).toBe(true);
+    });
+
+    it('setIsStudent', () => {
+      useCodeConsoleStore.getState().setIsStudent(true);
+      expect(useCodeConsoleStore.getState().isStudent).toBe(true);
+    });
+
+    it('setHideGrades', () => {
+      useCodeConsoleStore.getState().setHideGrades(true);
+      expect(useCodeConsoleStore.getState().hideGrades).toBe(true);
+    });
+
+    it('setActiveSiderKey', () => {
+      useCodeConsoleStore.getState().setActiveSiderKey('rubric');
+      expect(useCodeConsoleStore.getState().activeSiderKey).toBe('rubric');
+    });
+
+    it('setCursorMode', () => {
+      useCodeConsoleStore.getState().setCursorMode(true);
+      expect(useCodeConsoleStore.getState().cursorMode).toBe(true);
+    });
+
+    it('setShowCursor', () => {
+      useCodeConsoleStore.getState().setShowCursor('files' as never);
+      expect(useCodeConsoleStore.getState().showCursor).toBe('files');
+    });
+
+    it('setGraders', () => {
+      useCodeConsoleStore.getState().setGraders(['alice', 'bob']);
+      expect(useCodeConsoleStore.getState().graders).toEqual(['alice', 'bob']);
+    });
+
+    it('setStudents', () => {
+      useCodeConsoleStore.getState().setStudents(['carol']);
+      expect(useCodeConsoleStore.getState().students).toEqual(['carol']);
+    });
+
+    it('incrementDemoCommentCounter', () => {
+      const before = useCodeConsoleStore.getState().demoCommentCounter;
+      const result = useCodeConsoleStore.getState().incrementDemoCommentCounter();
+      expect(result).toBe(before);
+      expect(useCodeConsoleStore.getState().demoCommentCounter).toBe(before + 1);
+    });
+
+    it('incrementCommentRefreshCounter', () => {
+      const before = useCodeConsoleStore.getState().commentRefreshCounter;
+      useCodeConsoleStore.getState().incrementCommentRefreshCounter();
+      expect(useCodeConsoleStore.getState().commentRefreshCounter).toBe(before + 1);
+    });
+
+    it('setWordWrap', () => {
+      useCodeConsoleStore.getState().setWordWrap(true);
+      expect(useCodeConsoleStore.getState().wordWrap).toBe(true);
+    });
+  });
+
+  describe('setReadOnlySubmission', () => {
+    it('should store read-only submission', () => {
+      const sub = { id: 99, students: ['s@test.edu'] } as any;
+      useCodeConsoleStore.getState().setReadOnlySubmission(sub);
+      expect(useCodeConsoleStore.getState().readOnlySubmission).toEqual(sub);
+    });
+
+    it('should clear read-only submission with undefined', () => {
+      useCodeConsoleStore.getState().setReadOnlySubmission({ id: 1 } as any);
+      useCodeConsoleStore.getState().setReadOnlySubmission(undefined);
+      expect(useCodeConsoleStore.getState().readOnlySubmission).toBeUndefined();
+    });
+  });
+
+  describe('updateComment across files', () => {
+    it('should find and update a comment when it exists in a different file', () => {
+      useCodeConsoleStore.getState().setComments({
+        1: [{ id: 100, text: 'File 1' } as any],
+        2: [{ id: 200, text: 'File 2' } as any, { id: 201, text: 'Also File 2' } as any],
+      });
+
+      useCodeConsoleStore.getState().updateComment(200, { id: 200, text: 'Updated File 2' } as any);
+
+      expect(useCodeConsoleStore.getState().comments[1][0].text).toBe('File 1');
+      expect(useCodeConsoleStore.getState().comments[2][0].text).toBe('Updated File 2');
+      expect(useCodeConsoleStore.getState().comments[2][1].text).toBe('Also File 2');
+    });
+
+    it('should leave all comments unchanged when comment ID is not found', () => {
+      useCodeConsoleStore.getState().setComments({
+        1: [{ id: 100, text: 'Original' } as any],
+      });
+
+      useCodeConsoleStore.getState().updateComment(999, { id: 999, text: 'Ghost' } as any);
+
+      expect(useCodeConsoleStore.getState().comments[1][0].text).toBe('Original');
+    });
+  });
+
+  describe('assignment files', () => {
+    it('should set assignment files', () => {
+      const files = [{ id: 1, name: 'template.py' }] as any;
+      useCodeConsoleStore.getState().setAssignmentFiles(files);
+      expect(useCodeConsoleStore.getState().assignmentFiles).toEqual(files);
+    });
+  });
+
+  describe('setSubmission and setAssignment and setCourse', () => {
+    it('should set submission', () => {
+      const sub = { id: 1, assignment: 1 } as any;
+      useCodeConsoleStore.getState().setSubmission(sub);
+      expect(useCodeConsoleStore.getState().submission).toEqual(sub);
+    });
+
+    it('should set assignment', () => {
+      const assgn = { id: 1, name: 'HW1' } as any;
+      useCodeConsoleStore.getState().setAssignment(assgn);
+      expect(useCodeConsoleStore.getState().assignment).toEqual(assgn);
+    });
+
+    it('should set course', () => {
+      const course = { id: 1, name: 'CS101' } as any;
+      useCodeConsoleStore.getState().setCourse(course);
+      expect(useCodeConsoleStore.getState().course).toEqual(course);
+    });
+  });
+
+  describe('setCommentRubricComments', () => {
+    it('should replace the entire mapping', () => {
+      const mapping = { 100: { id: 10, text: 'RC' } as any };
+      useCodeConsoleStore.getState().setCommentRubricComments(mapping);
+      expect(useCodeConsoleStore.getState().commentRubricComments).toEqual(mapping);
+    });
+  });
+
+  describe('rubric setters', () => {
+    it('should set rubric categories', () => {
+      const cats = [{ id: 1, name: 'Style' }] as any;
+      useCodeConsoleStore.getState().setRubricCategories(cats);
+      expect(useCodeConsoleStore.getState().rubricCategories).toEqual(cats);
+    });
+
+    it('should set rubric comments', () => {
+      const comments = [{ id: 1, text: 'Fix indentation' }] as any;
+      useCodeConsoleStore.getState().setRubricComments(comments);
+      expect(useCodeConsoleStore.getState().rubricComments).toEqual(comments);
+    });
+
+    it('should set edit rubric mode', () => {
+      useCodeConsoleStore.getState().setEditRubricMode(true);
+      expect(useCodeConsoleStore.getState().editRubricMode).toBe(true);
+    });
+  });
+
+  describe('test setters', () => {
+    it('should set tests', () => {
+      useCodeConsoleStore.getState().setTests([{ id: 1 }] as any);
+      expect(useCodeConsoleStore.getState().tests).toHaveLength(1);
+    });
+
+    it('should set test cases', () => {
+      useCodeConsoleStore.getState().setTestCases([{ id: 1 }] as any);
+      expect(useCodeConsoleStore.getState().testCases).toHaveLength(1);
+    });
+
+    it('should set test categories', () => {
+      useCodeConsoleStore.getState().setTestCategories([{ id: 1 }] as any);
+      expect(useCodeConsoleStore.getState().testCategories).toHaveLength(1);
+    });
+  });
+
+  describe('UI panel setters', () => {
+    it('should set panel type', () => {
+      useCodeConsoleStore.getState().setPanelType('files' as any);
+      expect(useCodeConsoleStore.getState().panelType).toBe('files');
+    });
+
+    it('should set code zoom', () => {
+      useCodeConsoleStore.getState().setCodeZoom(18);
+      expect(useCodeConsoleStore.getState().codeZoom).toBe(18);
+    });
+
+    it('should set code vertical offset', () => {
+      useCodeConsoleStore.getState().setCodeVerticalOffset(50);
+      expect(useCodeConsoleStore.getState().codeVerticalOffset).toBe(50);
+    });
+
+    it('should set show keyboard shortcuts', () => {
+      useCodeConsoleStore.getState().setShowKeyboardShortcuts(true);
+      expect(useCodeConsoleStore.getState().showKeyboardShortcuts).toBe(true);
     });
   });
 });

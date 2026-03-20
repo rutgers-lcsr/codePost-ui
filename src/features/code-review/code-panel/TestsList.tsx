@@ -313,7 +313,7 @@ const TestsList: React.FC<TestsListProps> = ({
     if (submissionId) {
       fetchResults();
     }
-  }, [demoMode, submissionId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [demoMode, submissionId]);
 
   const { pollTask } = useTaskPolling();
 

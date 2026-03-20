@@ -110,7 +110,6 @@ export const TestingSummary = (props: IProps) => {
       }
     };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentAssignment && props.currentAssignment.id]);
 
   // ******************************* API / State change functions  *******************************
@@ -131,7 +130,6 @@ export const TestingSummary = (props: IProps) => {
     if (env) {
       const result = (await autograderApi.environmentsRunAllPartialUpdate({
         id: env.id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         patchedEnvironmentRunAllRequest: { sendEmail: sendEmail } as any,
       })) as unknown as { task: string };
       awaitTestResult(
@@ -166,7 +164,6 @@ export const TestingSummary = (props: IProps) => {
         patchedEnvironmentRunRequest: {
           submission: sub.id,
           simulate: false,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       })) as unknown as { task: string };
       awaitTestResult(result.task, (result: unknown) => runSubmissionCallback(sub, result));

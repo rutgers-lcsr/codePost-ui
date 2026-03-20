@@ -44,7 +44,6 @@ export const beforeLMSImport = (
 ) => {
   const copyFile = (f: File, parentPath: string) => {
     // We can't set the path of a file, so need to do a path override
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cPFile: codePostFile = new File([f], f.name) as any;
     cPFile['uid'] = '';
     cPFile['pathOverride'] = `${parentPath}/${f.name}`;

@@ -57,7 +57,7 @@ const AssignmentStats: FC<IProps> = (props) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- resets loading state when props refresh
+    // resets loading state when props refresh
     setIsLoading(false);
   }, [props]);
 

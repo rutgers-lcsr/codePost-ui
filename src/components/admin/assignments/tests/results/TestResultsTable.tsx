@@ -95,7 +95,6 @@ const TestResultsTable = (props: IProps) => {
       }
     };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.testsBySubmission, props.testCasesByCategory]);
 
   const openDetail = (
@@ -148,9 +147,7 @@ const TestResultsTable = (props: IProps) => {
     />
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let columns: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let data: any[] = [];
 
   if (!props.isLoading) {
