@@ -267,8 +267,11 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
       for (let line = activeComment.startLine!; line <= activeComment.endLine!; line += 1) {
         const element = findBlockElement(file, line) as HTMLElement | null;
         if (element && !nextElements.includes(element)) {
-          element.classList.add('highlight--hovered');
-          element.classList.add('markdown-block--focused');
+          // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
+          if (!element.hasAttribute('data-page-number')) {
+            element.classList.add('highlight--hovered');
+            element.classList.add('markdown-block--focused');
+          }
           nextElements.push(element);
         }
       }
@@ -288,6 +291,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
         notifyHoverListeners();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusedCommentId]);
 
   const setHoveredCommentId = React.useCallback(

@@ -90,6 +90,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
   React.useEffect(() => {
     loadFiles();
     loadDatasets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -97,6 +98,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       loadFiles();
       loadDatasets();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.isVisible]);
 
   const updateSettings = async (values: IFormValues) => {
@@ -184,7 +186,9 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
               assignmentFilesApi
                 .partialUpdate({
                   id: ft.id,
-                  patchedAssignmentFile: ft as any,
+                  patchedAssignmentFile: ft as unknown as Parameters<
+                    typeof assignmentFilesApi.partialUpdate
+                  >[0]['patchedAssignmentFile'],
                 })
                 .then((res) => res as unknown as AssignmentFileType),
             );

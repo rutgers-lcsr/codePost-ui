@@ -61,7 +61,7 @@ interface CheckRowProps {
 }
 
 const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check }) => {
-  const row = check as any;
+  const row = check as (HealthCheck & CeleryCheck & DiskCheck & MigrationCheck) | null;
 
   const badgeStatus = row ? STATUS_BADGE[row.status as StatusDfeEnum] : 'processing';
   const labelText = row?.label ?? 'Loading…';

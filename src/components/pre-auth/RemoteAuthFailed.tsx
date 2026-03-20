@@ -16,9 +16,9 @@ const RemoteAuthFailed = () => {
 
   const openIntercom = () => {
     if (intercomOpen) {
-      (window as any).Intercom('hide');
+      (window as unknown as { Intercom: (cmd: string) => void }).Intercom('hide');
     } else {
-      (window as any).Intercom('show');
+      (window as unknown as { Intercom: (cmd: string) => void }).Intercom('show');
     }
     setIntercomOpen(!intercomOpen);
   };

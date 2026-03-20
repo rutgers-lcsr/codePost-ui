@@ -565,7 +565,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
       setNewMapping(response.rosterMap ?? {});
     };
     fetchMap();
-  }, []);
+  }, [props.course.id]);
 
   React.useEffect(() => {
     const folderNameByID: { [id: string]: string } = {};
@@ -596,7 +596,7 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
     } else {
       didMountRef.current = true;
     }
-  }, [newMapping]);
+  }, [newMapping, props]);
 
   interface MappingRow {
     name: string;

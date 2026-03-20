@@ -146,7 +146,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   const renderLeadersCell = useCallback(
     (searchText: string) => {
-      return (_: string, record: any) => {
+      return (_: string, record: { section: string; leaderData: string[] }) => {
         if (record.section === activeSection) {
           return (
             <div>
@@ -195,7 +195,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         dataIndex: 'section',
         key: 'primary',
         defaultSortOrder: 'ascend' as const,
-        sorter: (a: any, b: any) => a.section.localeCompare(b.section),
+        sorter: (a: { section: string }, b: { section: string }) => a.section.localeCompare(b.section),
       },
       {
         title: 'Students',
@@ -590,7 +590,9 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const studentOptions = useMemo(() => {
     if (!openSection) return [];
 
-    const options: any[] = [{ label: 'Students without a section', options: [] }];
+    const options: Array<{ label: string; options: Array<{ label: string; value: string; isDisabled: boolean }> }> = [
+      { label: 'Students without a section', options: [] },
+    ];
 
     const studentsInSections = props.sections.flatMap((section) => section.students);
 

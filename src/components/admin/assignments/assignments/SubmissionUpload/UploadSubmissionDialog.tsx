@@ -391,6 +391,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     if (propsSelectedAssignment) {
       loadTemplates(propsSelectedAssignment);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle changes to selectedAssignment or visibility
@@ -422,6 +423,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     propsSelectedAssignment,
     isVisible,
@@ -735,7 +737,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     setStatus(STATUS.SAVING);
 
     uploadSubmission(
-      selectedAssignment as any,
+      selectedAssignment as unknown as Parameters<typeof uploadSubmission>[0],
       selectedStudents,
       files as unknown as SubmissionUploadFile[],
       sendMeAConfirmationEmail,

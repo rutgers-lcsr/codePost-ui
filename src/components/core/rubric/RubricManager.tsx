@@ -698,6 +698,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         clearInterval(intervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle assignment change
@@ -710,6 +711,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
     useRubricStore.getState().setLoadComplete(false);
     loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment.id]);
 
   // Handle reload interval change
@@ -729,6 +731,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         clearInterval(intervalRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     loadAssignmentRubric,
     props.assignment,

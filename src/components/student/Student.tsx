@@ -598,6 +598,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   // See AssignmentCard.tsx for the new card component implementation.
 
   // @ts-expect-error buildAssignmentsTable is kept for reference but no longer used
+  // eslint-disable-next-line no-unused-vars
   const _buildAssignmentsTable = useCallback(
     (assignmentList: Assignment[], submissionsMap: Record<number, Submission[]>) => {
       const modifyIf = (modMap: { [statusTarget: number]: number }) => {
@@ -1029,24 +1030,23 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
               ? { [user.email!]: { [detailSubmission.assignment]: detailSubmission } }
               : { [user.email!]: {} }) as unknown as Record<string, Record<number, StudentSubmission>>
           }
-          uploadSubmission={
-            (
-              assignment: Assignment,
-              partners: string[],
-              files: SubmissionUploadFile[],
-              sendConfirmationEmail?: boolean,
-            ) =>
-              uploadSubmission(
-                currentPanel !== CURRENT_PANEL.ADDFILES,
-                assignment,
-                partners,
-                files.map((file) => ({
-                  name: file.name,
-                  data: file.data ?? '',
-                  path: file.path ?? '',
-                })),
-                sendConfirmationEmail ?? false,
-              )
+          uploadSubmission={(
+            assignment: Assignment,
+            partners: string[],
+            files: SubmissionUploadFile[],
+            sendConfirmationEmail?: boolean,
+          ) =>
+            uploadSubmission(
+              currentPanel !== CURRENT_PANEL.ADDFILES,
+              assignment,
+              partners,
+              files.map((file) => ({
+                name: file.name,
+                data: file.data ?? '',
+                path: file.path ?? '',
+              })),
+              sendConfirmationEmail ?? false,
+            )
           }
           disableStudentSelect={true}
           onSuccess={onUploadSuccess}

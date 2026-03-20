@@ -76,6 +76,7 @@ export const SourceEditor = (props: IProps) => {
     if (props.currentFile) {
       setDraftCode(props.currentFile.code);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentFile?.id, props.currentFile?.code]);
 
   /************************** API functions ****************************/

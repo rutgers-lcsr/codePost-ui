@@ -52,7 +52,7 @@ interface ISimpleCommentState {
 }
 
 class SimpleComment extends React.Component<ISimpleCommentProps, ISimpleCommentState> {
-  public constructor(props: ISimpleCommentProps, context: any) {
+  public constructor(props: ISimpleCommentProps, context: unknown) {
     super(props, context);
     this.state = this.init();
   }

@@ -564,8 +564,14 @@ export const ResultDetail = (props: IProps) => {
         const hide = message.loading('Starting test run...', 0);
         try {
           const payload = { submissionId: subId, testId: null };
-          const response = await autograderApi.v2RunCreate({ testExecutionRequest: payload as any });
-          const taskId = (response as any).taskId || (response as any).task_id;
+          const response = await autograderApi.v2RunCreate({
+            testExecutionRequest: payload as unknown as Parameters<
+              typeof autograderApi.v2RunCreate
+            >[0]['testExecutionRequest'],
+          });
+          const taskId =
+            (response as unknown as { taskId?: string; task_id?: string }).taskId ||
+            (response as unknown as { task_id?: string }).task_id;
           if (!taskId) throw new Error('No task ID returned');
 
           // Poll for completion

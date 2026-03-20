@@ -174,7 +174,7 @@ const hasNumericFileId = (value: unknown): value is FileWithId => {
  * Data flow: markdown → remark (marks isTopLevel) → HTML → component props
  */
 function remarkMarkTopLevel() {
-  return (tree: any) => {
+  return (tree: MarkdownNode) => {
     if (tree.type !== 'root' || !tree.children) {
       return;
     }
@@ -200,7 +200,7 @@ const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.co
 
 interface IMarkdownProps {
   commentCounter: number;
-  executionResult?: { success: boolean; output_data?: any; error?: string } | null;
+  executionResult?: { success: boolean; output_data?: unknown; error?: string } | null;
   onClearOutputs?: () => void;
 }
 
@@ -258,7 +258,11 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       .join('|');
   }, [props.comments]);
 
-  const stableComments = React.useMemo(() => props.comments, [commentsHash]);
+  const stableComments = React.useMemo(
+    () => props.comments,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [commentsHash],
+  );
 
   // Memoize comments by line locally for the Markdown view
   // This allows us to decouple from the potentially unstable CommentHighlightContext

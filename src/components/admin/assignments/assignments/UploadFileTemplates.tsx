@@ -60,7 +60,9 @@ const UploadFileTemplates: React.FC<IProps> = ({ isReplacement, updateTemplate, 
       <Upload
         showUploadList={false}
         onChange={onChange}
-        customRequest={customRequest as any}
+        customRequest={
+          customRequest as unknown as typeof Upload.defaultProps extends { customRequest?: infer T } ? T : never
+        }
       >
         <Button>
           <UploadOutlined /> {isReplacement ? 'Replace' : 'Upload'}

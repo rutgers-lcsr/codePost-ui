@@ -97,6 +97,7 @@ export const PseudoTerminal = (props: IResultProps) => {
         setLogs([...logs, [props.log]]);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.log]);
 
   /* build pseudo-terminal */
@@ -107,6 +108,7 @@ export const PseudoTerminal = (props: IResultProps) => {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(scrollToBottom, [logs, props.isRunning]);
 
   let resultTag;

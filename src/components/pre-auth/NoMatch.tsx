@@ -96,9 +96,9 @@ class NoMatch extends React.Component<IProps, IState> {
 
   public openIntercom = () => {
     if (this.state.intercomOpen) {
-      (window as any).Intercom('hide');
+      (window as unknown as { Intercom: (cmd: string) => void }).Intercom('hide');
     } else {
-      (window as any).Intercom('show');
+      (window as unknown as { Intercom: (cmd: string) => void }).Intercom('show');
     }
     this.setState({ intercomOpen: !this.state.intercomOpen });
   };

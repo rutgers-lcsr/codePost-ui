@@ -16,6 +16,7 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
     const fakeEmail = `fake_student_${Date.now()}@example.com`;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await Course.addToRoster(assignment.course, { students: [fakeEmail] } as any);
     } catch (e) {
       console.error(e);
@@ -32,6 +33,7 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
       students: [studentEmail],
       isFinalized: false,
       files: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     if (sourceSubmissionId) {
@@ -45,8 +47,10 @@ export const createFakeSubmission = async (assignmentId: number, sourceSubmissio
 
         if (sourceSubmission && sourceSubmission.files) {
           await Promise.all(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sourceSubmission.files.map(async (fileOrId: any) => {
               try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let fileData: any = {};
 
                 if (typeof fileOrId === 'object' && fileOrId !== null) {

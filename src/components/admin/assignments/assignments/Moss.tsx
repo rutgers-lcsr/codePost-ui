@@ -150,6 +150,7 @@ const Moss = (props: IMossProps) => {
 
       onParse(formattedUrlID);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -281,12 +282,12 @@ const Moss = (props: IMossProps) => {
       };
 
       const { default: invokeAWSLambda } = await import('../../../../components/core/invokeAWSLambda');
-      const res: any = await invokeAWSLambda({
+      const res = (await invokeAWSLambda({
         accessKey: 'AKIAV22BSJSCXXWUPZUD',
         secretAccessKey: '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',
         arn: 'arn:aws:lambda:us-east-2:401180085381:function:send-to-moss:Production',
         payload,
-      });
+      })) as string | { StatusCode: number; Payload: string };
 
       if (res === 'DELAY') {
         return Promise.reject("This is taking a while. We'll email you when this is done.");
@@ -586,7 +587,7 @@ const ProgressBar = (props: { time: number }) => {
     return () => {
       clearInterval(interval);
     };
-    // Should implement useCallback()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <Progress percent={counter} showInfo={false} />;

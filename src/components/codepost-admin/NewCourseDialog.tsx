@@ -25,7 +25,7 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSucc
   }) => {
     setIsSubmitting(true);
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: values.name,
         period: values.period,
         organization: values.organization,

@@ -32,8 +32,9 @@ type CreateOptions = {
 
 const create = (options?: CreateOptions) => {
   // inherently generic HOC
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (Component: React.ComponentType<any>) => {
-    // inherently generic HOC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Wrapped = forwardRef<any, any>((props, ref) => {
       const { wrappedComponentRef, ...rest } = props as { wrappedComponentRef?: WrappedComponentRef } & Record<
         string,
@@ -83,7 +84,7 @@ const create = (options?: CreateOptions) => {
         resetFields: form.resetFields,
       };
 
-      // legacy HOC props spread
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const componentProps = { ...rest, form: legacyForm } as any;
 
       return (
@@ -95,7 +96,7 @@ const create = (options?: CreateOptions) => {
 
     Wrapped.displayName = options?.name || Component.displayName || Component.name || 'LegacyFormWrapper';
 
-    // legacy HOC type erasure
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return Wrapped as any;
   };
 };

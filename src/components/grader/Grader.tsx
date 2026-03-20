@@ -97,6 +97,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
       setIsSuperGrader(false);
     }
     // intentionally depends on course ID only to avoid re-fetch loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCourse?.id, superGraderCourses, sectionsLed]);
 
   // ADD THIS BACK TO TURN ON THE SURVEY AGAIN

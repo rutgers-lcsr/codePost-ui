@@ -135,6 +135,7 @@ const RubricCategoryManager: React.FC<IRubricCategoryManagerProps> = (props) => 
     return () => {
       // Don't reset on unmount - other components might be using the store
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Component state - now WITHOUT rubricComments and rubricCommentStatus

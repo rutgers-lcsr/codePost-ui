@@ -305,6 +305,7 @@ export const EnvironmentSpecs = (props: IProps) => {
         console.error(`Environment ${props.env.id} is missing autoDetect`);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.env?.id]);
 
   useEffect(() => {

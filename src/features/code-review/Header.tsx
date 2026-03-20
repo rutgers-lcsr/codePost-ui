@@ -90,6 +90,7 @@ const Magnifier = (props: IMagnifierProps) => {
 
   React.useEffect(() => {
     props.updateZoom(zoom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function zoomOut() {

@@ -274,13 +274,16 @@ const Comment: React.FC<ICommentProps> = (props) => {
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
     if (blockElement) {
-      const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
-      blockElement.classList.add('markdown-block');
-      blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
-      blockElement.classList.remove('markdown-block--empty');
-      blockElement.classList.remove('markdown-block--commented');
-      blockElement.classList.add('markdown-block--focused');
-      blockElement.classList.add(stateClass);
+      // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
+      if (!blockElement.hasAttribute('data-page-number')) {
+        const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
+        blockElement.classList.add('markdown-block');
+        blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
+        blockElement.classList.remove('markdown-block--empty');
+        blockElement.classList.remove('markdown-block--commented');
+        blockElement.classList.add('markdown-block--focused');
+        blockElement.classList.add(stateClass);
+      }
       blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       if (blockElement.dataset.originalRole === undefined) {
@@ -325,15 +328,18 @@ const Comment: React.FC<ICommentProps> = (props) => {
     const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
     if (blockElement) {
-      const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
-      blockElement.classList.remove('markdown-block--focused');
-      blockElement.classList.remove('markdown-block--empty');
-      if (!blockElement.classList.contains('markdown-block--commented')) {
-        blockElement.classList.add('markdown-block--commented');
+      // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
+      if (!blockElement.hasAttribute('data-page-number')) {
+        const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
+        blockElement.classList.remove('markdown-block--focused');
+        blockElement.classList.remove('markdown-block--empty');
+        if (!blockElement.classList.contains('markdown-block--commented')) {
+          blockElement.classList.add('markdown-block--commented');
+        }
+        blockElement.classList.add('markdown-block');
+        blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
+        blockElement.classList.add(stateClass);
       }
-      blockElement.classList.add('markdown-block');
-      blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
-      blockElement.classList.add(stateClass);
     }
 
     if (blockElement) {
@@ -753,6 +759,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
       document.removeEventListener('keydown', handleHotkeysTyped);
     };
     // Empty deps means this only runs once on mount, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ComponentDidUpdate - Handle all prop changes
@@ -1360,6 +1367,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.onPin, text, points, props.comment.rubricComment, props.comment.id, props.comment.startLine],
   );
 

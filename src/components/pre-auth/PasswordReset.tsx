@@ -87,6 +87,7 @@ const PasswordReset: React.FC<IPasswordResetProps> = ({ message, isLoggedIn }) =
 
   useEffect(() => {
     validateToken();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.token, params.uid]);
 
   const handleReset = (password: string) => {

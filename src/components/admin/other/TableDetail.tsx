@@ -18,7 +18,7 @@ import useDefaultPageSize from '../../utils/useDefaultPageSize';
 /* Types
 /**********************************************************************************************************************/
 
-export interface ITableDetailColumn extends ColumnProps<any> {
+export interface ITableDetailColumn extends ColumnProps<unknown> {
   renderForSearch?: (
     searchText: string,
   ) => (text: string, record: Record<string, unknown>, index: number) => React.ReactNode;

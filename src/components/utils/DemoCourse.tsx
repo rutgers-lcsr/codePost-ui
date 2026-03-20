@@ -25,6 +25,7 @@ import { getDemoSubmissionTests } from './demo-submission-tests';
 
 const createDemoCourse = async (email: string, username: string, org: string): Promise<NativeCourse> => {
   const payload = { ...demoCourse(username), isRubricEditor: false, webhooks: [] };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return coursesApi.create({ course: payload as any }).then((course) => {
     // Create assignments
     const preAssignments = demoAssignments(course.id);
@@ -37,10 +38,12 @@ const createDemoCourse = async (email: string, username: string, org: string): P
       const roster = demoRoster(org, course.id);
       // Add self to graders
       roster.graders = [...roster.graders, email];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return coursesApi.rosterPartialUpdate({ id: course.id, patchedCourse: roster as any }).then((_rosterObj) => {
         // Make sections
         const sections = demoSections(org, roster.id);
         const makeSections = sections.map((section) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return sectionsApi.create({ section: section as any });
         });
         return Promise.all(makeSections).then(() => {
@@ -77,6 +80,7 @@ const createDemoCourse = async (email: string, username: string, org: string): P
                       modified: '',
                       isError: false,
                     };
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     return submissionTestsApi.create({ submissionTest: payload as any });
                   } else {
                     return null;
@@ -93,13 +97,16 @@ const createDemoCourse = async (email: string, username: string, org: string): P
                 .map((lastSubEl) =>
                   submissionsApi.partialUpdate({
                     id: lastSubEl.id,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     patchedSubmission: { ...lastSubEl, isFinalized: true } as any,
                   }),
                 );
               return Promise.all(lastPromises).then(() => {
                 return {
                   ...course,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   expirationDate: (course as any).expirationDate || null,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   cloneFrom: (course as any).cloneFrom,
                   inviteCode: course.inviteCode || null,
                 } as unknown as NativeCourse;
@@ -112,6 +119,7 @@ const createDemoCourse = async (email: string, username: string, org: string): P
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createAssignment = async (course: CourseType, assignment: any) => {
   const assnPayload = {
     id: -1, // codePost convention
@@ -125,6 +133,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     feedbackReleased: false,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return assignmentsApi.create({ assignment: assnPayload as any }).then(async (assnObj: AssignmentType) => {
     // Update course object with assignment ids. This step is necessary to allow
     // the Admin component to load these assignments when the active course is switched
@@ -147,11 +156,13 @@ const createAssignment = async (course: CourseType, assignment: any) => {
       autoDetect: false,
       envVars: {},
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const thisEnvironment = await autograderApi.environmentsCreate({ environment: payload as any });
 
     await autograderApi.environmentsBuildPartialUpdate({ id: thisEnvironment.id });
 
     // Create rubric
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const makeCategories = assignment.rubric.map((category: any) => {
       const categoryPayload = {
         id: -1, // codePost convention
@@ -164,7 +175,9 @@ const createAssignment = async (course: CourseType, assignment: any) => {
         atMostOnce: false,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return rubricCategoriesApi.create({ rubricCategory: categoryPayload as any }).then((catObj) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const makeComments = category.comments.map((comment: any) => {
           const comPayload = {
             id: -1, // codePost convention
@@ -184,6 +197,7 @@ const createAssignment = async (course: CourseType, assignment: any) => {
     });
 
     // Create tests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const makeTestCategories = assignment.tests.map((category: any) => {
       const catPayload = {
         assignment: assnObj.id,
@@ -196,9 +210,12 @@ const createAssignment = async (course: CourseType, assignment: any) => {
         sortKey: 0,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return testCategoriesApi.create({ testCategory: catPayload as any }).then((catObj) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         category.cases.map((testCase: any) => {
           const casePayload = { id: -1, testCategory: catObj.id, ...testCase };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return testCasesApi.create({ testCase: casePayload as any });
         });
       });
@@ -214,7 +231,9 @@ const createAssignment = async (course: CourseType, assignment: any) => {
 
 const createSubmissions = (assignment: AssignmentType, domain: string) => {
   const subTemplates = demoSubmissions(assignment.name, domain);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return assignmentsApi.rubricRetrieve({ id: assignment.id }).then((rubric: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rubricComments: any[] = rubric.rubricComments || [];
     const makeSubs = subTemplates.map((subT) => {
       const payload = {
@@ -228,6 +247,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
         grader: subT.grader,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return submissionsApi.create({ submission: payload as any }).then((submission) => {
         // Make files
         const makeFiles = subT.files.map((fileT) => {
@@ -241,11 +261,13 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
             path: null,
           };
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return submissionFilesApi.create({ submissionFile: filePayload as any }).then((fileObj) => {
             // Make comments
             const makeComments = fileT.comments.map((commentT) => {
               let rubricID = null;
               if (commentT.rubric !== null) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const rubricMatch = rubricComments.find((el: any) => {
                   return el.text === commentT.rubric;
                 });
@@ -269,6 +291,7 @@ const createSubmissions = (assignment: AssignmentType, domain: string) => {
                 color: null,
               };
 
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return commentsApi.create({ comment: commentPayload as any }).then(() => {
                 return submission;
               });

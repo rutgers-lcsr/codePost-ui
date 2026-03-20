@@ -114,6 +114,7 @@ const ActivityFeed: React.FC = () => {
 
   useEffect(() => {
     fetchLogs(1, pageSize, undefined, undefined, undefined, activeTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleTabChange = (key: string) => {

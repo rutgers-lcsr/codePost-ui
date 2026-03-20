@@ -217,15 +217,15 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, heig
                 height={cell.cell_type === 'markdown' ? '150px' : '200px'}
                 defaultLanguage={
                   cell.cell_type === 'code'
-                    ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
-                      (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                    ? (notebook.metadata?.language_info as unknown as { name?: string })?.name?.toLowerCase() ||
+                      (notebook.metadata?.kernelspec as unknown as { language?: string })?.language?.toLowerCase() ||
                       'python'
                     : 'markdown'
                 }
                 language={
                   cell.cell_type === 'code'
-                    ? (notebook.metadata?.language_info as any)?.name?.toLowerCase() ||
-                      (notebook.metadata?.kernelspec as any)?.language?.toLowerCase() ||
+                    ? (notebook.metadata?.language_info as unknown as { name?: string })?.name?.toLowerCase() ||
+                      (notebook.metadata?.kernelspec as unknown as { language?: string })?.language?.toLowerCase() ||
                       'python'
                     : 'markdown'
                 }

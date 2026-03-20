@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Tests for the fetchAllPages pagination utility (internal to assignment service)
  * and smoke-tests for Assignment service API wrappers.

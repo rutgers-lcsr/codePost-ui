@@ -18,7 +18,6 @@ import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import type { CommentType } from '../../../types/models';
 import { File, getFileContent } from '../../../utils/file';
 
-import { getBlockClassName } from './BlockUtils.tsx';
 import CommentHighlightContext from './CommentHighlightContext';
 import { PdfHighlightLayer } from './PdfHighlightLayer';
 import { Divider } from 'antd';
@@ -38,6 +37,8 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const { addComment, commentCounter, comments, file, readOnly, user } = props;
 
   const hasInitialWidth = useRef(false);
+  // Prevents the click handler from firing right after a text selection (mouseup fires first, then click)
+  const suppressNextClickRef = useRef(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -71,7 +72,6 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   const commentHighlight = useContext(CommentHighlightContext);
   const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
-  const getCommentsForLine = commentHighlight?.getCommentsForLine;
   const lineHasComments = commentHighlight?.lineHasComments;
   const contextOnHighlightClick = commentHighlight?.onHighlightClick;
 
@@ -91,41 +91,19 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     [lineHasComments],
   );
 
-  const handleExistingCommentOpen = useCallback(
-    (event: React.MouseEvent, pageNumber: number): boolean => {
-      if (!contextOnHighlightClick || !getCommentsForLine) {
-        return false;
-      }
-
-      const commentsForPage = getCommentsForLine(pageNumber);
-      if (commentsForPage.length === 0) {
-        return false;
-      }
-
-      const primaryComment = commentsForPage[0];
-      if (!primaryComment || primaryComment.id === 0 || primaryComment.id === Number.MAX_SAFE_INTEGER) {
-        return false;
-      }
-
-      contextOnHighlightClick(event, primaryComment.id);
-      setHoveredCommentId?.(primaryComment.id);
-      return true;
-    },
-    [contextOnHighlightClick, getCommentsForLine, setHoveredCommentId],
-  );
-
   const handlePageClick = useCallback(
     (event: React.MouseEvent, pageNumber: number) => {
+      // After a text selection, mouseup fires handleTextSelection, then click fires here.
+      // Suppress this click so we don't create a duplicate page-level comment.
+      if (suppressNextClickRef.current) {
+        suppressNextClickRef.current = false;
+        return;
+      }
+
       // Check for an active text selection first
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
         // User selected text — handled by handleTextSelection on mouseup
-        return;
-      }
-
-      if (handleExistingCommentOpen(event, pageNumber)) {
-        event.preventDefault();
-        event.stopPropagation();
         return;
       }
 
@@ -155,7 +133,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       addComment(newComment, file);
       setHoveredCommentId?.(newComment.id);
     },
-    [addComment, commentCounter, file, handleExistingCommentOpen, readOnly, setHoveredCommentId, user],
+    [addComment, commentCounter, file, readOnly, setHoveredCommentId, user],
   );
 
   // ─── Text selection → comment creation ─────────────────────────────────
@@ -241,6 +219,9 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         color: '',
       };
 
+      // Suppress the click event that will fire after this mouseup
+      suppressNextClickRef.current = true;
+
       addComment(newComment, file);
       setHoveredCommentId?.(newComment.id);
 
@@ -285,11 +266,14 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     setRenderVersion((v) => v + 1);
   }, []);
 
+  // PDF pages don't use markdown-block classes — all highlight rendering
+  // is handled by PdfHighlightLayer. Using a plain class avoids the
+  // border / background / padding that _markdown.scss applies.
   const getPageClassName = useCallback(
-    (pageNumber: number) => {
-      return getBlockClassName(comments, readOnly, pageNumber);
+    (_pageNumber: number) => {
+      return readOnly ? 'readonly' : 'active';
     },
-    [comments, readOnly],
+    [readOnly],
   );
 
   const pageEventHandlers = useMemo(

@@ -180,6 +180,7 @@ const DownloadGrades = (props: IProps) => {
     if (!numMissing && !numUngraded) {
       onDownload();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numMissing, numUngraded]);
 
   // ********************************** RENDER ****************************************

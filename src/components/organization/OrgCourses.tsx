@@ -47,7 +47,8 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       timezone: course.timezone,
       emailNewUsers: course.emailNewUsers,
       anonymousGradingDefault: course.anonymousGradingDefault,
-      allowGradersToEditRubric: (course as any).allowGradersToEditRubric || false, // Check if this exists in generated model
+      allowGradersToEditRubric:
+        (course as unknown as { allowGradersToEditRubric?: boolean }).allowGradersToEditRubric || false, // Check if this exists in generated model
       minComments: course.minComments,
       studentsCanSeeGraders: course.studentsCanSeeGraders,
       inviteCodeEnabled: course.inviteCodeEnabled,

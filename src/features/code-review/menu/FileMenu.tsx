@@ -270,6 +270,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
       // After getting the order, we want to change the selected file to be the first in the list
       changeSelectedFile(sortedFiles[0].id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**

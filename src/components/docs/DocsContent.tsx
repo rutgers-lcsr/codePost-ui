@@ -38,6 +38,7 @@ const slugify = (text: string) => {
 };
 
 // Helper to extract full text content from React children
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTextContent = (child: any): string => {
   if (!child) return '';
   if (typeof child === 'string') return child;
@@ -98,7 +99,9 @@ const HeadingWithAnchor: React.FC<{
 
 // Plugin to remove HTML comments from markdown
 const remarkRemoveComments = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (tree: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     visit(tree, 'html', (node: any, index: any, parent: any) => {
       if (node.value.trim().startsWith('<!--')) {
         parent.children.splice(index, 1);
@@ -184,7 +187,9 @@ const DocsContent: React.FC = () => {
           return child;
         }
         if (React.isValidElement(child)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return React.cloneElement(child as React.ReactElement<any>, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             children: highlightRecursive((child.props as any).children),
           });
         }
@@ -261,6 +266,7 @@ const DocsContent: React.FC = () => {
   }
 
   const Components: Components = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     h1: ({ node: _node, children }: any) => {
       const text = getTextContent(children);
       const id = slugify(text);
@@ -274,6 +280,7 @@ const DocsContent: React.FC = () => {
         </HeadingWithAnchor>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     h2: ({ node: _node, children }: any) => {
       const text = getTextContent(children);
       const id = slugify(text);
@@ -294,6 +301,7 @@ const DocsContent: React.FC = () => {
         </HeadingWithAnchor>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     h3: ({ node: _node, children }: any) => {
       const text = getTextContent(children);
       const id = slugify(text);
@@ -307,6 +315,7 @@ const DocsContent: React.FC = () => {
         </HeadingWithAnchor>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     p: ({ node: _node, children, ...props }: any) =>
       (() => {
         const paragraphText = React.Children.toArray(children)
@@ -327,6 +336,7 @@ const DocsContent: React.FC = () => {
           </div>
         );
       })(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     a: ({ node: _node, children, href, ...props }: any) => {
       const isInternal = href && href.startsWith('/docs');
       if (isInternal) {
@@ -342,6 +352,7 @@ const DocsContent: React.FC = () => {
         </a>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     li: ({ node: _node, children, checked, ...props }: any) => {
       // If it's a task list item (checkbox), ensure the input has an aria-label
       if (checked !== null && checked !== undefined) {
@@ -376,6 +387,7 @@ const DocsContent: React.FC = () => {
         </li>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blockquote: ({ node: _node, children, ...props }: any) => {
       // Check for GitHub-style alerts: [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
 
@@ -443,7 +455,7 @@ const DocsContent: React.FC = () => {
               return child;
             }
             if (React.isValidElement(child)) {
-              const childEl = child as React.ReactElement<any>;
+              const childEl = child as React.ReactElement<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
               // If it's the paragraph containing the marker, filter it deeper
               if (childEl.type === 'p' && getTextContent(childEl).includes(marker)) {
                 return React.cloneElement(childEl, {
@@ -511,6 +523,7 @@ const DocsContent: React.FC = () => {
         </blockquote>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     code({ node: _node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || '');
       const uniqueId = Math.random().toString(36).substr(2, 9);
@@ -540,7 +553,7 @@ const DocsContent: React.FC = () => {
           <SyntaxHighlighter
             style={vscDarkPlus}
             language={match[1]}
-            PreTag={(preProps: any) => <div tabIndex={0} {...preProps} />}
+            PreTag={(preProps: any) => <div tabIndex={0} {...preProps} />} // eslint-disable-line @typescript-eslint/no-explicit-any
             customStyle={{
               margin: 0,
               padding: '16px',
@@ -577,6 +590,7 @@ const DocsContent: React.FC = () => {
         </code>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     table: ({ node: _node, children, ...props }: any) => {
       // Create a unique id for the table based on its content (headers) or simple random string
       const tableId = `table-${Math.random().toString(36).substr(2, 9)}`;
@@ -606,17 +620,20 @@ const DocsContent: React.FC = () => {
         </div>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     thead: ({ node: _node, children, ...props }: any) => (
       <thead style={{ backgroundColor: colors.neutralBackground }} {...props}>
         {children}
       </thead>
     ),
-    tbody: ({ node: _node, children, ...props }: any) => <tbody {...props}>{children}</tbody>,
+    tbody: ({ node: _node, children, ...props }: any) => <tbody {...props}>{children}</tbody>, // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tr: ({ node: _node, children, ...props }: any) => (
       <tr style={{ borderBottom: `1px solid ${colors.neutralBorder}` }} {...props}>
         {children}
       </tr>
     ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     th: ({ node: _node, children, ...props }: any) => {
       // Check if children is empty to provide discernible text for screen readers
       const isEmpty =
@@ -655,6 +672,7 @@ const DocsContent: React.FC = () => {
         </th>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     td: ({ node: _node, children, ...props }: any) => (
       <td
         style={{
@@ -666,6 +684,7 @@ const DocsContent: React.FC = () => {
         {renderWithHighlight(children)}
       </td>
     ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     img: ({ node: _node, ...props }: any) => (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0' }}>
         <Image

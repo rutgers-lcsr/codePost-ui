@@ -26,7 +26,11 @@ interface PdfHighlightLayerProps {
  * Page-level comments have startChar=0, endChar=0, and startLine=endLine.
  */
 const isPageLevelComment = (comment: CommentType): boolean => {
-  return comment.startChar === 0 && comment.endChar === 0 && comment.startLine === comment.endLine;
+  return (
+    (comment.startChar === 0 || comment.startChar == null) &&
+    (comment.endChar === 0 || comment.endChar == null) &&
+    comment.startLine === comment.endLine
+  );
 };
 
 /**
@@ -113,21 +117,55 @@ const computeRectsForComment = (comment: CommentType, pageNumber: number, pageEl
   }
 
   const clientRects = range.getClientRects();
-  const rects: HighlightRect[] = [];
+  if (clientRects.length === 0) return [];
 
+  // Convert to page-relative coords, filtering out tiny/zero-size rects
+  const rawRects: { top: number; left: number; right: number; bottom: number }[] = [];
   for (let i = 0; i < clientRects.length; i++) {
     const r = clientRects[i];
-    // Convert from viewport coords to page-relative coords
-    rects.push({
-      commentId: comment.id,
+    if (r.width < 1 || r.height < 1) continue;
+    rawRects.push({
       top: r.top - pageRect.top,
       left: r.left - pageRect.left,
-      width: r.width,
-      height: r.height,
+      right: r.right - pageRect.left,
+      bottom: r.bottom - pageRect.top,
     });
   }
 
-  return rects;
+  // Sort by vertical midpoint then left so we process line by line
+  rawRects.sort((a, b) => {
+    const midA = (a.top + a.bottom) / 2;
+    const midB = (b.top + b.bottom) / 2;
+    return midA - midB || a.left - b.left;
+  });
+
+  // Merge rects that overlap vertically by >50% of the smaller rect's height
+  // (PDF.js text layer creates overlapping spans per line that need collapsing)
+  const merged: { top: number; left: number; right: number; bottom: number }[] = [];
+  for (const rect of rawRects) {
+    const last = merged[merged.length - 1];
+    if (last) {
+      const vertOverlap = Math.min(last.bottom, rect.bottom) - Math.max(last.top, rect.top);
+      const minHeight = Math.min(last.bottom - last.top, rect.bottom - rect.top);
+      if (vertOverlap > minHeight * 0.5) {
+        // Same visual line — extend the merged rect
+        last.left = Math.min(last.left, rect.left);
+        last.right = Math.max(last.right, rect.right);
+        last.top = Math.min(last.top, rect.top);
+        last.bottom = Math.max(last.bottom, rect.bottom);
+        continue;
+      }
+    }
+    merged.push({ ...rect });
+  }
+
+  return merged.map((r) => ({
+    commentId: comment.id,
+    top: r.top,
+    left: r.left,
+    width: r.right - r.left,
+    height: r.bottom - r.top,
+  }));
 };
 
 /**

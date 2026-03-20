@@ -268,7 +268,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
           name: error.name,
           message: error.message,
           stack: error.stack,
-          cause: (error as any).cause ?? null,
+          cause: (error as unknown as { cause?: unknown }).cause ?? null,
           componentStack: errorInfo.componentStack,
           boundaryType: this.props.type,
           submissionId: this.props.submissionID ?? null,

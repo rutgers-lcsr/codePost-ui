@@ -44,7 +44,7 @@ export const beforeLMSImport = (
 ) => {
   const copyFile = (f: File, parentPath: string) => {
     // We can't set the path of a file, so need to do a path override
-    const cPFile: codePostFile = new File([f], f.name) as any;
+    const cPFile: codePostFile = new File([f], f.name) as unknown as codePostFile;
     cPFile['uid'] = '';
     cPFile['pathOverride'] = `${parentPath}/${f.name}`;
     return cPFile;

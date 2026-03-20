@@ -155,7 +155,7 @@ const BulkUpload: FC<IProps> = (props) => {
             newSub.students = (newSub.students as (string | null)[]).filter((el) => {
               return el && !isEqual(el, student);
             }) as string[];
-            toChange.push(newSub as any);
+            toChange.push(newSub as unknown as (typeof toChange)[number]);
           }
         }
       }
@@ -253,16 +253,8 @@ const BulkUpload: FC<IProps> = (props) => {
 
       await performUploadWithMap(localFileMap);
     }
-  }, [
-    protoSubmissions,
-    numFiles,
-    overwriteMode,
-    handleOverwrite,
-    uploadSubmission,
-    assignment,
-    updateSubmission,
-    deleteSubmission,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [protoSubmissions, numFiles, overwriteMode, handleOverwrite]);
 
   // Upload with explicit map
   const performUploadWithMap = async (currentFileMap: {

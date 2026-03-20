@@ -208,7 +208,7 @@ export interface ICodeConsoleState {
    * Key: File ID
    * Value: Execution result containing success status, output data, and any errors
    */
-  executionResults: { [fileId: number]: { success: boolean; output_data?: any; error?: string } };
+  executionResults: { [fileId: number]: { success: boolean; output_data?: unknown; error?: string } };
 
   /* ========================================
    * AI Features

@@ -452,16 +452,19 @@
   }
 }
 
-// Override markdown-block hover/focus yellow styles on PDF pages.
-// PdfHighlightLayer handles green highlight overlays instead.
-// Reset border widths and padding to base values to prevent layout shift.
-.react-pdf__Page.markdown-block {
-  &.markdown-block--focused,
+// Nuclear override: prevent ANY markdown-block or highlight classes from affecting PDF pages.
+// Comment.tsx and CommentHighlightContext.tsx do direct DOM manipulation that can leak through.
+.react-pdf__Page {
+  &.markdown-block,
   &.markdown-block--commented,
-  &.highlight--hovered {
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    background: transparent;
+  &.markdown-block--focused,
+  &.markdown-block--empty,
+  &.highlight--hovered,
+  &[class*='highlight-'] {
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-left: none !important;
   }
 }

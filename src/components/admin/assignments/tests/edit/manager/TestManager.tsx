@@ -36,6 +36,7 @@ export const TestManager = (props: IProps) => {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment.id, props.assignment.testCategories]);
 
   useEffect(() => {

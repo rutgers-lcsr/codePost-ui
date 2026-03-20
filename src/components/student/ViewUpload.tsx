@@ -78,7 +78,7 @@ function ViewUpload(props: IProps) {
 
   useEffect(() => {
     fetchUpload();
-    // Should implement useCallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.assignment]);
 
   const changeIndex: MenuProps['onClick'] = (e) => {

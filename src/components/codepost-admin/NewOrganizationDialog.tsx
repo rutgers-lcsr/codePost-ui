@@ -28,7 +28,9 @@ const NewOrganizationDialog: React.FC<NewOrganizationDialogProps> = ({ open, onC
         sendWelcomeEmail: false,
       };
 
-      const result = await api.create({ organization: payload as any }); // Cast if needed for missing opt fields
+      const result = await api.create({
+        organization: payload as unknown as Parameters<typeof api.create>[0]['organization'],
+      });
       message.success('Organization created successfully');
       form.resetFields();
       onSuccess(result);

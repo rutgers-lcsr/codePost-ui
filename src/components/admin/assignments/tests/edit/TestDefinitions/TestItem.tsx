@@ -76,7 +76,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
     testCaseCopy.explanation = values.explanation;
-    testCaseCopy.targetCellId = (values.targetCellId as any) || null;
+    testCaseCopy.targetCellId = (values.targetCellId as number | null) || null;
     testCaseCopy.testCode = values.testCode || '';
     testCaseCopy.testCode = values.testCode || '';
 
@@ -153,7 +153,9 @@ export const TestItem = (props: ITestItemProps) => {
         });
 
         // The response is now AsyncTaskResponse
-        const taskId = (response as any).taskId || (response as any).task_id;
+        const taskId =
+          (response as unknown as { taskId?: string; task_id?: string }).taskId ||
+          (response as unknown as { task_id?: string }).task_id;
 
         if (!taskId) {
           throw new Error('No task ID returned from server');
@@ -162,7 +164,7 @@ export const TestItem = (props: ITestItemProps) => {
         const runResult = await pollTask(taskId);
 
         // result.result contains the actual test result data
-        const result = runResult.result as any;
+        const result = runResult.result as unknown;
         const success = runResult.success as boolean;
 
         const resultData = result ?? {};

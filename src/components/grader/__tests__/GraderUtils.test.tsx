@@ -1,8 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render } from '@testing-library/react';
-import { formatSub, getViewIcon, sortByGrade, type ISubDataBasic } from '../GraderUtils';
+import { formatSub, getViewIcon, sortByGrade } from '../GraderUtils';
 
 describe('GraderUtils', () => {
   describe('sortByGrade', () => {

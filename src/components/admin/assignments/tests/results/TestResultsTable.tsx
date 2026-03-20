@@ -95,6 +95,7 @@ const TestResultsTable = (props: IProps) => {
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.testsBySubmission, props.testCasesByCategory]);
 
   const openDetail = (
@@ -147,8 +148,8 @@ const TestResultsTable = (props: IProps) => {
     />
   );
 
-  let columns: any[] = [];
-  let data: any[] = [];
+  let columns: unknown[] = [];
+  let data: unknown[] = [];
 
   if (!props.isLoading) {
     const totalTests = Object.values(props.testCasesByCategory).flat().length;

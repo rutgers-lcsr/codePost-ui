@@ -245,7 +245,11 @@ export function gatherBrowserContext() {
 
   const memory: Record<string, unknown> = {};
   try {
-    const mem = (performance as any).memory;
+    const mem = (
+      performance as unknown as {
+        memory?: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number };
+      }
+    ).memory;
     if (mem) {
       memory.usedJSHeapSizeMB = Math.round(mem.usedJSHeapSize / 1048576);
       memory.totalJSHeapSizeMB = Math.round(mem.totalJSHeapSize / 1048576);

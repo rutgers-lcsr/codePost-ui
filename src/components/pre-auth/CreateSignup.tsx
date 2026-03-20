@@ -57,7 +57,7 @@ const randomNormal = () => {
 
 const emailRegex = new RegExp(
   [
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))/,
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))/,
     /@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
   ]
     .map((r) => {
@@ -130,7 +130,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState: any = { ...prevstate };
+      const newState: Record<string, unknown> = { ...prevstate };
       newState[name] = newValue;
       return newState;
     });
@@ -144,7 +144,7 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      const newState: any = { ...prevstate };
+      const newState: Record<string, unknown> = { ...prevstate };
       // @ts-expect-error: legacy-ts-ignore
       newState[label] = !this.state[label];
       return newState;

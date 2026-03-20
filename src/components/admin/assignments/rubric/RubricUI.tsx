@@ -133,7 +133,8 @@ const RubricUI = ({
         }
       }
     }
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rubricCategories, rubricComments]);
 
   if (loadComplete) {
     const changesMade = helpers.changesMade();
