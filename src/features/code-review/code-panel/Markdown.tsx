@@ -27,6 +27,7 @@ import Link from 'antd/es/typography/Link';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
 
 import { useMarkdownTheme, MarkdownThemeValues } from './useMarkdownTheme';
+import type { OutputData } from '../../../utils/fileExecution';
 
 /**********************************************************************************************************************/
 /* Jupyter Image Component
@@ -201,7 +202,7 @@ const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.co
 interface IMarkdownProps {
   commentCounter: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  executionResult?: { success: boolean; output_data?: any; error?: string } | null;
+  executionResult?: { success: boolean; output_data?: OutputData; error?: string } | null;
   onClearOutputs?: () => void;
 }
 

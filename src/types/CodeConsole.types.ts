@@ -24,6 +24,7 @@ import {
   IRubricCategoryToRubricCommentsMap,
   PERMISSION_LEVEL,
 } from './common';
+import type { OutputData } from '../utils/fileExecution';
 
 export { PERMISSION_LEVEL };
 
@@ -211,8 +212,7 @@ export interface ICodeConsoleState {
   executionResults: {
     [fileId: number]: {
       success: boolean;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      output_data?: any;
+      output_data?: OutputData;
       error?: string;
     };
   };

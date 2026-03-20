@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 import { CommentType } from '../utils/comments';
+import type { OutputData } from '../utils/fileExecution';
 import { Course, RubricCategory, RubricComment } from '../api-client';
 import {
   AnonymousSubmissionType,
@@ -102,11 +103,7 @@ interface CodeConsoleStoreActions {
   incrementCommentRefreshCounter: () => void;
 
   // Execution
-  setExecutionResult: (
-    fileId: number,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    result: { success: boolean; output_data?: any; error?: string },
-  ) => void;
+  setExecutionResult: (fileId: number, result: { success: boolean; output_data?: OutputData; error?: string }) => void;
 
   // AI
   setAiEnabled: (enabled: boolean) => void;

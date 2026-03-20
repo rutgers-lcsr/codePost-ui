@@ -1,10 +1,34 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/**
+ * Structured output data from code execution.
+ * Contains notebook cells, images, and fallback stdout/stderr/error
+ * when the top-level fields are absent.
+ */
+export interface OutputData {
+  /** Notebook cells (Jupyter execution) */
+  cells?: unknown[];
+  /** Fallback stdout (when top-level stdout is absent) */
+  stdout?: string;
+  /** Fallback stderr */
+  stderr?: string;
+  /** Fallback error message */
+  error?: string;
+  /** Single base64-encoded PNG image (e.g. matplotlib plot) */
+  'image/png'?: string;
+  /** Multiple base64-encoded PNG images */
+  images?: string[];
+  /** System logs (sometimes nested here instead of top-level) */
+  system_logs?: string[];
+  /** Any other dynamic keys from the execution backend */
+  [key: string]: unknown;
+}
+
 export interface ExecutionResult {
   success: boolean;
   stdout?: string;
   stderr?: string;
   error?: string | null;
-  output_data?: Record<string, unknown> | null;
+  output_data?: OutputData | null;
   system_logs?: string[];
   cached?: boolean;
   executed_at?: string;

@@ -65,6 +65,7 @@ import {
   TestCategoryType,
 } from '../../types/models';
 import { File, FileType, FileWithId } from '../../utils/file';
+import type { ExecutionResult } from '../../utils/fileExecution';
 import { brandColors } from '../../theme/colors';
 import { Submission as SubmissionService } from '../../services/submission';
 import { getLatestSubmissionTests } from '../../utils/submissionTests';
@@ -1704,12 +1705,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
    * @param result - Execution result with file_id, success status, and output data
    */
   const handleExecutionComplete = React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (result: { success: boolean; output_data?: any; error?: string | null; file_id?: number }) => {
+    (result: ExecutionResult) => {
       const fileId = result.file_id || selectedFile?.id;
       if (fileId) {
         const normalizedResult = {
-          ...result,
+          success: result.success,
+          output_data: result.output_data ?? undefined,
           error: result.error ?? undefined,
         };
         setState((prev) => ({

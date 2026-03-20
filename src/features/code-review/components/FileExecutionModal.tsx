@@ -281,7 +281,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
     const systemLogs = (() => {
       if (result?.system_logs && result.system_logs.length > 0) return result.system_logs;
       if (result?.output_data && typeof result.output_data === 'object') {
-        const logs = (result.output_data as Record<string, unknown>).system_logs;
+        const logs = result.output_data.system_logs;
         if (Array.isArray(logs) && logs.length > 0) return logs.map(String);
       }
       return [];

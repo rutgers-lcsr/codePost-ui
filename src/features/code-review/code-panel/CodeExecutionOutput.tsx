@@ -11,6 +11,7 @@ import { Alert, Button, Card, Space, Tabs, Tag, Typography } from 'antd';
 import React, { useMemo } from 'react';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { File as CodePostFile, type FileType } from '../../../utils/file';
+import type { OutputData } from '../../../utils/fileExecution';
 
 const { Text } = Typography;
 
@@ -31,8 +32,7 @@ interface CodeExecutionOutputProps {
     stderr?: string;
     error?: string;
     execution_time?: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    output_data?: any;
+    output_data?: OutputData;
     cached?: boolean;
     executed_at?: string;
     executed_by?: string;
