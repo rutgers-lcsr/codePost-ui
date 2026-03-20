@@ -1,7 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import TemplateMenu from '../TemplateMenu';
 import { commentTemplatesApi } from '../../../../api-client/clients';
@@ -48,7 +49,7 @@ describe('TemplateMenu', () => {
 
     await waitFor(() => expect(screen.getByText('Template 1')).toBeInTheDocument());
 
-    fireEvent.click(screen.getAllByText('Template 1')[0]);
+    await userEvent.click(screen.getAllByText('Template 1')[0]);
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
 });
