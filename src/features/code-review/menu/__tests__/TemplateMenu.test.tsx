@@ -1,14 +1,21 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+
+// Mock react-spring so animated.div is a plain div — the animated wrapper
+// doesn't reliably forward click events in all JSDOM versions.
+vi.mock('react-spring', () => ({
+  useSpring: () => ({}),
+  animated: { div: 'div' },
+}));
+
 import TemplateMenu from '../TemplateMenu';
 import { commentTemplatesApi } from '../../../../api-client/clients';
 import { ConsoleThemeContext, consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
-import '@testing-library/jest-dom'; // Add this for toBeInTheDocument
+import '@testing-library/jest-dom';
 
 describe('TemplateMenu', () => {
   beforeEach(() => {
@@ -49,7 +56,7 @@ describe('TemplateMenu', () => {
 
     await waitFor(() => expect(screen.getByText('Template 1')).toBeInTheDocument());
 
-    await userEvent.click(screen.getAllByText('Template 1')[0]);
+    fireEvent.click(screen.getByText('Template 1'));
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
 });
