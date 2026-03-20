@@ -110,6 +110,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const lastActivePanelRef = React.useRef<number>(1);
+  // Stores the user's sider width before a panel with a default width override was activated,
+  // so we can restore it when switching away from that panel.
+  const widthBeforeOverrideRef = React.useRef<number | null>(null);
 
   // Clamp sidebar width when the browser window is resized so the main
   // content area always has at least ~500 px of usable space.
@@ -128,12 +131,19 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
     if (activePanel !== null) {
       lastActivePanelRef.current = activePanel;
 
-      // If we have a default width for this panel, set it
-      if (props.panelDefaultWidths && props.sider[activePanel]) {
-        const key = props.sider[activePanel].key;
-        if (key && props.panelDefaultWidths[key]) {
-          setSiderWidth(props.panelDefaultWidths[key]);
+      const key = props.sider[activePanel]?.key;
+      const hasDefaultWidth = !!(key && props.panelDefaultWidths?.[key]);
+
+      if (hasDefaultWidth) {
+        // Save the current width before overriding (only if not already saved)
+        if (widthBeforeOverrideRef.current === null) {
+          widthBeforeOverrideRef.current = siderWidth;
         }
+        setSiderWidth(props.panelDefaultWidths![key!]);
+      } else if (widthBeforeOverrideRef.current !== null) {
+        // Leaving a panel that had a default width — restore the previous width
+        setSiderWidth(widthBeforeOverrideRef.current);
+        widthBeforeOverrideRef.current = null;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
