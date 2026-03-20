@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock react-spring so animated.div is a plain div — the animated wrapper
@@ -54,9 +54,16 @@ describe('TemplateMenu', () => {
 
     renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={onApply} currentUserEmail="me" />);
 
-    await waitFor(() => expect(screen.getAllByText('Template 1')[0]).toBeInTheDocument());
+    // Scope queries to #template-menu to avoid Ant Design Tooltip portal duplicates
+    const menu = await waitFor(() => {
+      const el = document.getElementById('template-menu')!;
+      expect(within(el).getByText('Template 1')).toBeInTheDocument();
+      return el;
+    });
 
-    fireEvent.click(screen.getAllByText('Template 1')[0]);
+    // Click the Card element directly (has the onClick handler)
+    const card = within(menu).getByText('Template 1').closest('.ant-card')!;
+    fireEvent.click(card);
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
 });
