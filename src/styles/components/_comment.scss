@@ -3,6 +3,14 @@
   width: 100%;
   position: relative;
 
+  // Smooth transitions for hover-linked highlighting
+  .ant-card {
+    transition:
+      box-shadow 0.2s ease,
+      border-left 0.2s ease,
+      background-color 0.2s ease;
+  }
+
   &--active {
     // background-color: #bebebe;
   }

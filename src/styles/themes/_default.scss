@@ -278,6 +278,10 @@
   // Divider
   .ant-divider {
     border-top-color: var(--cp-dark-border);
+
+    .ant-divider-inner-text {
+      color: #c9d1d9;
+    }
   }
 
   // Tooltip

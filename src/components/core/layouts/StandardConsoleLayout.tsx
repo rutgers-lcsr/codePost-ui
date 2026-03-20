@@ -397,6 +397,7 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
               minWidth: layoutVars.minWidths.grade,
               height: '100%',
               overflow: 'hidden',
+              overscrollBehavior: 'contain',
               position: 'relative',
             }}
             id="code-scroll-area"

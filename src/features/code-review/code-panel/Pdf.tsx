@@ -22,6 +22,9 @@ import CommentHighlightContext from './CommentHighlightContext';
 import { PdfHighlightLayer } from './PdfHighlightLayer';
 import { Divider } from 'antd';
 
+import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
+import { encodeRegion } from './pdfRegionComment';
+
 /**********************************************************************************************************************/
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
@@ -70,6 +73,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     };
   }, []);
 
+  const theme = useContext(ConsoleThemeContext);
   const commentHighlight = useContext(CommentHighlightContext);
   const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
   const lineHasComments = commentHighlight?.lineHasComments;
@@ -79,6 +83,19 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
   // Incremented on every page render to trigger highlight recomputation (e.g. after resize)
   const [renderVersion, setRenderVersion] = useState(0);
+
+  // Track pages whose text layers are empty (scanned/image PDFs)
+  const scannedPages = useRef<Set<number>>(new Set());
+
+  // ─── Region drag-to-select state (for scanned PDFs) ───────────────────
+  const [dragRect, setDragRect] = useState<{
+    pageNumber: number;
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
+  const isDraggingRef = useRef(false);
 
   const hasCommentsForPage = useCallback(
     (pageNumber: number): boolean => {
@@ -93,8 +110,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   const handlePageClick = useCallback(
     (event: React.MouseEvent, pageNumber: number) => {
-      // After a text selection, mouseup fires handleTextSelection, then click fires here.
-      // Suppress this click so we don't create a duplicate page-level comment.
+      // After a text selection or region drag, suppress the click.
       if (suppressNextClickRef.current) {
         suppressNextClickRef.current = false;
         return;
@@ -134,6 +150,95 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       setHoveredCommentId?.(newComment.id);
     },
     [addComment, commentCounter, file, readOnly, setHoveredCommentId, user],
+  );
+
+  // ─── Region drag handlers (scanned PDFs) ──────────────────────────────
+  const getPageElementAndNumber = useCallback(
+    (target: EventTarget): { pageEl: HTMLElement; pageNumber: number } | null => {
+      const el = (target as HTMLElement).closest('[data-page-number]') as HTMLElement | null;
+      if (!el) return null;
+      const num = parseInt(el.getAttribute('data-page-number')!, 10);
+      return isNaN(num) ? null : { pageEl: el, pageNumber: num };
+    },
+    [],
+  );
+
+  const handleRegionMouseDown = useCallback(
+    (event: React.MouseEvent) => {
+      if (readOnly) return;
+      const info = getPageElementAndNumber(event.target as EventTarget);
+      if (!info) return;
+      // Only activate on scanned (no-text) pages
+      if (!scannedPages.current.has(info.pageNumber)) return;
+
+      const rect = info.pageEl.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+      isDraggingRef.current = true;
+      setDragRect({ pageNumber: info.pageNumber, startX: x, startY: y, currentX: x, currentY: y });
+    },
+    [readOnly, getPageElementAndNumber],
+  );
+
+  const handleRegionMouseMove = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDraggingRef.current || !dragRect) return;
+      const info = getPageElementAndNumber(event.target as EventTarget);
+      if (!info || info.pageNumber !== dragRect.pageNumber) return;
+
+      const rect = info.pageEl.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+      const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+      setDragRect((prev) => (prev ? { ...prev, currentX: x, currentY: y } : null));
+    },
+    [dragRect, getPageElementAndNumber],
+  );
+
+  const handleRegionMouseUp = useCallback(
+    (event: React.MouseEvent) => {
+      if (!isDraggingRef.current || !dragRect) {
+        return;
+      }
+      isDraggingRef.current = false;
+
+      const left = Math.min(dragRect.startX, dragRect.currentX);
+      const top = Math.min(dragRect.startY, dragRect.currentY);
+      const right = Math.max(dragRect.startX, dragRect.currentX);
+      const bottom = Math.max(dragRect.startY, dragRect.currentY);
+
+      // Ignore tiny drags (less than ~2% in both dimensions) — treat as a click
+      if (right - left < 2 && bottom - top < 2) {
+        setDragRect(null);
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      suppressNextClickRef.current = true;
+
+      const { startChar, endChar } = encodeRegion(left, top, right, bottom);
+
+      const newComment: CommentType = {
+        id: commentCounter,
+        startLine: dragRect.pageNumber,
+        endLine: dragRect.pageNumber,
+        startChar,
+        endChar,
+        file: file.id ?? 0,
+        pointDelta: 0.0,
+        text: '',
+        rubricComment: null,
+        author: user,
+        feedback: 0,
+        color: '',
+      };
+
+      addComment(newComment, file);
+      setHoveredCommentId?.(newComment.id);
+      setDragRect(null);
+    },
+    [addComment, commentCounter, dragRect, file, setHoveredCommentId, user],
   );
 
   // ─── Text selection → comment creation ─────────────────────────────────
@@ -257,6 +362,17 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   const handlePageRenderSuccess = useCallback((pageNumber: number) => {
     dispatch();
+    // Detect whether this page has an actual text layer (empty = scanned/image PDF)
+    const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
+    if (pageEl) {
+      const textLayer = pageEl.querySelector('.textLayer');
+      const hasText = textLayer ? (textLayer.textContent?.trim().length ?? 0) > 0 : false;
+      if (!hasText) {
+        scannedPages.current.add(pageNumber);
+      } else {
+        scannedPages.current.delete(pageNumber);
+      }
+    }
     setRenderedPages((prev) => {
       if (prev.has(pageNumber)) return prev;
       const next = new Set(prev);
@@ -300,13 +416,28 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     [comments],
   );
 
+  // Compute the visual drag selection rectangle (percentage-based within the page)
+  const selectionStyle = useMemo(() => {
+    if (!dragRect) return null;
+    const left = Math.min(dragRect.startX, dragRect.currentX);
+    const top = Math.min(dragRect.startY, dragRect.currentY);
+    const width = Math.abs(dragRect.currentX - dragRect.startX);
+    const height = Math.abs(dragRect.currentY - dragRect.startY);
+    return { left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` };
+  }, [dragRect]);
+
   if (File.codeType(props.file) !== 'pdf') {
     // This should never happen, but if it does we don't want to render a broken PDF viewer, so we render an empty block instead.
     return <div className="markdown-block markdown-block--empty" />;
   }
 
   return (
-    <div ref={containerRef} onMouseUp={handleTextSelection}>
+    <div
+      ref={containerRef}
+      onMouseUp={handleTextSelection}
+      onMouseDown={handleRegionMouseDown}
+      onMouseMove={handleRegionMouseMove}
+    >
       <Document
         file={getFileContent(props.file)}
         onLoadSuccess={onDocumentLoadSuccess}
@@ -314,23 +445,12 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       >
         {pageEventHandlers.map(({ pageNumber, pageHasComments, onClick, onRenderSuccess }) => (
           <React.Fragment key={`page_${pageNumber}`}>
+            {pageNumber === 1 && (
+              <Divider titlePlacement="right" style={{ margin: '16px 0', color: theme.consoleTheme.text }}>
+                {pageNumber}
+              </Divider>
+            )}
             <div style={{ position: 'relative' }}>
-              {pageNumber === 1 && (
-                <Divider
-                  titlePlacement="right"
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    zIndex: 1,
-                    backgroundColor: 'rgba(255,255,255,0.8)',
-                    padding: '4px 8px',
-                    borderRadius: 4,
-                  }}
-                >
-                  {pageNumber}
-                </Divider>
-              )}
               <Page
                 className={getPageClassName(pageNumber)}
                 data-has-comment={pageHasComments ? 'true' : undefined}
@@ -340,6 +460,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
                 renderAnnotationLayer={false}
                 onRenderSuccess={onRenderSuccess}
                 onClick={onClick}
+                onMouseUp={handleRegionMouseUp}
               />
               {renderedPages.has(pageNumber) && (
                 <PdfHighlightLayer
@@ -350,8 +471,15 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
                   renderVersion={renderVersion}
                 />
               )}
+              {dragRect && dragRect.pageNumber === pageNumber && selectionStyle && (
+                <div className="pdf-region-selection" style={selectionStyle} />
+              )}
             </div>
-            <Divider titlePlacement="right" style={{ margin: '16px 0' }} key={`divider_${pageNumber}`}>
+            <Divider
+              titlePlacement="right"
+              style={{ margin: '16px 0', color: theme.consoleTheme.text }}
+              key={`divider_${pageNumber}`}
+            >
               {pageNumber + 1}
             </Divider>
           </React.Fragment>

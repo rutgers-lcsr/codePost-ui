@@ -87,3 +87,8 @@ npm run analyze
 - The `unauthorizedMiddleware` in the API client handles 401 → logout flow automatically.
 - CORS is handled by the API server (`django-cors-headers`); the UI does not need CORS config.
 - Dev-only components (`AsyncDevTools`) render only when `NODE_ENV === 'development'` — never add dev tooling outside this guard.
+
+## linting and Formatting
+
+- Use oxlint for linting and Prettier for formatting. Run `npm run lint:fix` to automatically fix issues, and `npm test` to run tests with linting.
+- oxlint rules are defined in .oxlintrc.json

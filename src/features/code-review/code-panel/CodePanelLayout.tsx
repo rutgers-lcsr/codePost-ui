@@ -128,7 +128,8 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                 style={{
                   height: '100%',
                   overflow: 'auto',
-                  paddingBottom: '20em',
+                  overscrollBehavior: 'contain',
+                  padding: '4px 8px 20em 4px',
                   minWidth: '220px',
                 }}
               >

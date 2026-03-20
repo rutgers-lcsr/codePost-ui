@@ -267,57 +267,88 @@ const Comment: React.FC<ICommentProps> = (props) => {
     setStatus('idle');
   }, []);
 
+  // Debounce timer for scroll-to-highlight when hovering a comment card
+  const highlightScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const highlightRelatedComment = useCallback(() => {
+    // Instant: update context so CSS hover class is applied immediately
     setHoveredCommentId(props.comment.id);
-    scrollHighlightIntoView(props.comment.id);
 
-    const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
-
-    if (blockElement) {
-      // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
-      if (!blockElement.hasAttribute('data-page-number')) {
-        const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
-        blockElement.classList.add('markdown-block');
-        blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
-        blockElement.classList.remove('markdown-block--empty');
-        blockElement.classList.remove('markdown-block--commented');
-        blockElement.classList.add('markdown-block--focused');
-        blockElement.classList.add(stateClass);
-      }
-      blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      if (blockElement.dataset.originalRole === undefined) {
-        const existingRole = blockElement.getAttribute('role');
-        if (existingRole !== null) {
-          blockElement.dataset.originalRole = existingRole;
-        } else {
-          blockElement.dataset.originalRole = '';
-        }
-      }
-
-      if (blockElement.dataset.originalTabIndex === undefined) {
-        const existingTabIndex = blockElement.getAttribute('tabindex');
-        if (existingTabIndex !== null) {
-          blockElement.dataset.originalTabIndex = existingTabIndex;
-        } else {
-          blockElement.dataset.originalTabIndex = '';
-        }
-      }
-
-      if (blockElement.dataset.originalAriaHidden === undefined) {
-        const existingAriaHidden = blockElement.getAttribute('aria-hidden');
-        if (existingAriaHidden !== null) {
-          blockElement.dataset.originalAriaHidden = existingAriaHidden;
-        } else {
-          blockElement.dataset.originalAriaHidden = '';
-        }
-      }
+    // Cancel any pending scroll from a previous hover
+    if (highlightScrollTimerRef.current) {
+      clearTimeout(highlightScrollTimerRef.current);
     }
 
-    // Tell aria screen readers that the comment is highlighted, and focus on it and read it out loud
-    blockElement?.setAttribute('aria-hidden', 'false');
-    blockElement?.setAttribute('role', 'alert');
-    blockElement?.setAttribute('tabindex', '0');
+    // Debounce the scroll + heavy DOM work so quick mouse sweeps across
+    // the comment list don't cause jittery code scrolling
+    highlightScrollTimerRef.current = setTimeout(() => {
+      // Check if the highlight is already visible in the code scroll area
+      const highlightEl = document.querySelector<HTMLElement>(`.highlight-${props.comment.id}`);
+      const codeScrollArea = document.getElementById('code-scroll-area');
+      const alreadyVisible =
+        highlightEl &&
+        codeScrollArea &&
+        (() => {
+          const hRect = highlightEl.getBoundingClientRect();
+          const cRect = codeScrollArea.getBoundingClientRect();
+          return hRect.top >= cRect.top + 10 && hRect.bottom <= cRect.bottom - 10;
+        })();
+
+      if (!alreadyVisible) {
+        scrollHighlightIntoView(props.comment.id);
+      }
+
+      const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
+
+      if (blockElement) {
+        // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
+        if (!blockElement.hasAttribute('data-page-number')) {
+          const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
+          blockElement.classList.add('markdown-block');
+          blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
+          blockElement.classList.remove('markdown-block--empty');
+          blockElement.classList.remove('markdown-block--commented');
+          blockElement.classList.add('markdown-block--focused');
+          blockElement.classList.add(stateClass);
+        }
+
+        if (!alreadyVisible && !blockElement.hasAttribute('data-page-number')) {
+          blockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (blockElement.dataset.originalRole === undefined) {
+          const existingRole = blockElement.getAttribute('role');
+          if (existingRole !== null) {
+            blockElement.dataset.originalRole = existingRole;
+          } else {
+            blockElement.dataset.originalRole = '';
+          }
+        }
+
+        if (blockElement.dataset.originalTabIndex === undefined) {
+          const existingTabIndex = blockElement.getAttribute('tabindex');
+          if (existingTabIndex !== null) {
+            blockElement.dataset.originalTabIndex = existingTabIndex;
+          } else {
+            blockElement.dataset.originalTabIndex = '';
+          }
+        }
+
+        if (blockElement.dataset.originalAriaHidden === undefined) {
+          const existingAriaHidden = blockElement.getAttribute('aria-hidden');
+          if (existingAriaHidden !== null) {
+            blockElement.dataset.originalAriaHidden = existingAriaHidden;
+          } else {
+            blockElement.dataset.originalAriaHidden = '';
+          }
+        }
+      }
+
+      // Tell aria screen readers that the comment is highlighted, and focus on it and read it out loud
+      blockElement?.setAttribute('aria-hidden', 'false');
+      blockElement?.setAttribute('role', 'alert');
+      blockElement?.setAttribute('tabindex', '0');
+    }, 150);
   }, [props.comment.id, props.comment.startLine, props.file, props.commentType, setHoveredCommentId]);
 
   const unhighlightRelatedComment = useCallback(() => {
@@ -738,6 +769,11 @@ const Comment: React.FC<ICommentProps> = (props) => {
   }, [highlightRelatedComment]);
 
   const onMouseLeave = useCallback(() => {
+    // Cancel any pending debounced scroll on the highlight side
+    if (highlightScrollTimerRef.current) {
+      clearTimeout(highlightScrollTimerRef.current);
+      highlightScrollTimerRef.current = null;
+    }
     setHasHover(false);
     unhighlightRelatedComment();
   }, [unhighlightRelatedComment]);

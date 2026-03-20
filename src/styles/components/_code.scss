@@ -419,6 +419,7 @@
   border-radius: 2px;
   pointer-events: auto;
   cursor: pointer;
+  scroll-margin-top: 24px;
   transition:
     background-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -450,6 +451,22 @@
     background: rgba(27, 94, 32, 0.18);
     border-left-color: rgba(27, 94, 32, 0.65);
   }
+}
+
+// Live drag-selection rectangle on scanned PDF pages
+.pdf-region-selection {
+  position: absolute;
+  border: 2px dashed rgba(46, 125, 50, 0.7);
+  background: rgba(46, 125, 50, 0.15);
+  z-index: 3;
+  pointer-events: none;
+}
+
+// Region highlight overlay for scanned PDF comments (percentage-based positioning)
+.pdf-region-highlight {
+  // Inherits from .pdf-highlight-rect (position: absolute, background, etc.)
+  // Additional border to visually distinguish region selections
+  border: 1px solid rgba(27, 94, 32, 0.4);
 }
 
 // Nuclear override: prevent ANY markdown-block or highlight classes from affecting PDF pages.

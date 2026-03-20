@@ -210,36 +210,50 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     // No-op: comments are now rendered sequentially
   }, []);
 
-  // Jump to comment
-  const jumpToComment = useCallback(async (commentID: number) => {
-    await Animation.wait(100);
+  // Track scroll requests so we can cancel stale ones
+  const scrollRequestRef = useRef(0);
 
-    // Scroll only the comments container, not the entire page
-    const commentElement = document.getElementById(`comment-${commentID}`);
-    const commentsContainer = document.getElementById('code-panel--comments');
-
-    if (commentElement && commentsContainer) {
-      // Prevent any scroll on the body/document
-      document.body.style.overflow = 'hidden';
-
-      // Get the comment's position within the scrollable container
-      const commentOffsetTop = commentElement.offsetTop;
-
-      // Scroll only the comments container using scrollTop (more reliable than scrollTo)
-      const targetScroll = commentOffsetTop - 20; // 20px padding from top
-
-      // Use smooth scrolling
-      commentsContainer.scrollTo({
-        top: targetScroll,
-        behavior: 'smooth',
-      });
-
-      // Re-enable body scroll after a delay
-      setTimeout(() => {
-        document.body.style.overflow = '';
-      }, 1000);
-    }
+  /**
+   * Check whether a comment element is already visible within the comments sidebar.
+   * Returns true when the element's bounding rect is fully within the container's viewport.
+   */
+  const isCommentVisible = useCallback((commentEl: HTMLElement, containerEl: HTMLElement): boolean => {
+    const commentRect = commentEl.getBoundingClientRect();
+    const containerRect = containerEl.getBoundingClientRect();
+    // Use a small margin so partially clipped elements still trigger a scroll
+    const margin = 10;
+    return commentRect.top >= containerRect.top + margin && commentRect.bottom <= containerRect.bottom - margin;
   }, []);
+
+  // Jump to comment
+  const jumpToComment = useCallback(
+    (commentID: number) => {
+      // Increment request counter so any previously queued scroll becomes stale
+      const requestId = ++scrollRequestRef.current;
+
+      requestAnimationFrame(() => {
+        // Bail if a newer request superseded this one
+        if (requestId !== scrollRequestRef.current) return;
+
+        const commentElement = document.getElementById(`comment-${commentID}`);
+        const commentsContainer = document.getElementById('code-panel--comments');
+
+        if (commentElement && commentsContainer) {
+          // Skip the scroll if the comment is already fully visible
+          if (isCommentVisible(commentElement, commentsContainer)) return;
+
+          const commentOffsetTop = commentElement.offsetTop;
+          const targetScroll = commentOffsetTop - 20; // 20px padding from top
+
+          commentsContainer.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth',
+          });
+        }
+      });
+    },
+    [isCommentVisible],
+  );
 
   // Manual wait for PDF loading
   const manualWait = useCallback(async () => {
@@ -404,7 +418,8 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     }
   }, [props.comments, jumpToComment]);
 
-  // Handle scroll on hover
+  // Handle scroll on hover — jumpToComment already guards against scrolling to
+  // an already-visible comment, and the highlight side debounces hover intent.
   useEffect(() => {
     if (hoveredCommentId !== null) {
       jumpToComment(hoveredCommentId);

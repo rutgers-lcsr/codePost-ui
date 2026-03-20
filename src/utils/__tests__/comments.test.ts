@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { CommentIO, UiComment } from '../comments';
 import { RubricComment } from '../../api-client';
 import { makeComment } from '../../test-utils';
+import { encodeRegion } from '../../features/code-review/code-panel/pdfRegionComment';
 
 // ---------------------------------------------------------------------------
 // CommentIO.sortComments
@@ -209,5 +210,69 @@ describe('UiComment.isEmpty', () => {
 
   it('returns false when rubricComment is set', () => {
     expect(UiComment.isEmpty(makeComment({ text: '', pointDelta: 0, rubricComment: 42 }))).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Region comment sorting
+// ---------------------------------------------------------------------------
+describe('CommentIO.compare with region comments', () => {
+  it('sorts region comment higher on page before region comment lower on page', () => {
+    const top = encodeRegion(10, 10, 50, 30); // top region: topPct=10
+    const bottom = encodeRegion(10, 60, 50, 80); // bottom region: topPct=60
+    const a = makeComment({ id: 1, startLine: 1, endLine: 1, ...top });
+    const b = makeComment({ id: 2, startLine: 1, endLine: 1, ...bottom });
+    expect(CommentIO.compare(a, b)).toBeLessThan(0);
+  });
+
+  it('sorts region comment lower on page after region comment higher on page', () => {
+    const top = encodeRegion(10, 10, 50, 30);
+    const bottom = encodeRegion(10, 60, 50, 80);
+    const a = makeComment({ id: 1, startLine: 1, endLine: 1, ...bottom });
+    const b = makeComment({ id: 2, startLine: 1, endLine: 1, ...top });
+    expect(CommentIO.compare(a, b)).toBeGreaterThan(0);
+  });
+
+  it('sorts region comments at the same vertical position by id', () => {
+    const regionA = encodeRegion(10, 50, 40, 70);
+    const regionB = encodeRegion(60, 50, 90, 70);
+    const a = makeComment({ id: 3, startLine: 1, endLine: 1, ...regionA });
+    const b = makeComment({ id: 7, startLine: 1, endLine: 1, ...regionB });
+    // Same topPct (50), so falls through to id comparison
+    expect(CommentIO.compare(a, b)).toBeLessThan(0);
+  });
+
+  it('sorts region comments on different pages by page number', () => {
+    const region1 = encodeRegion(10, 80, 50, 90); // page 1, near bottom
+    const region2 = encodeRegion(10, 10, 50, 20); // page 2, near top
+    const a = makeComment({ id: 1, startLine: 1, endLine: 1, ...region1 });
+    const b = makeComment({ id: 2, startLine: 2, endLine: 2, ...region2 });
+    expect(CommentIO.compare(a, b)).toBeLessThan(0); // page 1 < page 2
+  });
+});
+
+describe('CommentIO.sortComments with region comments', () => {
+  it('sorts multiple region comments on the same page by vertical position', () => {
+    const middle = encodeRegion(10, 50, 50, 60);
+    const top = encodeRegion(10, 10, 50, 20);
+    const bottom = encodeRegion(10, 80, 50, 95);
+    const comments = [
+      makeComment({ id: 1, startLine: 1, endLine: 1, ...middle }),
+      makeComment({ id: 2, startLine: 1, endLine: 1, ...top }),
+      makeComment({ id: 3, startLine: 1, endLine: 1, ...bottom }),
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    expect(sorted.map((c) => c.id)).toEqual([2, 1, 3]);
+  });
+
+  it('mixes region comments with page-level comments (page-level first since topPct=0)', () => {
+    const region = encodeRegion(10, 50, 50, 60);
+    const comments = [
+      makeComment({ id: 1, startLine: 1, endLine: 1, ...region }),
+      makeComment({ id: 2, startLine: 1, endLine: 1, startChar: 0, endChar: 0 }), // page-level
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    // Page-level has sortKey=0, region has sortKey=50 → page-level first
+    expect(sorted.map((c) => c.id)).toEqual([2, 1]);
   });
 });

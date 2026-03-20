@@ -58,26 +58,45 @@ const Highlight = (props: IHighlightProps) => {
     // Inline styles override CSS classes, preventing our hover effects from working
   };
 
+  // Debounce hover intent to avoid jittery scrolling during quick mouse sweeps.
+  // The CSS hover class is applied instantly; only the context state update (which triggers
+  // sidebar scroll) is delayed.
+  const HOVER_DEBOUNCE_MS = 150;
+  const hoverTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup debounce timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+
   let onMouseEnter;
   let onMouseLeave;
   let onClick: ((event: React.MouseEvent) => void) | undefined;
 
   if (commandPressed || !isCursorHighlight) {
-    // Use React state instead of DOM manipulation for hover effects
     onMouseEnter = (_: React.MouseEvent) => {
-      // When hovering over a highlight with multiple comments, set the first one as hovered
-      // This enables bidirectional highlighting with the comment panel
       if (commentIDs.length > 0) {
-        if (props.onMouseEnter) {
-          props.onMouseEnter(commentIDs[0]);
-        } else {
-          setHoveredCommentId(commentIDs[0]);
-        }
+        // Cancel any pending clear
+        if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+        // Debounce the state update so quick mouse passes don't trigger sidebar scroll
+        hoverTimerRef.current = setTimeout(() => {
+          if (props.onMouseEnter) {
+            props.onMouseEnter(commentIDs[0]);
+          } else {
+            setHoveredCommentId(commentIDs[0]);
+          }
+        }, HOVER_DEBOUNCE_MS);
       }
     };
 
     onMouseLeave = (_: React.MouseEvent) => {
-      // Clear hover state when mouse leaves
+      // Cancel pending hover — mouse left before debounce fired
+      if (hoverTimerRef.current) {
+        clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
       if (commentIDs.length > 0 && commentIDs.includes(hoveredCommentId || -1)) {
         if (props.onMouseLeave) {
           props.onMouseLeave(commentIDs[0]);

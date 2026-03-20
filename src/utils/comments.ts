@@ -1,16 +1,29 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import type { Comment, RubricComment } from '../api-client';
+import { isRegionComment, decodeRegion } from '../features/code-review/code-panel/pdfRegionComment';
 
 export type CommentType = Comment;
+
+/** Extract a vertical sort key for a comment. Region comments sort by topPct; others by startChar. */
+const verticalSortKey = (c: CommentType): number => {
+  if (isRegionComment(c)) {
+    const { topPct } = decodeRegion(c.startChar!, c.endChar!);
+    return topPct;
+  }
+  return c.startChar ?? 0;
+};
 
 export class CommentIO {
   public static sortComments = (comments: CommentType[]): CommentType[] => {
     return comments.sort((a: CommentType, b: CommentType) => {
       if (a.startLine === b.startLine) {
-        const aStartChar = a.startChar ?? 0;
-        const bStartChar = b.startChar ?? 0;
-        if (aStartChar > bStartChar) {
+        const aKey = verticalSortKey(a);
+        const bKey = verticalSortKey(b);
+        if (aKey > bKey) {
           return 1;
+        }
+        if (aKey < bKey) {
+          return -1;
         }
         if (a.id < 0 && b.id < 0) {
           return a.id + b.id;
@@ -31,9 +44,9 @@ export class CommentIO {
 
   public static compare = (a: CommentType, b: CommentType) => {
     if (a.startLine === b.startLine) {
-      const aStartChar = a.startChar ?? 0;
-      const bStartChar = b.startChar ?? 0;
-      if (aStartChar === bStartChar) {
+      const aKey = verticalSortKey(a);
+      const bKey = verticalSortKey(b);
+      if (aKey === bKey) {
         if (a.id > 0 && b.id > 0) {
           return a.id - b.id;
         } else if (a.id < 0 && b.id < 0) {
@@ -44,7 +57,7 @@ export class CommentIO {
           return -1;
         }
       }
-      return aStartChar - bStartChar;
+      return aKey - bKey;
     }
     return a.startLine - b.startLine;
   };

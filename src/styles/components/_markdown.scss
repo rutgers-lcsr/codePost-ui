@@ -12,6 +12,7 @@
   isolation: isolate;
   padding-left: $root-padding + 0px;
   border-radius: $gutter-radius;
+  scroll-margin-top: 24px;
   transition:
     background-color 0.25s ease,
     box-shadow 0.22s ease,

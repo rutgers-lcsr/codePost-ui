@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { CommentType } from '../../../types/models';
 import { useHoveredCommentId } from './CommentHighlightContext';
+import { isRegionComment, decodeRegion } from './pdfRegionComment';
 
 interface HighlightRect {
   commentId: number;
@@ -181,6 +182,9 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
 }) => {
   const [rects, setRects] = useState<HighlightRect[]>([]);
   const [pageLevelIds, setPageLevelIds] = useState<number[]>([]);
+  const [regionRects, setRegionRects] = useState<
+    { id: number; leftPct: number; topPct: number; widthPct: number; heightPct: number }[]
+  >([]);
   const layerRef = useRef<HTMLDivElement>(null);
   const hoveredCommentId = useHoveredCommentId();
 
@@ -191,9 +195,19 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
 
     const allRects: HighlightRect[] = [];
     const pageLevel: number[] = [];
+    const regions: { id: number; leftPct: number; topPct: number; widthPct: number; heightPct: number }[] = [];
 
     for (const comment of comments) {
-      if (isPageLevelComment(comment)) {
+      if (isRegionComment(comment)) {
+        const { leftPct, topPct, rightPct, bottomPct } = decodeRegion(comment.startChar!, comment.endChar!);
+        regions.push({
+          id: comment.id,
+          leftPct,
+          topPct,
+          widthPct: rightPct - leftPct,
+          heightPct: bottomPct - topPct,
+        });
+      } else if (isPageLevelComment(comment)) {
         pageLevel.push(comment.id);
       } else {
         const commentRects = computeRectsForComment(comment, pageNumber, pageEl);
@@ -203,6 +217,7 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
 
     setRects(allRects);
     setPageLevelIds(pageLevel);
+    setRegionRects(regions);
   }, [comments, pageNumber]);
 
   // Recompute when comments change, page renders, or after resize (renderVersion)
@@ -233,7 +248,7 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
     [onHighlightClick, setHoveredCommentId],
   );
 
-  if (rects.length === 0 && pageLevelIds.length === 0) return null;
+  if (rects.length === 0 && pageLevelIds.length === 0 && regionRects.length === 0) return null;
 
   return (
     <div ref={layerRef} className="pdf-highlight-layer">
@@ -241,9 +256,26 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
       {pageLevelIds.map((id) => (
         <div
           key={`page-hl-${id}`}
-          className={`pdf-page-highlight${hoveredCommentId === id ? ' pdf-page-highlight--hovered' : ''}`}
+          className={`pdf-page-highlight highlight-${id}${hoveredCommentId === id ? ' pdf-page-highlight--hovered' : ''}`}
           onClick={(e) => handleClick(e, id)}
           onMouseEnter={() => setHoveredCommentId?.(id)}
+          onMouseLeave={() => setHoveredCommentId?.(null)}
+        />
+      ))}
+
+      {/* Region comment overlays (scanned PDF bounding boxes) */}
+      {regionRects.map((region) => (
+        <div
+          key={`region-hl-${region.id}`}
+          className={`pdf-highlight-rect pdf-region-highlight highlight-${region.id}${hoveredCommentId === region.id ? ' pdf-highlight-rect--hovered' : ''}`}
+          style={{
+            left: `${region.leftPct}%`,
+            top: `${region.topPct}%`,
+            width: `${region.widthPct}%`,
+            height: `${region.heightPct}%`,
+          }}
+          onClick={(e) => handleClick(e, region.id)}
+          onMouseEnter={() => setHoveredCommentId?.(region.id)}
           onMouseLeave={() => setHoveredCommentId?.(null)}
         />
       ))}
@@ -252,7 +284,7 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
       {rects.map((rect, i) => (
         <div
           key={`hl-${rect.commentId}-${i}`}
-          className={`pdf-highlight-rect${hoveredCommentId === rect.commentId ? ' pdf-highlight-rect--hovered' : ''}`}
+          className={`pdf-highlight-rect highlight-${rect.commentId}${hoveredCommentId === rect.commentId ? ' pdf-highlight-rect--hovered' : ''}`}
           style={{
             top: rect.top,
             left: rect.left,
