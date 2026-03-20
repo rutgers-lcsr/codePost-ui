@@ -1,8 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { render, waitFor, fireEvent, within, cleanup } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // Mock react-spring so animated.div is a plain div — the animated wrapper
 // doesn't reliably forward click events in all JSDOM versions.
@@ -22,10 +22,15 @@ describe('TemplateMenu', () => {
     vi.clearAllMocks();
   });
 
+  // Explicit cleanup — auto-cleanup can be unreliable with vitest isolate: false
+  afterEach(() => {
+    cleanup();
+  });
+
   const mockThemeContext = {
     consoleTheme: consoleThemes.light,
     setConsoleTheme: vi.fn(),
-    toggleConsoleTheme: vi.fn(), // Added this
+    toggleConsoleTheme: vi.fn(),
   };
 
   const renderWithTheme = (component: React.ReactNode) => {
@@ -39,11 +44,13 @@ describe('TemplateMenu', () => {
     ];
     vi.spyOn(commentTemplatesApi, 'list').mockResolvedValue(templates as any);
 
-    renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={vi.fn()} currentUserEmail="me" />);
+    const { container } = renderWithTheme(
+      <TemplateMenu assignmentId={1} onApplyTemplate={vi.fn()} currentUserEmail="me" />,
+    );
 
     await waitFor(() => {
-      expect(screen.getByText('Template 1')).toBeInTheDocument();
-      expect(screen.getByText('Template 2')).toBeInTheDocument();
+      expect(within(container).getByText('Template 1')).toBeInTheDocument();
+      expect(within(container).getByText('Template 2')).toBeInTheDocument();
     });
   });
 
@@ -52,17 +59,17 @@ describe('TemplateMenu', () => {
     vi.spyOn(commentTemplatesApi, 'list').mockResolvedValue(templates as any);
     const onApply = vi.fn();
 
-    renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={onApply} currentUserEmail="me" />);
+    const { container } = renderWithTheme(
+      <TemplateMenu assignmentId={1} onApplyTemplate={onApply} currentUserEmail="me" />,
+    );
 
-    // Scope queries to #template-menu to avoid Ant Design Tooltip portal duplicates
-    const menu = await waitFor(() => {
-      const el = document.getElementById('template-menu')!;
-      expect(within(el).getByText('Template 1')).toBeInTheDocument();
-      return el;
+    await waitFor(() => {
+      expect(within(container).getByText('Template 1')).toBeInTheDocument();
     });
 
-    // Click the Card element directly (has the onClick handler)
-    const card = within(menu).getByText('Template 1').closest('.ant-card')!;
+    // Click the Card element directly — scope to container to avoid stale DOM
+    // from previous tests (vitest isolate: false shares module state across files)
+    const card = within(container).getByText('Template 1').closest('.ant-card')!;
     fireEvent.click(card);
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
