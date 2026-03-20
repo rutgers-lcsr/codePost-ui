@@ -1704,7 +1704,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
    * @param result - Execution result with file_id, success status, and output data
    */
   const handleExecutionComplete = React.useCallback(
-    (result: { success: boolean; output_data?: unknown; error?: string | null; file_id?: number }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (result: { success: boolean; output_data?: any; error?: string | null; file_id?: number }) => {
       const fileId = result.file_id || selectedFile?.id;
       if (fileId) {
         const normalizedResult = {

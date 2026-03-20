@@ -130,9 +130,7 @@ class CreateSignup extends React.Component<IProps, IState> {
     const name = label;
     const newValue = event.target.value;
     this.setState((prevstate) => {
-      const newState: Record<string, unknown> = { ...prevstate };
-      newState[name] = newValue;
-      return newState;
+      return { ...prevstate, [name]: newValue };
     });
   };
 
@@ -144,10 +142,7 @@ class CreateSignup extends React.Component<IProps, IState> {
 
   public toggleCheck = (label: string) => {
     this.setState((prevstate) => {
-      const newState: Record<string, unknown> = { ...prevstate };
-      // @ts-expect-error: legacy-ts-ignore
-      newState[label] = !this.state[label];
-      return newState;
+      return { ...prevstate, [label]: !this.state[label as keyof IState] } as IState;
     });
   };
 

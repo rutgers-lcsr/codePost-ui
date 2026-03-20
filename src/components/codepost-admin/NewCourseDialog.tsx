@@ -53,7 +53,8 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSucc
       // Actually, let's try to match the Omit type if possible.
       // But for now, casting to any or CourseCreateRequest['course'] is safer to avoid TS blocked.
 
-      const result = await coursesApi.create({ course: payload });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await coursesApi.create({ course: payload as any });
       message.success('Course created successfully');
       form.resetFields();
       onSuccess(result);

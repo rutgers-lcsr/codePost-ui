@@ -31,13 +31,8 @@ interface CodeExecutionOutputProps {
     stderr?: string;
     error?: string;
     execution_time?: number;
-    output_data?: {
-      cells?: unknown[];
-      stdout?: string;
-      stderr?: string;
-      error?: string;
-      [key: string]: unknown; // Allow other keys like image/png
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    output_data?: any;
     cached?: boolean;
     executed_at?: string;
     executed_by?: string;

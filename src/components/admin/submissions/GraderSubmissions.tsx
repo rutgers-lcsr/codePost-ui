@@ -157,7 +157,8 @@ const GraderData: React.FC<IByGraderProps> = (props) => {
                 dataIndex: 'grader',
                 key: 'primary',
                 defaultSortOrder: 'ascend' as const,
-                sorter: (a, b) => a.key.localeCompare(b.key),
+                sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+                  (a.key as string).localeCompare(b.key as string),
                 renderForSearch: (searchText: string) => {
                   return (_: string, record) => {
                     const grader = record.grader as string;

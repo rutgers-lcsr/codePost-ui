@@ -291,12 +291,14 @@ const Moss = (props: IMossProps) => {
 
       if (res === 'DELAY') {
         return Promise.reject("This is taking a while. We'll email you when this is done.");
+      } else if (typeof res === 'string') {
+        return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
       } else {
         // Uncaught Lambda Error
         if (res.StatusCode !== 200) {
           return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
         } else {
-          const resPayload = await JSON.parse(res['Payload']);
+          const resPayload = await JSON.parse(res.Payload);
           // Completed Running Function
           if (Object.prototype.hasOwnProperty.call(resPayload, 'errorMessage')) {
             const error = resPayload['errorMessage'];

@@ -153,7 +153,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
               <Select
                 mode="multiple"
                 value={record.leaderData}
-                onChange={(value) => changeLeaders(record.key, value)}
+                onChange={(value) => changeLeaders((record as Record<string, unknown>).key as number, value)}
                 style={{ width: 400 }}
               >
                 {props.graders.map((grader) => (
@@ -189,34 +189,35 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   );
 
   const columns: ITableDetailColumn[] = useMemo(
-    () => [
-      {
-        title: 'Sections',
-        dataIndex: 'section',
-        key: 'primary',
-        defaultSortOrder: 'ascend' as const,
-        sorter: (a: { section: string }, b: { section: string }) => a.section.localeCompare(b.section),
-      },
-      {
-        title: 'Students',
-        dataIndex: 'students',
-        key: 'students',
-        align: 'center' as const,
-      },
-      {
-        title: 'Leaders',
-        dataIndex: 'leaders',
-        key: 'leaders',
-        align: 'center' as const,
-        renderForSearch: renderLeadersCell,
-      },
-      {
-        title: 'Actions',
-        dataIndex: 'actions',
-        key: 'actions',
-        align: 'right' as const,
-      },
-    ],
+    () =>
+      [
+        {
+          title: 'Sections',
+          dataIndex: 'section',
+          key: 'primary',
+          defaultSortOrder: 'ascend' as const,
+          sorter: (a: { section: string }, b: { section: string }) => a.section.localeCompare(b.section),
+        },
+        {
+          title: 'Students',
+          dataIndex: 'students',
+          key: 'students',
+          align: 'center' as const,
+        },
+        {
+          title: 'Leaders',
+          dataIndex: 'leaders',
+          key: 'leaders',
+          align: 'center' as const,
+          renderForSearch: renderLeadersCell,
+        },
+        {
+          title: 'Actions',
+          dataIndex: 'actions',
+          key: 'actions',
+          align: 'right' as const,
+        },
+      ] as ITableDetailColumn[],
     [renderLeadersCell],
   );
 
@@ -607,11 +608,13 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
       .forEach((section) => {
         options.push({
           label: section.name,
-          options: section.students.map((student) => ({
-            value: student,
-            label: student,
-            isDisabled: !allowSectionReassignment,
-          })),
+          options: section.students
+            .filter((student): student is string => student !== null)
+            .map((student) => ({
+              value: student,
+              label: student,
+              isDisabled: !allowSectionReassignment,
+            })),
         });
       });
 

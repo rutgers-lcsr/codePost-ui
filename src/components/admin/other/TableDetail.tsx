@@ -18,7 +18,8 @@ import useDefaultPageSize from '../../utils/useDefaultPageSize';
 /* Types
 /**********************************************************************************************************************/
 
-export interface ITableDetailColumn extends ColumnProps<unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface ITableDetailColumn extends ColumnProps<any> {
   renderForSearch?: (
     searchText: string,
   ) => (text: string, record: Record<string, unknown>, index: number) => React.ReactNode;

@@ -102,7 +102,11 @@ interface CodeConsoleStoreActions {
   incrementCommentRefreshCounter: () => void;
 
   // Execution
-  setExecutionResult: (fileId: number, result: { success: boolean; output_data?: unknown; error?: string }) => void;
+  setExecutionResult: (
+    fileId: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    result: { success: boolean; output_data?: any; error?: string },
+  ) => void;
 
   // AI
   setAiEnabled: (enabled: boolean) => void;

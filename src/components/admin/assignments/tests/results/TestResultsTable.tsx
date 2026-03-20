@@ -25,7 +25,7 @@ import {
 } from '../../../../../types/models';
 
 /* codePost component imports */
-import { TableDetail } from '../../../other/TableDetail';
+import { ITableDetailColumn, TableDetail } from '../../../other/TableDetail';
 import ResultDetail from './ResultDetail';
 
 import { bySubmissionColumns, byTestColumns } from './testSummaryUtils';
@@ -148,8 +148,8 @@ const TestResultsTable = (props: IProps) => {
     />
   );
 
-  let columns: unknown[] = [];
-  let data: unknown[] = [];
+  let columns: ITableDetailColumn[] = [];
+  let data: Record<string, unknown>[] = [];
 
   if (!props.isLoading) {
     const totalTests = Object.values(props.testCasesByCategory).flat().length;

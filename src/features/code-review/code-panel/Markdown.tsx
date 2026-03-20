@@ -200,7 +200,8 @@ const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.co
 
 interface IMarkdownProps {
   commentCounter: number;
-  executionResult?: { success: boolean; output_data?: unknown; error?: string } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  executionResult?: { success: boolean; output_data?: any; error?: string } | null;
   onClearOutputs?: () => void;
 }
 

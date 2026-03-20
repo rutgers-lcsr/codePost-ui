@@ -61,7 +61,8 @@ const UploadFileTemplates: React.FC<IProps> = ({ isReplacement, updateTemplate, 
         showUploadList={false}
         onChange={onChange}
         customRequest={
-          customRequest as unknown as typeof Upload.defaultProps extends { customRequest?: infer T } ? T : never
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          customRequest as any
         }
       >
         <Button>

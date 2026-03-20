@@ -76,7 +76,7 @@ export const TestItem = (props: ITestItemProps) => {
     testCaseCopy.pointsFail = values.pointsFail;
     testCaseCopy.explanation = values.explanation;
     testCaseCopy.explanation = values.explanation;
-    testCaseCopy.targetCellId = (values.targetCellId as number | null) || null;
+    testCaseCopy.targetCellId = (values.targetCellId as string | null) || null;
     testCaseCopy.testCode = values.testCode || '';
     testCaseCopy.testCode = values.testCode || '';
 

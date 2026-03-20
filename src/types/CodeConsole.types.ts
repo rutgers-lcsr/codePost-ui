@@ -208,7 +208,14 @@ export interface ICodeConsoleState {
    * Key: File ID
    * Value: Execution result containing success status, output data, and any errors
    */
-  executionResults: { [fileId: number]: { success: boolean; output_data?: unknown; error?: string } };
+  executionResults: {
+    [fileId: number]: {
+      success: boolean;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      output_data?: any;
+      error?: string;
+    };
+  };
 
   /* ========================================
    * AI Features
