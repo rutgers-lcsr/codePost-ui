@@ -12,7 +12,6 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import CodeExecutionOutput from './CodeExecutionOutput';
-import { CommentHighlightProvider } from './CommentHighlightContext';
 import Markdown from './Markdown';
 import { Pdf } from './Pdf';
 
@@ -236,7 +235,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
         <div id="code-container" className="code-container" style={containerStyle}>
           <div
             id="code-main"
-            className="code code--markdown"
+            className={`code code--markdown${codeType === 'jupyter' ? ' code--jupyter' : ''}`}
             style={{
               ...commonCodeStyle,
               paddingLeft: '20px',
@@ -271,48 +270,41 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   }
 
   // Render PDF files
+  // NOTE: No inner CommentHighlightProvider here — PDFs use the outer provider
+  // from CodeConsole.tsx so that hover/click state is shared with the Comments panel.
   if (codeType === 'pdf') {
     return (
-      <CommentHighlightProvider
-        file={props.file}
-        comments={props.comments}
-        readOnly={props.readOnly}
-        user={props.user}
-        onHighlightClick={props.onHighlightClick}
-        addComment={props.addComment}
-      >
-        <div id="code-container" className="code-container" style={containerStyle}>
-          <div
-            id="code-main"
-            className="code code--markdown"
-            style={{
-              ...commonCodeStyle,
-              paddingLeft: '20px',
-              paddingTop: '0px',
-              paddingRight: '20px',
-              paddingBottom: '0px',
-            }}
-          >
-            <Pdf
-              key={fileKey}
-              file={props.file}
-              comments={props.comments}
-              readOnly={props.readOnly}
-              user={props.user}
-              onHighlightClick={props.onHighlightClick}
-              commentCounter={props.commentCounter}
-              addComment={addCommentAndIncrement}
-              assignmentFile={props.assignmentFile}
-              cursorMode={props.cursorMode}
-              showCursor={props.showCursor}
-              updateCursorDomain={props.updateCursorDomain}
-              isEditMode={props.isEditMode}
-              onContentChange={props.onContentChange}
-              temporaryContent={props.temporaryContent}
-            />
-          </div>
+      <div id="code-container" className="code-container" style={containerStyle}>
+        <div
+          id="code-main"
+          className="code code--markdown"
+          style={{
+            ...commonCodeStyle,
+            paddingLeft: '20px',
+            paddingTop: '0px',
+            paddingRight: '20px',
+            paddingBottom: '0px',
+          }}
+        >
+          <Pdf
+            key={fileKey}
+            file={props.file}
+            comments={props.comments}
+            readOnly={props.readOnly}
+            user={props.user}
+            onHighlightClick={props.onHighlightClick}
+            commentCounter={props.commentCounter}
+            addComment={addCommentAndIncrement}
+            assignmentFile={props.assignmentFile}
+            cursorMode={props.cursorMode}
+            showCursor={props.showCursor}
+            updateCursorDomain={props.updateCursorDomain}
+            isEditMode={props.isEditMode}
+            onContentChange={props.onContentChange}
+            temporaryContent={props.temporaryContent}
+          />
         </div>
-      </CommentHighlightProvider>
+      </div>
     );
   }
 

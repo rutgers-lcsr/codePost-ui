@@ -34,7 +34,9 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 - Editing a submission current doesn't save anywhere, but we plan on adding a "Save" function to editing to allow graders/instructors to modify a students submission and run test on the modified code without affecting the student's original submission. We also plan on showing differences between the original and modified code to make it easier for graders to keep track of their changes. As well as allow students to view the changes made by graders to their code.
 
-- PDF commenting currently works using one comment per page, but we plan on allowing graders to comment on specific sections of the PDF to allow for more targeted feedback.
+## v3.3.0 - PDF Support for Commenting
+
+> **Highlight**: Added commenting support for PDF files in codePost, allowing instructors and graders to annotate PDFs.
 
 ## v3.2.0 — AI Settings & Usage Analytics
 

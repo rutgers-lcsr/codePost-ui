@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 
 /* other library imports */
 import { Document, Page } from 'react-pdf';
+import 'react-pdf/dist/Page/TextLayer.css';
 
 import { pdfjs } from 'react-pdf';
 
@@ -19,6 +20,8 @@ import { File, getFileContent } from '../../../utils/file';
 
 import { getBlockClassName } from './BlockUtils.tsx';
 import CommentHighlightContext from './CommentHighlightContext';
+import { PdfHighlightLayer } from './PdfHighlightLayer';
+import { Divider } from 'antd';
 
 /**********************************************************************************************************************/
 
@@ -30,14 +33,52 @@ type PdfDocumentProxyLike = {
 
 export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [numPages, setPages] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { addComment, commentCounter, comments, file, readOnly, user } = props;
+
+  const hasInitialWidth = useRef(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const newWidth = entry.contentRect.width;
+        // Set immediately on first measurement so the PDF isn't zero-width
+        if (!hasInitialWidth.current) {
+          hasInitialWidth.current = true;
+          setContainerWidth(newWidth);
+          return;
+        }
+        // Debounce subsequent resizes to avoid blanking the entire screen
+        if (timerId) clearTimeout(timerId);
+        timerId = setTimeout(() => {
+          setContainerWidth(newWidth);
+        }, 200);
+      }
+    });
+    observer.observe(el);
+    return () => {
+      if (timerId) clearTimeout(timerId);
+      observer.disconnect();
+    };
+  }, []);
 
   const commentHighlight = useContext(CommentHighlightContext);
   const setHoveredCommentId = commentHighlight?.setHoveredCommentId;
   const getCommentsForLine = commentHighlight?.getCommentsForLine;
   const lineHasComments = commentHighlight?.lineHasComments;
-  const isCommentHovered = commentHighlight?.isCommentHovered;
   const contextOnHighlightClick = commentHighlight?.onHighlightClick;
+
+  // Track which pages have rendered their text layers so highlights can be drawn
+  const [renderedPages, setRenderedPages] = useState<Set<number>>(new Set());
+  // Incremented on every page render to trigger highlight recomputation (e.g. after resize)
+  const [renderVersion, setRenderVersion] = useState(0);
 
   const hasCommentsForPage = useCallback(
     (pageNumber: number): boolean => {
@@ -48,36 +89,6 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       return lineHasComments(pageNumber);
     },
     [lineHasComments],
-  );
-
-  const handleHoverEnterPage = useCallback(
-    (pageNumber: number) => {
-      if (!setHoveredCommentId || !getCommentsForLine) {
-        return;
-      }
-
-      const commentsForPage = getCommentsForLine(pageNumber);
-      if (commentsForPage.length === 0) {
-        return;
-      }
-
-      setHoveredCommentId(commentsForPage[0].id);
-    },
-    [getCommentsForLine, setHoveredCommentId],
-  );
-
-  const handleHoverLeavePage = useCallback(
-    (pageNumber: number) => {
-      if (!setHoveredCommentId || !getCommentsForLine || !isCommentHovered) {
-        return;
-      }
-
-      const commentsForPage = getCommentsForLine(pageNumber);
-      if (commentsForPage.some((comment) => isCommentHovered(comment.id))) {
-        setHoveredCommentId(null);
-      }
-    },
-    [getCommentsForLine, isCommentHovered, setHoveredCommentId],
   );
 
   const handleExistingCommentOpen = useCallback(
@@ -105,6 +116,13 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
 
   const handlePageClick = useCallback(
     (event: React.MouseEvent, pageNumber: number) => {
+      // Check for an active text selection first
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        // User selected text — handled by handleTextSelection on mouseup
+        return;
+      }
+
       if (handleExistingCommentOpen(event, pageNumber)) {
         event.preventDefault();
         event.stopPropagation();
@@ -118,6 +136,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       event.preventDefault();
       event.stopPropagation();
 
+      // Page-level comment (legacy behavior)
       const newComment: CommentType = {
         id: commentCounter,
         endChar: 0,
@@ -139,6 +158,107 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     [addComment, commentCounter, file, handleExistingCommentOpen, readOnly, setHoveredCommentId, user],
   );
 
+  // ─── Text selection → comment creation ─────────────────────────────────
+  // Walk up the DOM to find the enclosing react-pdf Page element and its page number.
+  const getPageNumberFromNode = useCallback((node: Node): number | null => {
+    let el: Node | null = node;
+    while (el) {
+      if (el instanceof HTMLElement) {
+        const pageNum = el.getAttribute('data-page-number');
+        if (pageNum) return parseInt(pageNum, 10);
+      }
+      el = el.parentNode;
+    }
+    return null;
+  }, []);
+
+  // Compute a flat character offset for `node` at `offset` within the page's .textLayer.
+  // Walks all text-layer spans in DOM order, summing textContent lengths.
+  const getCharOffsetInTextLayer = useCallback((node: Node, offset: number, textLayer: Element): number => {
+    let charOffset = 0;
+    const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+    let current = walker.nextNode();
+    while (current) {
+      if (current === node) {
+        return charOffset + offset;
+      }
+      charOffset += current.textContent?.length ?? 0;
+      current = walker.nextNode();
+    }
+    // Fallback: node not found in the text layer — return the total length
+    return charOffset;
+  }, []);
+
+  const handleTextSelection = useCallback(
+    (event: React.MouseEvent) => {
+      if (readOnly) return;
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+      const range = selection.getRangeAt(0);
+
+      // Verify the selection is inside a text layer
+      const startTextLayer = (
+        range.startContainer instanceof HTMLElement ? range.startContainer : range.startContainer.parentElement
+      )?.closest('.textLayer');
+      const endTextLayer = (
+        range.endContainer instanceof HTMLElement ? range.endContainer : range.endContainer.parentElement
+      )?.closest('.textLayer');
+      if (!startTextLayer || !endTextLayer) return;
+
+      const startPage = getPageNumberFromNode(range.startContainer);
+      const endPage = getPageNumberFromNode(range.endContainer);
+      if (startPage === null || endPage === null) return;
+
+      // Calculate character offsets within the text layer
+      let startChar = getCharOffsetInTextLayer(range.startContainer, range.startOffset, startTextLayer);
+      let endChar = getCharOffsetInTextLayer(range.endContainer, range.endOffset, endTextLayer);
+
+      // Normalize direction (user may have selected bottom-to-top)
+      let finalStartPage = startPage;
+      let finalEndPage = endPage;
+      if (finalStartPage > finalEndPage || (finalStartPage === finalEndPage && startChar > endChar)) {
+        [finalStartPage, finalEndPage] = [finalEndPage, finalStartPage];
+        [startChar, endChar] = [endChar, startChar];
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const newComment: CommentType = {
+        id: commentCounter,
+        startLine: finalStartPage,
+        endLine: finalEndPage,
+        startChar,
+        endChar,
+        file: file.id ?? 0,
+        pointDelta: 0.0,
+        text: '',
+        rubricComment: null,
+        author: user,
+        feedback: 0,
+        color: '',
+      };
+
+      addComment(newComment, file);
+      setHoveredCommentId?.(newComment.id);
+
+      // Clear the native selection so it doesn't linger
+      selection.removeAllRanges();
+    },
+    [
+      addComment,
+      commentCounter,
+      file,
+      getCharOffsetInTextLayer,
+      getPageNumberFromNode,
+      readOnly,
+      setHoveredCommentId,
+      user,
+    ],
+  );
+
   const onDocumentLoadSuccess = (pdf: PdfDocumentProxyLike) => {
     setPages(pdf.numPages);
     dispatch();
@@ -153,6 +273,17 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     const event = new Event('pdf-loaded');
     document.dispatchEvent(event);
   };
+
+  const handlePageRenderSuccess = useCallback((pageNumber: number) => {
+    dispatch();
+    setRenderedPages((prev) => {
+      if (prev.has(pageNumber)) return prev;
+      const next = new Set(prev);
+      next.add(pageNumber);
+      return next;
+    });
+    setRenderVersion((v) => v + 1);
+  }, []);
 
   const getPageClassName = useCallback(
     (pageNumber: number) => {
@@ -170,12 +301,19 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         return {
           pageNumber,
           pageHasComments,
-          onMouseEnter: pageHasComments ? () => handleHoverEnterPage(pageNumber) : undefined,
-          onMouseLeave: pageHasComments ? () => handleHoverLeavePage(pageNumber) : undefined,
           onClick: (event: React.MouseEvent) => handlePageClick(event, pageNumber),
+          onRenderSuccess: () => handlePageRenderSuccess(pageNumber),
         };
       }),
-    [handleHoverEnterPage, handleHoverLeavePage, handlePageClick, hasCommentsForPage, numPages],
+    [handlePageClick, handlePageRenderSuccess, hasCommentsForPage, numPages],
+  );
+
+  // Get comments for a specific page (for highlight rendering)
+  const getCommentsForPage = useCallback(
+    (pageNumber: number): CommentType[] => {
+      return comments.filter((c) => c.startLine! <= pageNumber && c.endLine! >= pageNumber);
+    },
+    [comments],
   );
 
   if (File.codeType(props.file) !== 'pdf') {
@@ -184,25 +322,57 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   }
 
   return (
-    <Document
-      file={getFileContent(props.file)}
-      onLoadSuccess={onDocumentLoadSuccess}
-      onLoadError={(error) => console.error('Error loading PDF:', error)}
-    >
-      {pageEventHandlers.map(({ pageNumber, pageHasComments, onMouseEnter, onMouseLeave, onClick }) => (
-        <Page
-          key={`page_${pageNumber}`}
-          className={getPageClassName(pageNumber)}
-          data-has-comment={pageHasComments ? 'true' : undefined}
-          pageNumber={pageNumber}
-          renderTextLayer={false}
-          renderAnnotationLayer={false}
-          onRenderSuccess={dispatch}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onClick={onClick}
-        />
-      ))}
-    </Document>
+    <div ref={containerRef} onMouseUp={handleTextSelection}>
+      <Document
+        file={getFileContent(props.file)}
+        onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={(error) => console.error('Error loading PDF:', error)}
+      >
+        {pageEventHandlers.map(({ pageNumber, pageHasComments, onClick, onRenderSuccess }) => (
+          <React.Fragment key={`page_${pageNumber}`}>
+            <div style={{ position: 'relative' }}>
+              {pageNumber === 1 && (
+                <Divider
+                  titlePlacement="right"
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    zIndex: 1,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    padding: '4px 8px',
+                    borderRadius: 4,
+                  }}
+                >
+                  {pageNumber}
+                </Divider>
+              )}
+              <Page
+                className={getPageClassName(pageNumber)}
+                data-has-comment={pageHasComments ? 'true' : undefined}
+                pageNumber={pageNumber}
+                width={containerWidth ?? undefined}
+                renderTextLayer={true}
+                renderAnnotationLayer={false}
+                onRenderSuccess={onRenderSuccess}
+                onClick={onClick}
+              />
+              {renderedPages.has(pageNumber) && (
+                <PdfHighlightLayer
+                  pageNumber={pageNumber}
+                  comments={getCommentsForPage(pageNumber)}
+                  onHighlightClick={contextOnHighlightClick}
+                  setHoveredCommentId={setHoveredCommentId}
+                  renderVersion={renderVersion}
+                />
+              )}
+            </div>
+            <Divider titlePlacement="right" style={{ margin: '16px 0' }} key={`divider_${pageNumber}`}>
+              {pageNumber + 1}
+            </Divider>
+          </React.Fragment>
+        ))}
+      </Document>
+    </div>
   );
 };
