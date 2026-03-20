@@ -3,7 +3,6 @@ import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import path from 'path';
 import svgr from 'vite-plugin-svgr';
 import packageJson from './package.json' with { type: 'json' };
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig(async (config) => {
   const { mode } = config;
@@ -28,7 +27,6 @@ export default defineConfig(async (config) => {
       // Enable automatic JSX runtime
       jsxRuntime: 'automatic',
     }),
-    tsconfigPaths(),
   ];
 
   if (mode === 'analyze') {
