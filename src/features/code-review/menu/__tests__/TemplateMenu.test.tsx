@@ -54,9 +54,9 @@ describe('TemplateMenu', () => {
 
     renderWithTheme(<TemplateMenu assignmentId={1} onApplyTemplate={onApply} currentUserEmail="me" />);
 
-    await waitFor(() => expect(screen.getByText('Template 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('Template 1')[0]).toBeInTheDocument());
 
-    fireEvent.click(screen.getByText('Template 1'));
+    fireEvent.click(screen.getAllByText('Template 1')[0]);
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ text: 'Template 1' }));
   });
 });
