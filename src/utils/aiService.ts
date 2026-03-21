@@ -9,6 +9,8 @@ export interface GenerateCommentRequest {
   file_id: number;
   start_line: number;
   end_line: number;
+  start_char?: number;
+  end_char?: number;
   rubric_comment_id?: number;
   existing_text?: string;
   points?: number;
@@ -48,6 +50,8 @@ export async function generateComment(params: GenerateCommentRequest): Promise<s
       file_id: params.file_id,
       start_line: params.start_line,
       end_line: params.end_line,
+      start_char: params.start_char,
+      end_char: params.end_char,
       rubric_comment_id: params.rubric_comment_id,
       existing_text: params.existing_text || '',
       points: params.points,
