@@ -229,7 +229,21 @@ export const DownloadCode = (props: IDownloadCodeProps) => {
           dir = nextDir ? nextDir : dir;
         });
       }
-      dir.file(file.name, getFileContent(file));
+      const content = getFileContent(file);
+      // Binary files (PDFs, images, etc.) are stored as data URIs: "data:<mime>;base64,<data>"
+      // Decode them to binary before adding to the zip so they download correctly.
+      const dataUriMatch = content.match(/^data:[^;]+;base64,/);
+      if (dataUriMatch) {
+        const base64 = content.slice(dataUriMatch[0].length);
+        const binaryStr = atob(base64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        dir.file(file.name, bytes, { binary: true });
+      } else {
+        dir.file(file.name, content);
+      }
       return true;
     });
 
