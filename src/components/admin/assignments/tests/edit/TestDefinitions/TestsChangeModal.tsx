@@ -173,7 +173,13 @@ export const TestsChangeModal = (props: IProps) => {
         // check to see if the category contains test cases that aren't file defined
         let canDelete = true;
         const thisCategory = props.categories.find((c) => c.name === categName);
-        if (thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
+
+        // Never auto-delete categories that have attached resources
+        if (thisCategory && thisCategory.resources && thisCategory.resources.length > 0) {
+          canDelete = false;
+        }
+
+        if (canDelete && thisCategory && props.casesByCategory[thisCategory.id] !== undefined) {
           const thisCategoryCases = props.casesByCategory[thisCategory.id];
           // If the category has no cases then it can't be file defined
           if (thisCategoryCases.length === 0) canDelete = false;

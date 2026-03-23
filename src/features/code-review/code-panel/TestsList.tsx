@@ -77,6 +77,13 @@ const SYNTAX_ERROR_PATTERNS: RegExp[] = [
   /compilation failed/i,
 ];
 
+const TEST_SCRIPT_ERROR_PATTERNS: RegExp[] = [
+  /Test script failed to (?:load|execute)/i,
+  /Test Script Error/i,
+  /\bModuleNotFoundError\b/,
+  /\bImportError\b/,
+];
+
 const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResult[] = []): SyntaxInsight => {
   if (!result) {
     return { hasSyntaxIssue: false, hasSyntaxLinkedFailure: false, showAdvisory: false };
@@ -88,6 +95,11 @@ const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResu
 
   const hasSyntaxIssue = candidateTexts.some((text) => SYNTAX_ERROR_PATTERNS.some((pattern) => pattern.test(text)));
 
+  // Also detect test script errors as a form of "syntax" issue
+  const hasTestScriptError = candidateTexts.some((text) =>
+    TEST_SCRIPT_ERROR_PATTERNS.some((pattern) => pattern.test(text)),
+  );
+
   const hasSyntaxLinkedFailure = parsedResults.some((r) => {
     if (r.passed) return false;
     const detail = `${r.error || ''}\n${r.message || ''}`;
@@ -96,7 +108,7 @@ const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResu
 
   const hasAdvisoryMarker = /notebook syntax advisory/i.test(result.logs || '');
 
-  if (!hasSyntaxIssue) {
+  if (!hasSyntaxIssue && !hasTestScriptError) {
     return {
       hasSyntaxIssue: false,
       hasSyntaxLinkedFailure,
@@ -105,7 +117,7 @@ const getSyntaxInsight = (result?: SubmissionTest, parsedResults: ParsedTestResu
   }
 
   return {
-    hasSyntaxIssue,
+    hasSyntaxIssue: hasSyntaxIssue || hasTestScriptError,
     hasSyntaxLinkedFailure,
     showAdvisory: !hasSyntaxLinkedFailure,
   };
@@ -459,50 +471,41 @@ const TestsList: React.FC<TestsListProps> = ({
     return 'failed';
   };
 
-  const getStatusColorKey = (result?: SubmissionTest) => {
-    const outcome = getOutcome(result);
-    if (outcome === 'not-run') return 'default';
-    if (outcome === 'passed') return 'passed';
-    if (outcome === 'partial') return 'partial';
-    if (outcome === 'error') return 'error';
-    return 'failed';
+  const outcomeColorKey = (outcome: TestOutcome) => (outcome === 'not-run' ? 'default' : outcome);
+
+  const outcomeIcons: Record<TestOutcome, React.ComponentType<{ style?: React.CSSProperties }>> = {
+    'not-run': ClockCircleOutlined,
+    error: ExclamationCircleFilled,
+    passed: CheckCircleFilled,
+    partial: MinusCircleFilled,
+    failed: CloseCircleFilled,
   };
 
-  const getStatusIcon = (result?: SubmissionTest) => {
-    const outcome = getOutcome(result);
-    const key = getStatusColorKey(result);
-    const color = statusColors[key].main;
-
-    if (outcome === 'not-run') return <ClockCircleOutlined style={{ fontSize: 24, color }} />;
-    if (outcome === 'error') return <ExclamationCircleFilled style={{ fontSize: 24, color }} />;
-    if (outcome === 'passed') return <CheckCircleFilled style={{ fontSize: 24, color }} />;
-    if (outcome === 'partial') return <MinusCircleFilled style={{ fontSize: 24, color }} />;
-    return <CloseCircleFilled style={{ fontSize: 24, color }} />;
+  const outcomeLabels: Record<TestOutcome, string> = {
+    'not-run': 'Not Run',
+    error: 'Error',
+    passed: 'Passed',
+    partial: 'Partial',
+    failed: 'Failed',
   };
 
-  const getStatusText = (result?: SubmissionTest) => {
-    const outcome = getOutcome(result);
-    if (outcome === 'not-run') return 'Not Run';
-    if (outcome === 'error') return 'Error';
-    if (outcome === 'passed') return 'Passed';
-    if (outcome === 'partial') return 'Partial';
-    return 'Failed';
-  };
-
-  // Calculate summary stats
+  // Calculate summary stats in a single pass
   const totalTests = combinedTests.length;
-  const passedTests = combinedTests.filter((t) => getOutcome(t.result) === 'passed').length;
-  const partialTests = combinedTests.filter((t) => getOutcome(t.result) === 'partial').length;
-  const failedTests = combinedTests.filter((t) => getOutcome(t.result) === 'failed').length;
-  const errorTests = combinedTests.filter((t) => getOutcome(t.result) === 'error').length;
-  const notRunTests = combinedTests.filter((t) => !t.result).length;
+  const stats = combinedTests.reduce(
+    (acc, t) => {
+      acc[getOutcome(t.result)]++;
+      return acc;
+    },
+    { 'not-run': 0, passed: 0, partial: 0, failed: 0, error: 0 } as Record<TestOutcome, number>,
+  );
+  const { passed: passedTests, partial: partialTests, failed: failedTests, error: errorTests } = stats;
+  const notRunTests = stats['not-run'];
 
   const getCardStyle = (result?: SubmissionTest): React.CSSProperties => {
-    const key = getStatusColorKey(result);
-    const colors = statusColors[key];
+    const colors = statusColors[outcomeColorKey(getOutcome(result))];
 
     return {
-      marginBottom: 12,
+      marginBottom: 8,
       borderRadius: 6,
       border: `1px solid ${isDarkTheme ? darkBorder : colors.border}`,
       borderLeft: `4px solid ${colors.main}`,
@@ -517,7 +520,7 @@ const TestsList: React.FC<TestsListProps> = ({
       <div
         style={{
           fontSize: 12,
-          color: isDarkTheme ? '#1e1e1e' : '#262626',
+          color: isDarkTheme ? '#e6edf3' : '#262626',
           whiteSpace: 'pre-wrap',
           overflowWrap: 'anywhere',
         }}
@@ -536,12 +539,13 @@ const TestsList: React.FC<TestsListProps> = ({
     );
   };
 
-  const renderTestCard = (item: TestItem) => {
+  const renderTestCard = (item: TestItem, suppressMessages = false) => {
     const { definition, result } = item;
     let parsedResults = getParsedResults(result);
     const isRunning = runningTestIds.has(definition.id);
-    const statusKey = getStatusColorKey(result);
-    const statusColor = statusColors[statusKey];
+    const outcome = getOutcome(result);
+    const statusColor = statusColors[outcomeColorKey(outcome)];
+    const StatusIcon = outcomeIcons[outcome];
 
     // Filter results to handle potential log leakage (where logs contain global summary)
     // If we have multiple results, we try to find the one matching this test card.
@@ -607,24 +611,40 @@ const TestsList: React.FC<TestsListProps> = ({
       ? (primaryParsedResult?.error || result?.logs || primaryParsedResult?.message || '').trim()
       : '';
 
-    // Determine current score and max score for display
+    // Compute display score
     let currentScore = 0;
     let maxScore = definition.pointsPass || 0;
     if (parsedResults.length > 0) {
       currentScore = parsedResults.reduce((acc, curr) => acc + curr.score, 0);
-      // If simplified to one result, use its max score. If multiple (subtests), sum them?
-      // Typically if match found, it's 1 result. If multiple matches (subtests), sum scores.
-      // However, usually we expect 1 match per test case.
-      // If parsedResults has multiple after filtering, it means multiple subtests matched.
-      // We should sum them for the card total.
-      if (parsedResults.length === 1) {
-        maxScore = parsedResults[0].maxScore;
-      } else {
-        maxScore = parsedResults.reduce((acc, curr) => acc + curr.maxScore, 0);
-      }
+      maxScore =
+        parsedResults.length === 1
+          ? parsedResults[0].maxScore
+          : parsedResults.reduce((acc, curr) => acc + curr.maxScore, 0);
     } else if (result?.passed) {
       currentScore = definition.pointsPass || 0;
     }
+
+    const syntaxTag = syntaxInsight.showAdvisory ? (
+      <Popover
+        trigger="click"
+        placement="leftTop"
+        title="Syntax advisory"
+        content={syntaxAdvisoryPopupContent}
+        overlayStyle={{ maxWidth: 460 }}
+      >
+        <Tag
+          style={{
+            margin: 0,
+            cursor: 'pointer',
+            borderColor: isDarkTheme ? '#3a6ea5' : '#91caff',
+            background: isDarkTheme ? 'rgba(24, 144, 255, 0.15)' : '#e6f7ff',
+            color: isDarkTheme ? '#91d5ff' : '#0958d9',
+          }}
+        >
+          Syntax
+        </Tag>
+      </Popover>
+    ) : null;
 
     return (
       <Card
@@ -635,7 +655,9 @@ const TestsList: React.FC<TestsListProps> = ({
         hoverable
       >
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          <div style={{ paddingTop: 2 }}>{getStatusIcon(result)}</div>
+          <div style={{ paddingTop: 2 }}>
+            <StatusIcon style={{ fontSize: 24, color: statusColor.main }} />
+          </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Header: Title and Score Badge */}
@@ -646,8 +668,6 @@ const TestsList: React.FC<TestsListProps> = ({
                 <Text strong style={{ fontSize: 13, display: 'block', lineHeight: '1.4', color: consoleTheme.text }}>
                   {definition.description || `Test ${definition.id}`}
                 </Text>
-
-                {/* Description (subtitle) */}
 
                 {/* Parsed Description Override (if different) */}
                 {parsedResults.length === 1 &&
@@ -670,31 +690,10 @@ const TestsList: React.FC<TestsListProps> = ({
                   gap: 4,
                 }}
               >
-                {/* Run Button for Students/Staff */}
+                {/* Run Button and Syntax Tag */}
                 {!isStudent && (
                   <div style={{ marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {syntaxInsight.showAdvisory && (
-                      <Popover
-                        trigger="click"
-                        placement="leftTop"
-                        title="Syntax advisory"
-                        content={syntaxAdvisoryPopupContent}
-                        overlayStyle={{ maxWidth: 460 }}
-                      >
-                        <Tag
-                          style={{
-                            margin: 0,
-                            cursor: 'pointer',
-                            borderColor: isDarkTheme ? '#3a6ea5' : '#91caff',
-                            background: isDarkTheme ? 'rgba(24, 144, 255, 0.15)' : '#e6f7ff',
-                            color: isDarkTheme ? '#91d5ff' : '#0958d9',
-                          }}
-                        >
-                          Syntax
-                        </Tag>
-                      </Popover>
-                    )}
-
+                    {syntaxTag}
                     <Tooltip title="Run this test only">
                       <Button
                         size="small"
@@ -715,29 +714,7 @@ const TestsList: React.FC<TestsListProps> = ({
                   </div>
                 )}
 
-                {isStudent && syntaxInsight.showAdvisory && (
-                  <div style={{ marginBottom: 4 }}>
-                    <Popover
-                      trigger="click"
-                      placement="leftTop"
-                      title="Syntax advisory"
-                      content={syntaxAdvisoryPopupContent}
-                      overlayStyle={{ maxWidth: 460 }}
-                    >
-                      <Tag
-                        style={{
-                          margin: 0,
-                          cursor: 'pointer',
-                          borderColor: isDarkTheme ? '#3a6ea5' : '#91caff',
-                          background: isDarkTheme ? 'rgba(24, 144, 255, 0.15)' : '#e6f7ff',
-                          color: isDarkTheme ? '#91d5ff' : '#0958d9',
-                        }}
-                      >
-                        Syntax
-                      </Tag>
-                    </Popover>
-                  </div>
-                )}
+                {isStudent && syntaxTag && <div style={{ marginBottom: 4 }}>{syntaxTag}</div>}
 
                 <Tag
                   style={{
@@ -752,7 +729,7 @@ const TestsList: React.FC<TestsListProps> = ({
                   {result ? `${currentScore}/${maxScore} pts` : 'Not Run'}
                 </Tag>
                 <div style={{ fontSize: 10, color: mutedText, marginTop: 2, textAlign: 'right' }}>
-                  {getStatusText(result)}
+                  {outcomeLabels[outcome]}
                 </div>
               </div>
             </div>
@@ -760,8 +737,6 @@ const TestsList: React.FC<TestsListProps> = ({
             {/* Rubric Linkage Badge */}
             {(() => {
               if (!definition.rubricItem || !rubricCategories) return null;
-              // Find the rubric item details... logic omitted for brevity as implementation is same
-              // Re-implementing concise logic:
               const itemDetails = rubricCategories
                 .flatMap((c) => (c.rubricComments as unknown as RubricComment[]) || [])
                 .find((rc) => rc.id === definition.rubricItem);
@@ -797,8 +772,6 @@ const TestsList: React.FC<TestsListProps> = ({
                 <Panel
                   header={
                     <Text style={{ fontSize: 12, color: consoleTheme.text }}>
-                      {' '}
-                      {/* Darker for readability */}
                       {parsedResults.filter((r) => r.passed).length}/{parsedResults.length} subtests passed
                     </Text>
                   }
@@ -834,7 +807,7 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
 
             {/* Default Message / Feedback (Tuple Return) */}
-            {parsedResults.length === 1 && showTupleMessage && (
+            {!suppressMessages && parsedResults.length === 1 && showTupleMessage && (
               <div style={{ marginTop: 8 }}>
                 <Alert
                   message={renderMarkdownMessage(primaryParsedResult?.message || '')}
@@ -843,31 +816,35 @@ const TestsList: React.FC<TestsListProps> = ({
                   style={{
                     padding: '4px 12px',
                     borderRadius: 4,
-                    border: '1px solid #91caff',
-                    backgroundColor: '#e6f7ff',
+                    border: isDarkTheme ? '1px solid #153450' : '1px solid #91caff',
+                    backgroundColor: isDarkTheme ? 'rgba(24, 144, 255, 0.1)' : '#e6f7ff',
+                    color: consoleTheme.text,
                   }}
                 />
               </div>
             )}
 
             {/* Error Message */}
-            {parsedResults.length === 1 && primaryParsedResult?.error && !syntaxInsight.hasSyntaxIssue && (
-              <div
-                style={{
-                  marginTop: 8,
-                  padding: '8px',
-                  backgroundColor: statusColors.error.bg,
-                  border: `1px solid ${statusColors.error.border}`,
-                  borderRadius: 4,
-                  fontFamily: 'monospace',
-                  fontSize: 11,
-                  color: statusColors.error.main, // Standard error red (usually accessible on light bg)
-                  whiteSpace: 'pre-wrap',
-                }}
-              >
-                {primaryParsedResult.error}
-              </div>
-            )}
+            {!suppressMessages &&
+              parsedResults.length === 1 &&
+              primaryParsedResult?.error &&
+              !syntaxInsight.hasSyntaxIssue && (
+                <div
+                  style={{
+                    marginTop: 8,
+                    padding: '8px',
+                    backgroundColor: statusColors.error.bg,
+                    border: `1px solid ${statusColors.error.border}`,
+                    borderRadius: 4,
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    color: statusColors.error.main, // Standard error red (usually accessible on light bg)
+                    whiteSpace: 'pre-wrap',
+                  }}
+                >
+                  {primaryParsedResult.error}
+                </div>
+              )}
 
             {/* Syntax/Parse Error Hint */}
             {!result?.passed && syntaxInsight.hasSyntaxIssue && syntaxInsight.hasSyntaxLinkedFailure && (
@@ -875,50 +852,94 @@ const TestsList: React.FC<TestsListProps> = ({
                 <Alert
                   type="warning"
                   showIcon
-                  message="Syntax/parse issue detected"
+                  message={
+                    <span style={isDarkTheme ? { color: '#e6edf3' } : undefined}>Syntax/parse issue detected</span>
+                  }
                   description={
-                    <div style={{ fontSize: 12, whiteSpace: 'pre-wrap' }}>
+                    <div style={{ fontSize: 12, whiteSpace: 'pre-wrap', color: isDarkTheme ? '#e6edf3' : undefined }}>
                       {syntaxDetailText ||
                         'Student code appears to have a syntax/parse issue that may prevent tests from running as expected.'}
                     </div>
                   }
+                  style={
+                    isDarkTheme
+                      ? {
+                          backgroundColor: 'rgba(216, 150, 20, 0.1)',
+                          border: '1px solid #593d10',
+                        }
+                      : undefined
+                  }
                 />
               </div>
             )}
-
-            {/* Raw Logs Fallback */}
-            {result?.logs &&
-              (parsedResults.length === 0 ||
-                (parsedResults.length === 1 &&
-                  !parsedResults[0].error &&
-                  !parsedResults[0].message &&
-                  !result.passed)) && (
-                <div style={{ marginTop: 8 }}>
-                  <Collapse ghost size="small">
-                    <Panel header={<span style={{ color: consoleTheme.text }}>View Logs</span>} key="logs">
-                      <pre
-                        style={{
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                          whiteSpace: 'pre-wrap',
-                          padding: 8,
-                          backgroundColor: isDarkTheme ? 'rgba(0,0,0,0.3)' : '#fafafa',
-                          borderRadius: 4,
-                          maxHeight: 150,
-                          overflow: 'auto',
-                          border: `1px solid ${isDarkTheme ? darkBorder : '#f0f0f0'}`,
-                          color: consoleTheme.text,
-                        }}
-                      >
-                        {result.logs}
-                      </pre>
-                    </Panel>
-                  </Collapse>
-                </div>
-              )}
           </div>
         </div>
       </Card>
+    );
+  };
+
+  const renderCategoryLogs = (items: TestItem[], hasScriptError = false) => {
+    const itemsWithLogs = items.filter((item) => item.result?.logs);
+    if (itemsWithLogs.length === 0) return null;
+
+    const logEntries = (
+      <>
+        {itemsWithLogs.map((item, idx) => (
+          <div key={item.definition.id}>
+            {idx > 0 && <div style={{ borderTop: `1px solid ${isDarkTheme ? darkBorder : '#f0f0f0'}` }} />}
+            {itemsWithLogs.length > 1 && (
+              <div
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.05)' : '#f5f5f5',
+                  borderBottom: `1px solid ${isDarkTheme ? darkBorder : '#f0f0f0'}`,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: emphasisText,
+                }}
+              >
+                {item.definition.description || `Test ${item.definition.id}`}
+              </div>
+            )}
+            <pre
+              style={{
+                fontFamily: 'monospace',
+                fontSize: 11,
+                whiteSpace: 'pre-wrap',
+                padding: '8px 12px',
+                margin: 0,
+                color: consoleTheme.text,
+                lineHeight: 1.5,
+              }}
+            >
+              {item.result!.logs}
+            </pre>
+          </div>
+        ))}
+      </>
+    );
+
+    const containerStyle: React.CSSProperties = {
+      backgroundColor: isDarkTheme ? 'rgba(0,0,0,0.3)' : '#fafafa',
+      borderRadius: 6,
+      border: `1px solid ${isDarkTheme ? darkBorder : '#f0f0f0'}`,
+      maxHeight: hasScriptError ? 300 : 400,
+      overflow: 'auto',
+    };
+
+    if (hasScriptError) {
+      return <div style={{ marginTop: 4, ...containerStyle }}>{logEntries}</div>;
+    }
+
+    return (
+      <Collapse ghost size="small" style={{ marginTop: 4 }}>
+        <Panel
+          header={<Text style={{ fontSize: 12, color: mutedText }}>Execution Logs ({itemsWithLogs.length})</Text>}
+          key="category-logs"
+        >
+          <div style={containerStyle}>{logEntries}</div>
+        </Panel>
+      </Collapse>
     );
   };
 
@@ -1041,13 +1062,101 @@ const TestsList: React.FC<TestsListProps> = ({
           const items = groups[category.id] || [];
           if (items.length === 0) return null;
 
+          const hasScriptError = items.some(
+            (item) =>
+              item.result?.logs && TEST_SCRIPT_ERROR_PATTERNS.some((pattern) => pattern.test(item.result?.logs || '')),
+          );
+
+          // Detect uniform messages: all items share identical logs/message
+          const itemsWithResults = items.filter((item) => item.result);
+          const allLogs = itemsWithResults.map((item) => item.result!.logs || '');
+          const uniformLog =
+            itemsWithResults.length > 1 && allLogs.every((l) => l && l === allLogs[0]) ? allLogs[0] : null;
+          const allMessages = itemsWithResults.map((item) => {
+            const pr = getParsedResults(item.result);
+            return pr.length === 1 ? pr[0].message || '' : '';
+          });
+          const uniformMessage =
+            itemsWithResults.length > 1 && allMessages.every((m) => m && m === allMessages[0]) ? allMessages[0] : null;
+          const hasUniformContent = !!(uniformLog || uniformMessage);
+
           return (
             <Panel
               key={category.id.toString()}
               header={renderCategoryHeader(category, category.name, items)}
-              style={{ marginBottom: 12 }}
+              style={{
+                marginBottom: 16,
+              }}
             >
-              {items.map((item) => renderTestCard(item))}
+              {hasScriptError && (
+                <div
+                  style={{
+                    marginBottom: 12,
+                    padding: 12,
+                    borderRadius: 6,
+                    backgroundColor: isDarkTheme ? 'rgba(211, 32, 41, 0.06)' : '#fff2f0',
+                    border: `1px solid ${isDarkTheme ? '#58181c' : '#ffccc7'}`,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                    <ExclamationCircleFilled style={{ color: statusColors.error.main, fontSize: 16, marginTop: 2 }} />
+                    <div>
+                      <Text
+                        strong
+                        style={{ fontSize: 13, color: isDarkTheme ? '#e6edf3' : '#262626', display: 'block' }}
+                      >
+                        Test script error
+                      </Text>
+                      <Text style={{ fontSize: 12, color: isDarkTheme ? '#9da7b3' : '#595959' }}>
+                        The test script failed to execute — likely an import or syntax error in the script, not student
+                        code.
+                      </Text>
+                    </div>
+                  </div>
+                  {renderCategoryLogs(items, true)}
+                </div>
+              )}
+              {!hasScriptError && hasUniformContent && (
+                <div style={{ marginBottom: 12 }}>
+                  {uniformMessage && (
+                    <Alert
+                      message={renderMarkdownMessage(uniformMessage)}
+                      type="info"
+                      showIcon
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 4,
+                        border: isDarkTheme ? '1px solid #153450' : '1px solid #91caff',
+                        backgroundColor: isDarkTheme ? 'rgba(24, 144, 255, 0.1)' : '#e6f7ff',
+                        color: consoleTheme.text,
+                        marginBottom: uniformLog ? 8 : 0,
+                      }}
+                    />
+                  )}
+                  {uniformLog && (
+                    <pre
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                        whiteSpace: 'pre-wrap',
+                        padding: '8px 12px',
+                        margin: 0,
+                        color: statusColors.error.main,
+                        backgroundColor: statusColors.error.bg,
+                        border: `1px solid ${statusColors.error.border}`,
+                        borderRadius: 4,
+                        maxHeight: 200,
+                        overflow: 'auto',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {uniformLog}
+                    </pre>
+                  )}
+                </div>
+              )}
+              {items.map((item) => renderTestCard(item, hasUniformContent))}
+              {!hasScriptError && !hasUniformContent && renderCategoryLogs(items)}
             </Panel>
           );
         })}
@@ -1059,9 +1168,12 @@ const TestsList: React.FC<TestsListProps> = ({
             <Panel
               key={`orphan-${catId}`}
               header={renderCategoryHeader(undefined, `Category ${catId}`, items)}
-              style={{ marginBottom: 12 }}
+              style={{
+                marginBottom: 16,
+              }}
             >
               {items.map((item) => renderTestCard(item))}
+              {renderCategoryLogs(items)}
             </Panel>
           );
         })}
@@ -1071,9 +1183,12 @@ const TestsList: React.FC<TestsListProps> = ({
           <Panel
             key="unknown"
             header={renderCategoryHeader(undefined, 'Other Tests', unknownCategory)}
-            style={{ marginBottom: 12 }}
+            style={{
+              marginBottom: 16,
+            }}
           >
             {unknownCategory.map((item) => renderTestCard(item))}
+            {renderCategoryLogs(unknownCategory)}
           </Panel>
         )}
       </Collapse>
@@ -1119,52 +1234,27 @@ const TestsList: React.FC<TestsListProps> = ({
 
       {/* Summary Badges */}
       <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Badge
-          count={`${passedTests} Passed`}
-          style={{
-            backgroundColor: statusColors.passed.main,
-            color: '#fff',
-            boxShadow: isDarkTheme ? 'none' : undefined,
-          }}
-        />
-        <Badge
-          count={`${failedTests} Failed`}
-          style={{
-            backgroundColor: failedTests > 0 ? statusColors.failed.main : statusColors.default.main,
-            color: '#fff',
-            boxShadow: isDarkTheme ? 'none' : undefined,
-          }}
-        />
-        {partialTests > 0 && (
-          <Badge
-            count={`${partialTests} Partial`}
-            style={{
-              backgroundColor: statusColors.partial.main,
-              color: '#fff',
-              boxShadow: isDarkTheme ? 'none' : undefined,
-            }}
-          />
-        )}
-        {errorTests > 0 && (
-          <Badge
-            count={`${errorTests} Error`}
-            style={{
-              backgroundColor: statusColors.error.main,
-              color: '#fff',
-              boxShadow: isDarkTheme ? 'none' : undefined,
-            }}
-          />
-        )}
-        {notRunTests > 0 && (
-          <Badge
-            count={`${notRunTests} Not Run`}
-            style={{
-              backgroundColor: statusColors.default.main,
-              color: '#fff',
-              boxShadow: isDarkTheme ? 'none' : undefined,
-            }}
-          />
-        )}
+        {(
+          [
+            { count: passedTests, label: 'Passed', colorKey: 'passed', alwaysShow: true },
+            { count: failedTests, label: 'Failed', colorKey: failedTests > 0 ? 'failed' : 'default', alwaysShow: true },
+            { count: partialTests, label: 'Partial', colorKey: 'partial', alwaysShow: false },
+            { count: errorTests, label: 'Error', colorKey: 'error', alwaysShow: false },
+            { count: notRunTests, label: 'Not Run', colorKey: 'default', alwaysShow: false },
+          ] as const
+        )
+          .filter((b) => b.alwaysShow || b.count > 0)
+          .map((b) => (
+            <Badge
+              key={b.label}
+              count={`${b.count} ${b.label}`}
+              style={{
+                backgroundColor: statusColors[b.colorKey].main,
+                color: '#fff',
+                boxShadow: isDarkTheme ? 'none' : undefined,
+              }}
+            />
+          ))}
       </div>
 
       {/* Progress Bar */}
@@ -1187,11 +1277,23 @@ const TestsList: React.FC<TestsListProps> = ({
       {/* Tests don't affect grade banner */}
       {!testsAffectGrade && (
         <Alert
-          title="Tests do not affect grade"
-          description="Test results are for feedback only and do not count towards the submission grade."
+          message={<span style={isDarkTheme ? { color: '#e6edf3' } : undefined}>Tests do not affect grade</span>}
+          description={
+            <span style={isDarkTheme ? { color: '#e6edf3' } : undefined}>
+              Test results are for feedback only and do not count towards the submission grade.
+            </span>
+          }
           type="info"
           showIcon
-          style={{ marginBottom: 8 }}
+          style={{
+            marginBottom: 8,
+            ...(isDarkTheme
+              ? {
+                  backgroundColor: 'rgba(24, 144, 255, 0.1)',
+                  border: '1px solid #153450',
+                }
+              : {}),
+          }}
         />
       )}
 
@@ -1200,9 +1302,14 @@ const TestsList: React.FC<TestsListProps> = ({
         <Text type="secondary">No tests available for this assignment.</Text>
       ) : (
         <div>
-          {hasCategories || hasCategorizedTests
-            ? renderGroupedTests()
-            : combinedTests.map((item) => renderTestCard(item))}
+          {hasCategories || hasCategorizedTests ? (
+            renderGroupedTests()
+          ) : (
+            <>
+              {combinedTests.map((item) => renderTestCard(item))}
+              {renderCategoryLogs(combinedTests)}
+            </>
+          )}
         </div>
       )}
     </div>

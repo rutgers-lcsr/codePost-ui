@@ -145,7 +145,11 @@ export const TestManager = (props: IProps) => {
                 </div>
                 {isActive && (
                   <Popconfirm
-                    title="Delete category?"
+                    title={
+                      cat.resources && cat.resources.length > 0
+                        ? `Delete category? This will also delete ${cat.resources.length} attached resource file(s).`
+                        : 'Delete category?'
+                    }
                     onConfirm={(e) => {
                       e?.stopPropagation();
                       handleDeleteCategory(cat);
