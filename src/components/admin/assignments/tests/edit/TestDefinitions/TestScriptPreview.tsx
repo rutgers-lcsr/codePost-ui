@@ -17,6 +17,7 @@ interface ITestPreviewItem {
   description: string; // Body
   points: number;
   timeout?: number;
+  truncated?: boolean;
 }
 
 export const TestScriptPreview = ({ code, language }: IProps) => {
@@ -176,6 +177,11 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
                   <Typography.Text strong style={{ fontSize: 15 }}>
                     {item.name}
                   </Typography.Text>
+                  {item.truncated && (
+                    <Tag color="orange" style={{ margin: 0, fontSize: 10 }}>
+                      truncated
+                    </Tag>
+                  )}
                   <code
                     style={{ fontSize: 10, color: '#999', background: '#f0f0f0', padding: '2px 4px', borderRadius: 4 }}
                   >
