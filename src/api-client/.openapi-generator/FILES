@@ -42,6 +42,11 @@ docs/ActivateCipResponse.md
 docs/AiCoursePolicyEnum.md
 docs/AiProviderEnum.md
 docs/Assignment.md
+docs/AssignmentAnalyticsGradeDistribution.md
+docs/AssignmentAnalyticsGraderWorkload.md
+docs/AssignmentAnalyticsGradingTimeline.md
+docs/AssignmentAnalyticsResponse.md
+docs/AssignmentAnalyticsTestResults.md
 docs/AssignmentClone.md
 docs/AssignmentDataSet.md
 docs/AssignmentDataSetCreate.md
@@ -114,6 +119,7 @@ docs/GranularityEnum.md
 docs/HandleValidationResponse.md
 docs/HealthCheck.md
 docs/ImpersonateApi.md
+docs/ImpersonateRequest.md
 docs/JWT.md
 docs/JwtOttResponse.md
 docs/LanguageEnum.md
@@ -168,6 +174,8 @@ docs/PatchedTestCategory.md
 docs/PatchedTestCategoryResource.md
 docs/PatchedUser.md
 docs/PatchedWebhook.md
+docs/PendingAdminActionRequest.md
+docs/PendingAdminActionResponse.md
 docs/RegisterAndSetPasswordRequest.md
 docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md

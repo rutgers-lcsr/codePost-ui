@@ -112,14 +112,31 @@ const BulkSubmissionEdit: React.FC<IProps> = ({
   const numUnfinalized = submissions.length - numFinalized;
 
   const radioStyle = {
-    display: 'block',
     height: '35px',
     lineHeight: '35px',
+    width: '100%',
+    fontSize: 15,
   };
+
+  const options = [
+    {
+      label: `Finalize all submissions (impacts ${numUnfinalized} submission${numUnfinalized > 1 ? 's' : ''})`,
+      value: BULK_ACTION.Finalize,
+      disabled: numUnfinalized === 0,
+      style: radioStyle,
+    },
+    {
+      label: `Unfinalize all submissions (impacts ${numFinalized} submission${numFinalized > 1 ? 's' : ''})`,
+      value: BULK_ACTION.Unfinalize,
+      disabled: numFinalized === 0,
+      style: radioStyle,
+    },
+  ];
+
   return (
     <Modal
       open={true}
-      width={550}
+      width={500}
       title={'Bulk edit submissions'}
       okText="Execute"
       onCancel={onCancel}
@@ -137,16 +154,7 @@ const BulkSubmissionEdit: React.FC<IProps> = ({
       />
       <div>
         <div style={{ fontSize: 16, marginBottom: 10, marginTop: 30 }}>Choose an action to perform: </div>
-        <Radio.Group style={{ paddingLeft: 20 }}>
-          <Radio.Group onChange={onChange} value={action}>
-            <Radio style={radioStyle} value={BULK_ACTION.Finalize} disabled={numUnfinalized === 0}>
-              <b>Finalize</b> all submissions (impacts {numUnfinalized} submission{numUnfinalized > 1 ? 's' : ''})
-            </Radio>
-            <Radio style={radioStyle} value={BULK_ACTION.Unfinalize} disabled={numFinalized === 0}>
-              <b>Unfinalize</b> all submission (impacts {numFinalized} submission{numFinalized > 1 ? 's' : ''})
-            </Radio>
-          </Radio.Group>
-        </Radio.Group>
+        <Radio.Group style={{ paddingLeft: 20 }} onChange={onChange} value={action} options={options}></Radio.Group>
       </div>
     </Modal>
   );

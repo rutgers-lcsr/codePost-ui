@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -543,6 +542,155 @@ export interface Assignment {
    * @memberof Assignment
    */
   testsAffectGrade?: boolean;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGradeDistribution
+ */
+export interface AssignmentAnalyticsGradeDistribution {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGradeDistribution
+   */
+  bucketMin: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGradeDistribution
+   */
+  bucketMax: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGradeDistribution
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGraderWorkload
+ */
+export interface AssignmentAnalyticsGraderWorkload {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsGraderWorkload
+   */
+  grader: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderWorkload
+   */
+  finalized: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderWorkload
+   */
+  unfinalized: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderWorkload
+   */
+  total: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGradingTimeline
+ */
+export interface AssignmentAnalyticsGradingTimeline {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsGradingTimeline
+   */
+  period: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGradingTimeline
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsResponse
+ */
+export interface AssignmentAnalyticsResponse {
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGradeDistribution>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  gradeDistribution: Array<AssignmentAnalyticsGradeDistribution>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGraderWorkload>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  graderWorkload: Array<AssignmentAnalyticsGraderWorkload>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGradingTimeline>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  gradingTimeline: Array<AssignmentAnalyticsGradingTimeline>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsTestResults>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  testResults: Array<AssignmentAnalyticsTestResults>;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsTestResults
+ */
+export interface AssignmentAnalyticsTestResults {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  testCaseDescription: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  testCategoryName: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  passed: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  failed: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  errored: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTestResults
+   */
+  total: number;
 }
 /**
  *
@@ -2992,6 +3140,31 @@ export interface HealthCheck {
   latencyMs?: number | null;
 }
 
+/**
+ *
+ * @export
+ * @interface ImpersonateRequest
+ */
+export interface ImpersonateRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof ImpersonateRequest
+   */
+  username?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ImpersonateRequest
+   */
+  email?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof ImpersonateRequest
+   */
+  neverExpire?: boolean;
+}
 /**
  *
  * @export
@@ -5873,6 +6046,32 @@ export interface PatchedWebhook {
    * @memberof PatchedWebhook
    */
   readonly lastTriggeredStatus?: string | null;
+}
+/**
+ *
+ * @export
+ * @interface PendingAdminActionRequest
+ */
+export interface PendingAdminActionRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminActionRequest
+   */
+  userEmail: string;
+}
+/**
+ *
+ * @export
+ * @interface PendingAdminActionResponse
+ */
+export interface PendingAdminActionResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminActionResponse
+   */
+  status: string;
 }
 /**
  *

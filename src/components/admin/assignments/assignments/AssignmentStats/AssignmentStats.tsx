@@ -1,7 +1,20 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { FC, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { FC, useState, useMemo, useCallback, useEffect, CSSProperties } from 'react';
 import { RedoOutlined } from '@ant-design/icons';
-import { Breadcrumb, Card, Col, Progress, Row, Spin, Statistic, Table, Typography } from 'antd';
+import {
+  Breadcrumb,
+  Card,
+  Col,
+  Empty,
+  Progress,
+  Row,
+  Segmented,
+  Skeleton,
+  Spin,
+  Statistic,
+  Table,
+  Typography,
+} from 'antd';
 import { colors } from '../../../../../theme/colors';
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -9,6 +22,7 @@ import { tooltips } from '../../../../../components/core/tooltips';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { Assignment, SubmissionInfoType } from '../../../../../types/common';
 import { Course } from '../../../../../api-client';
+import type { AssignmentAnalyticsGradeDistribution, AssignmentAnalyticsResponse } from '../../../../../api-client';
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 import {
   calculateFullStats,
@@ -19,6 +33,11 @@ import {
   StatsDrawer,
 } from './StatsUtils';
 import SendEmailModal from '../../../other/SendEmailModal';
+import { Assignment as AssignmentService } from '../../../../../services/assignment';
+import GradeDistributionChart from './charts/GradeDistributionChart';
+import GraderWorkloadChart from './charts/GraderWorkloadChart';
+import GradingTimelineChart from './charts/GradingTimelineChart';
+import TestResultsChart from './charts/TestResultsChart';
 
 const { Title } = Typography;
 
@@ -55,11 +74,67 @@ const AssignmentStats: FC<IProps> = (props) => {
   }>({ title: '', subtitle: '', content: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [analytics, setAnalytics] = useState<AssignmentAnalyticsResponse | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [gradeDistribution, setGradeDistribution] = useState<AssignmentAnalyticsGradeDistribution[] | null>(null);
+  const [gradeDistLoading, setGradeDistLoading] = useState(true);
+  const [buckets, setBuckets] = useState<number>(10);
 
   useEffect(() => {
     // resets loading state when props refresh
     setIsLoading(false);
   }, [props]);
+
+  // Fetch all analytics (except grade distribution uses default buckets)
+  useEffect(() => {
+    let cancelled = false;
+    setAnalyticsLoading(true);
+    AssignmentService.readAnalytics(assignment.id, buckets)
+      .then((data) => {
+        if (!cancelled) {
+          setAnalytics(data);
+          setGradeDistribution(data.gradeDistribution);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAnalytics(null);
+          setGradeDistribution(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setAnalyticsLoading(false);
+          setGradeDistLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignment.id]);
+
+  // Re-fetch only grade distribution when buckets change (skip initial load)
+  useEffect(() => {
+    // Don't fetch on initial mount — the main effect handles that
+    if (analyticsLoading) return;
+    let cancelled = false;
+    setGradeDistLoading(true);
+    AssignmentService.readAnalytics(assignment.id, buckets)
+      .then((data) => {
+        if (!cancelled) setGradeDistribution(data.gradeDistribution);
+      })
+      .catch(() => {
+        if (!cancelled) setGradeDistribution(null);
+      })
+      .finally(() => {
+        if (!cancelled) setGradeDistLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buckets]);
 
   const openDrawer = useCallback(
     (targetAssignment: Assignment, type: DRAWER_TYPE) => {
@@ -135,21 +210,25 @@ const AssignmentStats: FC<IProps> = (props) => {
   const summaryData = (
     <Card
       style={{
-        backgroundColor: '#F9F9F9',
+        backgroundColor: colors.neutralBackground,
         boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+        borderRadius: 8,
+        borderLeft: `3px solid ${colors.brandPrimary}`,
       }}
+      role="region"
+      aria-label="Grade summary statistics"
     >
-      <Row gutter={0} style={{ width: 600, textAlign: 'center' }}>
-        <Col span={6}>
+      <Row gutter={16} style={{ textAlign: 'center' }}>
+        <Col xs={12} sm={6}>
           <Statistic title="Mean" value={mean ? mean : '--'} suffix={`/ ${assignment.points}`} />
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Statistic title="Median" value={median ? median : '...'} suffix={`/ ${assignment.points}`} />
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Statistic title="Max" value={max ? max : '--'} suffix={`/ ${assignment.points}`} />
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Statistic title="Min" value={min ? min : '--'} suffix={`/ ${assignment.points}`} />
         </Col>
       </Row>
@@ -305,70 +384,249 @@ const AssignmentStats: FC<IProps> = (props) => {
     },
   ];
 
-  const divStyle = { padding: '20px 40px' };
+  const cardStyle: CSSProperties = {
+    boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)',
+    borderRadius: 8,
+    transition: 'box-shadow 0.2s ease',
+  };
+
+  const sectionTitleStyle: CSSProperties = {
+    color: colors.neutralSecondaryText,
+    fontSize: 11,
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 12,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  };
+
+  const sectionLineStyle: CSSProperties = {
+    flex: 1,
+    height: 1,
+    background: `linear-gradient(to right, ${colors.neutralBorder}, transparent)`,
+  };
+
+  const fadeInStyle = (isLoaded: boolean): CSSProperties => ({
+    opacity: isLoaded ? 1 : 0,
+    transform: isLoaded ? 'translateY(0)' : 'translateY(8px)',
+    transition: 'opacity 0.4s ease, transform 0.4s ease',
+  });
+
+  const chartLoadingState = (
+    <div style={{ padding: '20px 0' }}>
+      <Skeleton active paragraph={{ rows: 6 }} />
+    </div>
+  );
 
   const content = (
-    <div>
-      <div className="display-flex flex-direction-column align-items-center" style={{ paddingBottom: 50 }}>
-        <div style={{ ...divStyle, paddingBottom: 50 }}>{summaryData}</div>
-        <div style={{ boxShadow: '0 2px 15px 0 rgba(0, 0, 0, 0.1)' }}>
-          <div
-            className="display-flex justify-content-space-between align-items-center"
-            style={{
-              ...divStyle,
-              paddingBottom: 10,
-              paddingTop: 30,
-            }}
+    <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 20px 50px' }}>
+      {/* ── Grade Summary ── */}
+      <div style={{ marginBottom: 32 }}>{summaryData}</div>
+
+      {/* ── Grading Overview: Progress + Timeline side-by-side ── */}
+      <div style={sectionTitleStyle}>
+        <span>Grading Overview</span>
+        <div style={sectionLineStyle} />
+      </div>
+      <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+        <Col xs={24} lg={12}>
+          <Card
+            style={cardStyle}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Grading progress"
           >
-            <Title level={3} style={{ color: colors.brandPrimary }}>
-              Grading Progress Summary
-            </Title>
-            <CPButton onClick={refreshData} cpType="primary" icon={<RedoOutlined />} loading={isLoading}>
-              Refresh data
-            </CPButton>
-            {reminderEmails.length > 0 ? (
-              <SendEmailModal
-                buttonText={'Remind graders'}
-                title="Send reminder emails"
-                template="grader_reminder"
-                course={course}
-                assignment={assignment}
-                me={myEmail}
-                emails={reminderEmails}
-                body={
-                  <div>
-                    Send a reminder email to graders with pending submissions for {assignment.name} asking them to
-                    complete or unclaim these submissions. Graders without pending submissions won't be emailed
-                  </div>
-                }
-              />
-            ) : null}
-          </div>
-          <div className="display-flex align-items-center" style={{ ...divStyle }}>
-            <Table
-              pagination={false}
-              columns={columns}
-              showHeader={false}
-              dataSource={submissionData}
-              size={'small'}
-              style={{ width: 450, paddingRight: 50 }}
-              defaultExpandAllRows={true}
-            />
-            <div className="display-flex flex-direction-column align-items-center">
+            <div className="display-flex justify-content-space-between align-items-center" style={{ marginBottom: 12 }}>
+              <Title level={4} style={{ color: colors.brandPrimary, margin: 0 }}>
+                Grading Progress
+              </Title>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <CPButton
+                  onClick={refreshData}
+                  cpType="primary"
+                  icon={<RedoOutlined />}
+                  loading={isLoading}
+                  size="small"
+                >
+                  Refresh
+                </CPButton>
+                {reminderEmails.length > 0 ? (
+                  <SendEmailModal
+                    buttonText={'Remind'}
+                    title="Send reminder emails"
+                    template="grader_reminder"
+                    course={course}
+                    assignment={assignment}
+                    me={myEmail}
+                    emails={reminderEmails}
+                    body={
+                      <div>
+                        Send a reminder email to graders with pending submissions for {assignment.name} asking them to
+                        complete or unclaim these submissions. Graders without pending submissions won't be emailed
+                      </div>
+                    }
+                  />
+                ) : null}
+              </div>
+            </div>
+            <div className="display-flex flex-direction-column align-items-center" style={{ padding: '8px 0' }}>
               <Progress
                 percent={Math.floor(
                   ((statsForRow.numGraded + statsForRow.numInProgress) / statsForRow.numSubmissions) * 100,
                 )}
                 success={{ percent: Math.floor((statsForRow.numGraded / statsForRow.numSubmissions) * 100) }}
                 type="dashboard"
+                size={140}
               />
-              <Typography.Text style={{ paddingBottom: 10 }}>
+              <Typography.Text style={{ paddingTop: 4, paddingBottom: 8 }}>
                 {`${statsForRow.numGraded} done / ${statsForRow.numInProgress} drafts / ${statsForRow.numUnclaimed} unclaimed`}
               </Typography.Text>
             </div>
-          </div>
-        </div>
+            <Table
+              pagination={false}
+              columns={columns}
+              showHeader={false}
+              dataSource={submissionData}
+              size={'small'}
+              defaultExpandAllRows={true}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card
+            style={cardStyle}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Grading timeline chart"
+          >
+            <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+              Grading Timeline
+            </Title>
+            {analyticsLoading ? (
+              chartLoadingState
+            ) : (
+              <div style={fadeInStyle(!analyticsLoading)}>
+                {analytics && analytics.gradingTimeline.length > 0 ? (
+                  <GradingTimelineChart data={analytics.gradingTimeline} />
+                ) : (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No finalized submissions yet" />
+                )}
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* ── Grade Analysis: Distribution + Workload side-by-side ── */}
+      <div style={sectionTitleStyle}>
+        <span>Grade Analysis</span>
+        <div style={sectionLineStyle} />
       </div>
+      <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+        <Col xs={24} lg={14}>
+          <Card
+            style={cardStyle}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Grade distribution chart"
+          >
+            <div className="display-flex justify-content-space-between align-items-center" style={{ marginBottom: 16 }}>
+              <Title level={4} style={{ color: colors.brandPrimary, margin: 0 }}>
+                Grade Distribution
+              </Title>
+              <div className="display-flex align-items-center" style={{ gap: 8 }}>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Buckets
+                </Typography.Text>
+                <Segmented
+                  options={[5, 10, 20, 50].map((n) => ({ label: `${n}`, value: n }))}
+                  value={buckets}
+                  onChange={(val) => setBuckets(val as number)}
+                  size="small"
+                />
+              </div>
+            </div>
+            {gradeDistLoading ? (
+              chartLoadingState
+            ) : (
+              <div style={fadeInStyle(!gradeDistLoading)}>
+                {gradeDistribution && gradeDistribution.length > 0 ? (
+                  <GradeDistributionChart data={gradeDistribution} />
+                ) : (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No finalized submissions yet" />
+                )}
+              </div>
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} lg={10}>
+          <Card
+            style={cardStyle}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Grader workload chart"
+          >
+            <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+              Grader Workload
+            </Title>
+            {analyticsLoading ? (
+              chartLoadingState
+            ) : (
+              <div style={fadeInStyle(!analyticsLoading)}>
+                {analytics && analytics.graderWorkload.length > 0 ? (
+                  <GraderWorkloadChart data={analytics.graderWorkload} />
+                ) : (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No submissions claimed by graders yet" />
+                )}
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* ── Test Results (only if tests exist) ── */}
+      {analyticsLoading ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Test Results</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Card
+            style={{ ...cardStyle, marginBottom: 32 }}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Test results summary"
+          >
+            <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+              Test Results Summary
+            </Title>
+            {chartLoadingState}
+          </Card>
+        </>
+      ) : analytics && analytics.testResults.length > 0 ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Test Results</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Card
+            style={{ ...cardStyle, marginBottom: 32 }}
+            styles={{ body: { padding: '20px 24px' } }}
+            role="region"
+            aria-label="Test results summary"
+          >
+            <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+              Test Results Summary
+            </Title>
+            <div style={fadeInStyle(!analyticsLoading)}>
+              <TestResultsChart data={analytics.testResults} />
+            </div>
+          </Card>
+        </>
+      ) : null}
+
       {drawerType !== undefined && (
         <StatsDrawer
           type={drawerType}

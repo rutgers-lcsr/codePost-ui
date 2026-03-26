@@ -1,9 +1,8 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
  * codePost API
- *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage  ```python import codepost_api_client as codepost  # Configure the client config = codepost.Configuration(     host=\"https://codepost-api.cs.rutgers.edu\",     api_key={\"tokenAuth\": \"Token YOUR_API_KEY\"} )  # Use the API with codepost.ApiClient(config) as client:     courses_api = codepost.CoursesApi(client)     assignments_api = codepost.AssignmentsApi(client)          # 1. List all courses     print(\"--- Courses ---\")     courses = courses_api.courses_list()     for course in courses:         print(f\"ID: {course.id} | {course.name} ({course.period})\")              if courses:         my_course_id = courses[0].id                  # 2. List assignments for a course         # Note: Course object contains list of assignment IDs         course_data = courses_api.courses_retrieve(my_course_id)                  print(f\"--- Assignments for Course {my_course_id} ---\")         for assignment_id in course_data.assignments:             # Fetch full assignment details             assignment = assignments_api.assignments_retrieve(assignment_id)             print(f\"ID: {assignment.id} | {assignment.name}\")      # 3. Create a new Course     new_course = codepost.Course(name=\"CS101\", period=\"Fall 2026\")     created_course = courses_api.courses_create(new_course)     print(f\"Created Course: {created_course.id}\")      # 4. Create an Assignment     new_assignment = codepost.Assignment(         name=\"Homework 1\",          course=created_course.id     )     created_assignment = assignments_api.assignments_create(new_assignment) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
+ *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
  *
  * The version of the OpenAPI document: 3.0.0
  *
@@ -14,6 +13,11 @@
  */
 
 import * as runtime from '../runtime';
+import type { ImpersonateRequest, User } from '../models/index';
+
+export interface CreateRequest {
+  impersonateRequest?: ImpersonateRequest;
+}
 
 /**
  *
@@ -22,10 +26,15 @@ export class ImpersonateApi extends runtime.BaseAPI {
   /**
    * View to handle impersonation of users. Accepts either \'username\' (exact match) or \'email\' (lookup by email) in the POST body. Staff/superusers can impersonate any user. Course admins can only impersonate students or graders in courses they administer.
    */
-  async createRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+  async createRaw(
+    requestParameters: CreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<User>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
 
     if (
       this.configuration &&
@@ -55,17 +64,22 @@ export class ImpersonateApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
+        body: requestParameters['impersonateRequest'],
       },
       initOverrides,
     );
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response);
   }
 
   /**
    * View to handle impersonation of users. Accepts either \'username\' (exact match) or \'email\' (lookup by email) in the POST body. Staff/superusers can impersonate any user. Course admins can only impersonate students or graders in courses they administer.
    */
-  async create(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-    await this.createRaw(initOverrides);
+  async create(
+    requestParameters: CreateRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<User> {
+    const response = await this.createRaw(requestParameters, initOverrides);
+    return await response.value();
   }
 }

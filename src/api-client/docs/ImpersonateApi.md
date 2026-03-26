@@ -8,33 +8,41 @@ All URIs are relative to _http://localhost_
 
 ## create
 
-> create()
+> User create(impersonateRequest)
 
 View to handle impersonation of users. Accepts either \&#39;username\&#39; (exact match) or \&#39;email\&#39; (lookup by email) in the POST body. Staff/superusers can impersonate any user. Course admins can only impersonate students or graders in courses they administer.
 
 ### Example
 
 ```ts
-import { Configuration, ImpersonateApi } from '';
+import {
+  Configuration,
+  ImpersonateApi,
+} from '';
 import type { CreateRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
+  console.log("🚀 Testing  SDK...");
   const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    accessToken: "YOUR BEARER TOKEN",
   });
   const api = new ImpersonateApi(config);
 
+  const body = {
+    // ImpersonateRequest (optional)
+    impersonateRequest: ...,
+  } satisfies CreateRequest;
+
   try {
-    const data = await api.create();
+    const data = await api.create(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -47,11 +55,13 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+| Name                   | Type                                        | Description | Notes      |
+| ---------------------- | ------------------------------------------- | ----------- | ---------- |
+| **impersonateRequest** | [ImpersonateRequest](ImpersonateRequest.md) |             | [Optional] |
 
 ### Return type
 
-`void` (Empty response body)
+[**User**](User.md)
 
 ### Authorization
 
@@ -59,13 +69,13 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
 
 ### HTTP response details
 
-| Status code | Description      | Response headers |
-| ----------- | ---------------- | ---------------- |
-| **200**     | No response body | -                |
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

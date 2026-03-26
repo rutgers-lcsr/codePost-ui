@@ -2,6 +2,7 @@
 import { assignmentsApi } from '../api-client/clients';
 import type {
   Assignment as AssignmentModel,
+  AssignmentAnalyticsResponse,
   AssignmentGenerateTestResponse,
   AssignmentStudentUploadGetResponse,
   AssignmentDownloadResponse,
@@ -71,6 +72,9 @@ export class Assignment {
 
   public static readRubric = (assignmentId: number): Promise<AssignmentRubricResponse> =>
     assignmentsApi.rubricRetrieve({ id: assignmentId });
+
+  public static readAnalytics = (assignmentId: number, buckets?: number): Promise<AssignmentAnalyticsResponse> =>
+    assignmentsApi.analyticsRetrieve({ id: assignmentId, buckets });
 
   public static readComments = (assignmentId: number): Promise<Comment[]> =>
     assignmentsApi.commentsList({ id: assignmentId });

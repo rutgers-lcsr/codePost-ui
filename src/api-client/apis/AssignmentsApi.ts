@@ -1,9 +1,8 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
  * codePost API
- *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage  ```python import codepost_api_client as codepost  # Configure the client config = codepost.Configuration(     host=\"https://codepost-api.cs.rutgers.edu\",     api_key={\"tokenAuth\": \"Token YOUR_API_KEY\"} )  # Use the API with codepost.ApiClient(config) as client:     courses_api = codepost.CoursesApi(client)     assignments_api = codepost.AssignmentsApi(client)          # 1. List all courses     print(\"--- Courses ---\")     courses = courses_api.courses_list()     for course in courses:         print(f\"ID: {course.id} | {course.name} ({course.period})\")              if courses:         my_course_id = courses[0].id                  # 2. List assignments for a course         # Note: Course object contains list of assignment IDs         course_data = courses_api.courses_retrieve(my_course_id)                  print(f\"--- Assignments for Course {my_course_id} ---\")         for assignment_id in course_data.assignments:             # Fetch full assignment details             assignment = assignments_api.assignments_retrieve(assignment_id)             print(f\"ID: {assignment.id} | {assignment.name}\")      # 3. Create a new Course     new_course = codepost.Course(name=\"CS101\", period=\"Fall 2026\")     created_course = courses_api.courses_create(new_course)     print(f\"Created Course: {created_course.id}\")      # 4. Create an Assignment     new_assignment = codepost.Assignment(         name=\"Homework 1\",          course=created_course.id     )     created_assignment = assignments_api.assignments_create(new_assignment) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
+ *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
  *
  * The version of the OpenAPI document: 3.0.0
  *
@@ -16,6 +15,7 @@
 import * as runtime from '../runtime';
 import type {
   Assignment,
+  AssignmentAnalyticsResponse,
   AssignmentClone,
   AssignmentDataSet,
   AssignmentDownloadResponse,
@@ -34,6 +34,11 @@ import type {
   StudentSubmission,
   Submission,
 } from '../models/index';
+
+export interface AnalyticsRetrieveRequest {
+  id: number;
+  buckets?: number;
+}
 
 export interface BeforeStudentUploadRetrieveRequest {
   id: number;
@@ -193,6 +198,75 @@ export interface UpdateRequest {
  *
  */
 export class AssignmentsApi extends runtime.BaseAPI {
+  /**
+   * Return aggregated analytics for this assignment: grade distribution, grader workload, grading timeline, and test results.
+   */
+  async analyticsRetrieveRaw(
+    requestParameters: AnalyticsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AssignmentAnalyticsResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling analyticsRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['buckets'] != null) {
+      queryParameters['buckets'] = requestParameters['buckets'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/assignments/{id}/analytics/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Return aggregated analytics for this assignment: grade distribution, grader workload, grading timeline, and test results.
+   */
+  async analyticsRetrieve(
+    requestParameters: AnalyticsRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AssignmentAnalyticsResponse> {
+    const response = await this.analyticsRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
   /**
    * Get submission upload information  return {   \"daysLate\": 3,   \"pointsOff\": 0,   \"lateDayCreditsAvailable\": 2,   \"lateDayCreditsToUse\": 2,   \"adjustedDaysLate\": 0 }
    */

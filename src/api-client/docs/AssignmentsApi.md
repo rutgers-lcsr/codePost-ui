@@ -4,6 +4,7 @@ All URIs are relative to _http://localhost_
 
 | Method                                                                           | HTTP request                                   | Description |
 | -------------------------------------------------------------------------------- | ---------------------------------------------- | ----------- |
+| [**analyticsRetrieve**](AssignmentsApi.md#analyticsretrieve)                     | **GET** /assignments/{id}/analytics/           |             |
 | [**beforeStudentUploadRetrieve**](AssignmentsApi.md#beforestudentuploadretrieve) | **GET** /assignments/{id}/beforeStudentUpload/ |             |
 | [**cloneCreate**](AssignmentsApi.md#clonecreate)                                 | **POST** /assignments/{id}/clone/              |             |
 | [**commentsList**](AssignmentsApi.md#commentslist)                               | **GET** /assignments/{id}/comments/            |             |
@@ -26,6 +27,80 @@ All URIs are relative to _http://localhost_
 | [**submissionTestsList**](AssignmentsApi.md#submissiontestslist)                 | **GET** /assignments/{id}/submissionTests/     |             |
 | [**submissionsList**](AssignmentsApi.md#submissionslist)                         | **GET** /assignments/{id}/submissions/         |             |
 | [**update**](AssignmentsApi.md#update)                                           | **PUT** /assignments/{id}/                     |             |
+
+## analyticsRetrieve
+
+> AssignmentAnalyticsResponse analyticsRetrieve(id, buckets)
+
+Return aggregated analytics for this assignment: grade distribution, grader workload, grading timeline, and test results.
+
+### Example
+
+```ts
+import { Configuration, AssignmentsApi } from '';
+import type { AnalyticsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+    // number | Number of grade distribution buckets (1-100, default 10) (optional)
+    buckets: 56,
+  } satisfies AnalyticsRetrieveRequest;
+
+  try {
+    const data = await api.analyticsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name        | Type     | Description                                              | Notes                                |
+| ----------- | -------- | -------------------------------------------------------- | ------------------------------------ |
+| **id**      | `number` | A unique integer value identifying this assignment.      | [Defaults to `undefined`]            |
+| **buckets** | `number` | Number of grade distribution buckets (1-100, default 10) | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**AssignmentAnalyticsResponse**](AssignmentAnalyticsResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 ## beforeStudentUploadRetrieve
 
