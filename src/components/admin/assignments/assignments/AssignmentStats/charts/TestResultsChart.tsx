@@ -70,10 +70,7 @@ const TestResultsChart: React.FC<TestResultsChartProps> = ({ data }) => {
                 <BarChart
                   data={cat.tests.map((row) => ({
                     ...row,
-                    label:
-                      row.testCaseDescription.length > 35
-                        ? row.testCaseDescription.slice(0, 33) + '…'
-                        : row.testCaseDescription,
+                    label: row.testCaseDescription,
                   }))}
                   layout="vertical"
                   margin={{ top: 4, right: 30, left: 10, bottom: 4 }}
@@ -88,9 +85,12 @@ const TestResultsChart: React.FC<TestResultsChartProps> = ({ data }) => {
                   <YAxis
                     type="category"
                     dataKey="label"
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 12 }}
                     stroke={colors.neutralSecondaryText}
-                    width={200}
+                    width={150}
+                    style={{
+                      wordWrap: 'break-word',
+                    }}
                   />
                   <Tooltip
                     formatter={(value, name) => [value, String(name ?? '')]}
