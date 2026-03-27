@@ -31,6 +31,16 @@ declare module 'react-syntax-highlighter/dist/styles/hljs' {
   export const googlecode: Record<string, unknown>;
 }
 
+declare module 'lowlight' {
+  const lowlight: {
+    registerLanguage: (name: string, syntax: () => Record<string, unknown>) => void;
+    highlight: (language: string, code: string) => Record<string, unknown>;
+    highlightAuto: (code: string) => Record<string, unknown>;
+    listLanguages: () => string[];
+  };
+  export default lowlight;
+}
+
 declare module 'lang-map' {
   const LangMap: {
     languages: (extension: string) => string[];

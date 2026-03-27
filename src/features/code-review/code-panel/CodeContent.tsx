@@ -5,6 +5,7 @@ import type { CommentType } from '../../../types/models';
 import { File, getFileContent, type AssignmentFileType, type FileType } from '../../../utils/file';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
+import lowlight from 'lowlight';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -23,6 +24,40 @@ import CodePanelSizing from './CodePanelSizing';
 import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 import type { ICursorType } from './Cursor';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+
+// ── Register custom hljs grammars for data file formats ──────────────────────
+// CSV/TSV: highlights quoted strings, numbers, booleans, dates, and delimiters.
+// Registered once at module level so it's available for every SyntaxHighlighter instance.
+const csvGrammar = {
+  case_insensitive: true,
+  contains: [
+    // Double-quoted strings (RFC 4180); escaped quotes are doubled ("")
+    { className: 'string', begin: '"', end: '"', contains: [{ begin: '""' }] },
+    // Boolean values
+    { className: 'literal', begin: /\b(?:true|false|yes|no|null|none|na|n\/a)\b/i },
+    // Dates (YYYY-MM-DD, MM/DD/YYYY, etc.)
+    { className: 'number', begin: /\b\d{4}[\-/]\d{1,2}[\-/]\d{1,2}\b/ },
+    // Numbers (integers, floats, negative, scientific notation)
+    { className: 'number', begin: /-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/ },
+    // Column delimiter
+    { className: 'punctuation', begin: /,/ },
+  ],
+};
+
+const tsvGrammar = {
+  ...csvGrammar,
+  contains: [
+    ...csvGrammar.contains.filter(
+      (rule: { className?: string }) => rule.className !== 'punctuation',
+    ),
+    // Tab delimiter
+    { className: 'punctuation', begin: /\t/ },
+  ],
+};
+
+// Safe to call multiple times — lowlight just overwrites
+lowlight.registerLanguage('csv', () => csvGrammar);
+lowlight.registerLanguage('tsv', () => tsvGrammar);
 
 export interface ICodeContentCoreProps {
   file: FileType;
@@ -105,6 +140,8 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   const codeType = File.codeType(props.file);
 
   const fileContent = getFileContent(props.file);
+  // Defer file content for SyntaxHighlighter so file-switching doesn't block rendering
+  const deferredFileContent = React.useDeferredValue(fileContent);
   const lineNumberPadding = React.useCallback(() => {
     return CodePanelSizing.lineNumberPadding(fileContent) + 20;
   }, [fileContent]);
@@ -113,11 +150,17 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   const containerStyle = React.useMemo(
     () => ({
       width: '100%',
-      overflowX: 'auto' as const,
+      // In word-wrap mode, all scrolling is handled by the parent .code-panel--code container.
+      // We must set overflow to 'hidden' to prevent .code-container from showing its own
+      // scrollbars. (CSS spec: if either overflow-x or overflow-y is not 'visible', the
+      // browser computes the other as 'auto', which can produce duplicate scrollbars.)
+      // This is safe because .code-container has no fixed height — it grows to fit content.
+      overflow: wordWrap ? ('hidden' as const) : undefined,
+      overflowX: wordWrap ? undefined : ('auto' as const),
       backgroundColor: consoleTheme.codeBg,
       border: `1px solid ${consoleTheme.codeBorder}`,
     }),
-    [consoleTheme.codeBg, consoleTheme.codeBorder],
+    [consoleTheme.codeBg, consoleTheme.codeBorder, wordWrap],
   );
 
   const commonCodeStyle = React.useMemo(
@@ -143,13 +186,33 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   const lineDigits = React.useMemo(() => fileContent.split('\n').length.toString().length, [fileContent]);
   const gutterWidthEm = `${lineDigits * 0.7 + 1}em`; // matches RSH's min-width formula
 
-  // Memoize SyntaxHighlighter to prevent expensive re-renders when comments change
+  // Resolve syntax highlighting language. When hljs doesn't recognise the language
+  // (e.g. data files) it falls back to `highlightAuto` which tries every registered
+  // grammar — extremely expensive for large files. Map known data formats to our
+  // custom grammars and truly plain files to 'text'.
+  const resolvedLanguage = React.useMemo(() => {
+    const lang = File.language(props.file);
+    const ext = File.normalizedExtension(props.file);
+    // Data formats with custom grammars registered above
+    if (ext === 'csv' || lang === 'csv') return 'csv';
+    if (ext === 'tsv' || lang === 'tsv') return 'tsv';
+    // Truly plain text — no highlighting
+    const plainTextExtensions = new Set([
+      'dat', 'log', 'txt', 'text', 'raw', 'out', 'ans', 'expected', 'actual',
+    ]);
+    if (plainTextExtensions.has(ext) || plainTextExtensions.has(lang)) {
+      return 'text';
+    }
+    return lang;
+  }, [props.file]);
+
+  // Memoize SyntaxHighlighter; uses deferredFileContent so switching files doesn't block the UI.
   const syntaxHighlighterLayer = React.useMemo(
     () => (
       <SyntaxHighlighter
         id="code-syntax"
         className="code--syntax"
-        language={File.language(props.file)}
+        language={resolvedLanguage}
         style={consoleTheme.codeTheme}
         showLineNumbers={true}
         wrapLines={wordWrap}
@@ -175,16 +238,16 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
           backgroundColor: consoleTheme.codeBg,
         }}
       >
-        {fileContent}
+        {deferredFileContent}
       </SyntaxHighlighter>
     ),
     [
-      props.file,
+      resolvedLanguage,
       consoleTheme.codeTheme,
       consoleTheme.codeBg,
       codeTagStyle,
       commonCodeStyle,
-      fileContent,
+      deferredFileContent,
       wordWrap,
       gutterWidthEm,
     ],

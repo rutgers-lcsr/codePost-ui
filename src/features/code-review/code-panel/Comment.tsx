@@ -299,7 +299,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         })();
 
       if (!alreadyVisible) {
-        scrollHighlightIntoView(props.comment.id);
+        scrollHighlightIntoView(props.comment.id, { lineNumber: props.comment.startLine ?? undefined });
       }
 
       const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;

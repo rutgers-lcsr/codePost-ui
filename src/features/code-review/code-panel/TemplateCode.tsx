@@ -10,46 +10,50 @@ interface ITemplateCodeProps {
   assignmentFile: AssignmentFileType;
 }
 
-const TemplateCode = (props: ITemplateCodeProps) => {
+const TemplateCode = React.memo((props: ITemplateCodeProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  if (!props.assignmentFile || !props.assignmentFile.data) {
+
+  const fileContent = getFileContent(props.file);
+  const assignmentData = props.assignmentFile?.data ?? '';
+
+  const tokens = React.useMemo(
+    () =>
+      assignmentData
+        ? assignmentData.split('\n').filter((l: string) => {
+            if (l.trim().length > 2) return true;
+            if (l.trim() === '*' || l.trim() === '#') return true;
+            return false;
+          })
+        : [],
+    [assignmentData],
+  );
+
+  const tokenSet = React.useMemo(() => new Set(tokens.map((t) => t.trim())), [tokens]);
+
+  const renderedLines = React.useMemo(
+    () =>
+      fileContent.split('\n').map((text: string, i: number) => {
+        const templatized = tokenSet.has(text.trim());
+        return (
+          <div
+            key={i}
+            id={`template-line-${i}`}
+            style={{ color: templatized ? consoleTheme.templateCode : 'transparent' }}
+          >
+            {text === '' ? ' ' : text}
+          </div>
+        );
+      }),
+    [fileContent, tokenSet, consoleTheme.templateCode],
+  );
+
+  if (!props.assignmentFile || !assignmentData) {
     return <div />;
   }
-  const tokens = props.assignmentFile.data.split('\n').filter((l: string) => {
-    if (l.trim().length > 2) {
-      return true;
-    }
 
-    if (l.trim() === '*' || l.trim() === '#') {
-      return true;
-    }
+  return <div>{renderedLines}</div>;
+});
 
-    return false;
-  });
-
-  const linesOfCode = (code: string) => {
-    return code.split('\n').map((text: string, i: number) => {
-      let templatized = false;
-
-      for (const t of tokens) {
-        if (t.trim() === text.trim()) {
-          templatized = true;
-          break;
-        }
-      }
-
-      return (
-        <div
-          key={i}
-          id={`template-line-${i}`}
-          style={{ color: templatized ? consoleTheme.templateCode : 'transparent' }}
-        >
-          {text === '' ? ' ' : text}
-        </div>
-      );
-    });
-  };
-  return <div>{linesOfCode(getFileContent(props.file))}</div>;
-};
+TemplateCode.displayName = 'TemplateCode';
 
 export default TemplateCode;

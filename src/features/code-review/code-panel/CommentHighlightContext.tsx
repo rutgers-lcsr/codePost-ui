@@ -129,7 +129,10 @@ export const useHoveredCommentId = (): number | null => {
  * Scroll the first highlight element for a comment into view.
  * Helpful when syncing comment panel interactions with code highlights.
  */
-export const scrollHighlightIntoView = (commentId: number, options?: ScrollIntoViewOptions) => {
+export const scrollHighlightIntoView = (
+  commentId: number,
+  options?: ScrollIntoViewOptions & { lineNumber?: number },
+) => {
   if (typeof document === 'undefined') {
     return;
   }
@@ -140,17 +143,32 @@ export const scrollHighlightIntoView = (commentId: number, options?: ScrollIntoV
 
   const highlightElement = document.querySelector<HTMLElement>(`.highlight-${commentId}`);
 
-  if (!highlightElement) {
+  if (highlightElement) {
+    const scrollOptions: ScrollIntoViewOptions = {
+      behavior: options?.behavior ?? 'smooth',
+      block: options?.block ?? 'center',
+      inline: options?.inline ?? 'nearest',
+    };
+
+    highlightElement.scrollIntoView(scrollOptions);
     return;
   }
 
-  const scrollOptions: ScrollIntoViewOptions = {
-    behavior: options?.behavior ?? 'smooth',
-    block: options?.block ?? 'center',
-    inline: options?.inline ?? 'nearest',
-  };
-
-  highlightElement.scrollIntoView(scrollOptions);
+  // Fallback for virtualized rendering: the highlight element may not be in the DOM.
+  // Scroll to the estimated line position so the windowed renderer creates the element.
+  if (options?.lineNumber !== undefined) {
+    const LINE_HEIGHT = 20; // themeVars.grade.codeLineHeight
+    const scrollContainer = document.querySelector('.code-panel--code') as HTMLElement | null;
+    if (scrollContainer) {
+      const codeContainer = document.getElementById('code-container');
+      const containerOffset = codeContainer ? codeContainer.offsetTop : 0;
+      const targetTop = containerOffset + 30 + options.lineNumber * LINE_HEIGHT;
+      scrollContainer.scrollTo({
+        top: Math.max(0, targetTop - scrollContainer.clientHeight / 3),
+        behavior: options.behavior ?? 'smooth',
+      });
+    }
+  }
 };
 
 /**

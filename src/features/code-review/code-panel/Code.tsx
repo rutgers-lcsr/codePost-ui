@@ -22,6 +22,9 @@ import { wait } from '../../../utils/animation';
 
 import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import themeVars from '../../../styles/abstracts/_theme.js';
+
 import {
   back,
   down,
@@ -81,6 +84,68 @@ const Code = (props: CodePropsWithoutComments) => {
       props.onCursorChange(newCursor);
     }
   };
+
+  // --- Windowed rendering: only render visible lines for performance ---
+  const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
+  const fileContent = getFileContent(props.file);
+  const lines = React.useMemo(() => fileContent.split('\n'), [fileContent]);
+  const LINE_HEIGHT = themeVars.grade.codeLineHeight; // 20px
+  const OVERSCAN = 20;
+  const [visibleRange, setVisibleRange] = React.useState({ start: 0, end: 80 });
+
+  React.useEffect(() => {
+    // Disable windowing when word-wrap is on (line heights vary)
+    if (wordWrap) {
+      setVisibleRange({ start: 0, end: lines.length - 1 });
+      return;
+    }
+
+    const scrollContainer = document.querySelector('.code-panel--code') as HTMLElement | null;
+    if (!scrollContainer) return;
+
+    let rafId: number | null = null;
+
+    const updateRange = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const scrollTop = scrollContainer.scrollTop;
+        const viewportHeight = scrollContainer.clientHeight;
+        const codeContainer = document.getElementById('code-container');
+        const containerOffset = codeContainer ? codeContainer.offsetTop : 0;
+        const codeOffset = containerOffset + 30; // .code-container padding-top
+        const adjustedScrollTop = Math.max(0, scrollTop - codeOffset);
+        const start = Math.max(0, Math.floor(adjustedScrollTop / LINE_HEIGHT) - OVERSCAN);
+        const end = Math.min(
+          lines.length - 1,
+          Math.ceil((adjustedScrollTop + viewportHeight) / LINE_HEIGHT) + OVERSCAN,
+        );
+        setVisibleRange((prev) => {
+          if (prev.start === start && prev.end === end) return prev;
+          return { start, end };
+        });
+      });
+    };
+
+    updateRange();
+    scrollContainer.addEventListener('scroll', updateRange, { passive: true });
+    const ro = new ResizeObserver(updateRange);
+    ro.observe(scrollContainer);
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateRange);
+      ro.disconnect();
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [wordWrap, lines.length, LINE_HEIGHT]);
+
+  // Refs for the keydown handler to avoid stale closures without re-attaching on every render
+  const cursorRef = React.useRef(cursor);
+  cursorRef.current = cursor;
+  const addNewCommentRef = React.useRef(
+    async (_startLine: number, _endLine: number, _startChar: number, _endChar: number) => {},
+  );
+  const handleCursorChangeRef = React.useRef(handleCursorChange);
 
   // Helper to calculate new positions based on drag event
   const calculateNewCommentPosition = (
@@ -216,6 +281,10 @@ const Code = (props: CodePropsWithoutComments) => {
     scrollHighlightIntoView(newComment.id);
   };
 
+  // Keep refs in sync (after addNewComment is defined)
+  addNewCommentRef.current = addNewComment;
+  handleCursorChangeRef.current = handleCursorChange;
+
   // Handle code scrolling
   const handleVerticalScroll = (codeScrollArea: HTMLElement | null, _cursor: ICursorType) => {
     if (!codeScrollArea) {
@@ -252,56 +321,62 @@ const Code = (props: CodePropsWithoutComments) => {
   };
 
   React.useEffect(() => {
-    const code = getFileContent(props.file).split('\n');
+    const code = lines;
     const codeScrollArea = document.getElementById('code-scroll-area');
 
     const handleKeydown = async (e: KeyboardEvent) => {
       if (props.cursorMode) {
         const triggerKey = getOsTriggerKeyFromEvent(e);
+        const currentCursor = cursorRef.current;
         if (props.showCursor === CURSOR_DOMAIN.CODE && codeScrollArea !== null) {
           if (e.key === 'Enter') {
             e.preventDefault();
             e.stopPropagation();
 
-            await addNewComment(cursor.startLine, cursor.endLine, cursor.startChar, cursor.endChar);
+            await addNewCommentRef.current(
+              currentCursor.startLine,
+              currentCursor.endLine,
+              currentCursor.startChar,
+              currentCursor.endChar,
+            );
             props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
           }
 
           if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(e.key)) {
-            let newCursor = cursor;
+            let newCursor = currentCursor;
 
             e.preventDefault();
             e.stopPropagation();
 
             if (e.key === 'Escape') {
-              newCursor = cursor.lead === 'front' ? front(cursor) : back(cursor);
+              newCursor = currentCursor.lead === 'front' ? front(currentCursor) : back(currentCursor);
             } else if (e.shiftKey && e.key === 'ArrowLeft') {
-              newCursor = shiftLeft(code, cursor, e.altKey, triggerKey);
+              newCursor = shiftLeft(code, currentCursor, e.altKey, triggerKey);
               handleHorizontalScroll(newCursor);
             } else if (e.shiftKey && e.key === 'ArrowRight') {
-              newCursor = shiftRight(code, cursor, e.altKey, triggerKey);
+              newCursor = shiftRight(code, currentCursor, e.altKey, triggerKey);
               handleHorizontalScroll(newCursor);
             } else if (e.shiftKey && e.key === 'ArrowUp') {
-              newCursor = shiftUp(code, cursor);
+              newCursor = shiftUp(code, currentCursor);
               handleVerticalScroll(codeScrollArea, newCursor);
             } else if (e.shiftKey && e.key === 'ArrowDown') {
-              newCursor = shiftDown(code, cursor);
+              newCursor = shiftDown(code, currentCursor);
               handleVerticalScroll(codeScrollArea, newCursor);
             } else if (e.key === 'ArrowLeft') {
-              newCursor = left(code, cursor, e.altKey);
+              newCursor = left(code, currentCursor, e.altKey);
               handleHorizontalScroll(newCursor);
             } else if (e.key === 'ArrowRight') {
-              newCursor = right(code, cursor, e.altKey);
+              newCursor = right(code, currentCursor, e.altKey);
               handleHorizontalScroll(newCursor);
             } else if (e.key === 'ArrowUp') {
-              newCursor = up(code, cursor);
+              newCursor = up(code, currentCursor);
               handleVerticalScroll(codeScrollArea, newCursor);
             } else if (e.key === 'ArrowDown') {
-              newCursor = down(code, cursor);
+              newCursor = down(code, currentCursor);
               handleVerticalScroll(codeScrollArea, newCursor);
             }
 
-            handleCursorChange(newCursor);
+            handleCursorChangeRef.current(newCursor);
           }
         }
       }
@@ -310,7 +385,8 @@ const Code = (props: CodePropsWithoutComments) => {
     return () => {
       document.removeEventListener('keydown', handleKeydown);
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.file, props.cursorMode, props.showCursor, props.updateCursorDomain, lines]);
 
   // Helper function to find line number by walking up DOM tree
   const getLineNumberFromNode = (node: Node | null): number | null => {
@@ -503,60 +579,21 @@ const Code = (props: CodePropsWithoutComments) => {
     document.addEventListener('mouseup', callback);
   };
 
-  const onHoverEnter = (commentId: number) => {
-    setHoveredCommentId(commentId);
-  };
+  const onHoverEnter = React.useCallback(
+    (commentId: number) => {
+      setHoveredCommentId(commentId);
+    },
+    [setHoveredCommentId],
+  );
 
-  const onHoverLeave = (_: number) => {
-    setHoveredCommentId(null);
-  };
+  const onHoverLeave = React.useCallback(
+    (_: number) => {
+      setHoveredCommentId(null);
+    },
+    [setHoveredCommentId],
+  );
 
-  const linesOfCode = (readOnly: boolean, code: string, comments: CommentType[]) => {
-    return code.split('\n').map((text: string, i: number) => {
-      const t = text === '' ? ' ' : text;
-
-      if (readOnly) {
-        return (
-          <div key={i} id={`line-${i}`}>
-            {CodePanelHighlighting.highlight(
-              comments,
-              t,
-              i,
-              readOnly,
-              consoleTheme.highlight,
-              contextOnHighlightClick,
-              onHoverEnter,
-              onHoverLeave,
-            )}
-          </div>
-        );
-      }
-
-      return (
-        <div
-          key={i}
-          id={`line-${i}`}
-          onClick={onLineClick}
-          onMouseDown={onMouseDown}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-        >
-          {CodePanelHighlighting.highlight(
-            comments,
-            t,
-            i,
-            readOnly,
-            consoleTheme.highlight,
-            contextOnHighlightClick,
-            onHoverEnter,
-            onHoverLeave,
-          )}
-        </div>
-      );
-    });
-  };
-
-  // Use comments from context instead of props
+  // Merge cursor into comments
   let comments = contextComments;
   if (!props.readOnly && props.cursorMode && props.showCursor === CURSOR_DOMAIN.CODE) {
     const cursorInsertIndex = CommentIO.sortedIndex(contextComments, cursorComment);
@@ -566,7 +603,79 @@ const Code = (props: CodePropsWithoutComments) => {
       ...contextComments.slice(cursorInsertIndex),
     ];
   }
-  return <div>{linesOfCode(props.readOnly, getFileContent(props.file), comments)}</div>;
+
+  // Windowed rendering: render only visible lines + spacers for off-screen lines.
+  // In word-wrap mode, render all lines (line heights are variable).
+  const renderLines = () => {
+    const result: React.ReactNode[] = [];
+    // Clamp range to current file length (protects against stale range during file switch)
+    const start = Math.max(0, Math.min(visibleRange.start, lines.length - 1));
+    const end = Math.min(visibleRange.end, lines.length - 1);
+
+    const useWindowing = !wordWrap && lines.length > 0;
+    const renderStart = useWindowing ? start : 0;
+    const renderEnd = useWindowing ? end : lines.length - 1;
+
+    // Top spacer for lines above visible range
+    if (useWindowing && renderStart > 0) {
+      result.push(<div key="spacer-top" style={{ height: renderStart * LINE_HEIGHT }} />);
+    }
+
+    for (let i = renderStart; i <= renderEnd; i++) {
+      const text = lines[i];
+      const t = text === '' ? ' ' : text;
+
+      if (props.readOnly) {
+        result.push(
+          <div key={i} id={`line-${i}`}>
+            {CodePanelHighlighting.highlight(
+              comments,
+              t,
+              i,
+              props.readOnly,
+              consoleTheme.highlight,
+              contextOnHighlightClick,
+              onHoverEnter,
+              onHoverLeave,
+            )}
+          </div>,
+        );
+      } else {
+        result.push(
+          <div
+            key={i}
+            id={`line-${i}`}
+            onClick={onLineClick}
+            onMouseDown={onMouseDown}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+          >
+            {CodePanelHighlighting.highlight(
+              comments,
+              t,
+              i,
+              props.readOnly,
+              consoleTheme.highlight,
+              contextOnHighlightClick,
+              onHoverEnter,
+              onHoverLeave,
+            )}
+          </div>,
+        );
+      }
+    }
+
+    // Bottom spacer for lines below visible range
+    if (useWindowing && renderEnd < lines.length - 1) {
+      result.push(
+        <div key="spacer-bottom" style={{ height: (lines.length - 1 - renderEnd) * LINE_HEIGHT }} />,
+      );
+    }
+
+    return result;
+  };
+
+  return <div>{renderLines()}</div>;
 };
 
 export default Code;
