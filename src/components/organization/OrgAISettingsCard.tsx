@@ -43,6 +43,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [model, setModel] = React.useState('');
   const [aiDisabled, setAiDisabled] = React.useState(false);
   const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
+  const [aiChatDisabled, setAiChatDisabled] = React.useState(false);
   const [coursePolicy, setCoursePolicy] = React.useState<AiCoursePolicyEnum>(AiCoursePolicyEnum.None);
   const [enabledCourseIds, setEnabledCourseIds] = React.useState<number[]>([]);
   const [hasApiKey, setHasApiKey] = React.useState(false);
@@ -67,6 +68,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         setModel(s.aiModel ?? '');
         setAiDisabled(s.aiDisabled ?? false);
         setAiCommentsDisabled(s.aiCommentsDisabled ?? false);
+        setAiChatDisabled(s.aiChatDisabled ?? false);
         setCoursePolicy(s.aiCoursePolicy ?? AiCoursePolicyEnum.None);
         setEnabledCourseIds(s.aiEnabledCourseIds ?? []);
         setHasApiKey(s.hasApiKey ?? false);
@@ -138,6 +140,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         aiModel: model || null,
         aiDisabled,
         aiCommentsDisabled,
+        aiChatDisabled,
         aiCoursePolicy: coursePolicy,
         aiEnabledCourseIds: coursePolicy === AiCoursePolicyEnum.Selected ? enabledCourseIds : [],
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
@@ -358,6 +361,30 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                     checked={!aiCommentsDisabled}
                     onChange={(checked) => {
                       setAiCommentsDisabled(!checked);
+                      mark();
+                    }}
+                  />
+                </Flex>
+              </Card>
+
+              <Card
+                size="small"
+                style={{
+                  background: !aiChatDisabled ? '#f6ffed' : '#fffbe6',
+                  borderColor: !aiChatDisabled ? '#b7eb8f' : '#ffe58f',
+                }}
+              >
+                <Flex justify="space-between" align="center">
+                  <Flex vertical>
+                    <Text strong>AI Chat Assistant Default</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Whether the AI chat assistant is enabled by default for courses using the org key.
+                    </Text>
+                  </Flex>
+                  <Switch
+                    checked={!aiChatDisabled}
+                    onChange={(checked) => {
+                      setAiChatDisabled(!checked);
                       mark();
                     }}
                   />

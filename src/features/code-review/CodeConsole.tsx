@@ -89,6 +89,7 @@ import ThemeToggle from '../../components/core/ThemeToggle';
 import FileMenu, { FileMenuTitle, FileMenuTooltip } from './menu/FileMenu';
 import HelpModal from './menu/HelpModal';
 import TemplateMenu, { PinnedCommentsTooltip } from './menu/TemplateMenu';
+import ChatPanel from './chat/components/ChatPanel';
 
 const RubricMenuUI = React.lazy(() => import('./menu/RubricMenuUI'));
 
@@ -1412,9 +1413,11 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         // 1. User creates a comment => triggers a POST
         // 2. User deletes comment before the POST returns. The UI will treat this comment as unsaved
         // 3. POST returns, saving the comment.
-        // Solution: Check if the comment with the OLD negative ID still exists in current state
+        // Solution: Check if the comment with the OLD negative ID still exists in current state.
+        // Read from getState() to get the latest store value, not the stale closure.
+        const latestComments = useCodeConsoleStore.getState().comments;
         if (
-          !flatten(Object.values(comments)).find((el: CommentType) => {
+          !flatten(Object.values(latestComments)).find((el: CommentType) => {
             return el.id === comment.id;
           })
         ) {
@@ -1455,6 +1458,10 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     setState((prev) => ({ ...prev, oldCommentIDs }));
     updateComment(comment.id, savedComment);
   };
+
+  // Ref to latest saveComment for use in callbacks that shouldn't depend on it
+  const saveCommentRef = React.useRef(saveComment);
+  saveCommentRef.current = saveComment;
 
   const deleteComment = async (comment: CommentType) => {
     // Delete from backend if it's a saved comment (positive ID)
@@ -1963,6 +1970,140 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       textArea?.focus();
     });
   };
+
+  /**
+   * Handle tool execution from the AI chat panel.
+   * Client-side tools are executed here because the code console owns the state.
+   */
+  const handleChatToolExecute = React.useCallback(
+    async (toolName: string, args: Record<string, unknown>): Promise<string> => {
+      if (toolName === 'navigate_to_location') {
+        const fileId = args.file_id as number;
+        const line = args.line as number;
+        const file = files.find((f) => f.id === fileId);
+        if (file) {
+          // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
+          const isNotebook = file.extension === 'ipynb';
+          const lineIndex = isNotebook ? line : Math.max(0, line - 1);
+          useCodeConsoleStore.setState({ selectedFile: file });
+          // Scroll to line via a small delay to let the file render
+          setTimeout(() => {
+            const el = document.getElementById(`line-${lineIndex}`);
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 200);
+          return `Navigated to ${file.name} line ${line}.`;
+        }
+        return 'File not found.';
+      }
+
+      if (toolName === 'create_inline_comment') {
+        const fileId = args.file_id as number;
+        const file = files.find((f) => f.id === fileId);
+        if (!file) return 'File not found.';
+
+        // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
+        // Notebooks already use 0-indexed cell indices in the tool schema.
+        const isNotebook = file.extension === 'ipynb';
+        const rawStart = args.start_line as number;
+        const rawEnd = (args.end_line as number) ?? rawStart;
+        const startLine = isNotebook ? rawStart : Math.max(0, rawStart - 1);
+        const endLine = isNotebook ? rawEnd : Math.max(0, rawEnd - 1);
+        const text = args.text as string;
+        const pointDelta = (args.point_delta as number) || 0;
+
+        // When the AI doesn't specify char offsets, highlight the entire line range.
+        // startChar === endChar === 0 causes the highlighter to skip the line.
+        const hasCharRange = args.start_char != null || args.end_char != null;
+        const startChar = hasCharRange ? (args.start_char as number) || 0 : 0;
+        const endChar = hasCharRange ? (args.end_char as number) || 0 : 10000;
+
+        const newComment: CommentType = {
+          id: -Date.now(), // Temporary negative ID
+          file: file.id,
+          startLine: startLine,
+          endLine: endLine,
+          text: text,
+          pointDelta: pointDelta,
+          rubricComment: null,
+          author: props.user.email!,
+          feedback: 0,
+          startChar,
+          endChar,
+          color: null,
+        };
+
+        const existingComments = state.comments[file.id] || [];
+        useCodeConsoleStore.setState({
+          comments: { ...state.comments, [file.id]: [...existingComments, newComment] },
+          selectedFile: file,
+        });
+
+        // Persist to backend
+        await saveCommentRef.current(newComment);
+
+        return `Comment created on ${file.name} lines ${startLine}-${endLine}.`;
+      }
+
+      if (toolName === 'apply_rubric_comment') {
+        const rubricCommentId = args.rubric_comment_id as number;
+        const fileId = args.file_id as number;
+        const file = files.find((f) => f.id === fileId);
+        if (!file) return 'File not found.';
+
+        // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
+        const isNotebook = file.extension === 'ipynb';
+        const rawStart = args.start_line as number;
+        const rawEnd = (args.end_line as number) ?? rawStart;
+        const startLine = isNotebook ? rawStart : Math.max(0, rawStart - 1);
+        const endLine = isNotebook ? rawEnd : Math.max(0, rawEnd - 1);
+
+        // Find the rubric comment
+        let foundRc: RubricComment | null = null;
+        for (const catId of Object.keys(state.rubricComments)) {
+          const rcs = state.rubricComments[Number(catId)] || [];
+          const rc = rcs.find((r) => r.id === rubricCommentId);
+          if (rc) {
+            foundRc = rc;
+            break;
+          }
+        }
+        if (!foundRc) return `Rubric comment #${rubricCommentId} not found.`;
+
+        const hasCharRange = args.start_char != null || args.end_char != null;
+        const startChar = hasCharRange ? (args.start_char as number) || 0 : 0;
+        const endChar = hasCharRange ? (args.end_char as number) || 0 : 10000;
+
+        const newComment: CommentType = {
+          id: -Date.now(),
+          file: file.id,
+          startLine,
+          endLine,
+          text: foundRc.text ?? '',
+          pointDelta: foundRc.pointDelta,
+          rubricComment: rubricCommentId,
+          author: props.user.email!,
+          feedback: 0,
+          startChar,
+          endChar,
+          color: null,
+        };
+
+        const existingComments = state.comments[file.id] || [];
+        useCodeConsoleStore.setState({
+          comments: { ...state.comments, [file.id]: [...existingComments, newComment] },
+          selectedFile: file,
+        });
+
+        // Persist to backend
+        await saveCommentRef.current(newComment);
+
+        return `Applied rubric comment "${foundRc.text}" on ${file.name} lines ${startLine}-${endLine}.`;
+      }
+
+      return 'Unknown tool.';
+    },
+    [files, state.comments, state.rubricComments, props.user.email],
+  );
 
   const handleApplyTemplate = (template: CommentTemplateType) => {
     if (!selectedFile) {
@@ -3169,6 +3310,20 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         siderTitles.push('Pinned Comments');
         siderTooltips.push(<PinnedCommentsTooltip key="pinned-comments-tooltip" />);
       }
+
+      // 6. AI Chat (only for graders/admins when AI is enabled)
+      if (state.aiEnabled && submission && permissionLevel === PERMISSION_LEVEL.WRITE) {
+        sider.push(
+          <ChatPanel
+            key="chat-menu"
+            submissionId={submission.id}
+            onToolExecute={handleChatToolExecute}
+            files={files.map((f) => ({ id: f.id, name: f.name, extension: f.extension }))}
+          />,
+        );
+        siderTitles.push('AI Assistant');
+        siderTooltips.push('AI Grading Assistant');
+      }
     }
   }
 
@@ -3235,7 +3390,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             siderTooltips={siderTooltips}
             content={content}
             editRubricMode={state.editRubricMode}
-            panelDefaultWidths={{ 'tests-menu': 500 }}
+            panelDefaultWidths={{ 'tests-menu': 500, 'chat-menu': 400 }}
           />
         )}
         {/* KeyboardShortcuts drawer removed - consolidated into HelpModal */}

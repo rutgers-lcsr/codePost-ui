@@ -37,6 +37,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [aiDisabled, setAiDisabled] = React.useState(false);
   const [aiCommentsEnabled, setAiCommentsEnabled] = React.useState(false);
   const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
+  const [aiChatEnabled, setAiChatEnabled] = React.useState(false);
+  const [aiChatDisabled, setAiChatDisabled] = React.useState(false);
   const [isConfigured, setIsConfigured] = React.useState(false);
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
   const [apiKey, setApiKey] = React.useState('');
@@ -62,6 +64,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setAiDisabled(settings.aiDisabled || false);
         setAiCommentsEnabled(settings.aiCommentsEnabled ?? false);
         setAiCommentsDisabled(settings.aiCommentsDisabled || false);
+        setAiChatEnabled(settings.aiChatEnabled ?? false);
+        setAiChatDisabled(settings.aiChatDisabled || false);
         setIsConfigured(!!settings.aiProvider);
         setProvider((settings.aiProvider as AIProvider | undefined) || undefined);
         setBaseUrl(settings.aiBaseUrl || '');
@@ -135,6 +139,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         aiModel: model || null,
         aiDisabled,
         aiCommentsDisabled,
+        aiChatDisabled,
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
         ...(apiKey ? { aiApiKey: apiKey } : {}),
       });
@@ -142,6 +147,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       setAiDisabled(result.aiDisabled || false);
       setAiCommentsEnabled(result.aiCommentsEnabled ?? false);
       setAiCommentsDisabled(result.aiCommentsDisabled || false);
+      setAiChatEnabled(result.aiChatEnabled ?? false);
+      setAiChatDisabled(result.aiChatDisabled || false);
       setIsConfigured(!!result.aiProvider);
       setAiUseOwnSettings(result.aiUseOwnSettings ?? false);
       setHasApiKey(result.hasApiKey ?? false);
@@ -387,6 +394,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                     onChange={(checked) => {
                       setAiDisabled(!checked);
                       setAiCommentsEnabled(checked && !aiCommentsDisabled);
+                      setAiChatEnabled(checked && !aiChatDisabled);
                       mark();
                     }}
                   />
@@ -417,6 +425,36 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                     onChange={(checked) => {
                       setAiCommentsDisabled(!checked);
                       setAiCommentsEnabled(checked && !aiDisabled);
+                      mark();
+                    }}
+                  />
+                </Flex>
+              </Card>
+
+              <Card
+                size="small"
+                style={{
+                  marginTop: 8,
+                  background: aiChatEnabled ? '#f6ffed' : '#fffbe6',
+                  borderColor: aiChatEnabled ? '#b7eb8f' : '#ffe58f',
+                }}
+              >
+                <Flex justify="space-between" align="center">
+                  <Flex vertical>
+                    <Text strong style={{ color: aiChatEnabled ? undefined : '#ad6800' }}>
+                      {aiChatEnabled ? 'AI Chat Assistant Enabled' : 'AI Chat Assistant Disabled'}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {aiDisabled
+                        ? 'Global AI is off, so the AI chat assistant is currently unavailable.'
+                        : 'Controls the AI chat assistant in the code review panel.'}
+                    </Text>
+                  </Flex>
+                  <Switch
+                    checked={!aiChatDisabled}
+                    onChange={(checked) => {
+                      setAiChatDisabled(!checked);
+                      setAiChatEnabled(checked && !aiDisabled);
                       mark();
                     }}
                   />

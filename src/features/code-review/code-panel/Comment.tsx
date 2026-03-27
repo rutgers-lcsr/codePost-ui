@@ -317,7 +317,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         }
 
         if (!alreadyVisible && !blockElement.hasAttribute('data-page-number')) {
-          blockElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         if (blockElement.dataset.originalRole === undefined) {

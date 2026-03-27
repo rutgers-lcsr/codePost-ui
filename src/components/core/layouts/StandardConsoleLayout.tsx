@@ -12,6 +12,7 @@ import {
   ExperimentOutlined,
   FileOutlined,
   InfoCircleOutlined,
+  MessageOutlined,
   PushpinOutlined,
 } from '@ant-design/icons';
 
@@ -96,6 +97,8 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         return <BookOutlined style={iconStyle} />;
       case 'template-menu':
         return <PushpinOutlined style={iconStyle} />;
+      case 'chat-menu':
+        return <MessageOutlined style={iconStyle} />;
       default:
         return <FileOutlined style={iconStyle} />;
     }

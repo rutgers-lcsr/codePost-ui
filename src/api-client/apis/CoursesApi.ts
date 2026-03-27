@@ -46,7 +46,14 @@ export interface AiSettingsPartialUpdateRequest {
   id: number;
   patchedCourseAISettings?: Omit<
     PatchedCourseAISettings,
-    'id' | 'aiEnabled' | 'aiCommentsEnabled' | 'orgAiAvailable' | 'hasApiKey' | 'apiKeyHint' | 'defaultTokenRates'
+    | 'id'
+    | 'aiEnabled'
+    | 'aiCommentsEnabled'
+    | 'aiChatEnabled'
+    | 'orgAiAvailable'
+    | 'hasApiKey'
+    | 'apiKeyHint'
+    | 'defaultTokenRates'
   >;
 }
 

@@ -3,6 +3,7 @@ apis/AssignmentFilesApi.ts
 apis/AssignmentsApi.ts
 apis/AuthApi.ts
 apis/AutograderApi.ts
+apis/ChatConversationsApi.ts
 apis/CommentTemplatesApi.ts
 apis/CommentsApi.ts
 apis/CourseFilesApi.ts
@@ -72,6 +73,11 @@ docs/BeforeStudentUploadResponse.md
 docs/BuildTypeEnum.md
 docs/CacheCheckResponse.md
 docs/CeleryCheck.md
+docs/ChatConversationCreate.md
+docs/ChatConversationDetail.md
+docs/ChatConversationList.md
+docs/ChatConversationsApi.md
+docs/ChatMessage.md
 docs/CheckSSOAvailabilityResponse.md
 docs/CheckStatusNewAdminUserResponse.md
 docs/CodeExecutionRequest.md
@@ -148,6 +154,7 @@ docs/PaginatedUserList.md
 docs/PatchedAssignment.md
 docs/PatchedAssignmentDataSetUpdate.md
 docs/PatchedAssignmentFile.md
+docs/PatchedChatConversationList.md
 docs/PatchedComment.md
 docs/PatchedCommentTemplate.md
 docs/PatchedCourse.md
@@ -181,6 +188,7 @@ docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
+docs/RoleEnum.md
 docs/RubricCategoriesApi.md
 docs/RubricCategory.md
 docs/RubricComment.md
@@ -231,6 +239,7 @@ docs/TokenRefreshApi.md
 docs/TokenRefreshSliding.md
 docs/TokenVerify.md
 docs/TokenVerifyApi.md
+docs/ToolStatusEnum.md
 docs/TypeEnum.md
 docs/User.md
 docs/UsersApi.md

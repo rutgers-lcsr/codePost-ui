@@ -6,6 +6,7 @@ export { AssignmentFilesApi } from './AssignmentFilesApi';
 export { AssignmentsApi } from './AssignmentsApi';
 export { AuthApi } from './AuthApi';
 export { AutograderApi } from './AutograderApi';
+export { ChatConversationsApi } from './ChatConversationsApi';
 export { CommentTemplatesApi } from './CommentTemplatesApi';
 export { CommentsApi } from './CommentsApi';
 export { CourseFilesApi } from './CourseFilesApi';

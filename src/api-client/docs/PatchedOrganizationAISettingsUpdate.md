@@ -12,6 +12,7 @@ Serializer for updating organization AI settings including enabled courses.
 | `aiModel`            | string                                      |
 | `aiDisabled`         | boolean                                     |
 | `aiCommentsDisabled` | boolean                                     |
+| `aiChatDisabled`     | boolean                                     |
 | `aiCoursePolicy`     | [AiCoursePolicyEnum](AiCoursePolicyEnum.md) |
 | `aiEnabledCourseIds` | Array&lt;number&gt;                         |
 | `aiTokenRates`       | any                                         |

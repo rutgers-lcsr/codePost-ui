@@ -146,7 +146,7 @@ export const scrollHighlightIntoView = (commentId: number, options?: ScrollIntoV
 
   const scrollOptions: ScrollIntoViewOptions = {
     behavior: options?.behavior ?? 'smooth',
-    block: options?.block ?? 'start',
+    block: options?.block ?? 'center',
     inline: options?.inline ?? 'nearest',
   };
 

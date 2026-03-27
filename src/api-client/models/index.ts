@@ -1475,6 +1475,235 @@ export interface CeleryCheck {
 }
 
 /**
+ * Serializer for creating a new conversation.
+ * @export
+ * @interface ChatConversationCreate
+ */
+export interface ChatConversationCreate {
+  /**
+   *
+   * @type {number}
+   * @memberof ChatConversationCreate
+   */
+  readonly id: number;
+  /**
+   * The submission this conversation is about
+   * @type {number}
+   * @memberof ChatConversationCreate
+   */
+  submission: number;
+  /**
+   * Title for this conversation (auto-generated or user-set)
+   * @type {string}
+   * @memberof ChatConversationCreate
+   */
+  title?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationCreate
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationCreate
+   */
+  readonly modified: string;
+}
+/**
+ * Full serializer for retrieving a conversation with messages.
+ * @export
+ * @interface ChatConversationDetail
+ */
+export interface ChatConversationDetail {
+  /**
+   *
+   * @type {number}
+   * @memberof ChatConversationDetail
+   */
+  readonly id: number;
+  /**
+   * The submission this conversation is about
+   * @type {number}
+   * @memberof ChatConversationDetail
+   */
+  submission: number;
+  /**
+   * The assignment this conversation belongs to
+   * @type {number}
+   * @memberof ChatConversationDetail
+   */
+  readonly assignment: number;
+  /**
+   * Title for this conversation (auto-generated or user-set)
+   * @type {string}
+   * @memberof ChatConversationDetail
+   */
+  title?: string;
+  /**
+   * Rolling summary of older messages for context window management
+   * @type {string}
+   * @memberof ChatConversationDetail
+   */
+  readonly summary: string;
+  /**
+   *
+   * @type {number}
+   * @memberof ChatConversationDetail
+   */
+  readonly messageCount: number;
+  /**
+   *
+   * @type {Array<ChatMessage>}
+   * @memberof ChatConversationDetail
+   */
+  readonly messages: Array<ChatMessage>;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationDetail
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationDetail
+   */
+  readonly modified: string;
+}
+/**
+ * Lightweight serializer for listing conversations (no messages).
+ * @export
+ * @interface ChatConversationList
+ */
+export interface ChatConversationList {
+  /**
+   *
+   * @type {number}
+   * @memberof ChatConversationList
+   */
+  readonly id: number;
+  /**
+   * The submission this conversation is about
+   * @type {number}
+   * @memberof ChatConversationList
+   */
+  submission: number;
+  /**
+   * The assignment this conversation belongs to
+   * @type {number}
+   * @memberof ChatConversationList
+   */
+  readonly assignment: number;
+  /**
+   * Title for this conversation (auto-generated or user-set)
+   * @type {string}
+   * @memberof ChatConversationList
+   */
+  title?: string;
+  /**
+   * Rolling summary of older messages for context window management
+   * @type {string}
+   * @memberof ChatConversationList
+   */
+  readonly summary: string;
+  /**
+   *
+   * @type {number}
+   * @memberof ChatConversationList
+   */
+  readonly messageCount: number;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationList
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatConversationList
+   */
+  readonly modified: string;
+}
+/**
+ *
+ * @export
+ * @interface ChatMessage
+ */
+export interface ChatMessage {
+  /**
+   *
+   * @type {number}
+   * @memberof ChatMessage
+   */
+  readonly id: number;
+  /**
+   * Who sent this message
+   *
+   * * `user` - User
+   * * `assistant` - Assistant
+   * * `tool_call` - Tool Call
+   * * `tool_result` - Tool Result
+   * * `summary` - Summary
+   * @type {RoleEnum}
+   * @memberof ChatMessage
+   */
+  readonly role: RoleEnum;
+  /**
+   * The message text content
+   * @type {string}
+   * @memberof ChatMessage
+   */
+  readonly content: string;
+  /**
+   * Name of the tool (for tool_call/tool_result roles)
+   * @type {string}
+   * @memberof ChatMessage
+   */
+  readonly toolName: string | null;
+  /**
+   * JSON arguments for the tool call
+   * @type {any}
+   * @memberof ChatMessage
+   */
+  readonly toolArgs: any | null;
+  /**
+   * Whether the tool call was approved or rejected by the user
+   *
+   * * `pending` - Pending
+   * * `approved` - Approved
+   * * `rejected` - Rejected
+   * @type {string}
+   * @memberof ChatMessage
+   */
+  readonly toolStatus: ChatMessageToolStatusEnum | null;
+  /**
+   * Number of tokens in this message
+   * @type {number}
+   * @memberof ChatMessage
+   */
+  readonly tokenCount: number;
+  /**
+   *
+   * @type {string}
+   * @memberof ChatMessage
+   */
+  readonly created: string;
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum ChatMessageToolStatusEnum {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
+
+/**
  *
  * @export
  * @interface CheckSSOAvailabilityResponse
@@ -1929,6 +2158,12 @@ export interface CourseAISettings {
    * @type {boolean}
    * @memberof CourseAISettings
    */
+  aiChatDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CourseAISettings
+   */
   aiUseOwnSettings?: boolean;
   /**
    * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
@@ -1948,6 +2183,12 @@ export interface CourseAISettings {
    * @memberof CourseAISettings
    */
   readonly aiCommentsEnabled: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CourseAISettings
+   */
+  readonly aiChatEnabled: boolean;
   /**
    *
    * @type {boolean}
@@ -3647,6 +3888,12 @@ export interface OrganizationAISettings {
   aiCommentsDisabled?: boolean;
   /**
    *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  aiChatDisabled?: boolean;
+  /**
+   *
    * @type {AiCoursePolicyEnum}
    * @memberof OrganizationAISettings
    */
@@ -3675,6 +3922,12 @@ export interface OrganizationAISettings {
    * @memberof OrganizationAISettings
    */
   readonly aiCommentsEnabled: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrganizationAISettings
+   */
+  readonly aiChatEnabled: boolean;
   /**
    *
    * @type {boolean}
@@ -4258,6 +4511,61 @@ export interface PatchedAssignmentFile {
   isTestResource?: boolean;
 }
 /**
+ * Lightweight serializer for listing conversations (no messages).
+ * @export
+ * @interface PatchedChatConversationList
+ */
+export interface PatchedChatConversationList {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedChatConversationList
+   */
+  readonly id?: number;
+  /**
+   * The submission this conversation is about
+   * @type {number}
+   * @memberof PatchedChatConversationList
+   */
+  submission?: number;
+  /**
+   * The assignment this conversation belongs to
+   * @type {number}
+   * @memberof PatchedChatConversationList
+   */
+  readonly assignment?: number;
+  /**
+   * Title for this conversation (auto-generated or user-set)
+   * @type {string}
+   * @memberof PatchedChatConversationList
+   */
+  title?: string;
+  /**
+   * Rolling summary of older messages for context window management
+   * @type {string}
+   * @memberof PatchedChatConversationList
+   */
+  readonly summary?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedChatConversationList
+   */
+  readonly messageCount?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedChatConversationList
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedChatConversationList
+   */
+  readonly modified?: string;
+}
+/**
  *
  * @export
  * @interface PatchedComment
@@ -4631,6 +4939,12 @@ export interface PatchedCourseAISettings {
    * @type {boolean}
    * @memberof PatchedCourseAISettings
    */
+  aiChatDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
   aiUseOwnSettings?: boolean;
   /**
    * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
@@ -4650,6 +4964,12 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   readonly aiCommentsEnabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly aiChatEnabled?: boolean;
   /**
    *
    * @type {boolean}
@@ -5199,6 +5519,12 @@ export interface PatchedOrganizationAISettingsUpdate {
    * @memberof PatchedOrganizationAISettingsUpdate
    */
   aiCommentsDisabled?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiChatDisabled?: boolean;
   /**
    *
    * @type {AiCoursePolicyEnum}
@@ -6162,6 +6488,23 @@ export interface ResetPasswordResponse {
    */
   success: boolean;
 }
+/**
+ * * `user` - User
+ * * `assistant` - Assistant
+ * * `tool_call` - Tool Call
+ * * `tool_result` - Tool Result
+ * * `summary` - Summary
+ * @export
+ * @enum {string}
+ */
+export enum RoleEnum {
+  User = 'user',
+  Assistant = 'assistant',
+  ToolCall = 'tool_call',
+  ToolResult = 'tool_result',
+  Summary = 'summary',
+}
+
 /**
  *
  * @export
@@ -7558,6 +7901,19 @@ export interface TokenVerify {
    */
   token: string;
 }
+/**
+ * * `pending` - Pending
+ * * `approved` - Approved
+ * * `rejected` - Rejected
+ * @export
+ * @enum {string}
+ */
+export enum ToolStatusEnum {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
+
 /**
  * * `io` - io
  * * `io_cli` - io_cli

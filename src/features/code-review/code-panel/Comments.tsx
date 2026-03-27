@@ -127,7 +127,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
           if (isCommentVisible(commentElement, commentsContainer)) return;
 
           const commentOffsetTop = commentElement.offsetTop;
-          const targetScroll = commentOffsetTop - 20; // 20px padding from top
+          const targetScroll = commentOffsetTop - 50; // 50px padding from top
 
           commentsContainer.scrollTo({
             top: targetScroll,
