@@ -466,7 +466,7 @@ const SidebarIconButton = ({ title, icon, active, onClick, theme }: ISidebarIcon
           width: '42px',
           height: '42px',
           color: active ? '#1890ff' : theme.siderTitle,
-          fontSize: '20px',
+          fontSize: '21px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',

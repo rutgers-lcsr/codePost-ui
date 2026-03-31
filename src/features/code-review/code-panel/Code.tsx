@@ -278,7 +278,7 @@ const Code = (props: CodePropsWithoutComments) => {
     await wait(5);
 
     setHoveredCommentId(newComment.id);
-    scrollHighlightIntoView(newComment.id);
+    scrollHighlightIntoView(newComment.id, { lineNumber: startLine });
   };
 
   // Keep refs in sync (after addNewComment is defined)
@@ -667,9 +667,7 @@ const Code = (props: CodePropsWithoutComments) => {
 
     // Bottom spacer for lines below visible range
     if (useWindowing && renderEnd < lines.length - 1) {
-      result.push(
-        <div key="spacer-bottom" style={{ height: (lines.length - 1 - renderEnd) * LINE_HEIGHT }} />,
-      );
+      result.push(<div key="spacer-bottom" style={{ height: (lines.length - 1 - renderEnd) * LINE_HEIGHT }} />);
     }
 
     return result;

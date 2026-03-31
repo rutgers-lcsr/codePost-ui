@@ -8,7 +8,10 @@ All URIs are relative to _http://localhost_
 | [**create**](SubmissionsApi.md#create)                                                             | **POST** /submissions/                                  |             |
 | [**deleteRegradePartialUpdate**](SubmissionsApi.md#deleteregradepartialupdate)                     | **PATCH** /submissions/{id}/deleteRegrade/              |             |
 | [**destroy**](SubmissionsApi.md#destroy)                                                           | **DELETE** /submissions/{id}/                           |             |
+| [**generateAIAssistanceCreate**](SubmissionsApi.md#generateaiassistancecreate)                     | **POST** /submissions/{id}/generateAIAssistance/        |             |
+| [**generateFileSuggestionsCreate**](SubmissionsApi.md#generatefilesuggestionscreate)               | **POST** /submissions/{id}/generateFileSuggestions/     |             |
 | [**generatePartnerLinkRetrieve**](SubmissionsApi.md#generatepartnerlinkretrieve)                   | **GET** /submissions/{id}/generatePartnerLink/          |             |
+| [**generateSummaryCreate**](SubmissionsApi.md#generatesummarycreate)                               | **POST** /submissions/{id}/generateSummary/             |             |
 | [**historyList**](SubmissionsApi.md#historylist)                                                   | **GET** /submissions/{id}/history/                      |             |
 | [**historyPartialUpdate**](SubmissionsApi.md#historypartialupdate)                                 | **PATCH** /submissions/{id}/history/                    |             |
 | [**list**](SubmissionsApi.md#list)                                                                 | **GET** /submissions/                                   |             |
@@ -18,6 +21,8 @@ All URIs are relative to _http://localhost_
 | [**retrieve**](SubmissionsApi.md#retrieve)                                                         | **GET** /submissions/{id}/                              |             |
 | [**submissionTestsList**](SubmissionsApi.md#submissiontestslist)                                   | **GET** /submissions/{id}/submissionTests/              |             |
 | [**submitRegradePartialUpdate**](SubmissionsApi.md#submitregradepartialupdate)                     | **PATCH** /submissions/{id}/submitRegrade/              |             |
+| [**suggestedCommentsList**](SubmissionsApi.md#suggestedcommentslist)                               | **GET** /submissions/{id}/suggestedComments/            |             |
+| [**summaryRetrieve**](SubmissionsApi.md#summaryretrieve)                                           | **GET** /submissions/{id}/summary/                      |             |
 | [**testResultsRetrieve**](SubmissionsApi.md#testresultsretrieve)                                   | **GET** /submissions/{id}/testResults/                  |             |
 | [**update**](SubmissionsApi.md#update)                                                             | **PUT** /submissions/{id}/                              |             |
 | [**validatePartnerLinkAndReturnRetrieve**](SubmissionsApi.md#validatepartnerlinkandreturnretrieve) | **GET** /submissions/{id}/validatePartnerLinkAndReturn/ |             |
@@ -316,6 +321,160 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## generateAIAssistanceCreate
+
+> GenerateAIAssistanceResponse generateAIAssistanceCreate(id, submission)
+
+Manually trigger or regenerate AI summary and suggested comments. Staff only.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
+import type { GenerateAIAssistanceCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+    // Submission
+    submission: ...,
+  } satisfies GenerateAIAssistanceCreateRequest;
+
+  try {
+    const data = await api.generateAIAssistanceCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name           | Type                        | Description                                         | Notes                     |
+| -------------- | --------------------------- | --------------------------------------------------- | ------------------------- |
+| **id**         | `number`                    | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **submission** | [Submission](Submission.md) |                                                     |                           |
+
+### Return type
+
+[**GenerateAIAssistanceResponse**](GenerateAIAssistanceResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **202**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## generateFileSuggestionsCreate
+
+> Array&lt;SuggestedComment&gt; generateFileSuggestionsCreate(id, generateFileSuggestionsRequest)
+
+Generate AI-suggested comments for a specific file in this submission. Runs synchronously. Staff only.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
+import type { GenerateFileSuggestionsCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+    // GenerateFileSuggestionsRequest
+    generateFileSuggestionsRequest: ...,
+  } satisfies GenerateFileSuggestionsCreateRequest;
+
+  try {
+    const data = await api.generateFileSuggestionsCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                               | Type                                                                | Description                                         | Notes                     |
+| ---------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------- | ------------------------- |
+| **id**                             | `number`                                                            | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **generateFileSuggestionsRequest** | [GenerateFileSuggestionsRequest](GenerateFileSuggestionsRequest.md) |                                                     |                           |
+
+### Return type
+
+[**Array&lt;SuggestedComment&gt;**](SuggestedComment.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## generatePartnerLinkRetrieve
 
 > SubmissionPartnerLinkResponse generatePartnerLinkRetrieve(id)
@@ -369,6 +528,77 @@ example().catch(console.error);
 ### Return type
 
 [**SubmissionPartnerLinkResponse**](SubmissionPartnerLinkResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## generateSummaryCreate
+
+> SubmissionSummary generateSummaryCreate(id)
+
+Generate or regenerate the AI summary for this submission. Runs synchronously. Staff only.
+
+### Example
+
+```ts
+import { Configuration, SubmissionsApi } from '';
+import type { GenerateSummaryCreateRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+  } satisfies GenerateSummaryCreateRequest;
+
+  try {
+    const data = await api.generateSummaryCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+
+### Return type
+
+[**SubmissionSummary**](SubmissionSummary.md)
 
 ### Authorization
 
@@ -1033,6 +1263,148 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## suggestedCommentsList
+
+> Array&lt;SuggestedComment&gt; suggestedCommentsList(id)
+
+List all pending AI-suggested comments for this submission. Staff only.
+
+### Example
+
+```ts
+import { Configuration, SubmissionsApi } from '';
+import type { SuggestedCommentsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+  } satisfies SuggestedCommentsListRequest;
+
+  try {
+    const data = await api.suggestedCommentsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;SuggestedComment&gt;**](SuggestedComment.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## summaryRetrieve
+
+> SubmissionSummary summaryRetrieve(id)
+
+Get the AI-generated summary for this submission. Staff only.
+
+### Example
+
+```ts
+import { Configuration, SubmissionsApi } from '';
+import type { SummaryRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+  } satisfies SummaryRetrieveRequest;
+
+  try {
+    const data = await api.summaryRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+
+### Return type
+
+[**SubmissionSummary**](SubmissionSummary.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

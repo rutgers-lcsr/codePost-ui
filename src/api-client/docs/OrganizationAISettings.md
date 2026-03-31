@@ -13,13 +13,11 @@ Serializer for organization-level AI configuration.
 | `aiModel`            | string                                      |
 | `aiDisabled`         | boolean                                     |
 | `aiCommentsDisabled` | boolean                                     |
-| `aiChatDisabled`     | boolean                                     |
 | `aiCoursePolicy`     | [AiCoursePolicyEnum](AiCoursePolicyEnum.md) |
 | `aiEnabledCourseIds` | Array&lt;number&gt;                         |
 | `aiTokenRates`       | any                                         |
 | `aiEnabled`          | boolean                                     |
 | `aiCommentsEnabled`  | boolean                                     |
-| `aiChatEnabled`      | boolean                                     |
 | `hasApiKey`          | boolean                                     |
 | `apiKeyHint`         | string                                      |
 | `defaultTokenRates`  | { [key: string]: { [key: string]: any       | undefined; } | undefined; } |

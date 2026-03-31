@@ -526,6 +526,18 @@ export interface Assignment {
    */
   aiSystemPrompt?: string;
   /**
+   * AI-generated description of the assignment used as context for AI grading features. Editable by course admins, visible to graders. Not shown to students.
+   * @type {string}
+   * @memberof Assignment
+   */
+  aiDescription?: string;
+  /**
+   * When True, prevents automatic regeneration of ai_description from new submissions.
+   * @type {boolean}
+   * @memberof Assignment
+   */
+  aiDescriptionLocked?: boolean;
+  /**
    * If True, submission files will be automatically executed and cached when a student submits.
    * @type {boolean}
    * @memberof Assignment
@@ -1475,235 +1487,6 @@ export interface CeleryCheck {
 }
 
 /**
- * Serializer for creating a new conversation.
- * @export
- * @interface ChatConversationCreate
- */
-export interface ChatConversationCreate {
-  /**
-   *
-   * @type {number}
-   * @memberof ChatConversationCreate
-   */
-  readonly id: number;
-  /**
-   * The submission this conversation is about
-   * @type {number}
-   * @memberof ChatConversationCreate
-   */
-  submission: number;
-  /**
-   * Title for this conversation (auto-generated or user-set)
-   * @type {string}
-   * @memberof ChatConversationCreate
-   */
-  title?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationCreate
-   */
-  readonly created: string;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationCreate
-   */
-  readonly modified: string;
-}
-/**
- * Full serializer for retrieving a conversation with messages.
- * @export
- * @interface ChatConversationDetail
- */
-export interface ChatConversationDetail {
-  /**
-   *
-   * @type {number}
-   * @memberof ChatConversationDetail
-   */
-  readonly id: number;
-  /**
-   * The submission this conversation is about
-   * @type {number}
-   * @memberof ChatConversationDetail
-   */
-  submission: number;
-  /**
-   * The assignment this conversation belongs to
-   * @type {number}
-   * @memberof ChatConversationDetail
-   */
-  readonly assignment: number;
-  /**
-   * Title for this conversation (auto-generated or user-set)
-   * @type {string}
-   * @memberof ChatConversationDetail
-   */
-  title?: string;
-  /**
-   * Rolling summary of older messages for context window management
-   * @type {string}
-   * @memberof ChatConversationDetail
-   */
-  readonly summary: string;
-  /**
-   *
-   * @type {number}
-   * @memberof ChatConversationDetail
-   */
-  readonly messageCount: number;
-  /**
-   *
-   * @type {Array<ChatMessage>}
-   * @memberof ChatConversationDetail
-   */
-  readonly messages: Array<ChatMessage>;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationDetail
-   */
-  readonly created: string;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationDetail
-   */
-  readonly modified: string;
-}
-/**
- * Lightweight serializer for listing conversations (no messages).
- * @export
- * @interface ChatConversationList
- */
-export interface ChatConversationList {
-  /**
-   *
-   * @type {number}
-   * @memberof ChatConversationList
-   */
-  readonly id: number;
-  /**
-   * The submission this conversation is about
-   * @type {number}
-   * @memberof ChatConversationList
-   */
-  submission: number;
-  /**
-   * The assignment this conversation belongs to
-   * @type {number}
-   * @memberof ChatConversationList
-   */
-  readonly assignment: number;
-  /**
-   * Title for this conversation (auto-generated or user-set)
-   * @type {string}
-   * @memberof ChatConversationList
-   */
-  title?: string;
-  /**
-   * Rolling summary of older messages for context window management
-   * @type {string}
-   * @memberof ChatConversationList
-   */
-  readonly summary: string;
-  /**
-   *
-   * @type {number}
-   * @memberof ChatConversationList
-   */
-  readonly messageCount: number;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationList
-   */
-  readonly created: string;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatConversationList
-   */
-  readonly modified: string;
-}
-/**
- *
- * @export
- * @interface ChatMessage
- */
-export interface ChatMessage {
-  /**
-   *
-   * @type {number}
-   * @memberof ChatMessage
-   */
-  readonly id: number;
-  /**
-   * Who sent this message
-   *
-   * * `user` - User
-   * * `assistant` - Assistant
-   * * `tool_call` - Tool Call
-   * * `tool_result` - Tool Result
-   * * `summary` - Summary
-   * @type {RoleEnum}
-   * @memberof ChatMessage
-   */
-  readonly role: RoleEnum;
-  /**
-   * The message text content
-   * @type {string}
-   * @memberof ChatMessage
-   */
-  readonly content: string;
-  /**
-   * Name of the tool (for tool_call/tool_result roles)
-   * @type {string}
-   * @memberof ChatMessage
-   */
-  readonly toolName: string | null;
-  /**
-   * JSON arguments for the tool call
-   * @type {any}
-   * @memberof ChatMessage
-   */
-  readonly toolArgs: any | null;
-  /**
-   * Whether the tool call was approved or rejected by the user
-   *
-   * * `pending` - Pending
-   * * `approved` - Approved
-   * * `rejected` - Rejected
-   * @type {string}
-   * @memberof ChatMessage
-   */
-  readonly toolStatus: ChatMessageToolStatusEnum | null;
-  /**
-   * Number of tokens in this message
-   * @type {number}
-   * @memberof ChatMessage
-   */
-  readonly tokenCount: number;
-  /**
-   *
-   * @type {string}
-   * @memberof ChatMessage
-   */
-  readonly created: string;
-}
-
-/**
- * @export
- * @enum {string}
- */
-export enum ChatMessageToolStatusEnum {
-  Pending = 'pending',
-  Approved = 'approved',
-  Rejected = 'rejected',
-}
-
-/**
  *
  * @export
  * @interface CheckSSOAvailabilityResponse
@@ -1809,25 +1592,25 @@ export interface Comment {
    */
   pointDelta?: number | null;
   /**
-   * An integer representing the character position a comment begins on.
+   * The starting character offset of the comment. For code/markdown files: 0-indexed character position within the start line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + leftPct*101 + topPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
    * @type {number}
    * @memberof Comment
    */
   startChar?: number;
   /**
-   * An integer representing the character position a comment ends on.
+   * The ending character offset of the comment. For code/markdown files: 0-indexed character position within the end line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + rightPct*101 + bottomPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
    * @type {number}
    * @memberof Comment
    */
   endChar?: number;
   /**
-   * An integer representing the line number a comment begins on.
+   * The line or position where the comment begins. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number. For Jupyter notebooks (.ipynb): 0-based cell index.
    * @type {number}
    * @memberof Comment
    */
   startLine: number;
   /**
-   * An integer representing the line number a comment begins on.
+   * The line or position where the comment ends. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number (usually same as startLine). For Jupyter notebooks (.ipynb): 0-based cell index (usually same as startLine).
    * @type {number}
    * @memberof Comment
    */
@@ -1851,7 +1634,7 @@ export interface Comment {
    */
   author?: string;
   /**
-   * An integer representing the feedback applied to this comment. Currently only valid if rubricComment is not null.
+   * Student feedback on this comment. Valid values: -1 (negative), 0 (none), 1 (positive). Only applicable when rubricComment is set.
    * @type {number}
    * @memberof Comment
    */
@@ -2158,12 +1941,6 @@ export interface CourseAISettings {
    * @type {boolean}
    * @memberof CourseAISettings
    */
-  aiChatDisabled?: boolean;
-  /**
-   *
-   * @type {boolean}
-   * @memberof CourseAISettings
-   */
   aiUseOwnSettings?: boolean;
   /**
    * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
@@ -2183,12 +1960,6 @@ export interface CourseAISettings {
    * @memberof CourseAISettings
    */
   readonly aiCommentsEnabled: boolean;
-  /**
-   *
-   * @type {boolean}
-   * @memberof CourseAISettings
-   */
-  readonly aiChatEnabled: boolean;
   /**
    *
    * @type {boolean}
@@ -2227,6 +1998,73 @@ export enum CourseAISettingsAiProviderEnum {
   Custom = 'custom',
 }
 
+/**
+ * Read-only serializer for course audit events.
+ * @export
+ * @interface CourseAuditEvent
+ */
+export interface CourseAuditEvent {
+  /**
+   *
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly id: number;
+  /**
+   * The course this event belongs to
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly course: number;
+  /**
+   * The assignment associated with this event
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly assignment: number | null;
+  /**
+   * The submission associated with this event
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly submission: number | null;
+  /**
+   * The user who performed the action
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly user: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAuditEvent
+   */
+  readonly userEmail: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAuditEvent
+   */
+  readonly assignmentName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAuditEvent
+   */
+  readonly eventType: string;
+  /**
+   * Extra context for the event (error messages, counts, etc.)
+   * @type {any}
+   * @memberof CourseAuditEvent
+   */
+  readonly meta: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAuditEvent
+   */
+  readonly created: string;
+}
 /**
  * Serializer for CourseFile objects.
  * These are files that belong to courses (syllabi, resources, etc.).
@@ -3295,6 +3133,51 @@ export interface FileExecutionRequest {
 /**
  *
  * @export
+ * @interface GenerateAIAssistanceResponse
+ */
+export interface GenerateAIAssistanceResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateAIAssistanceResponse
+   */
+  status: string;
+  /**
+   *
+   * @type {number}
+   * @memberof GenerateAIAssistanceResponse
+   */
+  submissionId: number;
+}
+/**
+ *
+ * @export
+ * @interface GenerateDescriptionResponse
+ */
+export interface GenerateDescriptionResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateDescriptionResponse
+   */
+  aiDescription: string;
+}
+/**
+ *
+ * @export
+ * @interface GenerateFileSuggestionsRequest
+ */
+export interface GenerateFileSuggestionsRequest {
+  /**
+   * ID of the submission file to generate suggestions for.
+   * @type {number}
+   * @memberof GenerateFileSuggestionsRequest
+   */
+  fileId: number;
+}
+/**
+ *
+ * @export
  * @interface GenerateOTTRequest
  */
 export interface GenerateOTTRequest {
@@ -3888,12 +3771,6 @@ export interface OrganizationAISettings {
   aiCommentsDisabled?: boolean;
   /**
    *
-   * @type {boolean}
-   * @memberof OrganizationAISettings
-   */
-  aiChatDisabled?: boolean;
-  /**
-   *
    * @type {AiCoursePolicyEnum}
    * @memberof OrganizationAISettings
    */
@@ -3922,12 +3799,6 @@ export interface OrganizationAISettings {
    * @memberof OrganizationAISettings
    */
   readonly aiCommentsEnabled: boolean;
-  /**
-   *
-   * @type {boolean}
-   * @memberof OrganizationAISettings
-   */
-  readonly aiChatEnabled: boolean;
   /**
    *
    * @type {boolean}
@@ -3973,6 +3844,37 @@ export enum OverallEnum {
   Critical = 'critical',
 }
 
+/**
+ *
+ * @export
+ * @interface PaginatedCourseAuditEventList
+ */
+export interface PaginatedCourseAuditEventList {
+  /**
+   *
+   * @type {number}
+   * @memberof PaginatedCourseAuditEventList
+   */
+  count: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedCourseAuditEventList
+   */
+  next?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedCourseAuditEventList
+   */
+  previous?: string | null;
+  /**
+   *
+   * @type {Array<CourseAuditEvent>}
+   * @memberof PaginatedCourseAuditEventList
+   */
+  results: Array<CourseAuditEvent>;
+}
 /**
  *
  * @export
@@ -4375,6 +4277,18 @@ export interface PatchedAssignment {
    */
   aiSystemPrompt?: string;
   /**
+   * AI-generated description of the assignment used as context for AI grading features. Editable by course admins, visible to graders. Not shown to students.
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  aiDescription?: string;
+  /**
+   * When True, prevents automatic regeneration of ai_description from new submissions.
+   * @type {boolean}
+   * @memberof PatchedAssignment
+   */
+  aiDescriptionLocked?: boolean;
+  /**
    * If True, submission files will be automatically executed and cached when a student submits.
    * @type {boolean}
    * @memberof PatchedAssignment
@@ -4511,61 +4425,6 @@ export interface PatchedAssignmentFile {
   isTestResource?: boolean;
 }
 /**
- * Lightweight serializer for listing conversations (no messages).
- * @export
- * @interface PatchedChatConversationList
- */
-export interface PatchedChatConversationList {
-  /**
-   *
-   * @type {number}
-   * @memberof PatchedChatConversationList
-   */
-  readonly id?: number;
-  /**
-   * The submission this conversation is about
-   * @type {number}
-   * @memberof PatchedChatConversationList
-   */
-  submission?: number;
-  /**
-   * The assignment this conversation belongs to
-   * @type {number}
-   * @memberof PatchedChatConversationList
-   */
-  readonly assignment?: number;
-  /**
-   * Title for this conversation (auto-generated or user-set)
-   * @type {string}
-   * @memberof PatchedChatConversationList
-   */
-  title?: string;
-  /**
-   * Rolling summary of older messages for context window management
-   * @type {string}
-   * @memberof PatchedChatConversationList
-   */
-  readonly summary?: string;
-  /**
-   *
-   * @type {number}
-   * @memberof PatchedChatConversationList
-   */
-  readonly messageCount?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof PatchedChatConversationList
-   */
-  readonly created?: string;
-  /**
-   *
-   * @type {string}
-   * @memberof PatchedChatConversationList
-   */
-  readonly modified?: string;
-}
-/**
  *
  * @export
  * @interface PatchedComment
@@ -4590,25 +4449,25 @@ export interface PatchedComment {
    */
   pointDelta?: number | null;
   /**
-   * An integer representing the character position a comment begins on.
+   * The starting character offset of the comment. For code/markdown files: 0-indexed character position within the start line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + leftPct*101 + topPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
    * @type {number}
    * @memberof PatchedComment
    */
   startChar?: number;
   /**
-   * An integer representing the character position a comment ends on.
+   * The ending character offset of the comment. For code/markdown files: 0-indexed character position within the end line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + rightPct*101 + bottomPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
    * @type {number}
    * @memberof PatchedComment
    */
   endChar?: number;
   /**
-   * An integer representing the line number a comment begins on.
+   * The line or position where the comment begins. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number. For Jupyter notebooks (.ipynb): 0-based cell index.
    * @type {number}
    * @memberof PatchedComment
    */
   startLine?: number;
   /**
-   * An integer representing the line number a comment begins on.
+   * The line or position where the comment ends. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number (usually same as startLine). For Jupyter notebooks (.ipynb): 0-based cell index (usually same as startLine).
    * @type {number}
    * @memberof PatchedComment
    */
@@ -4632,7 +4491,7 @@ export interface PatchedComment {
    */
   author?: string;
   /**
-   * An integer representing the feedback applied to this comment. Currently only valid if rubricComment is not null.
+   * Student feedback on this comment. Valid values: -1 (negative), 0 (none), 1 (positive). Only applicable when rubricComment is set.
    * @type {number}
    * @memberof PatchedComment
    */
@@ -4939,12 +4798,6 @@ export interface PatchedCourseAISettings {
    * @type {boolean}
    * @memberof PatchedCourseAISettings
    */
-  aiChatDisabled?: boolean;
-  /**
-   *
-   * @type {boolean}
-   * @memberof PatchedCourseAISettings
-   */
   aiUseOwnSettings?: boolean;
   /**
    * Custom per-model token rates. JSON: {"model-name": {"input": 0.15, "output": 0.60}}
@@ -4964,12 +4817,6 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   readonly aiCommentsEnabled?: boolean;
-  /**
-   *
-   * @type {boolean}
-   * @memberof PatchedCourseAISettings
-   */
-  readonly aiChatEnabled?: boolean;
   /**
    *
    * @type {boolean}
@@ -5521,12 +5368,6 @@ export interface PatchedOrganizationAISettingsUpdate {
   aiCommentsDisabled?: boolean;
   /**
    *
-   * @type {boolean}
-   * @memberof PatchedOrganizationAISettingsUpdate
-   */
-  aiChatDisabled?: boolean;
-  /**
-   *
    * @type {AiCoursePolicyEnum}
    * @memberof PatchedOrganizationAISettingsUpdate
    */
@@ -5984,6 +5825,114 @@ export interface PatchedSubmissionTest {
    */
   results?: any | null;
 }
+/**
+ *
+ * @export
+ * @interface PatchedSuggestedComment
+ */
+export interface PatchedSuggestedComment {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly id?: number;
+  /**
+   * The submission this suggestion belongs to.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly submission?: number;
+  /**
+   * The file this suggestion targets.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly file?: number;
+  /**
+   * The AI-generated comment text.
+   * @type {string}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly text?: string;
+  /**
+   * The line or position where the suggestion begins (same semantics as Comment.startLine).
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly startLine?: number;
+  /**
+   * The line or position where the suggestion ends (same semantics as Comment.endLine).
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly endLine?: number;
+  /**
+   * The starting character offset (same semantics as Comment.startChar).
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly startChar?: number;
+  /**
+   * The ending character offset (same semantics as Comment.endChar).
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly endChar?: number;
+  /**
+   * Optional rubric comment the AI mapped this suggestion to.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly rubricComment?: number | null;
+  /**
+   * AI-suggested point delta. Null if linked to a rubricComment.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly pointDelta?: number | null;
+  /**
+   * Current status of this suggestion.
+   *
+   * * `pending` - Pending
+   * * `accepted` - Accepted
+   * * `rejected` - Rejected
+   * @type {SuggestedCommentStatusEnum}
+   * @memberof PatchedSuggestedComment
+   */
+  status?: SuggestedCommentStatusEnum;
+  /**
+   * The grader who accepted this suggestion.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly acceptedBy?: number | null;
+  /**
+   * The real Comment created when this suggestion was accepted.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly acceptedComment?: number | null;
+  /**
+   * Metadata about the generation (model used, tokens, confidence, etc.).
+   * @type {any}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly generationMetadata?: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly modified?: string;
+}
+
 /**
  *
  * @export
@@ -6488,23 +6437,6 @@ export interface ResetPasswordResponse {
    */
   success: boolean;
 }
-/**
- * * `user` - User
- * * `assistant` - Assistant
- * * `tool_call` - Tool Call
- * * `tool_result` - Tool Result
- * * `summary` - Summary
- * @export
- * @enum {string}
- */
-export enum RoleEnum {
-  User = 'user',
-  Assistant = 'assistant',
-  ToolCall = 'tool_call',
-  ToolResult = 'tool_result',
-  Summary = 'summary',
-}
-
 /**
  *
  * @export
@@ -7233,6 +7165,49 @@ export interface SubmissionPartnerLinkResponse {
 /**
  *
  * @export
+ * @interface SubmissionSummary
+ */
+export interface SubmissionSummary {
+  /**
+   *
+   * @type {number}
+   * @memberof SubmissionSummary
+   */
+  readonly id: number;
+  /**
+   * The submission this summary describes.
+   * @type {number}
+   * @memberof SubmissionSummary
+   */
+  readonly submission: number;
+  /**
+   * Markdown-formatted summary of the submission.
+   * @type {string}
+   * @memberof SubmissionSummary
+   */
+  readonly text: string;
+  /**
+   * Metadata about the generation (model used, tokens, etc.).
+   * @type {any}
+   * @memberof SubmissionSummary
+   */
+  readonly generationMetadata: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionSummary
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionSummary
+   */
+  readonly modified: string;
+}
+/**
+ *
+ * @export
  * @interface SubmissionTest
  */
 export interface SubmissionTest {
@@ -7373,6 +7348,127 @@ export interface SubscribeToEmailListResponse {
    */
   success: boolean;
 }
+/**
+ *
+ * @export
+ * @interface SuggestedComment
+ */
+export interface SuggestedComment {
+  /**
+   *
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly id: number;
+  /**
+   * The submission this suggestion belongs to.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly submission: number;
+  /**
+   * The file this suggestion targets.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly file: number;
+  /**
+   * The AI-generated comment text.
+   * @type {string}
+   * @memberof SuggestedComment
+   */
+  readonly text: string;
+  /**
+   * The line or position where the suggestion begins (same semantics as Comment.startLine).
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly startLine: number;
+  /**
+   * The line or position where the suggestion ends (same semantics as Comment.endLine).
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly endLine: number;
+  /**
+   * The starting character offset (same semantics as Comment.startChar).
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly startChar: number;
+  /**
+   * The ending character offset (same semantics as Comment.endChar).
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly endChar: number;
+  /**
+   * Optional rubric comment the AI mapped this suggestion to.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly rubricComment: number | null;
+  /**
+   * AI-suggested point delta. Null if linked to a rubricComment.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly pointDelta: number | null;
+  /**
+   * Current status of this suggestion.
+   *
+   * * `pending` - Pending
+   * * `accepted` - Accepted
+   * * `rejected` - Rejected
+   * @type {SuggestedCommentStatusEnum}
+   * @memberof SuggestedComment
+   */
+  status?: SuggestedCommentStatusEnum;
+  /**
+   * The grader who accepted this suggestion.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly acceptedBy: number | null;
+  /**
+   * The real Comment created when this suggestion was accepted.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly acceptedComment: number | null;
+  /**
+   * Metadata about the generation (model used, tokens, confidence, etc.).
+   * @type {any}
+   * @memberof SuggestedComment
+   */
+  readonly generationMetadata: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SuggestedComment
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SuggestedComment
+   */
+  readonly modified: string;
+}
+
+/**
+ * * `pending` - Pending
+ * * `accepted` - Accepted
+ * * `rejected` - Rejected
+ * @export
+ * @enum {string}
+ */
+export enum SuggestedCommentStatusEnum {
+  Pending = 'pending',
+  Accepted = 'accepted',
+  Rejected = 'rejected',
+}
+
 /**
  *
  * @export
@@ -7901,19 +7997,6 @@ export interface TokenVerify {
    */
   token: string;
 }
-/**
- * * `pending` - Pending
- * * `approved` - Approved
- * * `rejected` - Rejected
- * @export
- * @enum {string}
- */
-export enum ToolStatusEnum {
-  Pending = 'pending',
-  Approved = 'approved',
-  Rejected = 'rejected',
-}
-
 /**
  * * `io` - io
  * * `io_cli` - io_cli

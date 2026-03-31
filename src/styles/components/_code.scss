@@ -234,6 +234,26 @@
         }
       }
 
+      // AI Suggestion highlights — blue dashed underline, distinct from regular comment highlights.
+      // Suggestion IDs are offset by 2,000,000 in the highlight system.
+      .highlight--suggestion,
+      [class*='highlight-200000'] {
+        background-color: rgba(24, 144, 255, 0.15) !important;
+        border-bottom: 2px dashed rgba(24, 144, 255, 0.7);
+        box-shadow: none;
+
+        &:hover {
+          background-color: rgba(24, 144, 255, 0.25) !important;
+          border-bottom-color: rgba(24, 144, 255, 1);
+        }
+
+        &.highlight--hovered {
+          background-color: rgba(24, 144, 255, 0.35) !important;
+          border-bottom-color: rgba(24, 144, 255, 1);
+          box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+        }
+      }
+
       // Hover state for highlights - React Context managed
       // Applied via 'highlight--hovered' class when hoveredCommentId matches
       .highlight--hovered {

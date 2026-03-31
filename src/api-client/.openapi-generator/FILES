@@ -3,7 +3,6 @@ apis/AssignmentFilesApi.ts
 apis/AssignmentsApi.ts
 apis/AuthApi.ts
 apis/AutograderApi.ts
-apis/ChatConversationsApi.ts
 apis/CommentTemplatesApi.ts
 apis/CommentsApi.ts
 apis/CourseFilesApi.ts
@@ -22,6 +21,7 @@ apis/SubmissionFilesApi.ts
 apis/SubmissionTestsApi.ts
 apis/SubmissionsApi.ts
 apis/SubscribeApi.ts
+apis/SuggestedCommentsApi.ts
 apis/SystemApi.ts
 apis/TestCasesApi.ts
 apis/TestCategoriesApi.ts
@@ -73,11 +73,6 @@ docs/BeforeStudentUploadResponse.md
 docs/BuildTypeEnum.md
 docs/CacheCheckResponse.md
 docs/CeleryCheck.md
-docs/ChatConversationCreate.md
-docs/ChatConversationDetail.md
-docs/ChatConversationList.md
-docs/ChatConversationsApi.md
-docs/ChatMessage.md
 docs/CheckSSOAvailabilityResponse.md
 docs/CheckStatusNewAdminUserResponse.md
 docs/CodeExecutionRequest.md
@@ -87,6 +82,7 @@ docs/CommentTemplatesApi.md
 docs/CommentsApi.md
 docs/Course.md
 docs/CourseAISettings.md
+docs/CourseAuditEvent.md
 docs/CourseFile.md
 docs/CourseFilesApi.md
 docs/CourseRoster.md
@@ -119,6 +115,9 @@ docs/EnvironmentStatusResponse.md
 docs/ExecutionResult.md
 docs/FileExecutionRequest.md
 docs/FilesApi.md
+docs/GenerateAIAssistanceResponse.md
+docs/GenerateDescriptionResponse.md
+docs/GenerateFileSuggestionsRequest.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GranularityEnum.md
@@ -146,6 +145,7 @@ docs/OrganizationAISettings.md
 docs/OrganizationsApi.md
 docs/OttApi.md
 docs/OverallEnum.md
+docs/PaginatedCourseAuditEventList.md
 docs/PaginatedSectionList.md
 docs/PaginatedSubmissionHistoryList.md
 docs/PaginatedSubmissionList.md
@@ -154,7 +154,6 @@ docs/PaginatedUserList.md
 docs/PatchedAssignment.md
 docs/PatchedAssignmentDataSetUpdate.md
 docs/PatchedAssignmentFile.md
-docs/PatchedChatConversationList.md
 docs/PatchedComment.md
 docs/PatchedCommentTemplate.md
 docs/PatchedCourse.md
@@ -176,6 +175,7 @@ docs/PatchedSection.md
 docs/PatchedSubmission.md
 docs/PatchedSubmissionFile.md
 docs/PatchedSubmissionTest.md
+docs/PatchedSuggestedComment.md
 docs/PatchedTestCase.md
 docs/PatchedTestCategory.md
 docs/PatchedTestCategoryResource.md
@@ -188,7 +188,6 @@ docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
-docs/RoleEnum.md
 docs/RubricCategoriesApi.md
 docs/RubricCategory.md
 docs/RubricComment.md
@@ -209,6 +208,7 @@ docs/SubmissionFileStudentUpload.md
 docs/SubmissionFilesApi.md
 docs/SubmissionHistory.md
 docs/SubmissionPartnerLinkResponse.md
+docs/SubmissionSummary.md
 docs/SubmissionTest.md
 docs/SubmissionTestResultsResponse.md
 docs/SubmissionTestsApi.md
@@ -217,6 +217,9 @@ docs/SubmissionsApi.md
 docs/SubscribeApi.md
 docs/SubscribeToEmailListRequest.md
 docs/SubscribeToEmailListResponse.md
+docs/SuggestedComment.md
+docs/SuggestedCommentStatusEnum.md
+docs/SuggestedCommentsApi.md
 docs/SystemActivityResponse.md
 docs/SystemApi.md
 docs/SystemHealthResponse.md
@@ -239,7 +242,6 @@ docs/TokenRefreshApi.md
 docs/TokenRefreshSliding.md
 docs/TokenVerify.md
 docs/TokenVerifyApi.md
-docs/ToolStatusEnum.md
 docs/TypeEnum.md
 docs/User.md
 docs/UsersApi.md

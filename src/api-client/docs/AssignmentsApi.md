@@ -2,31 +2,32 @@
 
 All URIs are relative to _http://localhost_
 
-| Method                                                                           | HTTP request                                   | Description |
-| -------------------------------------------------------------------------------- | ---------------------------------------------- | ----------- |
-| [**analyticsRetrieve**](AssignmentsApi.md#analyticsretrieve)                     | **GET** /assignments/{id}/analytics/           |             |
-| [**beforeStudentUploadRetrieve**](AssignmentsApi.md#beforestudentuploadretrieve) | **GET** /assignments/{id}/beforeStudentUpload/ |             |
-| [**cloneCreate**](AssignmentsApi.md#clonecreate)                                 | **POST** /assignments/{id}/clone/              |             |
-| [**commentsList**](AssignmentsApi.md#commentslist)                               | **GET** /assignments/{id}/comments/            |             |
-| [**create**](AssignmentsApi.md#create)                                           | **POST** /assignments/                         |             |
-| [**datasetsList**](AssignmentsApi.md#datasetslist)                               | **GET** /assignments/{id}/datasets/            |             |
-| [**destroy**](AssignmentsApi.md#destroy)                                         | **DELETE** /assignments/{id}/                  |             |
-| [**downloadRetrieve**](AssignmentsApi.md#downloadretrieve)                       | **GET** /assignments/{id}/download/            |             |
-| [**drawUnassignedList**](AssignmentsApi.md#drawunassignedlist)                   | **GET** /assignments/{id}/drawUnassigned/      |             |
-| [**generateTestCreate**](AssignmentsApi.md#generatetestcreate)                   | **POST** /assignments/{id}/generateTest/       |             |
-| [**list**](AssignmentsApi.md#list)                                               | **GET** /assignments/                          |             |
-| [**partialUpdate**](AssignmentsApi.md#partialupdate)                             | **PATCH** /assignments/{id}/                   |             |
-| [**queueLengthRetrieve**](AssignmentsApi.md#queuelengthretrieve)                 | **GET** /assignments/{id}/queueLength/         |             |
-| [**retrieve**](AssignmentsApi.md#retrieve)                                       | **GET** /assignments/{id}/                     |             |
-| [**rubricRetrieve**](AssignmentsApi.md#rubricretrieve)                           | **GET** /assignments/{id}/rubric/              |             |
-| [**studentTestsRetrieve**](AssignmentsApi.md#studenttestsretrieve)               | **GET** /assignments/{id}/studentTests/        |             |
-| [**studentUploadCreate**](AssignmentsApi.md#studentuploadcreate)                 | **POST** /assignments/{id}/studentUpload/      |             |
-| [**studentUploadPartialUpdate**](AssignmentsApi.md#studentuploadpartialupdate)   | **PATCH** /assignments/{id}/studentUpload/     |             |
-| [**studentUploadRetrieve**](AssignmentsApi.md#studentuploadretrieve)             | **GET** /assignments/{id}/studentUpload/       |             |
-| [**submissionHistoriesList**](AssignmentsApi.md#submissionhistorieslist)         | **GET** /assignments/{id}/submissionHistories/ |             |
-| [**submissionTestsList**](AssignmentsApi.md#submissiontestslist)                 | **GET** /assignments/{id}/submissionTests/     |             |
-| [**submissionsList**](AssignmentsApi.md#submissionslist)                         | **GET** /assignments/{id}/submissions/         |             |
-| [**update**](AssignmentsApi.md#update)                                           | **PUT** /assignments/{id}/                     |             |
+| Method                                                                           | HTTP request                                    | Description |
+| -------------------------------------------------------------------------------- | ----------------------------------------------- | ----------- |
+| [**analyticsRetrieve**](AssignmentsApi.md#analyticsretrieve)                     | **GET** /assignments/{id}/analytics/            |             |
+| [**beforeStudentUploadRetrieve**](AssignmentsApi.md#beforestudentuploadretrieve) | **GET** /assignments/{id}/beforeStudentUpload/  |             |
+| [**cloneCreate**](AssignmentsApi.md#clonecreate)                                 | **POST** /assignments/{id}/clone/               |             |
+| [**commentsList**](AssignmentsApi.md#commentslist)                               | **GET** /assignments/{id}/comments/             |             |
+| [**create**](AssignmentsApi.md#create)                                           | **POST** /assignments/                          |             |
+| [**datasetsList**](AssignmentsApi.md#datasetslist)                               | **GET** /assignments/{id}/datasets/             |             |
+| [**destroy**](AssignmentsApi.md#destroy)                                         | **DELETE** /assignments/{id}/                   |             |
+| [**downloadRetrieve**](AssignmentsApi.md#downloadretrieve)                       | **GET** /assignments/{id}/download/             |             |
+| [**drawUnassignedList**](AssignmentsApi.md#drawunassignedlist)                   | **GET** /assignments/{id}/drawUnassigned/       |             |
+| [**generateDescriptionCreate**](AssignmentsApi.md#generatedescriptioncreate)     | **POST** /assignments/{id}/generateDescription/ |             |
+| [**generateTestCreate**](AssignmentsApi.md#generatetestcreate)                   | **POST** /assignments/{id}/generateTest/        |             |
+| [**list**](AssignmentsApi.md#list)                                               | **GET** /assignments/                           |             |
+| [**partialUpdate**](AssignmentsApi.md#partialupdate)                             | **PATCH** /assignments/{id}/                    |             |
+| [**queueLengthRetrieve**](AssignmentsApi.md#queuelengthretrieve)                 | **GET** /assignments/{id}/queueLength/          |             |
+| [**retrieve**](AssignmentsApi.md#retrieve)                                       | **GET** /assignments/{id}/                      |             |
+| [**rubricRetrieve**](AssignmentsApi.md#rubricretrieve)                           | **GET** /assignments/{id}/rubric/               |             |
+| [**studentTestsRetrieve**](AssignmentsApi.md#studenttestsretrieve)               | **GET** /assignments/{id}/studentTests/         |             |
+| [**studentUploadCreate**](AssignmentsApi.md#studentuploadcreate)                 | **POST** /assignments/{id}/studentUpload/       |             |
+| [**studentUploadPartialUpdate**](AssignmentsApi.md#studentuploadpartialupdate)   | **PATCH** /assignments/{id}/studentUpload/      |             |
+| [**studentUploadRetrieve**](AssignmentsApi.md#studentuploadretrieve)             | **GET** /assignments/{id}/studentUpload/        |             |
+| [**submissionHistoriesList**](AssignmentsApi.md#submissionhistorieslist)         | **GET** /assignments/{id}/submissionHistories/  |             |
+| [**submissionTestsList**](AssignmentsApi.md#submissiontestslist)                 | **GET** /assignments/{id}/submissionTests/      |             |
+| [**submissionsList**](AssignmentsApi.md#submissionslist)                         | **GET** /assignments/{id}/submissions/          |             |
+| [**update**](AssignmentsApi.md#update)                                           | **PUT** /assignments/{id}/                      |             |
 
 ## analyticsRetrieve
 
@@ -661,6 +662,77 @@ example().catch(console.error);
 ### Return type
 
 [**Array&lt;Submission&gt;**](Submission.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## generateDescriptionCreate
+
+> GenerateDescriptionResponse generateDescriptionCreate(id)
+
+Generate or regenerate the AI description for this assignment. Course admin only.
+
+### Example
+
+```ts
+import { Configuration, AssignmentsApi } from '';
+import type { GenerateDescriptionCreateRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: 'YOUR BEARER TOKEN',
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+  } satisfies GenerateDescriptionCreateRequest;
+
+  try {
+    const data = await api.generateDescriptionCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+
+### Return type
+
+[**GenerateDescriptionResponse**](GenerateDescriptionResponse.md)
 
 ### Authorization
 

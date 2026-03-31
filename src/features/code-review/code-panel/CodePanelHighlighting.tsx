@@ -4,6 +4,7 @@ import type { CommentType } from '../../../types/models';
 import { POSITION } from '../../../types/common';
 
 import Highlight from './Highlight';
+import { SUGGESTION_ID_OFFSET } from './CommentHighlightContext';
 
 type StyleType = {
   [highlightID: string]: number;
@@ -98,11 +99,13 @@ export const buildHTMLString = (highlights: number[][], thetext: string, line: n
     if (i === thetext.length && (prevIDs.length >= 1 || remIDs.length >= 1)) {
       element = '</strong>';
     } else {
+      const isSuggestion = updatedIDs.some((id) => id >= SUGGESTION_ID_OFFSET);
       const className = updatedIDs
         .map((id) => {
           return `highlight-${id}`;
         })
-        .join(' ');
+        .join(' ')
+        + (isSuggestion ? ' highlight--suggestion' : '');
 
       // No change in highlights -> ret: `{char}`
       if (newIDs.length === 0 && remIDs.length === 0) {

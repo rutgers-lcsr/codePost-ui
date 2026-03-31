@@ -26,6 +26,7 @@ import {
   SubmissionTestsApi,
   SubmissionsApi,
   SubscribeApi,
+  SuggestedCommentsApi,
   SystemApi,
   TestCasesApi,
   TestCategoriesApi,
@@ -80,6 +81,7 @@ export const sectionsApi = new SectionsApi(apiClientConfig);
 export const submissionFilesApi = new SubmissionFilesApi(apiClientConfig);
 export const submissionTestsApi = new SubmissionTestsApi(apiClientConfig);
 export const submissionsApi = new SubmissionsApi(apiClientConfig);
+export const suggestedCommentsApi = new SuggestedCommentsApi(apiClientConfig);
 export const subscribeApi = new SubscribeApi(apiClientConfig);
 export const systemApi = new SystemApi(apiClientConfig);
 export const testCasesApi = new TestCasesApi(apiClientConfig);

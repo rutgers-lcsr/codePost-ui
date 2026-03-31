@@ -39,6 +39,8 @@ import AssignmentFilesForm from './AssignmentFilesForm';
 import { EnvironmentShellWidget } from './EnvironmentShellWidget';
 import { assignmentFilesApi, assignmentsApi } from '../../../../api-client/clients';
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
+import { RobotOutlined, LockOutlined } from '@ant-design/icons';
+import { Button, Space } from 'antd';
 
 /**********************************************************************************************************************/
 
@@ -145,6 +147,8 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       studentsCanSeeGraders: values.studentsCanSeeGraders,
       gradersCanEditSubmissions: values.gradersCanEditSubmissions,
       aiSystemPrompt: values.aiSystemPrompt || '',
+      aiDescription: values.aiDescription || '',
+      aiDescriptionLocked: values.aiDescriptionLocked ?? false,
       runFilesOnSubmit: values.runFilesOnSubmit,
       runTestsOnSubmit: values.runTestsOnSubmit,
       testsAffectGrade: values.testsAffectGrade,
@@ -304,6 +308,8 @@ interface IFormValues {
   hideFrom: number[];
   lateDeductions: number[];
   aiSystemPrompt: string;
+  aiDescription: string;
+  aiDescriptionLocked: boolean;
   gradersCanEditSubmissions: boolean;
   runFilesOnSubmit: boolean;
   runTestsOnSubmit: boolean;
@@ -329,6 +335,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const [templates, setTemplates] = React.useState<AssignmentFileType[]>(initialAssignmentFiles);
   const [explanationPreview, setExplanationPreview] = React.useState(false);
   const [explanation, setExplanation] = React.useState(assignment.explanation);
+  const [isGeneratingDescription, setIsGeneratingDescription] = React.useState(false);
   const hasAssignmentFiles = templates.length > 0;
   const environmentId = assignment.environment ?? null;
 
@@ -336,6 +343,20 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const studentUploadEnabled = Form.useWatch('allowStudentUpload', form);
   const lateUploadEnabled = Form.useWatch('allowLateUploads', form);
   const regradesEnabled = Form.useWatch('allowRegradeRequests', form);
+
+  const handleGenerateDescription = async () => {
+    setIsGeneratingDescription(true);
+    try {
+      const result = await assignmentsApi.generateDescriptionCreate({ id: assignment.id });
+      const desc = result.aiDescription ?? '';
+      form.setFieldsValue({ aiDescription: desc });
+      message.success('AI description generated successfully');
+    } catch {
+      message.error('Failed to generate AI description. Check that AI is configured for this course.');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
 
   // Sync state when assignment changes or modal opens
   React.useEffect(() => {
@@ -380,6 +401,11 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         regradeDeadline: assignment.regradeDeadline
           ? dayjs(dayjs(assignment.regradeDeadline).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
           : dayjs(dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss')),
+
+        // AI settings
+        aiSystemPrompt: assignment.aiSystemPrompt || '',
+        aiDescription: assignment.aiDescription ?? '',
+        aiDescriptionLocked: assignment.aiDescriptionLocked ?? false,
       });
     }
   }, [open, assignment, form, timezone]);
@@ -1018,6 +1044,45 @@ Context:
                       style={{ fontFamily: 'monospace' }}
                     />
                   </Form.Item>
+
+                  <h3 style={{ marginTop: 24 }}>AI Grading Assistance</h3>
+                  <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
+                    This description provides context to the AI when generating suggested comments and submission
+                    summaries. It is auto-generated from assignment materials (files, tests, rubric) but can be edited
+                    manually. Only visible to instructors and graders.
+                  </p>
+                  <Form.Item
+                    name="aiDescription"
+                    label="AI Context Description"
+                    labelCol={{ span: 4 }}
+                    wrapperCol={{ span: 20 }}
+                    initialValue={assignment.aiDescription ?? ''}
+                  >
+                    <Input.TextArea
+                      placeholder="AI-generated description of what this assignment requires. Click 'Generate' to auto-create from assignment materials."
+                      rows={8}
+                      style={{ fontFamily: 'monospace' }}
+                    />
+                  </Form.Item>
+                  <Space style={{ marginBottom: 16 }}>
+                    <Button
+                      icon={<RobotOutlined />}
+                      loading={isGeneratingDescription}
+                      onClick={handleGenerateDescription}
+                    >
+                      {isGeneratingDescription ? 'Generating...' : 'Generate from Assignment Materials'}
+                    </Button>
+                    <Form.Item
+                      name="aiDescriptionLocked"
+                      valuePropName="checked"
+                      initialValue={assignment.aiDescriptionLocked ?? false}
+                      noStyle
+                    >
+                      <Checkbox>
+                        <LockOutlined /> Lock (prevent auto-regeneration)
+                      </Checkbox>
+                    </Form.Item>
+                  </Space>
                 </div>
               ),
             },

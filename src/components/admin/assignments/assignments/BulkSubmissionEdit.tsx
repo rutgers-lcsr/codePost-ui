@@ -91,10 +91,16 @@ const BulkSubmissionEdit: React.FC<IProps> = ({
       ),
       onOk() {
         setExecuting(true);
-        execute().then(() => {
-          setExecuting(false);
-          message.success('Action completed!');
-        });
+        execute()
+          .then(() => {
+            message.success('Action completed!');
+          })
+          .catch((error) => {
+            message.error(`Action failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+          })
+          .finally(() => {
+            setExecuting(false);
+          });
       },
       onCancel() {
         return;

@@ -14,60 +14,140 @@
  */
 
 import * as runtime from '../runtime';
-import type {
-  ChatConversationCreate,
-  ChatConversationDetail,
-  ChatConversationList,
-  PatchedChatConversationList,
-} from '../models/index';
+import type { Comment, PatchedSuggestedComment, SuggestedComment } from '../models/index';
+
+export interface AcceptCreateRequest {
+  id: number;
+  suggestedComment?: Omit<
+    SuggestedComment,
+    | 'id'
+    | 'submission'
+    | 'file'
+    | 'text'
+    | 'startLine'
+    | 'endLine'
+    | 'startChar'
+    | 'endChar'
+    | 'rubricComment'
+    | 'pointDelta'
+    | 'acceptedBy'
+    | 'acceptedComment'
+    | 'generationMetadata'
+    | 'created'
+    | 'modified'
+  >;
+}
 
 export interface CreateRequest {
-  chatConversationCreate: Omit<ChatConversationCreate, 'id' | 'created' | 'modified'>;
+  suggestedComment?: Omit<
+    SuggestedComment,
+    | 'id'
+    | 'submission'
+    | 'file'
+    | 'text'
+    | 'startLine'
+    | 'endLine'
+    | 'startChar'
+    | 'endChar'
+    | 'rubricComment'
+    | 'pointDelta'
+    | 'acceptedBy'
+    | 'acceptedComment'
+    | 'generationMetadata'
+    | 'created'
+    | 'modified'
+  >;
 }
 
 export interface DestroyRequest {
-  id: string;
-}
-
-export interface ListRequest {
-  submission: number;
+  id: number;
 }
 
 export interface PartialUpdateRequest {
-  id: string;
-  patchedChatConversationList?: Omit<
-    PatchedChatConversationList,
-    'id' | 'assignment' | 'summary' | 'messageCount' | 'created' | 'modified'
+  id: number;
+  patchedSuggestedComment?: Omit<
+    PatchedSuggestedComment,
+    | 'id'
+    | 'submission'
+    | 'file'
+    | 'text'
+    | 'startLine'
+    | 'endLine'
+    | 'startChar'
+    | 'endChar'
+    | 'rubricComment'
+    | 'pointDelta'
+    | 'acceptedBy'
+    | 'acceptedComment'
+    | 'generationMetadata'
+    | 'created'
+    | 'modified'
+  >;
+}
+
+export interface RejectCreateRequest {
+  id: number;
+  suggestedComment?: Omit<
+    SuggestedComment,
+    | 'id'
+    | 'submission'
+    | 'file'
+    | 'text'
+    | 'startLine'
+    | 'endLine'
+    | 'startChar'
+    | 'endChar'
+    | 'rubricComment'
+    | 'pointDelta'
+    | 'acceptedBy'
+    | 'acceptedComment'
+    | 'generationMetadata'
+    | 'created'
+    | 'modified'
   >;
 }
 
 export interface RetrieveRequest {
-  id: string;
+  id: number;
 }
 
 export interface UpdateRequest {
-  id: string;
-  chatConversationList: Omit<
-    ChatConversationList,
-    'id' | 'assignment' | 'summary' | 'messageCount' | 'created' | 'modified'
+  id: number;
+  suggestedComment?: Omit<
+    SuggestedComment,
+    | 'id'
+    | 'submission'
+    | 'file'
+    | 'text'
+    | 'startLine'
+    | 'endLine'
+    | 'startChar'
+    | 'endChar'
+    | 'rubricComment'
+    | 'pointDelta'
+    | 'acceptedBy'
+    | 'acceptedComment'
+    | 'generationMetadata'
+    | 'created'
+    | 'modified'
   >;
 }
 
 /**
  *
  */
-export class ChatConversationsApi extends runtime.BaseAPI {
+export class SuggestedCommentsApi extends runtime.BaseAPI {
   /**
-   * Create a new chat conversation.
+   * Accept this suggestion, creating a real Comment and marking the suggestion as accepted.
    */
-  async createRaw(
-    requestParameters: CreateRequest,
+  async acceptCreateRaw(
+    requestParameters: AcceptCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ChatConversationCreate>> {
-    if (requestParameters['chatConversationCreate'] == null) {
+  ): Promise<runtime.ApiResponse<Comment>> {
+    if (requestParameters['id'] == null) {
       throw new runtime.RequiredError(
-        'chatConversationCreate',
-        'Required parameter "chatConversationCreate" was null or undefined when calling create().',
+        'id',
+        'Required parameter "id" was null or undefined when calling acceptCreate().',
       );
     }
 
@@ -97,7 +177,8 @@ export class ChatConversationsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/chatConversations/`;
+    let urlPath = `/suggestedComments/{id}/accept/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
     const response = await this.request(
       {
@@ -105,7 +186,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['chatConversationCreate'],
+        body: requestParameters['suggestedComment'],
       },
       initOverrides,
     );
@@ -114,18 +195,78 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Create a new chat conversation.
+   * Accept this suggestion, creating a real Comment and marking the suggestion as accepted.
    */
-  async create(
+  async acceptCreate(
+    requestParameters: AcceptCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Comment> {
+    const response = await this.acceptCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
+   */
+  async createRaw(
     requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ChatConversationCreate> {
+  ): Promise<runtime.ApiResponse<SuggestedComment>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/suggestedComments/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['suggestedComment'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
+   */
+  async create(
+    requestParameters: CreateRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SuggestedComment> {
     const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
   /**
-   * Delete a conversation.
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async destroyRaw(
     requestParameters: DestroyRequest,
@@ -159,7 +300,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/chatConversations/{id}/`;
+    let urlPath = `/suggestedComments/{id}/`;
     urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
     const response = await this.request(
@@ -176,7 +317,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Delete a conversation.
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async destroy(
     requestParameters: DestroyRequest,
@@ -186,24 +327,12 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * List chat conversations for a submission.
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async listRaw(
-    requestParameters: ListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<Array<ChatConversationList>>> {
-    if (requestParameters['submission'] == null) {
-      throw new runtime.RequiredError(
-        'submission',
-        'Required parameter "submission" was null or undefined when calling list().',
-      );
-    }
-
+  ): Promise<runtime.ApiResponse<Array<SuggestedComment>>> {
     const queryParameters: any = {};
-
-    if (requestParameters['submission'] != null) {
-      queryParameters['submission'] = requestParameters['submission'];
-    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -227,7 +356,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/chatConversations/`;
+    let urlPath = `/suggestedComments/`;
 
     const response = await this.request(
       {
@@ -243,23 +372,20 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * List chat conversations for a submission.
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
-  async list(
-    requestParameters: ListRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<Array<ChatConversationList>> {
-    const response = await this.listRaw(requestParameters, initOverrides);
+  async list(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SuggestedComment>> {
+    const response = await this.listRaw(initOverrides);
     return await response.value();
   }
 
   /**
-   * Update a conversation (e.g., rename).
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async partialUpdateRaw(
     requestParameters: PartialUpdateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ChatConversationList>> {
+  ): Promise<runtime.ApiResponse<SuggestedComment>> {
     if (requestParameters['id'] == null) {
       throw new runtime.RequiredError(
         'id',
@@ -293,7 +419,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/chatConversations/{id}/`;
+    let urlPath = `/suggestedComments/{id}/`;
     urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
     const response = await this.request(
@@ -302,7 +428,7 @@ export class ChatConversationsApi extends runtime.BaseAPI {
         method: 'PATCH',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['patchedChatConversationList'],
+        body: requestParameters['patchedSuggestedComment'],
       },
       initOverrides,
     );
@@ -311,93 +437,27 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Update a conversation (e.g., rename).
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async partialUpdate(
     requestParameters: PartialUpdateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ChatConversationList> {
+  ): Promise<SuggestedComment> {
     const response = await this.partialUpdateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
   /**
-   * Retrieve a conversation with all messages.
+   * Reject this suggestion.
    */
-  async retrieveRaw(
-    requestParameters: RetrieveRequest,
+  async rejectCreateRaw(
+    requestParameters: RejectCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ChatConversationDetail>> {
+  ): Promise<runtime.ApiResponse<SuggestedComment>> {
     if (requestParameters['id'] == null) {
-      throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling retrieve().');
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined || this.configuration.password !== undefined)
-    ) {
-      headerParameters['Authorization'] =
-        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
-    }
-
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
-    }
-
-    let urlPath = `/chatConversations/{id}/`;
-    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
-
-    const response = await this.request(
-      {
-        path: urlPath,
-        method: 'GET',
-        headers: headerParameters,
-        query: queryParameters,
-      },
-      initOverrides,
-    );
-
-    return new runtime.JSONApiResponse(response);
-  }
-
-  /**
-   * Retrieve a conversation with all messages.
-   */
-  async retrieve(
-    requestParameters: RetrieveRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ChatConversationDetail> {
-    const response = await this.retrieveRaw(requestParameters, initOverrides);
-    return await response.value();
-  }
-
-  /**
-   * CRUD endpoints for chat conversations in the grading assistant.  list: List conversations for a submission (query param `?submission=ID`).  create: Start a new conversation for a submission.  retrieve: Get a conversation with its full message history.  partial_update: Update a conversation title.  destroy: Delete a conversation and all its messages.
-   */
-  async updateRaw(
-    requestParameters: UpdateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ChatConversationList>> {
-    if (requestParameters['id'] == null) {
-      throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling update().');
-    }
-
-    if (requestParameters['chatConversationList'] == null) {
       throw new runtime.RequiredError(
-        'chatConversationList',
-        'Required parameter "chatConversationList" was null or undefined when calling update().',
+        'id',
+        'Required parameter "id" was null or undefined when calling rejectCreate().',
       );
     }
 
@@ -427,16 +487,16 @@ export class ChatConversationsApi extends runtime.BaseAPI {
       }
     }
 
-    let urlPath = `/chatConversations/{id}/`;
+    let urlPath = `/suggestedComments/{id}/reject/`;
     urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
     const response = await this.request(
       {
         path: urlPath,
-        method: 'PUT',
+        method: 'POST',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['chatConversationList'],
+        body: requestParameters['suggestedComment'],
       },
       initOverrides,
     );
@@ -445,12 +505,139 @@ export class ChatConversationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * CRUD endpoints for chat conversations in the grading assistant.  list: List conversations for a submission (query param `?submission=ID`).  create: Start a new conversation for a submission.  retrieve: Get a conversation with its full message history.  partial_update: Update a conversation title.  destroy: Delete a conversation and all its messages.
+   * Reject this suggestion.
+   */
+  async rejectCreate(
+    requestParameters: RejectCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SuggestedComment> {
+    const response = await this.rejectCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
+   */
+  async retrieveRaw(
+    requestParameters: RetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SuggestedComment>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling retrieve().');
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/suggestedComments/{id}/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
+   */
+  async retrieve(
+    requestParameters: RetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SuggestedComment> {
+    const response = await this.retrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
+   */
+  async updateRaw(
+    requestParameters: UpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SuggestedComment>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling update().');
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/suggestedComments/{id}/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PUT',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['suggestedComment'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * AI-suggested comments for graders. Not visible to students.  retrieve: Return a suggested comment.  delete: Delete a suggested comment.
    */
   async update(
     requestParameters: UpdateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ChatConversationList> {
+  ): Promise<SuggestedComment> {
     const response = await this.updateRaw(requestParameters, initOverrides);
     return await response.value();
   }

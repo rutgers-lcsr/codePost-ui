@@ -15,14 +15,18 @@
 
 import * as runtime from '../runtime';
 import type {
+  GenerateAIAssistanceResponse,
+  GenerateFileSuggestionsRequest,
   PatchedSubmission,
   StudentSubmission,
   Submission,
   SubmissionCheckPermissionResponse,
   SubmissionHistory,
   SubmissionPartnerLinkResponse,
+  SubmissionSummary,
   SubmissionTest,
   SubmissionTestResultsResponse,
+  SuggestedComment,
 } from '../models/index';
 
 export interface CheckPermissionRetrieveRequest {
@@ -64,7 +68,32 @@ export interface DestroyRequest {
   id: number;
 }
 
+export interface GenerateAIAssistanceCreateRequest {
+  id: number;
+  submission: Omit<
+    Submission,
+    | 'id'
+    | 'dateEdited'
+    | 'grade'
+    | 'questionText'
+    | 'questionDate'
+    | 'responseDate'
+    | 'tests'
+    | 'testRunsCompleted'
+    | 'files'
+  >;
+}
+
+export interface GenerateFileSuggestionsCreateRequest {
+  id: number;
+  generateFileSuggestionsRequest: GenerateFileSuggestionsRequest;
+}
+
 export interface GeneratePartnerLinkRetrieveRequest {
+  id: number;
+}
+
+export interface GenerateSummaryCreateRequest {
   id: number;
 }
 
@@ -146,6 +175,14 @@ export interface SubmitRegradePartialUpdateRequest {
     | 'testRunsCompleted'
     | 'files'
   >;
+}
+
+export interface SuggestedCommentsListRequest {
+  id: number;
+}
+
+export interface SummaryRetrieveRequest {
+  id: number;
 }
 
 export interface TestResultsRetrieveRequest {
@@ -444,6 +481,156 @@ export class SubmissionsApi extends runtime.BaseAPI {
   }
 
   /**
+   * Manually trigger or regenerate AI summary and suggested comments. Staff only.
+   */
+  async generateAIAssistanceCreateRaw(
+    requestParameters: GenerateAIAssistanceCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GenerateAIAssistanceResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateAIAssistanceCreate().',
+      );
+    }
+
+    if (requestParameters['submission'] == null) {
+      throw new runtime.RequiredError(
+        'submission',
+        'Required parameter "submission" was null or undefined when calling generateAIAssistanceCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/submissions/{id}/generateAIAssistance/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['submission'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Manually trigger or regenerate AI summary and suggested comments. Staff only.
+   */
+  async generateAIAssistanceCreate(
+    requestParameters: GenerateAIAssistanceCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GenerateAIAssistanceResponse> {
+    const response = await this.generateAIAssistanceCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Generate AI-suggested comments for a specific file in this submission. Runs synchronously. Staff only.
+   */
+  async generateFileSuggestionsCreateRaw(
+    requestParameters: GenerateFileSuggestionsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<SuggestedComment>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateFileSuggestionsCreate().',
+      );
+    }
+
+    if (requestParameters['generateFileSuggestionsRequest'] == null) {
+      throw new runtime.RequiredError(
+        'generateFileSuggestionsRequest',
+        'Required parameter "generateFileSuggestionsRequest" was null or undefined when calling generateFileSuggestionsCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/submissions/{id}/generateFileSuggestions/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['generateFileSuggestionsRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Generate AI-suggested comments for a specific file in this submission. Runs synchronously. Staff only.
+   */
+  async generateFileSuggestionsCreate(
+    requestParameters: GenerateFileSuggestionsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<SuggestedComment>> {
+    const response = await this.generateFileSuggestionsCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * list: Return a list of all the submissions.  create: Create a new submission.  retrieve: Return the given submission.  update: Update a submission.  partial_update: Update a submission.  delete: Delete a submission.
    */
   async generatePartnerLinkRetrieveRaw(
@@ -505,6 +692,71 @@ export class SubmissionsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<SubmissionPartnerLinkResponse> {
     const response = await this.generatePartnerLinkRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Generate or regenerate the AI summary for this submission. Runs synchronously. Staff only.
+   */
+  async generateSummaryCreateRaw(
+    requestParameters: GenerateSummaryCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SubmissionSummary>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateSummaryCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/submissions/{id}/generateSummary/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Generate or regenerate the AI summary for this submission. Runs synchronously. Staff only.
+   */
+  async generateSummaryCreate(
+    requestParameters: GenerateSummaryCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SubmissionSummary> {
+    const response = await this.generateSummaryCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -1102,6 +1354,136 @@ export class SubmissionsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<StudentSubmission> {
     const response = await this.submitRegradePartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * List all pending AI-suggested comments for this submission. Staff only.
+   */
+  async suggestedCommentsListRaw(
+    requestParameters: SuggestedCommentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<SuggestedComment>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling suggestedCommentsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/submissions/{id}/suggestedComments/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * List all pending AI-suggested comments for this submission. Staff only.
+   */
+  async suggestedCommentsList(
+    requestParameters: SuggestedCommentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<SuggestedComment>> {
+    const response = await this.suggestedCommentsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Get the AI-generated summary for this submission. Staff only.
+   */
+  async summaryRetrieveRaw(
+    requestParameters: SummaryRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SubmissionSummary>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling summaryRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/submissions/{id}/summary/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Get the AI-generated summary for this submission. Staff only.
+   */
+  async summaryRetrieve(
+    requestParameters: SummaryRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SubmissionSummary> {
+    const response = await this.summaryRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

@@ -23,6 +23,7 @@ import type {
   CourseRosterMap,
   CourseSettings,
   CourseStudentCaptions,
+  PaginatedCourseAuditEventList,
   PaginatedSectionList,
   PatchedCourse,
   PatchedCourseAISettings,
@@ -46,14 +47,7 @@ export interface AiSettingsPartialUpdateRequest {
   id: number;
   patchedCourseAISettings?: Omit<
     PatchedCourseAISettings,
-    | 'id'
-    | 'aiEnabled'
-    | 'aiCommentsEnabled'
-    | 'aiChatEnabled'
-    | 'orgAiAvailable'
-    | 'hasApiKey'
-    | 'apiKeyHint'
-    | 'defaultTokenRates'
+    'id' | 'aiEnabled' | 'aiCommentsEnabled' | 'orgAiAvailable' | 'hasApiKey' | 'apiKeyHint' | 'defaultTokenRates'
   >;
 }
 
@@ -66,6 +60,26 @@ export interface AiUsageRetrieveRequest {
   endDate?: string;
   granularity?: AiUsageRetrieveGranularityEnum;
   startDate?: string;
+}
+
+export interface AuditLogExportRetrieveRequest {
+  id: number;
+  assignment?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  eventType?: string;
+  student?: string;
+}
+
+export interface AuditLogListRequest {
+  id: number;
+  assignment?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  eventType?: string;
+  page?: number;
+  pageSize?: number;
+  student?: string;
 }
 
 export interface ChangeInviteCodePartialUpdateRequest {
@@ -515,6 +529,188 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<AIUsageSummary> {
     const response = await this.aiUsageRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Export audit events for a course as CSV.
+   */
+  async auditLogExportRetrieveRaw(
+    requestParameters: AuditLogExportRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<string>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling auditLogExportRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['assignment'] != null) {
+      queryParameters['assignment'] = requestParameters['assignment'];
+    }
+
+    if (requestParameters['dateFrom'] != null) {
+      queryParameters['date_from'] = requestParameters['dateFrom'];
+    }
+
+    if (requestParameters['dateTo'] != null) {
+      queryParameters['date_to'] = requestParameters['dateTo'];
+    }
+
+    if (requestParameters['eventType'] != null) {
+      queryParameters['event_type'] = requestParameters['eventType'];
+    }
+
+    if (requestParameters['student'] != null) {
+      queryParameters['student'] = requestParameters['student'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/courses/{id}/auditLogExport/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    if (this.isJsonMime(response.headers.get('content-type'))) {
+      return new runtime.JSONApiResponse<string>(response);
+    } else {
+      return new runtime.TextApiResponse(response) as any;
+    }
+  }
+
+  /**
+   * Export audit events for a course as CSV.
+   */
+  async auditLogExportRetrieve(
+    requestParameters: AuditLogExportRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<string> {
+    const response = await this.auditLogExportRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Return paginated audit events for a course, filterable by student, assignment, event type, and date range.
+   */
+  async auditLogListRaw(
+    requestParameters: AuditLogListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<PaginatedCourseAuditEventList>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling auditLogList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['assignment'] != null) {
+      queryParameters['assignment'] = requestParameters['assignment'];
+    }
+
+    if (requestParameters['dateFrom'] != null) {
+      queryParameters['date_from'] = requestParameters['dateFrom'];
+    }
+
+    if (requestParameters['dateTo'] != null) {
+      queryParameters['date_to'] = requestParameters['dateTo'];
+    }
+
+    if (requestParameters['eventType'] != null) {
+      queryParameters['event_type'] = requestParameters['eventType'];
+    }
+
+    if (requestParameters['page'] != null) {
+      queryParameters['page'] = requestParameters['page'];
+    }
+
+    if (requestParameters['pageSize'] != null) {
+      queryParameters['page_size'] = requestParameters['pageSize'];
+    }
+
+    if (requestParameters['student'] != null) {
+      queryParameters['student'] = requestParameters['student'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/courses/{id}/auditLog/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Return paginated audit events for a course, filterable by student, assignment, event type, and date range.
+   */
+  async auditLogList(
+    requestParameters: AuditLogListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<PaginatedCourseAuditEventList> {
+    const response = await this.auditLogListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

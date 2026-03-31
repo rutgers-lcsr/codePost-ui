@@ -15,8 +15,11 @@ import type {
   StudentSubmission,
   Submission,
   SubmissionHistory,
+  SubmissionSummary,
   SubmissionTest,
   SubmissionWithTests,
+  SuggestedComment,
+  SuggestedCommentStatusEnum,
   TestCase,
   TestCategory,
   TestCategoryResource,
@@ -53,6 +56,10 @@ export type StudentSubmissionType = StudentSubmission;
 export type SubmissionHistoryType = SubmissionHistory;
 export type SubmissionTestType = SubmissionTest;
 export type SubmissionWithTestsType = SubmissionWithTests;
+
+export type SuggestedCommentType = SuggestedComment;
+export { SuggestedCommentStatusEnum };
+export type SubmissionSummaryType = SubmissionSummary;
 
 export type TestCaseType = TestCase;
 export interface StudentTestCaseType {

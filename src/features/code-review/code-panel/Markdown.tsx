@@ -20,7 +20,7 @@ import type { CommentType } from '../../../types/models';
 import { File, getFileContent } from '../../../utils/file';
 import { getBlockClassName } from './BlockUtils.tsx';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
-import CommentHighlightContext from './CommentHighlightContext';
+import CommentHighlightContext, { SUGGESTION_ID_OFFSET } from './CommentHighlightContext';
 import { jupyterToMarkdown, normalizeNotebookJson, type Notebook } from './Jupyter';
 import Editor from '@monaco-editor/react';
 import Link from 'antd/es/typography/Link';
@@ -410,6 +410,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   // const lineHasComments = commentHighlight?.lineHasComments;
   const isCommentHovered = commentHighlight?.isCommentHovered;
   const contextOnHighlightClick = commentHighlight?.onHighlightClick;
+  // Use the context's getCommentsForLine for hover — it includes suggestion pseudo-comments
+  const effectiveGetCommentsForLine = commentHighlight?.getCommentsForLine ?? getCommentsForLine;
 
   const handleHoverEnterLine = React.useCallback(
     (lineNumber: number) => {
@@ -417,14 +419,14 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         return;
       }
 
-      const commentsForLine = getCommentsForLine(lineNumber);
+      const commentsForLine = effectiveGetCommentsForLine(lineNumber);
       if (commentsForLine.length === 0) {
         return;
       }
 
       setHoveredCommentId(commentsForLine[0].id);
     },
-    [setHoveredCommentId, getCommentsForLine],
+    [setHoveredCommentId, effectiveGetCommentsForLine],
   );
 
   const handleHoverLeaveLine = React.useCallback(
@@ -433,12 +435,12 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         return;
       }
 
-      const commentsForLine = getCommentsForLine(lineNumber);
+      const commentsForLine = effectiveGetCommentsForLine(lineNumber);
       if (commentsForLine.some((comment) => isCommentHovered(comment.id))) {
         setHoveredCommentId(null);
       }
     },
-    [setHoveredCommentId, getCommentsForLine, isCommentHovered],
+    [setHoveredCommentId, effectiveGetCommentsForLine, isCommentHovered],
   );
 
   type BlockInteractionEvent = React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
@@ -1052,6 +1054,10 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
     onKeyDown,
     isEditMode,
   } = useMarkdownContext();
+  // Also read from CommentHighlightContext to include suggestion pseudo-comments.
+  // The local getCommentsForLine from MarkdownContext only has real comments, so
+  // notebook cells wouldn't get highlight-{id} classes for suggestions without this.
+  const commentHighlightCtx = React.useContext(CommentHighlightContext);
   const blockProps = useBlockProps(props);
 
   // Check if this div has special attributes
@@ -1079,14 +1085,22 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
   if (cellIndex !== undefined) {
     const cellNum = parseInt(cellIndex, 10);
 
+    // Real comments only (from local markdown context) — used for "commented" styling
     const cellComments = !Number.isNaN(cellNum) && getCommentsForLine ? getCommentsForLine(cellNum) : [];
     const cellHasComments = cellComments.length > 0;
-    const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasComments);
+    // Effective comments including suggestion pseudo-comments — used for highlight classes
+    // and hover handlers so suggestions work the same as real comments in notebooks.
+    const effectiveCellComments =
+      !Number.isNaN(cellNum) && commentHighlightCtx?.getCommentsForLine
+        ? commentHighlightCtx.getCommentsForLine(cellNum)
+        : cellComments;
+    const cellHasAnyHighlights = effectiveCellComments.length > 0;
+    const cellIsInteractive = !Number.isNaN(cellNum) && (!renderersReadOnly || cellHasAnyHighlights);
     const cellDisplayIndex = Number.isNaN(cellNum) ? undefined : cellNum + 1;
     const cellAriaLabel =
       cellDisplayIndex !== undefined && cellIsInteractive
-        ? cellHasComments
-          ? `Cell ${cellDisplayIndex} with ${cellComments.length} comment${cellComments.length === 1 ? '' : 's'}`
+        ? cellHasAnyHighlights
+          ? `Cell ${cellDisplayIndex} with ${effectiveCellComments.length} comment${effectiveCellComments.length === 1 ? '' : 's'}`
           : `Add comment on cell ${cellDisplayIndex}`
         : undefined;
 
@@ -1114,6 +1128,9 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
     const baseClassTokens = baseClassName.split(' ').filter(Boolean);
     const staticClasses = baseClassTokens.filter((cls) => !cls.startsWith('markdown-block--'));
 
+    // Check if this cell has suggestion-only highlights (no real comments, only AI suggestions)
+    const hasSuggestionsOnly = !cellHasComments && effectiveCellComments.some((c) => c.id >= SUGGESTION_ID_OFFSET);
+
     const computedClassName = classNames(
       staticClasses,
       'jupyter-block',
@@ -1121,8 +1138,34 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
         'markdown-block--commented': cellHasComments,
         'markdown-block--empty': !cellHasComments,
       },
-      cellComments.map((comment) => `highlight-${comment.id}`),
+      // Use effectiveCellComments so suggestion pseudo-comments also get highlight-{id} classes
+      effectiveCellComments.map((comment) => `highlight-${comment.id}`),
     );
+
+    // Override the CSS custom properties for suggestion cells so they render
+    // with a blue theme instead of the default green/yellow comment theme.
+    // Inline styles are needed because the root-level theme sets these vars
+    // via inline style, which has higher priority than stylesheet rules.
+    const suggestionStyle: React.CSSProperties | undefined = hasSuggestionsOnly
+      ? ({
+          '--markdown-highlight-bg':
+            'linear-gradient(90deg, rgba(24, 144, 255, 0.08) 0%, rgba(24, 144, 255, 0.04) 50%, rgba(255, 255, 255, 0.95) 100%)',
+          '--markdown-highlight-shadow': 'inset 0 0 0 1px rgba(24, 144, 255, 0.15), 0 1px 2px rgba(24, 144, 255, 0.08)',
+          '--markdown-highlight-border-color': 'rgba(24, 144, 255, 0.5)',
+          '--markdown-highlight-hover-bg':
+            'linear-gradient(90deg, rgba(24, 144, 255, 0.15) 0%, rgba(24, 144, 255, 0.08) 45%, rgba(255, 255, 255, 0.95) 100%)',
+          '--markdown-highlight-hover-border-color': 'rgba(24, 144, 255, 0.7)',
+          '--markdown-highlight-hover-shadow':
+            'inset 0 0 0 1.5px rgba(24, 144, 255, 0.35), 0 4px 12px rgba(24, 144, 255, 0.2)',
+          '--markdown-commented-bg':
+            'linear-gradient(90deg, rgba(24, 144, 255, 0.06) 0%, rgba(24, 144, 255, 0.03) 100%)',
+          '--markdown-commented-border-color': 'rgba(24, 144, 255, 0.35)',
+          '--markdown-focused-bg':
+            'linear-gradient(90deg, rgba(24, 144, 255, 0.15) 0%, rgba(24, 144, 255, 0.1) 45%, rgba(24, 144, 255, 0.06) 100%)',
+          '--markdown-focused-border-color': 'rgba(24, 144, 255, 0.65)',
+          '--markdown-focused-shadow': '0px 6px 16px rgba(24, 144, 255, 0.2)',
+        } as React.CSSProperties)
+      : undefined;
 
     return (
       <MarkdownCellContext.Provider
@@ -1132,15 +1175,16 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
           data-jupyter-cell={cellIndex}
           data-cell-uuid={cellUuid}
           className={computedClassName}
+          style={suggestionStyle}
           index-number={cellIndex}
           data-has-comment={cellHasComments ? 'true' : undefined}
           onMouseUp={isEditMode ? undefined : onMouseUp}
           onKeyDown={isEditMode ? undefined : cellIsInteractive ? onKeyDown : undefined}
           onMouseEnter={
-            isEditMode ? undefined : cellHasComments && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined
+            isEditMode ? undefined : cellHasAnyHighlights && onHoverEnter ? (_e) => onHoverEnter(cellNum) : undefined
           }
           onMouseLeave={
-            isEditMode ? undefined : cellHasComments && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined
+            isEditMode ? undefined : cellHasAnyHighlights && onHoverLeave ? (_e) => onHoverLeave(cellNum) : undefined
           }
           tabIndex={isEditMode ? undefined : cellIsInteractive ? 0 : undefined}
           role={isEditMode ? undefined : cellIsInteractive ? 'button' : undefined}

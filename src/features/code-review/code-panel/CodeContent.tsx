@@ -47,9 +47,7 @@ const csvGrammar = {
 const tsvGrammar = {
   ...csvGrammar,
   contains: [
-    ...csvGrammar.contains.filter(
-      (rule: { className?: string }) => rule.className !== 'punctuation',
-    ),
+    ...csvGrammar.contains.filter((rule: { className?: string }) => rule.className !== 'punctuation'),
     // Tab delimiter
     { className: 'punctuation', begin: /\t/ },
   ],
@@ -197,9 +195,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     if (ext === 'csv' || lang === 'csv') return 'csv';
     if (ext === 'tsv' || lang === 'tsv') return 'tsv';
     // Truly plain text — no highlighting
-    const plainTextExtensions = new Set([
-      'dat', 'log', 'txt', 'text', 'raw', 'out', 'ans', 'expected', 'actual',
-    ]);
+    const plainTextExtensions = new Set(['dat', 'log', 'txt', 'text', 'raw', 'out', 'ans', 'expected', 'actual']);
     if (plainTextExtensions.has(ext) || plainTextExtensions.has(lang)) {
       return 'text';
     }
@@ -293,6 +289,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
 
   // Render markdown/jupyter/image files (Read-Only View)
   if (['markdown', 'jupyter', 'image'].includes(codeType)) {
+    console.log(codeType);
     return (
       <div>
         <div id="code-container" className="code-container" style={containerStyle}>

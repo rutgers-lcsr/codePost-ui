@@ -13,12 +13,10 @@ Serializer for course AI configuration. Admin-only access.
 | `aiModel`            | string                                |
 | `aiDisabled`         | boolean                               |
 | `aiCommentsDisabled` | boolean                               |
-| `aiChatDisabled`     | boolean                               |
 | `aiUseOwnSettings`   | boolean                               |
 | `aiTokenRates`       | any                                   |
 | `aiEnabled`          | boolean                               |
 | `aiCommentsEnabled`  | boolean                               |
-| `aiChatEnabled`      | boolean                               |
 | `orgAiAvailable`     | boolean                               |
 | `hasApiKey`          | boolean                               |
 | `apiKeyHint`         | string                                |

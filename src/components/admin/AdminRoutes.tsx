@@ -8,6 +8,7 @@ const RosterManager = lazy(() => import('./roster/RosterManager'));
 const CourseSettingsPanel = lazy(() => import('./settings/CourseSettingsPanel'));
 const WebhooksPanel = lazy(() => import('./settings/WebhooksPanel'));
 const SubmissionsManager = lazy(() => import('./submissions/SubmissionsManager'));
+const ActivityLog = lazy(() => import('./activity-log/ActivityLog'));
 import ErrorBoundary from '../core/ErrorBoundary';
 
 /* types */
@@ -189,6 +190,16 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
           }
         />
         <Route path="settings/webhooks" element={<WebhooksPanel currentCourse={props.course} />} />
+        <Route
+          path="activity-log"
+          element={
+            <ActivityLog
+              currentCourse={props.course}
+              assignments={props.assignments}
+              students={props.students}
+            />
+          }
+        />
         <Route
           path="settings"
           element={<CourseSettingsPanel currentCourse={props.course} updateSettings={props.updateSettings} />}

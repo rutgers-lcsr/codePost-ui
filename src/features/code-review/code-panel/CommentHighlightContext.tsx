@@ -1,8 +1,16 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import type { CommentType } from '../../../types/models';
+import type { CommentType, SuggestedCommentType } from '../../../types/models';
+import { CommentIO } from '../../../utils/comments';
 import type { FileType } from '../../../utils/file';
 import { findBlockElement } from './BlockUtils.tsx';
+
+/**
+ * ID offset for suggestion highlights.
+ * Suggestion IDs are mapped to highlight IDs by adding this offset so they
+ * don't collide with real comment IDs in the highlight system.
+ */
+export const SUGGESTION_ID_OFFSET = 2_000_000;
 
 /**
  * Comment Highlight Context
@@ -126,13 +134,24 @@ export const useHoveredCommentId = (): number | null => {
 };
 
 /**
+ * Options for scrollHighlightIntoView, extending standard ScrollIntoViewOptions
+ * with an optional lineNumber for fallback scrolling when the highlight DOM
+ * element doesn't exist (e.g. windowed rendering has virtualized it away).
+ */
+interface ScrollHighlightOptions extends ScrollIntoViewOptions {
+  lineNumber?: number;
+}
+
+/**
  * Scroll the first highlight element for a comment into view.
  * Helpful when syncing comment panel interactions with code highlights.
+ *
+ * When windowed rendering is active for plain code files, off-screen lines
+ * are replaced by spacer divs and the `.highlight-{id}` element won't exist.
+ * In that case, if `lineNumber` is provided, we programmatically scroll the
+ * code container to the calculated position based on the fixed line height.
  */
-export const scrollHighlightIntoView = (
-  commentId: number,
-  options?: ScrollIntoViewOptions & { lineNumber?: number },
-) => {
+export const scrollHighlightIntoView = (commentId: number, options?: ScrollHighlightOptions) => {
   if (typeof document === 'undefined') {
     return;
   }
@@ -149,25 +168,41 @@ export const scrollHighlightIntoView = (
       block: options?.block ?? 'center',
       inline: options?.inline ?? 'nearest',
     };
-
     highlightElement.scrollIntoView(scrollOptions);
     return;
   }
 
-  // Fallback for virtualized rendering: the highlight element may not be in the DOM.
-  // Scroll to the estimated line position so the windowed renderer creates the element.
-  if (options?.lineNumber !== undefined) {
-    const LINE_HEIGHT = 20; // themeVars.grade.codeLineHeight
-    const scrollContainer = document.querySelector('.code-panel--code') as HTMLElement | null;
-    if (scrollContainer) {
-      const codeContainer = document.getElementById('code-container');
-      const containerOffset = codeContainer ? codeContainer.offsetTop : 0;
-      const targetTop = containerOffset + 30 + options.lineNumber * LINE_HEIGHT;
-      scrollContainer.scrollTo({
-        top: Math.max(0, targetTop - scrollContainer.clientHeight / 3),
-        behavior: options.behavior ?? 'smooth',
+  // Secondary fallback: element exists but no highlight class (e.g. notebook cell or block element).
+  // Try to find the element by its index-number attribute (used by notebooks and markdown blocks).
+  if (options?.lineNumber != null) {
+    const blockElement = document.querySelector<HTMLElement>(`[index-number="${options.lineNumber}"]`);
+    if (blockElement) {
+      blockElement.scrollIntoView({
+        behavior: options?.behavior ?? 'smooth',
+        block: options?.block ?? 'center',
+        inline: options?.inline ?? 'nearest',
       });
+      return;
     }
+  }
+
+  // Last-resort fallback: element not in DOM (windowed rendering). Scroll by line number.
+  if (options?.lineNumber != null) {
+    const scrollContainer = document.querySelector<HTMLElement>('.code-panel--code');
+    if (!scrollContainer) return;
+
+    const LINE_HEIGHT = 20; // matches themeVars.grade.codeLineHeight
+    const codeContainer = document.getElementById('code-container');
+    const containerOffset = codeContainer ? codeContainer.offsetTop : 0;
+    const codeOffset = containerOffset + 30; // .code-container padding-top
+
+    const targetTop = codeOffset + options.lineNumber * LINE_HEIGHT;
+    const centeredTop = targetTop - scrollContainer.clientHeight / 2;
+
+    scrollContainer.scrollTo({
+      top: Math.max(0, centeredTop),
+      behavior: options?.behavior ?? 'smooth',
+    });
   }
 };
 
@@ -178,6 +213,7 @@ export interface CommentHighlightProviderProps {
   children: React.ReactNode;
   file: FileType | null;
   comments: CommentType[];
+  suggestions?: SuggestedCommentType[];
   readOnly: boolean;
   user: string;
   onHighlightClick: (e: React.MouseEvent) => void;
@@ -196,6 +232,7 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     children,
     file,
     comments,
+    suggestions,
     readOnly,
     user,
     onHighlightClick: externalOnHighlightClick,
@@ -215,11 +252,33 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
     _setDraggingType(type);
   }, []);
 
-  // Derived comments list that includes the preview comment
+  // Derived comments list that includes the preview comment and suggestion pseudo-comments.
+  // Suggestions are mapped to CommentType with IDs offset by SUGGESTION_ID_OFFSET so the
+  // highlight system can render them alongside regular comments.
   const effectiveComments = React.useMemo(() => {
-    if (!previewComment) return comments;
-    return comments.map((c) => (c.id === previewComment.id ? previewComment : c));
-  }, [comments, previewComment]);
+    let base = comments;
+    if (previewComment) {
+      base = comments.map((c) => (c.id === previewComment.id ? previewComment : c));
+    }
+    if (!suggestions || suggestions.length === 0) return base;
+    const pseudoComments: CommentType[] = suggestions.map((s) => ({
+      id: s.id + SUGGESTION_ID_OFFSET,
+      text: s.text,
+      startLine: s.startLine,
+      endLine: s.endLine,
+      startChar: s.startChar ?? 0,
+      // When endChar is 0 (default from the AI backend), use MAX_SAFE_INTEGER
+      // so getHighlights() highlights the full line instead of skipping it
+      // (startChar === endChar === 0 causes the highlight to be skipped entirely).
+      endChar: s.endChar || Number.MAX_SAFE_INTEGER,
+      file: s.file,
+      pointDelta: s.pointDelta ?? 0,
+      author: 'AI',
+    } as unknown as CommentType));
+    // The highlight system expects sorted input (CodePanelHighlighting.highlight
+    // parameter is named sortedComments, and Code.tsx uses CommentIO.sortedIndex).
+    return [...base, ...pseudoComments].sort(CommentIO.compare);
+  }, [comments, previewComment, suggestions]);
 
   // External hover state store managed outside React render cycle
   const hoverStoreRef = React.useRef<{ value: number | null; listeners: Set<HoverListener> }>({

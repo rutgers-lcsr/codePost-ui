@@ -28,6 +28,7 @@ import type {
   AssignmentStudentUploadGetResponse,
   BeforeStudentUploadResponse,
   Comment,
+  GenerateDescriptionResponse,
   PaginatedSubmissionHistoryList,
   PaginatedSubmissionList,
   PaginatedSubmissionWithTestsList,
@@ -82,6 +83,10 @@ export interface DownloadRetrieveRequest {
 }
 
 export interface DrawUnassignedListRequest {
+  id: number;
+}
+
+export interface GenerateDescriptionCreateRequest {
   id: number;
 }
 
@@ -793,6 +798,71 @@ export class AssignmentsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<Submission>> {
     const response = await this.drawUnassignedListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Generate or regenerate the AI description for this assignment. Course admin only.
+   */
+  async generateDescriptionCreateRaw(
+    requestParameters: GenerateDescriptionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GenerateDescriptionResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateDescriptionCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.accessToken) {
+      const token = this.configuration.accessToken;
+      const tokenString = await token('jwtAuth', []);
+
+      if (tokenString) {
+        headerParameters['Authorization'] = `Bearer ${tokenString}`;
+      }
+    }
+
+    let urlPath = `/assignments/{id}/generateDescription/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Generate or regenerate the AI description for this assignment. Course admin only.
+   */
+  async generateDescriptionCreate(
+    requestParameters: GenerateDescriptionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GenerateDescriptionResponse> {
+    const response = await this.generateDescriptionCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

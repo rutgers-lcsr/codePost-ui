@@ -43,6 +43,7 @@ import {
   coursesApi,
   submissionTestsApi,
   submissionsApi,
+  suggestedCommentsApi,
 } from '../../api-client/clients';
 import {
   Comment as ApiComment,
@@ -52,7 +53,7 @@ import {
   RubricCategory,
   RubricComment,
 } from '../../api-client';
-import {
+import type {
   AssignmentFileType,
   AssignmentType,
   AnonymousSubmissionType,
@@ -60,7 +61,9 @@ import {
   CommentType,
   StudentTestCaseType,
   StudentSubmissionType,
+  SubmissionSummaryType,
   SubmissionTestType,
+  SuggestedCommentType,
   TestCaseType,
   TestCategoryType,
 } from '../../types/models';
@@ -89,13 +92,13 @@ import ThemeToggle from '../../components/core/ThemeToggle';
 import FileMenu, { FileMenuTitle, FileMenuTooltip } from './menu/FileMenu';
 import HelpModal from './menu/HelpModal';
 import TemplateMenu, { PinnedCommentsTooltip } from './menu/TemplateMenu';
-import ChatPanel from './chat/components/ChatPanel';
 
 const RubricMenuUI = React.lazy(() => import('./menu/RubricMenuUI'));
 
 import InlineTestsModal from './components/InlineTestsModal';
 
 import { ReadOnlySubmissionInfo, SubmissionInfo, SubmissionInfoTooltip } from './menu/SubmissionInfoMenu';
+import SubmissionSummaryPanel, { SubmissionSummaryTooltip } from './menu/SubmissionSummaryPanel';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
@@ -242,6 +245,12 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const isEditMode = useCodeConsoleStore((s) => s.isEditMode);
   const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
   // temporaryFileContent removed to prevent parent re-renders
+
+  // AI grading assistance state (local — not in Zustand)
+  const [suggestedComments, setSuggestedComments] = React.useState<SuggestedCommentType[]>([]);
+  const [submissionSummary, setSubmissionSummary] = React.useState<SubmissionSummaryType | null>(null);
+  const [isGeneratingFileSuggestions, setIsGeneratingFileSuggestions] = React.useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
 
   // Create a backwards-compatible state object from store
   const state: ICodeConsoleState = React.useMemo(
@@ -1130,6 +1139,34 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     lastCursorRef.current = null;
   }, [selectedFileId]);
 
+  // Fetch AI suggested comments and submission summary when a grader opens a submission
+  React.useEffect(() => {
+    if (permissionLevel !== PERMISSION_LEVEL.WRITE || !submission || !aiEnabled) return;
+    const subId = submission.id;
+    let cancelled = false;
+    // Fetch suggested comments
+    submissionsApi
+      .suggestedCommentsList({ id: subId })
+      .then((data) => {
+        if (!cancelled) setSuggestedComments(data as unknown as SuggestedCommentType[]);
+      })
+      .catch(() => {
+        /* suggestion fetch is best-effort */
+      });
+    // Fetch submission summary
+    submissionsApi
+      .summaryRetrieve({ id: subId })
+      .then((data) => {
+        if (!cancelled) setSubmissionSummary(data as unknown as SubmissionSummaryType);
+      })
+      .catch(() => {
+        /* summary may not exist yet */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [permissionLevel, submission?.id, aiEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // NOTE: URL sync effect was removed.
   // - URL params (tab, file) are only read on initial load in componentDidMountLogic
   // - URL is only updated when claiming a new submission (same assignment)
@@ -1342,6 +1379,82 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   };
 
   // Usually adds a blank comment to the submission state
+  // --- AI Suggested Comment handlers ---
+  const handleAcceptSuggestion = async (suggestion: SuggestedCommentType) => {
+    const newComment = (await suggestedCommentsApi.acceptCreate({ id: suggestion.id })) as unknown as CommentType;
+    // Remove accepted suggestion from local state
+    setSuggestedComments((prev) => prev.filter((s) => s.id !== suggestion.id));
+
+    // Optimistically add the returned real comment to the comments map
+    const fileId = suggestion.file;
+    const nextComments = addCommentToState(comments, newComment, { id: fileId } as FileWithId);
+    const nextRubricComments = suggestion.rubricComment
+      ? addToCommentRubricCommentsState(
+          commentRubricComments,
+          newComment.id,
+          Object.values(rubricComments)
+            .flat()
+            .find((rc) => rc.id === suggestion.rubricComment),
+        )
+      : commentRubricComments;
+
+    setState((prev) => ({
+      ...prev,
+      comments: nextComments,
+      commentRubricComments: nextRubricComments,
+    }));
+  };
+
+  const handleRejectSuggestion = async (suggestion: SuggestedCommentType) => {
+    await suggestedCommentsApi.rejectCreate({ id: suggestion.id });
+    setSuggestedComments((prev) => prev.filter((s) => s.id !== suggestion.id));
+  };
+
+  const handleGenerateFileSuggestions = async (fileId: number) => {
+    if (!submission) return;
+    setIsGeneratingFileSuggestions(true);
+    try {
+      const data = await submissionsApi.generateFileSuggestionsCreate({
+        id: submission.id,
+        generateFileSuggestionsRequest: { fileId },
+      });
+      const newSuggestions = data as unknown as SuggestedCommentType[];
+      setSuggestedComments((prev) => {
+        // Filter out any existing pending suggestions for this file to match backend dedup
+        const withoutFile = prev.filter((s) => s.file !== fileId);
+        return [...withoutFile, ...newSuggestions];
+      });
+    } catch (err: unknown) {
+      // Surface backend error message if available
+      let detail = 'Failed to generate AI suggestions for this file.';
+      if (err instanceof Response) {
+        try {
+          const body = await err.json();
+          if (body?.error) detail = body.error;
+        } catch {
+          /* ignore parse failure */
+        }
+      } else if (err && typeof err === 'object' && 'body' in err) {
+        const body = (err as { body?: { error?: string } }).body;
+        if (body?.error) detail = body.error;
+      }
+      throw new Error(detail);
+    } finally {
+      setIsGeneratingFileSuggestions(false);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!submission) return;
+    setIsGeneratingSummary(true);
+    try {
+      const data = await submissionsApi.generateSummaryCreate({ id: submission.id });
+      setSubmissionSummary(data as unknown as SubmissionSummaryType);
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   const addComment = (comment: CommentType, file: FileType) => {
     const fileWithId = file as FileWithId;
     console.log('[CodeConsole] addComment called', {
@@ -1970,140 +2083,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       textArea?.focus();
     });
   };
-
-  /**
-   * Handle tool execution from the AI chat panel.
-   * Client-side tools are executed here because the code console owns the state.
-   */
-  const handleChatToolExecute = React.useCallback(
-    async (toolName: string, args: Record<string, unknown>): Promise<string> => {
-      if (toolName === 'navigate_to_location') {
-        const fileId = args.file_id as number;
-        const line = args.line as number;
-        const file = files.find((f) => f.id === fileId);
-        if (file) {
-          // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
-          const isNotebook = file.extension === 'ipynb';
-          const lineIndex = isNotebook ? line : Math.max(0, line - 1);
-          useCodeConsoleStore.setState({ selectedFile: file });
-          // Scroll to line via a small delay to let the file render
-          setTimeout(() => {
-            const el = document.getElementById(`line-${lineIndex}`);
-            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 200);
-          return `Navigated to ${file.name} line ${line}.`;
-        }
-        return 'File not found.';
-      }
-
-      if (toolName === 'create_inline_comment') {
-        const fileId = args.file_id as number;
-        const file = files.find((f) => f.id === fileId);
-        if (!file) return 'File not found.';
-
-        // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
-        // Notebooks already use 0-indexed cell indices in the tool schema.
-        const isNotebook = file.extension === 'ipynb';
-        const rawStart = args.start_line as number;
-        const rawEnd = (args.end_line as number) ?? rawStart;
-        const startLine = isNotebook ? rawStart : Math.max(0, rawStart - 1);
-        const endLine = isNotebook ? rawEnd : Math.max(0, rawEnd - 1);
-        const text = args.text as string;
-        const pointDelta = (args.point_delta as number) || 0;
-
-        // When the AI doesn't specify char offsets, highlight the entire line range.
-        // startChar === endChar === 0 causes the highlighter to skip the line.
-        const hasCharRange = args.start_char != null || args.end_char != null;
-        const startChar = hasCharRange ? (args.start_char as number) || 0 : 0;
-        const endChar = hasCharRange ? (args.end_char as number) || 0 : 10000;
-
-        const newComment: CommentType = {
-          id: -Date.now(), // Temporary negative ID
-          file: file.id,
-          startLine: startLine,
-          endLine: endLine,
-          text: text,
-          pointDelta: pointDelta,
-          rubricComment: null,
-          author: props.user.email!,
-          feedback: 0,
-          startChar,
-          endChar,
-          color: null,
-        };
-
-        const existingComments = state.comments[file.id] || [];
-        useCodeConsoleStore.setState({
-          comments: { ...state.comments, [file.id]: [...existingComments, newComment] },
-          selectedFile: file,
-        });
-
-        // Persist to backend
-        await saveCommentRef.current(newComment);
-
-        return `Comment created on ${file.name} lines ${startLine}-${endLine}.`;
-      }
-
-      if (toolName === 'apply_rubric_comment') {
-        const rubricCommentId = args.rubric_comment_id as number;
-        const fileId = args.file_id as number;
-        const file = files.find((f) => f.id === fileId);
-        if (!file) return 'File not found.';
-
-        // AI sends 1-indexed lines for code files; code panel uses 0-indexed.
-        const isNotebook = file.extension === 'ipynb';
-        const rawStart = args.start_line as number;
-        const rawEnd = (args.end_line as number) ?? rawStart;
-        const startLine = isNotebook ? rawStart : Math.max(0, rawStart - 1);
-        const endLine = isNotebook ? rawEnd : Math.max(0, rawEnd - 1);
-
-        // Find the rubric comment
-        let foundRc: RubricComment | null = null;
-        for (const catId of Object.keys(state.rubricComments)) {
-          const rcs = state.rubricComments[Number(catId)] || [];
-          const rc = rcs.find((r) => r.id === rubricCommentId);
-          if (rc) {
-            foundRc = rc;
-            break;
-          }
-        }
-        if (!foundRc) return `Rubric comment #${rubricCommentId} not found.`;
-
-        const hasCharRange = args.start_char != null || args.end_char != null;
-        const startChar = hasCharRange ? (args.start_char as number) || 0 : 0;
-        const endChar = hasCharRange ? (args.end_char as number) || 0 : 10000;
-
-        const newComment: CommentType = {
-          id: -Date.now(),
-          file: file.id,
-          startLine,
-          endLine,
-          text: foundRc.text ?? '',
-          pointDelta: foundRc.pointDelta,
-          rubricComment: rubricCommentId,
-          author: props.user.email!,
-          feedback: 0,
-          startChar,
-          endChar,
-          color: null,
-        };
-
-        const existingComments = state.comments[file.id] || [];
-        useCodeConsoleStore.setState({
-          comments: { ...state.comments, [file.id]: [...existingComments, newComment] },
-          selectedFile: file,
-        });
-
-        // Persist to backend
-        await saveCommentRef.current(newComment);
-
-        return `Applied rubric comment "${foundRc.text}" on ${file.name} lines ${startLine}-${endLine}.`;
-      }
-
-      return 'Unknown tool.';
-    },
-    [files, state.comments, state.rubricComments, props.user.email],
-  );
 
   const handleApplyTemplate = (template: CommentTemplateType) => {
     if (!selectedFile) {
@@ -3135,11 +3114,17 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             additiveGrading={assignment.additiveGrading ?? false}
             forcedRubricMode={assignment.forcedRubricMode ?? false}
             rubricCategories={rubricCategories}
+            allRubricComments={Object.values(rubricComments).flat()}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
             aiEnabled={state.aiEnabled}
             onPin={handlePinComment}
             forcedUpdates={templateForceUpdates}
+            suggestedComments={suggestedComments.filter((s) => s.file === selectedFile!.id)}
+            onAcceptSuggestion={handleAcceptSuggestion}
+            onRejectSuggestion={handleRejectSuggestion}
+            onGenerateFileSuggestions={() => handleGenerateFileSuggestions(selectedFile!.id)}
+            isGeneratingFileSuggestions={isGeneratingFileSuggestions}
           />
         );
 
@@ -3148,6 +3133,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CommentHighlightProvider
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
+              suggestions={suggestedComments.filter((s) => s.file === selectedFile!.id)}
               readOnly={!!submission!.isFinalized}
               user={props.user.email!}
               onHighlightClick={(_e: React.MouseEvent) => {
@@ -3311,18 +3297,20 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         siderTooltips.push(<PinnedCommentsTooltip key="pinned-comments-tooltip" />);
       }
 
-      // 6. AI Chat (only for graders/admins when AI is enabled)
-      if (state.aiEnabled && submission && permissionLevel === PERMISSION_LEVEL.WRITE) {
+      // 6. AI Summary (only when AI is enabled)
+      if (state.aiEnabled) {
         sider.push(
-          <ChatPanel
-            key="chat-menu"
-            submissionId={submission.id}
-            onToolExecute={handleChatToolExecute}
-            files={files.map((f) => ({ id: f.id, name: f.name, extension: f.extension }))}
+          <SubmissionSummaryPanel
+            key="ai-summary"
+            title="AI Summary"
+            summary={submissionSummary}
+            onGenerateSummary={handleGenerateSummary}
+            isGenerating={isGeneratingSummary}
+            isAdmin={isCourseAdmin(assignment)}
           />,
         );
-        siderTitles.push('AI Assistant');
-        siderTooltips.push('AI Grading Assistant');
+        siderTitles.push('AI Summary');
+        siderTooltips.push(<SubmissionSummaryTooltip key="ai-summary-tooltip" hasSummary={!!submissionSummary} />);
       }
     }
   }
@@ -3390,7 +3378,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             siderTooltips={siderTooltips}
             content={content}
             editRubricMode={state.editRubricMode}
-            panelDefaultWidths={{ 'tests-menu': 500, 'chat-menu': 400 }}
+            panelDefaultWidths={{ 'tests-menu': 500, 'ai-summary': 500 }}
           />
         )}
         {/* KeyboardShortcuts drawer removed - consolidated into HelpModal */}

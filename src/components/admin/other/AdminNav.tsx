@@ -2,6 +2,7 @@
 import * as React from 'react';
 
 import {
+  AuditOutlined,
   ApiOutlined,
   FileTextOutlined,
   HistoryOutlined,
@@ -57,6 +58,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
 
     if (/\/settings\/webhooks(?:\/|$)/.test(pathname)) return 'course-settings/webhooks';
     if (/\/settings(?:\/|$)/.test(pathname)) return 'course-settings/general';
+
+    if (/\/activity-log(?:\/|$)/.test(pathname)) return 'activity-log';
 
     if (/\/assignments\/rubrics(?:\/|$)/.test(pathname)) return 'assignments/rubrics';
     if (/\/assignments\/environment(?:\/|$)/.test(pathname)) return 'assignments/environment';
@@ -139,6 +142,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
               label: <Link to={`${courseBaseURL}/roster/sections`}>Sections</Link>,
             },
           ],
+        },
+        {
+          key: 'activity-log',
+          icon: <AuditOutlined />,
+          label: <Link to={`${courseBaseURL}/activity-log`}>Activity Log</Link>,
         },
         {
           key: 'course-settings',

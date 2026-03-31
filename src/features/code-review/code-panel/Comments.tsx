@@ -3,9 +3,13 @@ import * as React from 'react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import Comment from './Comment';
+import SuggestedComment from './SuggestedComment';
 import { useHoveredCommentId } from './CommentHighlightContext';
 
-import type { CommentType, RubricCategoryType, RubricCommentType } from '../../../types/models';
+import { BulbOutlined, LoadingOutlined } from '@ant-design/icons';
+import { message } from 'antd';
+import type { CommentType, RubricCategoryType, RubricCommentType, SuggestedCommentType } from '../../../types/models';
+import type { RubricComment } from '../../../api-client';
 
 import type { FileType } from '../../../utils/file';
 
@@ -31,8 +35,14 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   studentFeedbackOn: boolean;
   hideAuthor: boolean;
   rubricCategories: RubricCategoryType[];
+  allRubricComments?: RubricComment[];
   scrollToCommentID?: number;
   aiEnabled?: boolean; // Whether AI comment generation is available for this course
+  suggestedComments?: SuggestedCommentType[];
+  onAcceptSuggestion?: (suggestion: SuggestedCommentType) => Promise<void>;
+  onRejectSuggestion?: (suggestion: SuggestedCommentType) => Promise<void>;
+  onGenerateFileSuggestions?: () => Promise<void>;
+  isGeneratingFileSuggestions?: boolean;
 }
 
 interface ICommentsEditProps {
@@ -310,11 +320,50 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     }
   }, [hoveredCommentId, jumpToComment]);
 
-  // Render
-  const commentNodes = props.comments.map((comment: CommentType, index: number) => {
-    // No absolute positioning - comments render sequentially
-    const placement = 0; // Not used anymore
+  // Build a unified, line-sorted list of comment and suggestion nodes
+  type RenderItem =
+    | { type: 'comment'; comment: CommentType; index: number }
+    | { type: 'suggestion'; suggestion: SuggestedCommentType };
 
+  const renderItems: RenderItem[] = [];
+
+  props.comments.forEach((comment, index) => {
+    renderItems.push({ type: 'comment', comment, index });
+  });
+
+  if (props.suggestedComments && props.onAcceptSuggestion && props.onRejectSuggestion) {
+    props.suggestedComments.forEach((suggestion) => {
+      renderItems.push({ type: 'suggestion', suggestion });
+    });
+  }
+
+  // Sort by startLine so suggestions appear inline next to the code they reference
+  renderItems.sort((a, b) => {
+    const lineA = a.type === 'comment' ? (a.comment.startLine ?? 0) : (a.suggestion.startLine ?? 0);
+    const lineB = b.type === 'comment' ? (b.comment.startLine ?? 0) : (b.suggestion.startLine ?? 0);
+    if (lineA !== lineB) return lineA - lineB;
+    // Comments before suggestions on the same line
+    if (a.type !== b.type) return a.type === 'comment' ? -1 : 1;
+    return 0;
+  });
+
+  const allNodes = renderItems.map((item) => {
+    if (item.type === 'suggestion') {
+      return (
+        <SuggestedComment
+          key={`suggestion-${item.suggestion.id}`}
+          suggestion={item.suggestion}
+          file={props.file}
+          onAccept={props.onAcceptSuggestion!}
+          onReject={props.onRejectSuggestion!}
+          rubricCategories={props.rubricCategories}
+          allRubricComments={props.allRubricComments}
+        />
+      );
+    }
+
+    const { comment, index } = item;
+    const placement = 0;
     const commentType = getCommentType(props.readOnly, comment.id, props.activeCommentID);
 
     const rubricComment = Object.prototype.hasOwnProperty.call(props.rubricComments, comment.id)
@@ -357,6 +406,64 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     );
   });
 
+  const handleGenerateClick = async () => {
+    if (!props.onGenerateFileSuggestions) return;
+    try {
+      await props.onGenerateFileSuggestions();
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Failed to generate AI suggestions for this file.');
+    }
+  };
+
+  const generateButton =
+    props.aiEnabled && props.onGenerateFileSuggestions && !props.readOnly ? (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '12px 0 4px',
+        }}
+      >
+        <button
+          onClick={handleGenerateClick}
+          disabled={props.isGeneratingFileSuggestions}
+          aria-label="Generate suggestions for this file"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '7px 16px',
+            fontSize: 12,
+            fontWeight: 500,
+            color: context.consoleTheme.commentAuthor,
+            background: 'transparent',
+            border: `1px dashed ${context.consoleTheme.commentTitleBorder}`,
+            borderRadius: 6,
+            cursor: props.isGeneratingFileSuggestions ? 'wait' : 'pointer',
+            transition: 'all 0.2s ease',
+            opacity: props.isGeneratingFileSuggestions ? 0.5 : 1,
+          }}
+          onMouseEnter={(e) => {
+            if (!props.isGeneratingFileSuggestions) {
+              e.currentTarget.style.color = context.consoleTheme.text;
+              e.currentTarget.style.borderColor = context.consoleTheme.text;
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = context.consoleTheme.commentAuthor;
+            e.currentTarget.style.borderColor = context.consoleTheme.commentTitleBorder;
+          }}
+        >
+          {props.isGeneratingFileSuggestions ? (
+            <LoadingOutlined style={{ fontSize: 13 }} />
+          ) : (
+            <BulbOutlined style={{ fontSize: 13 }} />
+          )}
+          {props.isGeneratingFileSuggestions ? 'Generating…' : 'Generate Suggestions'}
+        </button>
+      </div>
+    ) : null;
+
   const highlightMessage =
     !props.readOnly && props.comments.length === 0 ? (
       <div
@@ -384,7 +491,8 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
       ref={wrapperRef}
     >
       {highlightMessage}
-      {commentNodes}
+      {allNodes}
+      {generateButton}
     </div>
   );
 };

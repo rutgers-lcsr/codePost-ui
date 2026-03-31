@@ -9,6 +9,8 @@ All URIs are relative to _http://localhost_
 | [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
 | [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
 | [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
+| [**auditLogExportRetrieve**](CoursesApi.md#auditlogexportretrieve)                       | **GET** /courses/{id}/auditLogExport/         |             |
+| [**auditLogList**](CoursesApi.md#auditloglist)                                           | **GET** /courses/{id}/auditLog/               |             |
 | [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/     |             |
 | [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/       |             |
 | [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/         |             |
@@ -386,6 +388,190 @@ example().catch(console.error);
 ### Return type
 
 [**AIUsageSummary**](AIUsageSummary.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## auditLogExportRetrieve
+
+> string auditLogExportRetrieve(id, assignment, dateFrom, dateTo, eventType, student)
+
+Export audit events for a course as CSV.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { AuditLogExportRetrieveRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // number (optional)
+    assignment: 56,
+    // string (optional)
+    dateFrom: 2013-10-20T19:20:30+01:00,
+    // string (optional)
+    dateTo: 2013-10-20T19:20:30+01:00,
+    // string (optional)
+    eventType: eventType_example,
+    // string (optional)
+    student: student_example,
+  } satisfies AuditLogExportRetrieveRequest;
+
+  try {
+    const data = await api.auditLogExportRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name           | Type     | Description                                     | Notes                                |
+| -------------- | -------- | ----------------------------------------------- | ------------------------------------ |
+| **id**         | `number` | A unique integer value identifying this course. | [Defaults to `undefined`]            |
+| **assignment** | `number` |                                                 | [Optional] [Defaults to `undefined`] |
+| **dateFrom**   | `string` |                                                 | [Optional] [Defaults to `undefined`] |
+| **dateTo**     | `string` |                                                 | [Optional] [Defaults to `undefined`] |
+| **eventType**  | `string` |                                                 | [Optional] [Defaults to `undefined`] |
+| **student**    | `string` |                                                 | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**string**
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `text/csv`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## auditLogList
+
+> PaginatedCourseAuditEventList auditLogList(id, assignment, dateFrom, dateTo, eventType, page, pageSize, student)
+
+Return paginated audit events for a course, filterable by student, assignment, event type, and date range.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { AuditLogListRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // Configure HTTP bearer authorization: jwtAuth
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // number | Filter by assignment ID (optional)
+    assignment: 56,
+    // string | Filter events after this datetime (optional)
+    dateFrom: 2013-10-20T19:20:30+01:00,
+    // string | Filter events before this datetime (optional)
+    dateTo: 2013-10-20T19:20:30+01:00,
+    // string | Filter by event type (optional)
+    eventType: eventType_example,
+    // number | A page number within the paginated result set. (optional)
+    page: 56,
+    // number | Number of results to return per page. (optional)
+    pageSize: 56,
+    // string | Filter by student email (optional)
+    student: student_example,
+  } satisfies AuditLogListRequest;
+
+  try {
+    const data = await api.auditLogList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name           | Type     | Description                                     | Notes                                |
+| -------------- | -------- | ----------------------------------------------- | ------------------------------------ |
+| **id**         | `number` | A unique integer value identifying this course. | [Defaults to `undefined`]            |
+| **assignment** | `number` | Filter by assignment ID                         | [Optional] [Defaults to `undefined`] |
+| **dateFrom**   | `string` | Filter events after this datetime               | [Optional] [Defaults to `undefined`] |
+| **dateTo**     | `string` | Filter events before this datetime              | [Optional] [Defaults to `undefined`] |
+| **eventType**  | `string` | Filter by event type                            | [Optional] [Defaults to `undefined`] |
+| **page**       | `number` | A page number within the paginated result set.  | [Optional] [Defaults to `undefined`] |
+| **pageSize**   | `number` | Number of results to return per page.           | [Optional] [Defaults to `undefined`] |
+| **student**    | `string` | Filter by student email                         | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**PaginatedCourseAuditEventList**](PaginatedCourseAuditEventList.md)
 
 ### Authorization
 
