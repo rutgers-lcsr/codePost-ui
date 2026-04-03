@@ -99,6 +99,7 @@ import InlineTestsModal from './components/InlineTestsModal';
 
 import { ReadOnlySubmissionInfo, SubmissionInfo, SubmissionInfoTooltip } from './menu/SubmissionInfoMenu';
 import SubmissionSummaryPanel, { SubmissionSummaryTooltip } from './menu/SubmissionSummaryPanel';
+import ABComparisonModal from '../../components/core/ABComparisonModal';
 
 import layoutVars from '../../styles/layout/_layoutVars';
 
@@ -238,6 +239,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const hideGrades = useCodeConsoleStore((s) => s.hideGrades);
   const executionResults = useCodeConsoleStore((s) => s.executionResults);
   const aiEnabled = useCodeConsoleStore((s) => s.aiEnabled);
+  const aiFeatureStatus = useCodeConsoleStore((s) => s.aiFeatureStatus);
   const course = useCodeConsoleStore((s) => s.course);
   const noSave = useCodeConsoleStore((s) => s.noSave);
   const activeSiderKey = useCodeConsoleStore((s) => s.activeSiderKey);
@@ -251,6 +253,28 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const [submissionSummary, setSubmissionSummary] = React.useState<SubmissionSummaryType | null>(null);
   const [isGeneratingFileSuggestions, setIsGeneratingFileSuggestions] = React.useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
+
+  // A/B experiment tracking state
+  const [abModal, setAbModal] = React.useState<{
+    open: boolean;
+    promptType: import('../../services/promptLab').PromptType;
+    experimentId: number;
+    variantAId: number;
+    variantBId: number;
+    resultA: string;
+    resultB: string;
+    isCustomContext: boolean;
+  } | null>(null);
+  const [suggestionsMeta, setSuggestionsMeta] = React.useState<{
+    promptVariantId?: number;
+    experimentId?: number;
+    isCustomContext?: boolean;
+  }>({});
+  const [summaryMeta, setSummaryMeta] = React.useState<{
+    promptVariantId?: number;
+    experimentId?: number;
+    isCustomContext?: boolean;
+  }>({});
 
   // Create a backwards-compatible state object from store
   const state: ICodeConsoleState = React.useMemo(
@@ -291,6 +315,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       hideGrades,
       executionResults,
       aiEnabled,
+      aiFeatureStatus,
       course,
       noSave,
       activeSiderKey,
@@ -338,6 +363,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       hideGrades,
       executionResults,
       aiEnabled,
+      aiFeatureStatus,
       course,
       noSave,
       activeSiderKey,
@@ -387,6 +413,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       hideGrades: currentState.hideGrades,
       executionResults: currentState.executionResults,
       aiEnabled: currentState.aiEnabled,
+      aiFeatureStatus: currentState.aiFeatureStatus,
       course: currentState.course,
       noSave: currentState.noSave,
       activeSiderKey: currentState.activeSiderKey,
@@ -1062,9 +1089,12 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
         // Fetch AI settings for this course
         let aiEnabled = false;
+        let aiFeatureStatus: Record<string, boolean> = {};
         try {
           const aiSettings = await getCourseAISettings(course!.id);
           aiEnabled = aiSettings.aiCommentsEnabled ?? aiSettings.aiEnabled;
+          aiFeatureStatus =
+            ((aiSettings as unknown as Record<string, unknown>).aiFeatures as Record<string, boolean>) ?? {};
         } catch {
           // AI settings not available or user doesn't have permission
           aiEnabled = false;
@@ -1091,6 +1121,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           testCategories: Array.isArray(categories) ? categories : [],
           testCases: cases as TestCasesByCategory,
           aiEnabled,
+          aiFeatureStatus,
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
         }));
@@ -1144,28 +1175,54 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     if (permissionLevel !== PERMISSION_LEVEL.WRITE || !submission || !aiEnabled) return;
     const subId = submission.id;
     let cancelled = false;
-    // Fetch suggested comments
-    submissionsApi
-      .suggestedCommentsList({ id: subId })
-      .then((data) => {
-        if (!cancelled) setSuggestedComments(data as unknown as SuggestedCommentType[]);
-      })
-      .catch(() => {
-        /* suggestion fetch is best-effort */
-      });
-    // Fetch submission summary
-    submissionsApi
-      .summaryRetrieve({ id: subId })
-      .then((data) => {
-        if (!cancelled) setSubmissionSummary(data as unknown as SubmissionSummaryType);
-      })
-      .catch(() => {
-        /* summary may not exist yet */
-      });
+    // Fetch suggested comments (only if feature is enabled)
+    if (aiFeatureStatus.suggested_comments !== false) {
+      submissionsApi
+        .suggestedCommentsList({ id: subId })
+        .then((data) => {
+          if (!cancelled) {
+            const suggestions = data as unknown as SuggestedCommentType[];
+            setSuggestedComments(suggestions);
+            // Extract variant_id from generationMetadata if available
+            const meta = suggestions[0]?.generationMetadata as Record<string, unknown> | undefined;
+            if (meta?.variant_id) {
+              setSuggestionsMeta((prev) => ({
+                ...prev,
+                promptVariantId: meta.variant_id as number,
+              }));
+            }
+          }
+        })
+        .catch(() => {
+          /* suggestion fetch is best-effort */
+        });
+    }
+    // Fetch submission summary (only if feature is enabled)
+    if (aiFeatureStatus.submission_summary !== false) {
+      submissionsApi
+        .summaryRetrieve({ id: subId })
+        .then((data) => {
+          if (!cancelled) {
+            setSubmissionSummary(data as unknown as SubmissionSummaryType);
+            const meta = (data as unknown as Record<string, unknown>)?.generationMetadata as
+              | Record<string, unknown>
+              | undefined;
+            if (meta?.variant_id) {
+              setSummaryMeta((prev) => ({
+                ...prev,
+                promptVariantId: meta.variant_id as number,
+              }));
+            }
+          }
+        })
+        .catch(() => {
+          /* summary may not exist yet */
+        });
+    }
     return () => {
       cancelled = true;
     };
-  }, [permissionLevel, submission?.id, aiEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [permissionLevel, submission?.id, aiEnabled, aiFeatureStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // NOTE: URL sync effect was removed.
   // - URL params (tab, file) are only read on initial load in componentDidMountLogic
@@ -1414,16 +1471,53 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     if (!submission) return;
     setIsGeneratingFileSuggestions(true);
     try {
-      const data = await submissionsApi.generateFileSuggestionsCreate({
+      const rawResponse = await submissionsApi.generateFileSuggestionsCreateRaw({
         id: submission.id,
         generateFileSuggestionsRequest: { fileId },
       });
-      const newSuggestions = data as unknown as SuggestedCommentType[];
+      const data = await rawResponse.raw.json();
+
+      // Check if this is an A/B test response
+      if (data && typeof data === 'object' && data.isAbTest) {
+        const ab = data as {
+          isAbTest: true;
+          experimentId: number;
+          variantAId: number;
+          variantBId: number;
+          isCustomContext: boolean;
+          resultA: string[];
+          resultB: string[];
+        };
+        setAbModal({
+          open: true,
+          promptType: 'suggested_comments',
+          experimentId: ab.experimentId,
+          variantAId: ab.variantAId,
+          variantBId: ab.variantBId,
+          resultA: ab.resultA.join('\n\n---\n\n'),
+          resultB: ab.resultB.join('\n\n---\n\n'),
+          isCustomContext: ab.isCustomContext,
+        });
+        setSuggestionsMeta({
+          experimentId: ab.experimentId,
+          isCustomContext: ab.isCustomContext,
+        });
+        return;
+      }
+
+      // Normal (non-A/B) response — new shape: { suggestions, promptVariantId, isCustomContext }
+      const hasWrapper = data && typeof data === 'object' && 'suggestions' in data;
+      const newSuggestions = (hasWrapper ? data.suggestions : data) as unknown as SuggestedCommentType[];
       setSuggestedComments((prev) => {
-        // Filter out any existing pending suggestions for this file to match backend dedup
         const withoutFile = prev.filter((s) => s.file !== fileId);
         return [...withoutFile, ...newSuggestions];
       });
+      if (hasWrapper) {
+        setSuggestionsMeta({
+          promptVariantId: data.promptVariantId ?? undefined,
+          isCustomContext: data.isCustomContext ?? undefined,
+        });
+      }
     } catch (err: unknown) {
       // Surface backend error message if available
       let detail = 'Failed to generate AI suggestions for this file.';
@@ -1448,8 +1542,45 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     if (!submission) return;
     setIsGeneratingSummary(true);
     try {
-      const data = await submissionsApi.generateSummaryCreate({ id: submission.id });
+      const rawResponse = await submissionsApi.generateSummaryCreateRaw({ id: submission.id });
+      const data = await rawResponse.raw.json();
+
+      // Check if this is an A/B test response
+      if (data && typeof data === 'object' && data.isAbTest) {
+        const ab = data as {
+          isAbTest: true;
+          experimentId: number;
+          variantAId: number;
+          variantBId: number;
+          isCustomContext: boolean;
+          resultA: { text: string; success: boolean; error?: string };
+          resultB: { text: string; success: boolean; error?: string };
+        };
+        setAbModal({
+          open: true,
+          promptType: 'submission_summary',
+          experimentId: ab.experimentId,
+          variantAId: ab.variantAId,
+          variantBId: ab.variantBId,
+          resultA: ab.resultA.text ?? '',
+          resultB: ab.resultB.text ?? '',
+          isCustomContext: ab.isCustomContext,
+        });
+        setSummaryMeta({
+          experimentId: ab.experimentId,
+          isCustomContext: ab.isCustomContext,
+        });
+        return;
+      }
+
+      // Normal response — may include promptVariantId and isCustomContext
       setSubmissionSummary(data as unknown as SubmissionSummaryType);
+      if (data && typeof data === 'object') {
+        setSummaryMeta({
+          promptVariantId: data.promptVariantId ?? undefined,
+          isCustomContext: data.isCustomContext ?? undefined,
+        });
+      }
     } finally {
       setIsGeneratingSummary(false);
     }
@@ -2642,7 +2773,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               forcedRubricMode={assignment.forcedRubricMode ?? false}
               rubricCategories={rubricCategories}
               showCursor={state.showCursor}
-              aiEnabled={state.aiEnabled}
+              aiEnabled={state.aiEnabled && state.aiFeatureStatus.comment_generation !== false}
               onPin={handlePinComment}
               forcedUpdates={templateForceUpdates}
             />
@@ -3117,14 +3248,23 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             allRubricComments={Object.values(rubricComments).flat()}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
-            aiEnabled={state.aiEnabled}
+            aiEnabled={state.aiEnabled && state.aiFeatureStatus.comment_generation !== false}
             onPin={handlePinComment}
             forcedUpdates={templateForceUpdates}
-            suggestedComments={suggestedComments.filter((s) => s.file === selectedFile!.id)}
+            suggestedComments={
+              state.aiFeatureStatus.suggested_comments !== false
+                ? suggestedComments.filter((s) => s.file === selectedFile!.id)
+                : []
+            }
             onAcceptSuggestion={handleAcceptSuggestion}
             onRejectSuggestion={handleRejectSuggestion}
-            onGenerateFileSuggestions={() => handleGenerateFileSuggestions(selectedFile!.id)}
+            onGenerateFileSuggestions={
+              state.aiFeatureStatus.suggested_comments !== false
+                ? () => handleGenerateFileSuggestions(selectedFile!.id)
+                : undefined
+            }
             isGeneratingFileSuggestions={isGeneratingFileSuggestions}
+            suggestionsMeta={suggestionsMeta}
           />
         );
 
@@ -3133,7 +3273,11 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CommentHighlightProvider
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
-              suggestions={suggestedComments.filter((s) => s.file === selectedFile!.id)}
+              suggestions={
+                state.aiFeatureStatus.suggested_comments !== false
+                  ? suggestedComments.filter((s) => s.file === selectedFile!.id)
+                  : []
+              }
               readOnly={!!submission!.isFinalized}
               user={props.user.email!}
               onHighlightClick={(_e: React.MouseEvent) => {
@@ -3297,8 +3441,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         siderTooltips.push(<PinnedCommentsTooltip key="pinned-comments-tooltip" />);
       }
 
-      // 6. AI Summary (only when AI is enabled)
-      if (state.aiEnabled) {
+      // 6. AI Summary (only when AI is enabled and submission_summary feature is on)
+      if (state.aiEnabled && state.aiFeatureStatus.submission_summary !== false) {
         sider.push(
           <SubmissionSummaryPanel
             key="ai-summary"
@@ -3307,6 +3451,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             onGenerateSummary={handleGenerateSummary}
             isGenerating={isGeneratingSummary}
             isAdmin={isCourseAdmin(assignment)}
+            promptVariantId={summaryMeta.promptVariantId}
+            experimentId={summaryMeta.experimentId}
+            isCustomContext={summaryMeta.isCustomContext}
           />,
         );
         siderTitles.push('AI Summary');
@@ -3394,6 +3541,21 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             submission={submission}
           />
         ) : null}
+
+        {/* A/B Comparison Modal for prompt experiments */}
+        {abModal?.open && (
+          <ABComparisonModal
+            open
+            onClose={() => setAbModal(null)}
+            promptType={abModal.promptType}
+            experimentId={abModal.experimentId}
+            variantAId={abModal.variantAId}
+            variantBId={abModal.variantBId}
+            resultA={abModal.resultA}
+            resultB={abModal.resultB}
+            isCustomContext={abModal.isCustomContext}
+          />
+        )}
       </CourseContext.Provider>
     </div>
   );

@@ -26,6 +26,7 @@ import {
 
 import type { AssignmentDeadline } from '../../api-client';
 import { dashboardApi } from '../../api-client/clients';
+import AdminPageHeader from './AdminPageHeader';
 
 const { Text, Title } = Typography;
 
@@ -304,17 +305,11 @@ const DeployCalendar = () => {
   const todayKey = toLocalDateKey(today.toISOString());
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ marginBottom: '4px' }}>
-          <CalendarOutlined style={{ marginRight: 8 }} />
-          Deploy Calendar
-        </Title>
-        <Text type="secondary">
-          Visualise all assignment due dates &amp; late-upload deadlines to find the safest deployment windows.
-        </Text>
-      </div>
+    <div style={{ padding: 24 }}>
+      <AdminPageHeader
+        title="Deploy Calendar"
+        subtitle="Visualise all assignment due dates &amp; late-upload deadlines to find the safest deployment windows."
+      />
 
       {/* Toolbar */}
       <Row gutter={16} style={{ marginBottom: '16px' }} align="middle">
@@ -516,13 +511,15 @@ const DeployCalendar = () => {
                     padding: '4px 6px',
                     borderBottom: '1px solid #f0f0f0',
                     borderRight: '1px solid #f0f0f0',
-                    background: isToday ? '#e6f7ff' : RISK_COLORS[risk],
+                    background: RISK_COLORS[risk],
                     cursor: 'pointer',
                     transition: 'background 0.15s',
                     position: 'relative',
+                    outline: isToday ? '2px solid #1890ff' : undefined,
+                    outlineOffset: isToday ? '-2px' : undefined,
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = '#e6f7ff')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = isToday ? '#e6f7ff' : RISK_COLORS[risk])}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = RISK_COLORS[risk])}
                 >
                   {/* Day number */}
                   <div

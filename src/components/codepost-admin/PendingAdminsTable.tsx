@@ -1,10 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import * as React from 'react';
-import { Table, Card, Tag, Button, Space, message, Popconfirm, Alert, Typography, Empty } from 'antd';
+import React from 'react';
+import { Table, Card, Tag, Button, Space, message, Popconfirm, Alert, Empty } from 'antd';
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getAuthToken } from '../../utils/auth';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
+import AdminPageHeader from './AdminPageHeader';
 import { ColumnsType } from 'antd/es/table';
 
 interface PendingAdminUser {
@@ -164,14 +165,11 @@ const PendingAdminsTable: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Typography.Title level={3} style={{ marginBottom: 8 }}>
-        Pending Admin Requests
-      </Typography.Title>
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
-        Users requesting course admin privileges across all organizations. New organization requests require CodePost
-        staff approval. Existing organization requests may also be handled by their Org Staff.
-      </Typography.Paragraph>
+    <div style={{ padding: 24 }}>
+      <AdminPageHeader
+        title="Pending Admin Requests"
+        subtitle="Users requesting course admin privileges across all organizations. New organization requests require codePost staff approval."
+      />
 
       {pendingUsers.length > 0 && (
         <Alert

@@ -7,7 +7,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Card, Col, Descriptions, Drawer, Input, Row, Space, Statistic, Table, Tag } from 'antd';
+import { Badge, Button, Card, Col, Descriptions, Drawer, Row, Space, Statistic, Table, Tag } from 'antd';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { colors } from '../../theme/colors';
@@ -16,10 +16,8 @@ import { Organization } from '../../api-client';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 
-import { PlusOutlined } from '@ant-design/icons';
+import AdminTableToolbar from './AdminTableToolbar';
 import NewOrganizationDialog from './NewOrganizationDialog';
-
-const { Search } = Input;
 
 const compactEmails = (emails: Array<string | null | undefined>): string[] =>
   emails.filter((email): email is string => Boolean(email));
@@ -143,7 +141,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
       key: 'courses',
       sorter: (a: OrganizationRow, b: OrganizationRow) => a.rosters.length - b.rosters.length,
       render: (_: unknown, record: OrganizationRow) => (
-        <Badge count={record.rosters.length} showZero style={{ backgroundColor: '#52c41a' }}>
+        <Badge count={record.rosters.length} showZero style={{ backgroundColor: colors.actionGreen }}>
           <BookOutlined style={{ fontSize: '20px' }} />
         </Badge>
       ),
@@ -155,7 +153,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         getTotalUsers(a.rosters).students - getTotalUsers(b.rosters).students,
       render: (_: unknown, record: OrganizationRow) => (
         <Space>
-          <UserOutlined style={{ color: '#722ed1' }} />
+          <UserOutlined style={{ color: colors.brandAccent }} />
           {getTotalUsers(record.rosters).students}
         </Space>
       ),
@@ -172,7 +170,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
         const users = getTotalUsers(record.rosters);
         return (
           <Space>
-            <TeamOutlined style={{ color: '#13c2c2' }} />
+            <TeamOutlined style={{ color: colors.brandVibrant }} />
             {users.staff}
           </Space>
         );
@@ -337,64 +335,47 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
   const orgStats = getTotalOrgStats();
 
   return (
-    <Card
-      title="Organizations"
-      variant="outlined"
-      style={{ width: '100%' }}
-      extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
-          Create Organization
-        </Button>
-      }
-    >
-      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+    <>
+      {/* Stats */}
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Row gutter={[24, 16]}>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Organizations"
               value={organizationRows.length}
               prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
-              title="Total Courses"
+              title="Courses"
               value={orgStats.totalCourses}
-              prefix={<BookOutlined style={{ color: '#52c41a' }} />}
+              prefix={<BookOutlined style={{ color: colors.actionGreen }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
-              title="Total Students"
+              title="Students"
               value={orgStats.totalStudents}
-              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+              prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
-              title="Total Staff"
+              title="Staff"
               value={orgStats.totalStaff}
-              prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
+              prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
-      <div style={{ padding: '14px 0px', width: '400px' }}>
-        <Search
-          placeholder="Search organizations..."
-          onSearch={onSearch}
-          onChange={(e) => onSearch(e.target.value)}
-          enterButton
-          allowClear
-        />
-      </div>
+      <AdminTableToolbar
+        searchPlaceholder="Search organizations…"
+        onSearch={onSearch}
+        createLabel="Create Organization"
+        onCreate={() => setShowCreateDialog(true)}
+      />
 
       <Table
         columns={mainColumns}
@@ -432,21 +413,21 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
                 <Statistic
                   title="Admins"
                   value={currentRoster.courseAdmins.length}
-                  prefix={<TeamOutlined style={{ color: '#722ed1' }} />}
+                  prefix={<TeamOutlined style={{ color: colors.brandAccent }} />}
                 />
               </Col>
               <Col span={8}>
                 <Statistic
                   title="Graders"
                   value={currentRoster.graders.length + currentRoster.superGraders.length}
-                  prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
+                  prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
                 />
               </Col>
               <Col span={8}>
                 <Statistic
                   title="Students"
                   value={currentRoster.students.length}
-                  prefix={<UserOutlined style={{ color: '#52c41a' }} />}
+                  prefix={<UserOutlined style={{ color: colors.actionGreen }} />}
                 />
               </Col>
             </Row>
@@ -455,14 +436,14 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
               renderEmailList(
                 compactEmails(currentRoster.courseAdmins),
                 'Course Admins',
-                <TeamOutlined style={{ color: '#722ed1' }} />,
+                <TeamOutlined style={{ color: colors.brandAccent }} />,
                 'purple',
               )}
             {currentRoster.graders.length + currentRoster.superGraders.length > 0 &&
               renderEmailList(
                 compactEmails([...currentRoster.graders, ...currentRoster.superGraders]),
                 'Graders',
-                <TeamOutlined style={{ color: '#13c2c2' }} />,
+                <TeamOutlined style={{ color: colors.brandVibrant }} />,
                 'cyan',
               )}
             {currentRoster.students.length > 0 &&
@@ -495,7 +476,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
           onRefresh();
         }}
       />
-    </Card>
+    </>
   );
 };
 

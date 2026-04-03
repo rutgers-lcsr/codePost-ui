@@ -8,9 +8,8 @@ import {
   GlobalOutlined,
   TeamOutlined,
   UserOutlined,
-  PlusOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Badge, Card, Col, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -20,9 +19,8 @@ import { Organization, Course } from '../../api-client';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 
+import AdminTableToolbar from './AdminTableToolbar';
 import NewCourseDialog from './NewCourseDialog';
-
-const { Search } = Input;
 
 const addEmailToSet = (target: Set<string>, email: string | null | undefined) => {
   if (email) target.add(email);
@@ -66,13 +64,12 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
     );
   }, [coursesWithData, searchValue]);
 
-  const getStats = () => {
+  const stats = useMemo(() => {
     const activeCourses = filteredCourses.filter((c) => !c.archived).length;
     const archivedCourses = filteredCourses.filter((c) => c.archived).length;
     const totalAssignments = filteredCourses.reduce((sum, c) => sum + c.assignments.length, 0);
     const totalSections = filteredCourses.reduce((sum, c) => sum + c.sections.length, 0);
 
-    // Use Set to count unique students (including both active and inactive)
     const allStudents = new Set<string>();
     filteredCourses.forEach((c) => {
       if (c.roster) {
@@ -81,16 +78,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       }
     });
 
-    return {
-      activeCourses,
-      archivedCourses,
-      totalAssignments,
-      totalSections,
-      totalStudents: allStudents.size,
-    };
-  };
-
-  const stats = getStats();
+    return { activeCourses, archivedCourses, totalAssignments, totalSections, totalStudents: allStudents.size };
+  }, [filteredCourses]);
 
   const columns: ColumnsType<CourseWithRoster> = [
     {
@@ -100,7 +89,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       render: (name: string, record: CourseWithRoster) => (
         <Space direction="vertical" size="small">
           <Space>
-            <BookOutlined style={{ color: record.archived ? '#8c8c8c' : '#52c41a' }} />
+            <BookOutlined style={{ color: record.archived ? colors.neutralDisable : colors.actionGreen }} />
             <strong>{name}</strong>
           </Space>
           <Tag color={record.archived ? 'default' : 'green'}>{record.period}</Tag>
@@ -160,7 +149,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         }
         return (
           <Space>
-            <UserOutlined style={{ color: '#722ed1' }} />
+            <UserOutlined style={{ color: colors.brandAccent }} />
             {uniqueStudents.size}
           </Space>
         );
@@ -195,7 +184,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         }
         return (
           <Space>
-            <TeamOutlined style={{ color: '#13c2c2' }} />
+            <TeamOutlined style={{ color: colors.brandVibrant }} />
             {allStaff.size}
           </Space>
         );
@@ -207,8 +196,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       key: 'assignments',
       width: 120,
       render: (assignments: number[]) => (
-        <Badge count={assignments.length} showZero style={{ backgroundColor: '#fa8c16' }}>
-          <FileTextOutlined style={{ fontSize: '20px', color: '#fa8c16' }} />
+        <Badge count={assignments.length} showZero style={{ backgroundColor: colors.actionYellow }}>
+          <FileTextOutlined style={{ fontSize: '20px', color: colors.actionYellow }} />
         </Badge>
       ),
       sorter: (a, b) => a.assignments.length - b.assignments.length,
@@ -219,7 +208,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       key: 'sections',
       width: 110,
       render: (sections: number[]) => (
-        <Badge count={sections.length} showZero style={{ backgroundColor: '#faad14' }}>
+        <Badge count={sections.length} showZero style={{ backgroundColor: colors.actionYellowFade }}>
           <FolderOutlined style={{ fontSize: '20px', color: '#faad14' }} />
         </Badge>
       ),
@@ -228,62 +217,48 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
   ];
 
   return (
-    <Card
-      title="Courses"
-      style={{ width: '100%' }}
-      extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
-          Create Course
-        </Button>
-      }
-    >
-      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Card size="small">
+    <>
+      {/* Stats */}
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Row gutter={[24, 16]}>
+          <Col xs={12} sm={6}>
             <Statistic
-              title="Active Courses"
+              title="Active"
               value={stats.activeCourses}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-              suffix={<span style={{ fontSize: '14px', color: '#8c8c8c' }}>/ {courses.length}</span>}
+              prefix={<CheckCircleOutlined style={{ color: colors.actionGreen }} />}
+              suffix={<span style={{ fontSize: 14, color: colors.neutralSecondaryText }}>/ {courses.length}</span>}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Archived"
               value={stats.archivedCourses}
-              prefix={<CloseCircleOutlined style={{ color: '#8c8c8c' }} />}
+              prefix={<CloseCircleOutlined style={{ color: colors.neutralDisable }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
-              title="Total Students"
+              title="Students"
               value={stats.totalStudents}
-              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+              prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Assignments"
               value={stats.totalAssignments}
-              prefix={<FileTextOutlined style={{ color: '#fa8c16' }} />}
+              prefix={<FileTextOutlined style={{ color: colors.actionYellow }} />}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
-      <Search
-        placeholder="Search by course name, period, or organization..."
+      <AdminTableToolbar
+        searchPlaceholder="Search by course name, period, or organization…"
+        searchValue={searchValue}
         onSearch={setSearchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        enterButton
-        allowClear
-        style={{ width: '100%', maxWidth: 600, marginBottom: 16 }}
+        createLabel="Create Course"
+        onCreate={() => setShowCreateDialog(true)}
       />
 
       <Table
@@ -291,6 +266,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         dataSource={filteredCourses}
         size="middle"
         rowKey="id"
+        rowClassName={(record) => (record.archived ? 'ant-table-row-archived' : '')}
         pagination={{
           pageSize,
           showSizeChanger: true,
@@ -310,7 +286,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         }}
         organizations={organizations}
       />
-    </Card>
+    </>
   );
 };
 

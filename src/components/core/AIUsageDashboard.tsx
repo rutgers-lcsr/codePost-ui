@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Flex, Statistic, Table, Typography, Segmented, DatePicker, Spin, Alert, Space } from 'antd';
+import { Card, Flex, Statistic, Table, Tooltip, Typography, Segmented, DatePicker, Spin, Alert, Space } from 'antd';
 import {
   BarChartOutlined,
   DollarOutlined,
@@ -24,7 +24,10 @@ import {
   ApiOutlined,
   LineChartOutlined,
   RobotOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { colors } from '../../theme/colors';
 import { AIUsageChart, formatNumber, formatCost } from '../core/AIUsageChart';
 import type { AIUsageBreakdown, AIUsageSummary } from '../../api-client';
@@ -58,6 +61,8 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
   const [granularity, setGranularity] = useState<Granularity>('daily');
   const [chartView, setChartView] = useState<ChartView>('tokens');
   const [dateRange, setDateRange] = useState<[string | undefined, string | undefined]>([undefined, undefined]);
+  // Tracks the effective date range returned by the API (used to display in RangePicker when no custom range is set)
+  const [effectiveDateRange, setEffectiveDateRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -69,6 +74,13 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
         endDate: dateRange[1],
       });
       setData(result);
+      // Reflect the API's actual date range so the picker shows what's active
+      if (result.startDate && result.endDate) {
+        setEffectiveDateRange([
+          dayjs(result.startDate as unknown as string),
+          dayjs(result.endDate as unknown as string),
+        ]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load usage data');
     } finally {
@@ -125,7 +137,19 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       dataIndex: 'estimatedCost',
       key: 'estimatedCost',
       align: 'right' as const,
-      render: (v: string | number) => formatCost(v),
+      render: (v: string | number, record: AIUsageBreakdown) => {
+        const cost = typeof v === 'string' ? parseFloat(v) : v;
+        if ((!cost || cost === 0) && record.totalTokens > 0) {
+          return (
+            <Tooltip title="Cost unavailable — unknown model rate">
+              <span style={{ color: colors.neutralSecondaryText }}>
+                N/A <QuestionCircleOutlined style={{ fontSize: 12 }} />
+              </span>
+            </Tooltip>
+          );
+        }
+        return formatCost(v);
+      },
       sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
   ];
@@ -175,13 +199,25 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       dataIndex: 'estimatedCost',
       key: 'estimatedCost',
       align: 'right' as const,
-      render: (v: string | number) => formatCost(v),
+      render: (v: string | number, record: AIUsageBreakdown) => {
+        const cost = typeof v === 'string' ? parseFloat(v) : v;
+        if ((!cost || cost === 0) && record.totalTokens > 0) {
+          return (
+            <Tooltip title="Cost unavailable — unknown model rate">
+              <span style={{ color: colors.neutralSecondaryText }}>
+                N/A <QuestionCircleOutlined style={{ fontSize: 12 }} />
+              </span>
+            </Tooltip>
+          );
+        }
+        return formatCost(v);
+      },
       sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
   ];
 
   return (
-    <div style={{ maxWidth: 1100 }}>
+    <div>
       {/* Header */}
       <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
         <div>
@@ -202,7 +238,10 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
           <Text type="secondary">Granularity:</Text>
           <Segmented
             value={granularity}
-            onChange={(v) => setGranularity(v as Granularity)}
+            onChange={(v) => {
+              setGranularity(v as Granularity);
+              setDateRange([undefined, undefined]);
+            }}
             options={[
               { label: 'Hourly', value: 'hourly' },
               { label: 'Daily', value: 'daily' },
@@ -213,9 +252,16 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
         <Space>
           <Text type="secondary">Date Range:</Text>
           <RangePicker
+            value={
+              dateRange[0] && dateRange[1]
+                ? [dayjs(dateRange[0]), dayjs(dateRange[1])]
+                : effectiveDateRange[0] && effectiveDateRange[1]
+                  ? effectiveDateRange
+                  : undefined
+            }
             onChange={(dates) => {
               if (dates && dates[0] && dates[1]) {
-                setDateRange([dates[0].toISOString(), dates[1].toISOString()]);
+                setDateRange([dates[0].startOf('day').toISOString(), dates[1].endOf('day').toISOString()]);
               } else {
                 setDateRange([undefined, undefined]);
               }

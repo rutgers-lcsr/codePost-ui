@@ -58,6 +58,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, user, onClose, on
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}
       destroyOnClose
+      width={560}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item name="organization" label="Organization">
@@ -70,19 +71,13 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, user, onClose, on
           />
         </Form.Item>
 
-        <Form.Item name="codePostAdmin" valuePropName="checked" label="Platform Admin">
+        <Form.Item name="codePostAdmin" valuePropName="checked" label="Platform Admin" extra="Grant full platform administrative access (manage orgs, all courses, etc.)">
           <Switch />
         </Form.Item>
-        <p style={{ color: '#888', fontSize: '12px', marginTop: '-10px' }}>
-          Grant full platform administrative checks (Manage Orgs, All Courses, etc.)
-        </p>
 
-        <Form.Item name="isOrgStaff" valuePropName="checked" label="Organization Staff">
+        <Form.Item name="isOrgStaff" valuePropName="checked" label="Organization Staff" extra="Grant organization management permissions (SSO, defaults, etc.)">
           <Switch />
         </Form.Item>
-        <p style={{ color: '#888', fontSize: '12px', marginTop: '-10px' }}>
-          Grant organization management permissions (SSO, Defaults, etc.)
-        </p>
 
         <Form.Item name="canCreateCourses" valuePropName="checked">
           <Checkbox>Can Create Courses</Checkbox>

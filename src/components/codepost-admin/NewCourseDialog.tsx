@@ -74,6 +74,7 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSucc
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}
       destroyOnClose
+      width={560}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item name="name" label="Course Name" rules={[{ required: true, message: 'Please enter course name' }]}>

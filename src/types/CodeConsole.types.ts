@@ -222,6 +222,8 @@ export interface ICodeConsoleState {
    * ======================================== */
   /** Whether AI comment generation is enabled for this course */
   aiEnabled: boolean;
+  /** Per-feature enabled status from the server (keys are feature registry keys) */
+  aiFeatureStatus: Record<string, boolean>;
 
   /* ========================================
    * Temporary Edit State

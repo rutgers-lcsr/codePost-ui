@@ -2,25 +2,28 @@
 import {
   BookOutlined,
   CalendarOutlined,
-  CheckCircleOutlined,
   CrownOutlined,
+  ExperimentOutlined,
   GlobalOutlined,
+  HeartOutlined,
   TeamOutlined,
   UserOutlined,
   UserAddOutlined,
   DashboardOutlined,
+  NotificationOutlined,
   RiseOutlined,
   ApiOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
 import {
-  Alert,
+  Badge,
   Card,
   Col,
+  Divider,
   Progress,
   Row,
+  Skeleton,
   Space,
-  Spin,
   Statistic,
   Table,
   Tag,
@@ -37,6 +40,7 @@ import useFixedWindow from '../core/useFixedWindow';
 import CPLogo from '../core/CPLogo';
 import uniqBy from 'lodash/uniqBy';
 
+import AdminPageHeader from './AdminPageHeader';
 import AdminTable from './AdminTable';
 import SystemHealth from './SystemHealth';
 import CoursesTable from './CoursesTable';
@@ -49,13 +53,14 @@ import DeployCalendar from './DeployCalendar';
 import AIUsageDashboard from '../core/AIUsageDashboard';
 import { AIUsageService } from '../../services/aiUsage';
 import PendingAdminsTable from './PendingAdminsTable';
+import PromptLab from './PromptLab';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
 import { organizationsApi, coursesApi } from '../../api-client/clients';
 import { UserIO } from '../../services/user';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Content, Sider } = Layout;
 
 type TabType =
@@ -67,8 +72,11 @@ type TabType =
   | 'Users'
   | 'Activity'
   | 'Deploy Calendar'
+  | 'System Health'
+  | 'Banner'
   | 'API'
-  | 'AI Usage';
+  | 'AI Usage'
+  | 'Prompt Lab';
 
 export interface AdminData {
   id: number;
@@ -227,9 +235,52 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '40px 0px', textAlign: 'center' }}>
-        <Spin size="large" tip="Loading dashboard data..." aria-label="Loading dashboard data" />
-      </div>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider
+          width={220}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+          }}
+        >
+          <div style={{ padding: '16px 16px 8px', textAlign: 'center' }}>
+            <Skeleton.Avatar active size={48} shape="square" />
+            <Skeleton active paragraph={false} title={{ width: 120, style: { margin: '12px auto 0' } }} />
+          </div>
+          <div style={{ padding: '8px 16px' }}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton.Button key={i} active block style={{ height: 32, marginBottom: 8 }} />
+            ))}
+          </div>
+        </Sider>
+        <Layout style={{ marginLeft: 220, background: token.colorBgLayout }}>
+          <Content style={{ padding: 24 }}>
+            <Skeleton active paragraph={false} title={{ width: 280 }} style={{ marginBottom: 24 }} />
+            <Row gutter={[16, 16]}>
+              {[1, 2, 3].map((i) => (
+                <Col xs={24} sm={8} key={i}>
+                  <Card>
+                    <Skeleton active paragraph={{ rows: 1 }} />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+              {[1, 2, 3, 4].map((i) => (
+                <Col xs={24} sm={12} lg={6} key={i}>
+                  <Card>
+                    <Skeleton active paragraph={{ rows: 1 }} />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Content>
+        </Layout>
+      </Layout>
     );
   }
 
@@ -243,165 +294,122 @@ const Dashboard = () => {
       .slice(0, 5);
 
     return (
-      <div style={{ padding: '24px' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '24px' }}>
-          <Title level={2} style={{ marginBottom: '8px' }}>
-            Admin Dashboard
-          </Title>
-          <Text type="secondary" style={{ fontSize: '16px' }}>
-            Welcome back! Here's what's happening with your platform.
-          </Text>
-        </div>
+      <div style={{ padding: 24 }}>
+        <AdminPageHeader title="Overview" subtitle="Platform-wide metrics and system status at a glance." />
 
-        {/* Stats Cards Row 1 */}
-        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+        {/* ── Hero Stats ─────────────────────────────────────────────── */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={8}>
+            <Card style={{ borderLeft: `3px solid ${colors.brandPrimary}` }}>
               <Statistic
-                title="Organizations"
-                value={stats.totalOrganizations}
-                prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
-                valueStyle={{ color: colors.actionBlue }}
+                title="Unique Users"
+                value={stats.totalUniqueUsers}
+                prefix={<UserOutlined />}
+                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.brandPrimary }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">{stats.avgCoursesPerOrg} avg courses/org</Text>
-              </div>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {stats.avgStudentsPerCourse} avg students / course
+              </Text>
             </Card>
           </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+          <Col xs={24} sm={8}>
+            <Card style={{ borderLeft: `3px solid ${colors.actionGreen}` }}>
               <Statistic
                 title="Active Courses"
                 value={stats.activeCourses}
-                suffix={<Text type="secondary">/ {stats.totalCourses}</Text>}
-                prefix={<BookOutlined style={{ color: '#52c41a' }} />}
-                valueStyle={{ color: '#52c41a' }}
+                suffix={
+                  <Text type="secondary" style={{ fontSize: 16 }}>
+                    / {stats.totalCourses}
+                  </Text>
+                }
+                prefix={<BookOutlined />}
+                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.actionGreen }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Tag color="default">{stats.archivedCourses} archived</Tag>
-              </div>
+              <Tag color="default" style={{ marginTop: 4 }}>
+                {stats.archivedCourses} archived
+              </Tag>
             </Card>
           </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+          <Col xs={24} sm={8}>
+            <Card style={{ borderLeft: `3px solid ${colors.actionBlue}` }}>
               <Statistic
-                title="Users with Student Role"
-                value={stats.totalStudents}
-                prefix={<UserOutlined style={{ color: '#722ed1' }} />}
-                valueStyle={{ color: '#722ed1' }}
+                title="Organizations"
+                value={stats.totalOrganizations}
+                prefix={<GlobalOutlined />}
+                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.actionBlue }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">{stats.avgStudentsPerCourse} avg/course</Text>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
-              <Statistic
-                title="Assignments"
-                value={stats.totalAssignments}
-                prefix={<BookOutlined style={{ color: '#fa8c16' }} />}
-                valueStyle={{ color: '#fa8c16' }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Across all courses</Text>
-              </div>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                {stats.avgCoursesPerOrg} avg courses / org
+              </Text>
             </Card>
           </Col>
         </Row>
 
-        {/* Stats Cards Row 2 */}
-        <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
-              <Statistic
-                title="Total Unique Users"
-                value={stats.totalUniqueUsers}
-                prefix={<UserOutlined style={{ color: colors.actionBlue }} />}
-                valueStyle={{ color: colors.actionBlue }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Unique people (any role)</Text>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
-              <Statistic
-                title="Course Admins"
-                value={stats.totalCourseAdmins}
-                prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
-                valueStyle={{ color: '#13c2c2' }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Course-level administrators</Text>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
+        {/* ── Secondary Stats — single card with inline items ─────── */}
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Row gutter={[24, 16]}>
+            <Col xs={12} sm={6}>
               <Statistic
                 title="Platform Admins"
                 value={stats.totalCodePostAdmins}
-                prefix={<CrownOutlined style={{ color: '#f5222d' }} />}
-                valueStyle={{ color: '#f5222d' }}
+                prefix={<CrownOutlined style={{ color: colors.actionRed }} />}
+                valueStyle={{ color: colors.actionRed }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">codePost administrators</Text>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
+            </Col>
+            <Col xs={12} sm={6}>
               <Statistic
-                title="Users with Grader Role"
+                title="Course Admins"
+                value={stats.totalCourseAdmins}
+                prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
+                valueStyle={{ color: colors.brandVibrant }}
+              />
+            </Col>
+            <Col xs={12} sm={6}>
+              <Statistic
+                title="Graders"
                 value={stats.totalGraders}
-                prefix={<TeamOutlined style={{ color: '#eb2f96' }} />}
-                valueStyle={{ color: '#eb2f96' }}
+                prefix={<TeamOutlined style={{ color: colors.actionBlue }} />}
+                valueStyle={{ color: colors.actionBlue }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Grading staff</Text>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
+            </Col>
+            <Col xs={12} sm={6}>
               <Statistic
-                title="Sections"
-                value={stats.totalSections}
-                prefix={<TeamOutlined style={{ color: '#faad14' }} />}
-                valueStyle={{ color: '#faad14' }}
+                title="Students"
+                value={stats.totalStudents}
+                prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
+                valueStyle={{ color: colors.brandPrimary }}
               />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Course sections</Text>
-              </div>
-            </Card>
-          </Col>
+            </Col>
+          </Row>
+        </Card>
 
-          <Col xs={24} sm={12} lg={8}>
-            <Card>
-              <Statistic
-                title="Inactive Users"
-                value={stats.totalInactiveUsers}
-                prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
-                valueStyle={{ color: '#8c8c8c' }}
-              />
-              <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">Inactive accounts</Text>
-              </div>
-            </Card>
-          </Col>
-        </Row>
+        {/* ── Tertiary Summary Bar ────────────────────────────────── */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 16,
+            flexWrap: 'wrap',
+            marginBottom: 24,
+            padding: '8px 12px',
+            background: token.colorBgLayout,
+            borderRadius: token.borderRadius,
+          }}
+        >
+          <Text type="secondary">
+            <BookOutlined style={{ marginRight: 4 }} />
+            {stats.totalAssignments.toLocaleString()} assignments
+          </Text>
+          <Text type="secondary">
+            <TeamOutlined style={{ marginRight: 4 }} />
+            {stats.totalSections} sections
+          </Text>
+          <Text type="secondary">
+            <UserOutlined style={{ marginRight: 4 }} />
+            {stats.totalInactiveUsers} inactive users
+          </Text>
+        </div>
 
-        {/* Charts and Tables Row */}
+        {/* ── Charts and Tables Row ──────────────────────────────── */}
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
             <Card title="Top Organizations by Courses" bordered={false}>
@@ -409,6 +417,7 @@ const Dashboard = () => {
                 dataSource={topOrganizations}
                 pagination={false}
                 size="small"
+                rowKey="id"
                 columns={[
                   {
                     title: 'Organization',
@@ -420,7 +429,7 @@ const Dashboard = () => {
                     title: 'Courses',
                     dataIndex: 'courseCount',
                     key: 'courseCount',
-                    width: 100,
+                    width: 80,
                     align: 'center',
                     render: (count: number) => <Tag color="blue">{count}</Tag>,
                   },
@@ -436,6 +445,7 @@ const Dashboard = () => {
                         <Progress
                           percent={Math.round(percent)}
                           size="small"
+                          strokeColor={colors.brandPrimary}
                           aria-label={`Usage for ${record.name}: ${Math.round(percent)}%`}
                         />
                       );
@@ -447,22 +457,9 @@ const Dashboard = () => {
           </Col>
           <Col xs={24} lg={12}>
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              <SystemHealth />
-              <MaintenanceBannerPanel />
+              <SystemHealth compact />
+              <MaintenanceBannerPanel compact />
             </Space>
-          </Col>
-        </Row>
-
-        {/* Quick Actions */}
-        <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
-          <Col span={24}>
-            <Alert
-              message="Platform Summary"
-              description={`${stats.activeCourses} active course${stats.activeCourses !== 1 ? 's' : ''} across ${stats.totalOrganizations} organization${stats.totalOrganizations !== 1 ? 's' : ''}, with ${stats.totalUniqueUsers.toLocaleString()} unique users.`}
-              type="info"
-              showIcon
-              icon={<CheckCircleOutlined />}
-            />
           </Col>
         </Row>
       </div>
@@ -475,7 +472,11 @@ const Dashboard = () => {
         return renderOverview();
       case 'Admins':
         return (
-          <div style={{ padding: '24px' }}>
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader
+              title="Course Administrators"
+              subtitle="All users with course admin roles across the platform."
+            />
             <AdminTable admins={admins} />
           </div>
         );
@@ -483,21 +484,29 @@ const Dashboard = () => {
         return <PendingAdminsTable />;
       case 'Organizations':
         return (
-          <div style={{ padding: '24px' }}>
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader
+              title="Organizations"
+              subtitle={`${organizations.length} organizations on the platform.`}
+            />
             <OrganizationTable organizations={organizations} rosters={rosters} onRefresh={fetchData} />
           </div>
         );
       case 'Courses':
         return (
-          <div style={{ padding: '24px' }}>
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader title="Courses" subtitle={`${courses.length} courses across all organizations.`} />
             <CoursesTable courses={courses} rosters={rosters} organizations={organizations} onRefresh={fetchData} />
           </div>
         );
       case 'Users':
         if (usersLoading) {
           return (
-            <div style={{ padding: '40px 0px', textAlign: 'center' }}>
-              <Spin size="large" tip="Loading users..." aria-label="Loading users" />
+            <div style={{ padding: 24 }}>
+              <AdminPageHeader title="Users" />
+              <Card>
+                <Skeleton active paragraph={{ rows: 8 }} />
+              </Card>
             </div>
           );
         }
@@ -506,25 +515,52 @@ const Dashboard = () => {
         return <ActivityFeed />;
       case 'Deploy Calendar':
         return <DeployCalendar />;
+      case 'System Health':
+        return (
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader title="System Health" subtitle="Real-time infrastructure status and diagnostics." />
+            <SystemHealth />
+          </div>
+        );
+      case 'Banner':
+        return (
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader
+              title="Maintenance Banner"
+              subtitle="Broadcast a maintenance message to all platform users."
+            />
+            <MaintenanceBannerPanel />
+          </div>
+        );
       case 'API':
         return <APIIframe />;
       case 'AI Usage':
         return (
-          <AIUsageDashboard
-            fetchUsage={AIUsageService.getPlatformUsage}
-            title="Platform AI Usage"
-            breakdownLabel="Organization"
-          />
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader
+              title="AI Usage"
+              subtitle="Platform-wide AI token consumption and breakdown by organization."
+            />
+            <AIUsageDashboard
+              fetchUsage={AIUsageService.getPlatformUsage}
+              title="Platform AI Usage"
+              breakdownLabel="Organization"
+            />
+          </div>
         );
+      case 'Prompt Lab':
+        return <PromptLab />;
       default:
-        return null; // Should fall back to overview if needed, but currentTab limits logic
+        return null;
     }
   };
+
+  const pendingCount = 0; // TODO: wire up from API if available
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
-        width={200}
+        width={220}
         style={{
           overflow: 'auto',
           height: '100vh',
@@ -532,9 +568,11 @@ const Dashboard = () => {
           left: 0,
           top: 0,
           bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <div style={{ padding: '16px', textAlign: 'center' }}>
+        <div style={{ padding: '16px 16px 8px', textAlign: 'center' }}>
           <Link to="/">
             <CPLogo cpType="main" />
           </Link>
@@ -542,78 +580,141 @@ const Dashboard = () => {
             level={1}
             style={{
               color: token.colorPrimary,
-              marginTop: '8px',
-              fontWeight: 500,
-              fontSize: '18px',
+              marginTop: 8,
+              fontWeight: 600,
+              fontSize: 15,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
             }}
           >
-            SuperAdmin Console
+            SuperAdmin
           </Typography.Title>
         </div>
 
-        <nav aria-label="SuperAdmin navigation">
+        <Divider style={{ margin: '0 16px', borderColor: 'rgba(255,255,255,0.08)', minWidth: 'auto', width: 'auto' }} />
+
+        <nav aria-label="SuperAdmin navigation" style={{ flex: 1 }}>
           <Menu
             theme="dark"
             mode="inline"
             selectedKeys={[currentTab]}
             onClick={({ key }) => setCurrentTab(key as TabType)}
+            style={{ borderRight: 0 }}
             items={[
+              // ── Platform ──
               {
-                key: 'Overview',
-                icon: <DashboardOutlined />,
-                label: 'Overview',
+                type: 'group',
+                label: 'Platform',
+                children: [
+                  {
+                    key: 'Overview',
+                    icon: <DashboardOutlined />,
+                    label: 'Overview',
+                  },
+                ],
               },
+
+              // ── Management ──
               {
-                key: 'Organizations',
-                icon: <GlobalOutlined />,
-                label: `Organizations (${organizations.length})`,
+                type: 'group',
+                label: 'Management',
+                children: [
+                  {
+                    key: 'Organizations',
+                    icon: <GlobalOutlined />,
+                    label: `Organizations (${organizations.length})`,
+                  },
+                  {
+                    key: 'Courses',
+                    icon: <BookOutlined />,
+                    label: `Courses (${courses.length})`,
+                  },
+                  {
+                    key: 'Users',
+                    icon: <UserOutlined />,
+                    label: users.length ? `Users (${users.length})` : 'Users',
+                  },
+                  {
+                    key: 'Admins',
+                    icon: <TeamOutlined />,
+                    label: `Admins (${admins.length})`,
+                  },
+                  {
+                    key: 'Pending Admins',
+                    icon: <UserAddOutlined />,
+                    label: (
+                      <span>
+                        Pending Admins
+                        {pendingCount > 0 && <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} />}
+                      </span>
+                    ),
+                  },
+                ],
               },
+
+              // ── Operations ──
               {
-                key: 'Courses',
-                icon: <BookOutlined />,
-                label: `Courses (${courses.length})`,
+                type: 'group',
+                label: 'Operations',
+                children: [
+                  {
+                    key: 'Activity',
+                    icon: <RiseOutlined />,
+                    label: 'Activity',
+                  },
+                  {
+                    key: 'Deploy Calendar',
+                    icon: <CalendarOutlined />,
+                    label: 'Deploy Calendar',
+                  },
+                  {
+                    key: 'System Health',
+                    icon: <HeartOutlined />,
+                    label: 'System Health',
+                  },
+                  {
+                    key: 'Banner',
+                    icon: <NotificationOutlined />,
+                    label: 'Banner',
+                  },
+                ],
               },
+
+              // ── Developer ──
               {
-                key: 'Admins',
-                icon: <TeamOutlined />,
-                label: `Admins (${admins.length})`,
-              },
-              {
-                key: 'Pending Admins',
-                icon: <UserAddOutlined />,
-                label: 'Pending Admins',
-              },
-              {
-                key: 'Users',
-                icon: <UserOutlined />,
-                label: `Users (${users.length})`,
-              },
-              {
-                key: 'Activity',
-                icon: <RiseOutlined />,
-                label: 'Activity',
-              },
-              {
-                key: 'Deploy Calendar',
-                icon: <CalendarOutlined />,
-                label: 'Deploy Calendar',
-              },
-              {
-                key: 'API',
-                icon: <ApiOutlined />,
-                label: 'API',
-              },
-              {
-                key: 'AI Usage',
-                icon: <RobotOutlined />,
-                label: 'AI Usage',
+                type: 'group',
+                label: 'Developer',
+                children: [
+                  {
+                    key: 'API',
+                    icon: <ApiOutlined />,
+                    label: 'API',
+                  },
+                  {
+                    key: 'AI Usage',
+                    icon: <RobotOutlined />,
+                    label: 'AI Usage',
+                  },
+                  {
+                    key: 'Prompt Lab',
+                    icon: <ExperimentOutlined />,
+                    label: 'Prompt Lab',
+                  },
+                ],
               },
             ]}
           />
         </nav>
+
+        {/* Version badge */}
+        <div style={{ padding: '8px 16px 12px', textAlign: 'center' }}>
+          <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+            {process.env.REACT_APP_VERSION || 'dev'}
+          </Text>
+        </div>
       </Sider>
-      <Layout style={{ height: '100vh', overflowY: 'auto', background: '#f0f2f5', marginLeft: 200 }}>
-        <Content role="main" style={{ margin: '24px 16px 0', overflow: 'initial', paddingBottom: '100px' }}>
+      <Layout style={{ height: '100vh', overflowY: 'auto', background: token.colorBgLayout, marginLeft: 220 }}>
+        <Content role="main" style={{ margin: '0', overflow: 'initial', paddingBottom: 64 }}>
           {renderContent()}
         </Content>
       </Layout>

@@ -286,7 +286,7 @@ describe.sequential('Expanded Accessibility Audit', () => {
   it('should have no violations on Super Admin Dashboard', async () => {
     const { container } = await renderWithRouter(<Dashboard />);
 
-    await waitFor(() => expect(container.textContent).toContain('SuperAdmin Console'), { timeout: 10000 });
+    await waitFor(() => expect(container.textContent).toContain('SuperAdmin'), { timeout: 10000 });
 
     const results = await runAxe(container);
     if (results.violations.length > 0) {

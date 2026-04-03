@@ -163,6 +163,7 @@ const getInitialState = (): ICodeConsoleState => ({
   hideGrades: false,
   executionResults: {},
   aiEnabled: false,
+  aiFeatureStatus: {},
   wordWrap: LOCAL_SETTINGS.wordWrap.getter(),
   isEditMode: false,
   temporaryFileContent: {},

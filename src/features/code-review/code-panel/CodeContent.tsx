@@ -36,7 +36,7 @@ const csvGrammar = {
     // Boolean values
     { className: 'literal', begin: /\b(?:true|false|yes|no|null|none|na|n\/a)\b/i },
     // Dates (YYYY-MM-DD, MM/DD/YYYY, etc.)
-    { className: 'number', begin: /\b\d{4}[\-/]\d{1,2}[\-/]\d{1,2}\b/ },
+    { className: 'number', begin: /\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b/ },
     // Numbers (integers, floats, negative, scientific notation)
     { className: 'number', begin: /-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/ },
     // Column delimiter

@@ -4,6 +4,7 @@ import { Table, Tabs, Tag, Button, Card, Typography, Input, Select, Space, DateP
 import { ReloadOutlined, SearchOutlined, ClearOutlined, AuditOutlined, BarChartOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
+import AdminPageHeader from './AdminPageHeader';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 
@@ -59,6 +60,25 @@ const DIAGNOSTIC_CATEGORIES = new Set([
   'Data Issue',
   'Other',
 ]);
+
+// Row tinting for event categories
+const ERROR_CATEGORIES = new Set([
+  'UI Error',
+  'API Error',
+  'Webhook Error',
+  'Webhook Connection Error',
+  'Email Failed',
+  'Late Submission Error',
+  'Codepost Registration Error',
+  'Admin New Request Error',
+]);
+const AUDIT_HIGHLIGHT = new Set(['Become User', 'Generate One-Time Token', 'One-Time Token Generated']);
+
+const getRowClassName = (record: Record<string, any>) => {
+  if (ERROR_CATEGORIES.has(record.category)) return 'admin-row-error';
+  if (AUDIT_HIGHLIGHT.has(record.category)) return 'admin-row-audit';
+  return '';
+};
 
 const ActivityFeed: React.FC = () => {
   type EventLogType = SystemActivityResponse['results'][number];
@@ -486,6 +506,7 @@ const ActivityFeed: React.FC = () => {
         columns={columns}
         rowKey="id"
         loading={loading}
+        rowClassName={getRowClassName}
         pagination={{
           current: page,
           total: total,
@@ -509,11 +530,11 @@ const ActivityFeed: React.FC = () => {
   );
 
   return (
-    <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
-      <Card
-        title="System Logs"
-        bodyStyle={{ padding: 0 }}
-        extra={
+    <div style={{ padding: 24 }}>
+      <AdminPageHeader
+        title="Activity & Audit Logs"
+        subtitle="System-level events, errors, and authentication audit trail."
+        actions={
           <Space>
             {hasActiveFilters && (
               <Button icon={<ClearOutlined />} onClick={handleClearFilters} size="small">
@@ -528,7 +549,8 @@ const ActivityFeed: React.FC = () => {
             </Button>
           </Space>
         }
-      >
+      />
+      <Card bodyStyle={{ padding: 0 }}>
         <Tabs
           activeKey={activeTab}
           onChange={handleTabChange}

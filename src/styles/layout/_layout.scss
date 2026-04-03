@@ -278,6 +278,30 @@
   }
 }
 
+// ─── SuperAdmin Console Row Tinting ─────────────────────────────────────────
+
+.admin-row-error {
+  background-color: rgba(255, 77, 79, 0.04);
+}
+
+.admin-row-audit {
+  background-color: rgba(24, 144, 255, 0.04);
+}
+
+.ant-table-row-archived {
+  opacity: 0.65;
+}
+
+// SuperAdmin sidebar group labels
+.ant-layout-sider .ant-menu-item-group-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.35);
+  padding-top: 16px;
+  padding-bottom: 4px;
+}
+
 #Code-Header {
   .ant-collapse tr {
     line-height: 5px;

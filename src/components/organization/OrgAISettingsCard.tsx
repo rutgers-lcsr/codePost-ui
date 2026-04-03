@@ -21,6 +21,7 @@ import type { AIProvider } from '../../utils/aiService';
 import { AiCoursePolicyEnum, PatchedOrganizationAISettingsUpdateAiProviderEnum } from '../../api-client';
 import type { AIModel } from '../../api-client';
 import { AIUsageService } from '../../services/aiUsage';
+import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../services/aiUsage';
 import type { Course } from '../../api-client';
 
 const { Text } = Typography;
@@ -50,6 +51,11 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [customTokenRates, setCustomTokenRates] = React.useState<CustomTokenRates>({});
   const [defaultTokenRates, setDefaultTokenRates] = React.useState<DefaultTokenRates>({});
 
+  // Per-feature toggles
+  const [featureRegistry, setFeatureRegistry] = React.useState<AIFeatureEntry[]>([]);
+  const [featureConfig, setFeatureConfig] = React.useState<AIFeatureConfig>({});
+  const [featureStatus, setFeatureStatus] = React.useState<AIFeatureStatus>({});
+
   // Model dropdown
   const [modelOptions, setModelOptions] = React.useState<{ label: string; value: string }[]>([]);
   const [loadingModels, setLoadingModels] = React.useState(false);
@@ -61,7 +67,11 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   React.useEffect(() => {
     const load = async () => {
       try {
-        const s = await AIUsageService.getOrgAISettings(orgId);
+        const [s, features] = await Promise.all([
+          AIUsageService.getOrgAISettings(orgId),
+          AIUsageService.listAIFeatures(),
+        ]);
+        const raw = s as unknown as Record<string, unknown>;
         setProvider((s.aiProvider as AIProvider | undefined) ?? undefined);
         setBaseUrl(s.aiBaseUrl ?? '');
         setModel(s.aiModel ?? '');
@@ -73,6 +83,9 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         setApiKeyHint(s.apiKeyHint ?? null);
         setCustomTokenRates((s.aiTokenRates as CustomTokenRates) ?? {});
         setDefaultTokenRates((s.defaultTokenRates as DefaultTokenRates) ?? {});
+        setFeatureRegistry(features);
+        setFeatureConfig(((raw.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
+        setFeatureStatus(((raw.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
       } catch {
         message.error('Failed to load organization AI settings');
       } finally {
@@ -141,8 +154,9 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         aiCoursePolicy: coursePolicy,
         aiEnabledCourseIds: coursePolicy === AiCoursePolicyEnum.Selected ? enabledCourseIds : [],
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
+        aiFeatureConfig: featureConfig,
         ...(apiKey ? { aiApiKey: apiKey } : {}),
-      });
+      } as Parameters<typeof AIUsageService.updateOrgAISettings>[1]);
       setApiKey('');
       setIsDirty(false);
       message.success('Organization AI settings saved!');
@@ -340,29 +354,51 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                 </Flex>
               </Card>
 
-              <Card
-                size="small"
-                style={{
-                  background: !aiCommentsDisabled ? '#f6ffed' : '#fffbe6',
-                  borderColor: !aiCommentsDisabled ? '#b7eb8f' : '#ffe58f',
-                }}
-              >
-                <Flex justify="space-between" align="center">
-                  <Flex vertical>
-                    <Text strong>Comment Generation Default</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Whether AI comment generation is enabled by default for courses using the org key.
-                    </Text>
-                  </Flex>
-                  <Switch
-                    checked={!aiCommentsDisabled}
-                    onChange={(checked) => {
-                      setAiCommentsDisabled(!checked);
-                      mark();
-                    }}
-                  />
-                </Flex>
-              </Card>
+              {!aiDisabled &&
+                featureRegistry.map((feature) => {
+                  const isEnabled = featureConfig[feature.key] ?? featureStatus[feature.key] ?? feature.defaultEnabled;
+                  const forcedOn =
+                    !isEnabled &&
+                    featureRegistry.some(
+                      (other) =>
+                        other.requires.includes(feature.key) &&
+                        (featureConfig[other.key] ?? featureStatus[other.key] ?? other.defaultEnabled),
+                    );
+                  const effectiveEnabled = isEnabled || forcedOn;
+                  return (
+                    <Card
+                      key={feature.key}
+                      size="small"
+                      style={{
+                        marginTop: 4,
+                        background: effectiveEnabled ? '#f6ffed' : '#fffbe6',
+                        borderColor: effectiveEnabled ? '#b7eb8f' : '#ffe58f',
+                      }}
+                    >
+                      <Flex justify="space-between" align="center">
+                        <Flex vertical>
+                          <Text strong>{feature.label} Default</Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {feature.description} Courses can override this setting.
+                          </Text>
+                          {forcedOn && (
+                            <Text type="secondary" style={{ fontSize: 11, fontStyle: 'italic' }}>
+                              Required by other enabled features
+                            </Text>
+                          )}
+                        </Flex>
+                        <Switch
+                          checked={effectiveEnabled}
+                          disabled={forcedOn}
+                          onChange={(checked) => {
+                            setFeatureConfig((prev) => ({ ...prev, [feature.key]: checked }));
+                            mark();
+                          }}
+                        />
+                      </Flex>
+                    </Card>
+                  );
+                })}
             </>
           )}
 

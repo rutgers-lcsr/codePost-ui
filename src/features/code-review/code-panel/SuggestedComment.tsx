@@ -5,6 +5,7 @@ import { message, Tag } from 'antd';
 import BlockMarkdown from '../../../components/core/BlockMarkdown';
 import CPButton from '../../../components/core/CPButton';
 import CPTooltip from '../../../components/core/CPTooltip';
+import AIFeedbackWidget from '../../../components/core/AIFeedbackWidget';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import type { RubricCategoryType, SuggestedCommentType } from '../../../types/models';
 import type { RubricComment } from '../../../api-client';
@@ -23,6 +24,12 @@ interface SuggestedCommentProps {
   onReject: (suggestion: SuggestedCommentType) => Promise<void>;
   rubricCategories?: RubricCategoryType[];
   allRubricComments?: RubricComment[];
+  /** Prompt variant ID that generated this suggestion (for feedback tracking) */
+  promptVariantId?: number;
+  /** Active experiment ID if this was generated during an A/B test */
+  experimentId?: number;
+  /** Whether the assignment uses a custom AI system prompt */
+  isCustomContext?: boolean;
 }
 
 const SuggestedComment: React.FC<SuggestedCommentProps> = ({
@@ -32,6 +39,9 @@ const SuggestedComment: React.FC<SuggestedCommentProps> = ({
   onReject,
   rubricCategories,
   allRubricComments,
+  promptVariantId,
+  experimentId,
+  isCustomContext,
 }) => {
   const { consoleTheme } = useContext(ConsoleThemeContext);
   const { setHoveredCommentId } = useCommentHighlightStore();
@@ -254,10 +264,21 @@ const SuggestedComment: React.FC<SuggestedCommentProps> = ({
         style={{
           display: 'flex',
           gap: 6,
-          justifyContent: 'flex-end',
+          alignItems: 'center',
           padding: '4px 10px 8px',
         }}
       >
+        {promptVariantId != null && (
+          <AIFeedbackWidget
+            promptType="suggested_comments"
+            variantId={promptVariantId}
+            aiOutput={suggestion.text ?? ''}
+            experimentId={experimentId}
+            isCustomContext={isCustomContext}
+            compact
+          />
+        )}
+        <div style={{ flex: 1 }} />
         <CPTooltip title="Dismiss this suggestion">
           <CPButton
             size="small"

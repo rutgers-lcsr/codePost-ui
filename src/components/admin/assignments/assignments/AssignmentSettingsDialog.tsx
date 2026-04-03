@@ -39,6 +39,7 @@ import AssignmentFilesForm from './AssignmentFilesForm';
 import { EnvironmentShellWidget } from './EnvironmentShellWidget';
 import { assignmentFilesApi, assignmentsApi } from '../../../../api-client/clients';
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
+import { getCourseAISettings } from '../../../../utils/aiService';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Space } from 'antd';
 
@@ -336,8 +337,29 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const [explanationPreview, setExplanationPreview] = React.useState(false);
   const [explanation, setExplanation] = React.useState(assignment.explanation);
   const [isGeneratingDescription, setIsGeneratingDescription] = React.useState(false);
+  const [aiDescriptionEnabled, setAiDescriptionEnabled] = React.useState(true);
   const hasAssignmentFiles = templates.length > 0;
   const environmentId = assignment.environment ?? null;
+
+  // Check if assignment_description feature is enabled
+  React.useEffect(() => {
+    if (!open || !assignment.course) return;
+    let cancelled = false;
+    getCourseAISettings(assignment.course)
+      .then((settings) => {
+        if (cancelled) return;
+        const featureStatus = (settings as unknown as Record<string, unknown>).aiFeatures as
+          | Record<string, boolean>
+          | undefined;
+        setAiDescriptionEnabled(Boolean(settings.aiEnabled) && featureStatus?.assignment_description !== false);
+      })
+      .catch(() => {
+        if (!cancelled) setAiDescriptionEnabled(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, assignment.course]);
 
   // Watch form field values for conditional rendering
   const studentUploadEnabled = Form.useWatch('allowStudentUpload', form);
@@ -1069,6 +1091,7 @@ Context:
                       icon={<RobotOutlined />}
                       loading={isGeneratingDescription}
                       onClick={handleGenerateDescription}
+                      disabled={!aiDescriptionEnabled}
                     >
                       {isGeneratingDescription ? 'Generating...' : 'Generate from Assignment Materials'}
                     </Button>

@@ -14,6 +14,7 @@ import CPButton from '../../core/CPButton';
 import TokenRateEditor from '../../core/TokenRateEditor';
 import type { CustomTokenRates, DefaultTokenRates } from '../../core/TokenRateEditor';
 import { AIUsageService } from '../../../services/aiUsage';
+import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../services/aiUsage';
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
 import type { AIModel } from '../../../api-client';
@@ -35,7 +36,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   // Course-own settings
   const [aiEnabled, setAiEnabled] = React.useState(false);
   const [aiDisabled, setAiDisabled] = React.useState(false);
-  const [aiCommentsEnabled, setAiCommentsEnabled] = React.useState(false);
   const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
   const [isConfigured, setIsConfigured] = React.useState(false);
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
@@ -48,6 +48,11 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [customTokenRates, setCustomTokenRates] = React.useState<CustomTokenRates>({});
   const [defaultTokenRates, setDefaultTokenRates] = React.useState<DefaultTokenRates>({});
 
+  // Per-feature toggles
+  const [featureRegistry, setFeatureRegistry] = React.useState<AIFeatureEntry[]>([]);
+  const [featureConfig, setFeatureConfig] = React.useState<AIFeatureConfig>({});
+  const [featureStatus, setFeatureStatus] = React.useState<AIFeatureStatus>({});
+
   // Model dropdown
   const [modelOptions, setModelOptions] = React.useState<{ label: string; value: string }[]>([]);
   const [loadingModels, setLoadingModels] = React.useState(false);
@@ -55,12 +60,15 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   React.useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const settings = await AIUsageService.getCourseAISettings(courseId);
+        const [settings, features] = await Promise.all([
+          AIUsageService.getCourseAISettings(courseId),
+          AIUsageService.listAIFeatures(),
+        ]);
+        const s = settings as unknown as Record<string, unknown>;
         setOrgAiAvailable(settings.orgAiAvailable ?? false);
         setAiUseOwnSettings(settings.aiUseOwnSettings ?? false);
         setAiEnabled(settings.aiEnabled);
         setAiDisabled(settings.aiDisabled || false);
-        setAiCommentsEnabled(settings.aiCommentsEnabled ?? false);
         setAiCommentsDisabled(settings.aiCommentsDisabled || false);
         setIsConfigured(!!settings.aiProvider);
         setProvider((settings.aiProvider as AIProvider | undefined) || undefined);
@@ -70,6 +78,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setApiKeyHint(settings.apiKeyHint ?? null);
         setCustomTokenRates((settings.aiTokenRates as CustomTokenRates) ?? {});
         setDefaultTokenRates((settings.defaultTokenRates as DefaultTokenRates) ?? {});
+        setFeatureRegistry(features);
+        setFeatureConfig(((s.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
+        setFeatureStatus(((s.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
       } catch (error) {
         console.error('Failed to fetch AI settings:', error);
       } finally {
@@ -136,15 +147,18 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         aiDisabled,
         aiCommentsDisabled,
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
+        aiFeatureConfig: featureConfig,
         ...(apiKey ? { aiApiKey: apiKey } : {}),
-      });
+      } as Parameters<typeof AIUsageService.updateCourseAISettings>[1]);
+      const r = result as unknown as Record<string, unknown>;
       setAiEnabled(result.aiEnabled);
       setAiDisabled(result.aiDisabled || false);
-      setAiCommentsEnabled(result.aiCommentsEnabled ?? false);
       setAiCommentsDisabled(result.aiCommentsDisabled || false);
       setIsConfigured(!!result.aiProvider);
       setAiUseOwnSettings(result.aiUseOwnSettings ?? false);
       setHasApiKey(result.hasApiKey ?? false);
+      setFeatureConfig(((r.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
+      setFeatureStatus(((r.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
       setApiKey('');
       setIsDirty(false);
       message.success('AI settings saved!');
@@ -193,8 +207,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       ) : (
         <Flex vertical gap={16}>
           <Text type="secondary" style={{ marginBottom: 8 }}>
-            Enable AI for this course. The global toggle controls all AI features (including test/script generation),
-            while comment generation can be toggled separately for the code console.
+            Enable AI for this course. The global toggle controls all AI features, and each feature can be toggled
+            individually below.
           </Text>
 
           {/* ── Org AI banner ── */}
@@ -386,42 +400,60 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                     checked={!aiDisabled}
                     onChange={(checked) => {
                       setAiDisabled(!checked);
-                      setAiCommentsEnabled(checked && !aiCommentsDisabled);
                       mark();
                     }}
                   />
                 </Flex>
               </Card>
 
-              <Card
-                size="small"
-                style={{
-                  marginTop: 8,
-                  background: aiCommentsEnabled ? '#f6ffed' : '#fffbe6',
-                  borderColor: aiCommentsEnabled ? '#b7eb8f' : '#ffe58f',
-                }}
-              >
-                <Flex justify="space-between" align="center">
-                  <Flex vertical>
-                    <Text strong style={{ color: aiCommentsEnabled ? undefined : '#ad6800' }}>
-                      {aiCommentsEnabled ? 'Comment Generation Enabled' : 'Comment Generation Disabled'}
-                    </Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {aiDisabled
-                        ? 'Global AI is off, so comment generation is currently unavailable.'
-                        : 'Controls the "Generate with AI" button in the code console.'}
-                    </Text>
-                  </Flex>
-                  <Switch
-                    checked={!aiCommentsDisabled}
-                    onChange={(checked) => {
-                      setAiCommentsDisabled(!checked);
-                      setAiCommentsEnabled(checked && !aiDisabled);
-                      mark();
-                    }}
-                  />
-                </Flex>
-              </Card>
+              {!aiDisabled &&
+                featureRegistry.map((feature) => {
+                  const isEnabled = featureConfig[feature.key] ?? featureStatus[feature.key] ?? feature.defaultEnabled;
+                  // A feature is forced on if another enabled feature requires it
+                  const forcedOn =
+                    !isEnabled &&
+                    featureRegistry.some(
+                      (other) =>
+                        other.requires.includes(feature.key) &&
+                        (featureConfig[other.key] ?? featureStatus[other.key] ?? other.defaultEnabled),
+                    );
+                  const effectiveEnabled = isEnabled || forcedOn;
+                  return (
+                    <Card
+                      key={feature.key}
+                      size="small"
+                      style={{
+                        marginTop: 4,
+                        background: effectiveEnabled ? '#f6ffed' : '#fffbe6',
+                        borderColor: effectiveEnabled ? '#b7eb8f' : '#ffe58f',
+                      }}
+                    >
+                      <Flex justify="space-between" align="center">
+                        <Flex vertical>
+                          <Text strong style={{ color: effectiveEnabled ? undefined : '#ad6800' }}>
+                            {feature.label}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {feature.description}
+                          </Text>
+                          {forcedOn && (
+                            <Text type="secondary" style={{ fontSize: 11, fontStyle: 'italic' }}>
+                              Required by other enabled features
+                            </Text>
+                          )}
+                        </Flex>
+                        <Switch
+                          checked={effectiveEnabled}
+                          disabled={forcedOn}
+                          onChange={(checked) => {
+                            setFeatureConfig((prev) => ({ ...prev, [feature.key]: checked }));
+                            mark();
+                          }}
+                        />
+                      </Flex>
+                    </Card>
+                  );
+                })}
             </>
           )}
 

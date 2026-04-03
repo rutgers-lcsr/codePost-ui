@@ -43,6 +43,12 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   onRejectSuggestion?: (suggestion: SuggestedCommentType) => Promise<void>;
   onGenerateFileSuggestions?: () => Promise<void>;
   isGeneratingFileSuggestions?: boolean;
+  /** Metadata for tracking experiment/variant on suggestions */
+  suggestionsMeta?: {
+    promptVariantId?: number;
+    experimentId?: number;
+    isCustomContext?: boolean;
+  };
 }
 
 interface ICommentsEditProps {
@@ -358,6 +364,9 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
           onReject={props.onRejectSuggestion!}
           rubricCategories={props.rubricCategories}
           allRubricComments={props.allRubricComments}
+          promptVariantId={props.suggestionsMeta?.promptVariantId}
+          experimentId={props.suggestionsMeta?.experimentId}
+          isCustomContext={props.suggestionsMeta?.isCustomContext}
         />
       );
     }
@@ -464,8 +473,9 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
       </div>
     ) : null;
 
+  const hasSuggestions = (props.suggestedComments?.length ?? 0) > 0;
   const highlightMessage =
-    !props.readOnly && props.comments.length === 0 ? (
+    !props.readOnly && props.comments.length === 0 && !hasSuggestions ? (
       <div
         style={{
           top: '40vh',

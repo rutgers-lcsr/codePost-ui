@@ -10,7 +10,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Badge, Button, Card, Col, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 
@@ -20,11 +20,11 @@ import { colors } from '../../theme/colors';
 import type { RosterType, UserType } from '../../types/models';
 import { Organization } from '../../api-client';
 
-import { PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { EditOutlined } from '@ant-design/icons';
+import AdminPageHeader from './AdminPageHeader';
+import AdminTableToolbar from './AdminTableToolbar';
 import NewUserDialog from './NewUserDialog';
 import EditUserDialog from './EditUserDialog';
-
-const { Search } = Input;
 
 const isNonEmptyEmail = (email: string | null | undefined): email is string => Boolean(email);
 
@@ -239,7 +239,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
       sorter: (a, b) => a.email.localeCompare(b.email),
       render: (email: string, record: UserData) => (
         <Space>
-          <UserOutlined style={{ color: record.isActive ? '#52c41a' : '#faad14' }} />
+          <UserOutlined style={{ color: record.isActive ? colors.actionGreen : colors.actionYellow }} />
           <span style={{ fontWeight: 500 }}>{email}</span>
         </Space>
       ),
@@ -307,9 +307,9 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
       sorter: (a, b) => a.totalCourses - b.totalCourses,
       render: (count: number, record: UserData) => (
         <Space>
-          <BookOutlined style={{ color: '#52c41a' }} />
+          <BookOutlined style={{ color: colors.actionGreen }} />
           <Tooltip title={Array.from(record.courses).join(', ')}>
-            <Badge count={count} showZero style={{ backgroundColor: '#52c41a' }} />
+            <Badge count={count} showZero style={{ backgroundColor: colors.actionGreen }} />
           </Tooltip>
         </Space>
       ),
@@ -351,96 +351,78 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
   ];
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Summary Statistics */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+    <div style={{ padding: 24 }}>
+      <AdminPageHeader title="Users" subtitle={`${stats.totalUsers} users across the platform.`} />
+
+      {/* Stats */}
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Row gutter={[24, 16]}>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
-              title="Total Users"
+              title="Total"
               value={stats.totalUsers}
               valueStyle={{ color: colors.actionBlue }}
               prefix={<UserOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
-              title="Active Users"
+              title="Active"
               value={stats.activeUsers}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: colors.actionGreen }}
               prefix={<CheckCircleOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
-              title="Inactive Users"
+              title="Inactive"
               value={stats.inactiveUsers}
-              valueStyle={{ color: '#faad14' }}
+              valueStyle={{ color: colors.actionYellow }}
               prefix={<CloseCircleOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
               title="Students"
               value={stats.students}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: colors.brandPrimary }}
               prefix={<UserOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
               title="Graders"
               value={stats.graders}
               valueStyle={{ color: colors.actionBlue }}
               prefix={<TeamOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
               title="Course Admins"
               value={stats.courseAdmins}
-              valueStyle={{ color: '#13c2c2' }}
+              valueStyle={{ color: colors.brandVibrant }}
               prefix={<TeamOutlined />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          </Col>
+          <Col xs={12} sm={6} lg={3}>
             <Statistic
               title="Platform Admins"
               value={stats.codePostAdmins}
-              valueStyle={{ color: '#f5222d' }}
+              valueStyle={{ color: colors.actionRed }}
               prefix={<CrownOutlined />}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
-      {/* Search and Create */}
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <Search
-          placeholder="Search by email, organization, course, or role..."
-          allowClear
-          enterButton
-          size="large"
-          style={{ maxWidth: 600 }}
-          onChange={(e) => setSearchText(e.target.value)}
-          onSearch={setSearchText}
-        />
-        <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setShowCreateDialog(true)}>
-          Create User
-        </Button>
-      </div>
+      <AdminTableToolbar
+        searchPlaceholder="Search by email, organization, course, or role…"
+        searchValue={searchText}
+        onSearch={setSearchText}
+        createLabel="Create User"
+        onCreate={() => setShowCreateDialog(true)}
+      />
 
       {/* Table */}
       <Table

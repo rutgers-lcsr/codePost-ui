@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { organizationsApi, coursesApi, systemApi } from '../api-client/clients';
+import { organizationsApi, coursesApi, systemApi, apiClientConfig } from '../api-client/clients';
 import type {
   AIUsageSummary,
   AIProviderModelsList,
@@ -14,8 +14,24 @@ import {
   AiUsageRetrieveGranularityEnum as SystemGranularityEnum,
   AiModelsRetrieveProviderEnum,
 } from '../api-client/apis/SystemApi';
+import { getAuthToken } from '../utils/auth';
 
 type Granularity = 'hourly' | 'daily' | 'monthly';
+
+/** A registered AI feature from the /aiFeatures/ endpoint. */
+export interface AIFeatureEntry {
+  key: string;
+  label: string;
+  description: string;
+  defaultEnabled: boolean;
+  requires: string[];
+}
+
+/** Per-feature enabled/disabled overrides. Keys are feature keys, values are booleans. */
+export type AIFeatureConfig = Record<string, boolean>;
+
+/** Resolved per-feature status (read-only, computed by server). */
+export type AIFeatureStatus = Record<string, boolean>;
 
 interface UsageQueryParams {
   granularity?: Granularity;
@@ -24,6 +40,19 @@ interface UsageQueryParams {
 }
 
 export class AIUsageService {
+  // --- AI Feature Registry ---
+
+  /** Fetch the list of registered AI features from /aiFeatures/. */
+  public static listAIFeatures = async (): Promise<AIFeatureEntry[]> => {
+    const basePath = apiClientConfig.basePath ?? '';
+    const token = getAuthToken();
+    const response = await fetch(`${basePath}/aiFeatures/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to fetch AI features');
+    return response.json();
+  };
+
   // --- Organization AI Settings ---
 
   public static getOrgAISettings = (orgId: number): Promise<OrganizationAISettings> =>

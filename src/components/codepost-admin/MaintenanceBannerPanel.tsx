@@ -45,7 +45,7 @@ function toDraft(data: MaintenanceBannerResponse): DraftBanner {
   };
 }
 
-const MaintenanceBannerPanel: React.FC = () => {
+const MaintenanceBannerPanel: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const [saved, setSaved] = useState<MaintenanceBannerResponse | null>(null);
   const [draft, setDraft] = useState<DraftBanner>({
     active: false,
@@ -75,6 +75,30 @@ const MaintenanceBannerPanel: React.FC = () => {
   useEffect(() => {
     fetchBanner();
   }, []);
+
+  // ── Compact mode: summary row only ──────────────────────────────────────
+  if (compact) {
+    return (
+      <Card size="small">
+        <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+          <Space>
+            <NotificationOutlined />
+            <Text strong style={{ fontSize: 13 }}>Banner</Text>
+            {saved?.active ? (
+              <Tag color="green">Active</Tag>
+            ) : (
+              <Tag color="default">Inactive</Tag>
+            )}
+          </Space>
+          {saved?.active && saved.message && (
+            <Text type="secondary" ellipsis style={{ maxWidth: 200, fontSize: 12 }}>
+              {saved.message}
+            </Text>
+          )}
+        </Space>
+      </Card>
+    );
+  }
 
   const handleSave = async () => {
     setSaving(true);

@@ -77,7 +77,10 @@ export const TestCreateModal = (props: IProps) => {
         }
 
         const aiSettings = await getCourseAISettings(courseId);
-        if (isMounted) setAiEnabled(Boolean(aiSettings.aiEnabled));
+        const featureStatus = (aiSettings as unknown as Record<string, unknown>).aiFeatures as
+          | Record<string, boolean>
+          | undefined;
+        if (isMounted) setAiEnabled(Boolean(aiSettings.aiEnabled) && featureStatus?.test_generation !== false);
       } catch {
         if (isMounted) setAiEnabled(false);
       }

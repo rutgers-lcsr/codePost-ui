@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { BookOutlined, GlobalOutlined, LoginOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Input, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Button, Card, Col, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 import groupBy from 'lodash/groupBy';
@@ -9,9 +9,8 @@ import { colors } from '../../theme/colors';
 import { Organization } from '../../api-client';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
+import AdminTableToolbar from './AdminTableToolbar';
 import { AdminData } from './Dashboard';
-
-const { Search } = Input;
 
 interface AdminTableProps {
   admins: AdminData[];
@@ -30,7 +29,7 @@ const columns: ColumnsType<GroupedAdminData> = [
     key: 'email',
     render: (email: string) => (
       <Space>
-        <UserOutlined style={{ color: '#722ed1' }} />
+        <UserOutlined style={{ color: colors.brandAccent }} />
         <strong>{email}</strong>
       </Space>
     ),
@@ -65,7 +64,7 @@ const columns: ColumnsType<GroupedAdminData> = [
         <Space direction="vertical" size={1}>
           {courses.map((c, i) => (
             <Space key={i} style={{ fontSize: '12px' }}>
-              <BookOutlined style={{ color: '#52c41a', fontSize: '10px' }} />
+              <BookOutlined style={{ color: colors.actionGreen, fontSize: '10px' }} />
               <span>{c.name}</span>
               <Tag color="green" style={{ margin: 0, fontSize: '10px', lineHeight: '18px' }}>
                 {c.period}
@@ -187,53 +186,44 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   const stats = getStats();
 
   return (
-    <Card title="Course Administrators" style={{ width: '100%' }}>
-      <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+    <>
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Row gutter={[24, 16]}>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Course Admins"
               value={stats.totalAdmins}
-              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+              prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Organizations"
               value={stats.totalOrganizations}
               prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Unique Courses"
               value={stats.totalUniqueCourses}
-              prefix={<BookOutlined style={{ color: '#52c41a' }} />}
+              prefix={<BookOutlined style={{ color: colors.actionGreen }} />}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card size="small">
+          </Col>
+          <Col xs={12} sm={6}>
             <Statistic
               title="Admin-Course Links"
               value={stats.totalAdminCourseLinks}
-              prefix={<TeamOutlined style={{ color: '#13c2c2' }} />}
+              prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
-      <Search
-        placeholder="Search by email, course, or organization..."
+      <AdminTableToolbar
+        searchPlaceholder="Search by email, course, or organization…"
+        searchValue={searchValue}
         onSearch={setSearchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-        enterButton
-        allowClear
-        style={{ width: '100%', maxWidth: 600, marginBottom: 16 }}
       />
 
       <Table
@@ -251,7 +241,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         }}
         scroll={{ x: 'max-content' }}
       />
-    </Card>
+    </>
   );
 };
 

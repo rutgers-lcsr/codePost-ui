@@ -130,7 +130,12 @@ const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check }) => {
 
 // ─── main component ───────────────────────────────────────────────────────────
 
-const SystemHealth: React.FC = () => {
+interface SystemHealthProps {
+  /** Show a compact single-row summary instead of the full card. */
+  compact?: boolean;
+}
+
+const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false }) => {
   const [health, setHealth] = useState<SystemHealthResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -167,6 +172,42 @@ const SystemHealth: React.FC = () => {
   }, [checkHealth, refreshInterval]);
 
   const overall = health ? OVERALL_CONFIG[health.overall] : null;
+
+  // ── Compact mode: single-row status indicator ──────────────────────────────
+  if (compact) {
+    const warningCount = health
+      ? [health.database, health.celery, health.cache, health.migrations, health.disk].filter(
+          (c) => c && (c as HealthCheck).status !== StatusDfeEnum.Ok,
+        ).length
+      : 0;
+
+    return (
+      <Card size="small">
+        <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+          <Space>
+            {overall ? (
+              <Badge status={overall.badge} />
+            ) : (
+              <Badge status="processing" />
+            )}
+            <Text strong style={{ fontSize: 13 }}>
+              {overall ? overall.text : 'Checking…'}
+            </Text>
+            {warningCount > 0 && (
+              <Tag color="orange" style={{ fontSize: 11 }}>
+                {warningCount} issue{warningCount !== 1 ? 's' : ''}
+              </Tag>
+            )}
+          </Space>
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {lastUpdated ? lastUpdated.toLocaleTimeString() : ''}
+          </Text>
+        </Space>
+      </Card>
+    );
+  }
+
+  // ── Full mode ────────────────────────────────────────────────────────────
 
   return (
     <Card
