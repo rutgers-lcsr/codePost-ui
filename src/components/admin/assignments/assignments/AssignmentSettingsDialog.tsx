@@ -153,6 +153,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       runFilesOnSubmit: values.runFilesOnSubmit,
       runTestsOnSubmit: values.runTestsOnSubmit,
       testsAffectGrade: values.testsAffectGrade,
+      hideGrades: values.hideGrades,
     };
 
     await props.onSave(payload);
@@ -315,6 +316,7 @@ interface IFormValues {
   runFilesOnSubmit: boolean;
   runTestsOnSubmit: boolean;
   testsAffectGrade: boolean;
+  hideGrades: boolean;
 }
 
 const CollectionCreateForm: React.FC<IFormProps> = (props) => {
@@ -481,19 +483,20 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
     return Promise.resolve();
   };
 
-  const tabPaneStyle = { maxHeight: 'calc(100vh - 200px)', overflow: 'auto' };
+  const tabPaneStyle = { maxHeight: 'calc(100vh - 280px)', overflow: 'auto', minHeight: 200 };
 
   return (
     <Modal
       open={open}
-      title="Update assignment settings"
+      title={'Update assignment settings: ' + assignment.name}
       okText="Save"
       cancelText="Cancel"
       onCancel={onCancel}
       onOk={() => onSave(templates)}
       confirmLoading={isLoading}
       width="90%"
-      style={{ maxWidth: 1200, top: 20 }}
+      style={{ maxWidth: 1200, top: 20, maxHeight: '95vh' }}
+      styles={{ body: { overflow: 'auto', maxHeight: 'calc(95vh - 110px)' } }}
       maskClosable={false}
       destroyOnHidden
     >
@@ -950,6 +953,22 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     <Switch />
                   </Form.Item>
                   <Form.Item
+                    name="hideGrades"
+                    label="Hide grades"
+                    extra={
+                      <div>
+                        When enabled, students can see feedback and comments but not their numeric grade when feedback
+                        is released. Useful for feedback-first grading or grade adjustment periods.
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                    initialValue={assignment.hideGrades}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+                  <Form.Item
                     name="commentFeedback"
                     label="Student feedback"
                     extra={<div>When enabled, students will be able to leave feedback on applied rubric comments.</div>}
@@ -1003,51 +1022,61 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'ai',
               children: (
                 <div style={tabPaneStyle}>
-                  <h3>AI Comment Generation</h3>
-                  <Form.Item
-                    name="aiSystemPrompt"
-                    label="System Prompt"
-                    extra={
-                      <div>
-                        <p>
-                          Customize instructions for AI comment generation.{' '}
-                          <b>
-                            Variables marked (auto) are added to the User Prompt if omitted. Variables marked (manual)
-                            MUST be included in your custom System Prompt to be available to the AI.
-                          </b>
-                        </p>
-                        <ul style={{ fontSize: '12px', paddingLeft: '20px', margin: '8px 0' }}>
-                          <li>
-                            <code>{'{assignment_name}'}</code> - Name of the assignment
-                          </li>
-                          <li>
-                            <code>{'{file_name}'}</code> - Name of the file being reviewed
-                          </li>
-                          <li>
-                            <code>{'{rubric_context}'}</code> - Selected rubric item details (auto)
-                          </li>
-                          <li>
-                            <code>{'{selected_content}'}</code> - The specific code block selected (auto)
-                          </li>
-                          <li>
-                            <code>{'{grader_draft}'}</code> - Current draft text by grader (auto)
-                          </li>
-                          <li>
-                            <code>{'{file_content}'}</code> - Full content of the current opened file <b>(auto)</b>
-                          </li>
-                          <li>
-                            <code>{'{all_files}'}</code> - Content of all files in submission <b>(manual)</b>
-                          </li>
-                        </ul>
-                        <p>Leave blank to use the course default.</p>
-                      </div>
-                    }
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
-                    initialValue={assignment.aiSystemPrompt || ''}
-                  >
-                    <Input.TextArea
-                      placeholder={`You are an AI assistant helping grade student code submissions.
+                  <Tabs
+                    defaultActiveKey="ai-comment-generation"
+                    size="small"
+                    items={[
+                      {
+                        label: 'AI Comment Generation',
+                        key: 'ai-comment-generation',
+                        forceRender: true,
+                        children: (
+                          <div style={{ paddingTop: 16 }}>
+                            <Form.Item
+                              name="aiSystemPrompt"
+                              label="System Prompt"
+                              extra={
+                                <div>
+                                  <p>
+                                    Customize instructions for AI comment generation.{' '}
+                                    <b>
+                                      Variables marked (auto) are added to the User Prompt if omitted. Variables marked
+                                      (manual) MUST be included in your custom System Prompt to be available to the AI.
+                                    </b>
+                                  </p>
+                                  <ul style={{ fontSize: '12px', paddingLeft: '20px', margin: '8px 0' }}>
+                                    <li>
+                                      <code>{'{assignment_name}'}</code> - Name of the assignment
+                                    </li>
+                                    <li>
+                                      <code>{'{file_name}'}</code> - Name of the file being reviewed
+                                    </li>
+                                    <li>
+                                      <code>{'{rubric_context}'}</code> - Selected rubric item details (auto)
+                                    </li>
+                                    <li>
+                                      <code>{'{selected_content}'}</code> - The specific code block selected (auto)
+                                    </li>
+                                    <li>
+                                      <code>{'{grader_draft}'}</code> - Current draft text by grader (auto)
+                                    </li>
+                                    <li>
+                                      <code>{'{file_content}'}</code> - Full content of the current opened file{' '}
+                                      <b>(auto)</b>
+                                    </li>
+                                    <li>
+                                      <code>{'{all_files}'}</code> - Content of all files in submission <b>(manual)</b>
+                                    </li>
+                                  </ul>
+                                  <p>Leave blank to use the course default.</p>
+                                </div>
+                              }
+                              labelCol={{ span: 4 }}
+                              wrapperCol={{ span: 20 }}
+                              initialValue={assignment.aiSystemPrompt || ''}
+                            >
+                              <Input.TextArea
+                                placeholder={`You are an AI assistant helping grade student code submissions.
 Your task is to generate clear, constructive feedback for students.
 
 Guidelines:
@@ -1062,50 +1091,62 @@ Context:
 - File: {file_name}
 - File Content:
   {file_content}`}
-                      rows={20}
-                      style={{ fontFamily: 'monospace' }}
-                    />
-                  </Form.Item>
-
-                  <h3 style={{ marginTop: 24 }}>AI Grading Assistance</h3>
-                  <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
-                    This description provides context to the AI when generating suggested comments and submission
-                    summaries. It is auto-generated from assignment materials (files, tests, rubric) but can be edited
-                    manually. Only visible to instructors and graders.
-                  </p>
-                  <Form.Item
-                    name="aiDescription"
-                    label="AI Context Description"
-                    labelCol={{ span: 4 }}
-                    wrapperCol={{ span: 20 }}
-                    initialValue={assignment.aiDescription ?? ''}
-                  >
-                    <Input.TextArea
-                      placeholder="AI-generated description of what this assignment requires. Click 'Generate' to auto-create from assignment materials."
-                      rows={8}
-                      style={{ fontFamily: 'monospace' }}
-                    />
-                  </Form.Item>
-                  <Space style={{ marginBottom: 16 }}>
-                    <Button
-                      icon={<RobotOutlined />}
-                      loading={isGeneratingDescription}
-                      onClick={handleGenerateDescription}
-                      disabled={!aiDescriptionEnabled}
-                    >
-                      {isGeneratingDescription ? 'Generating...' : 'Generate from Assignment Materials'}
-                    </Button>
-                    <Form.Item
-                      name="aiDescriptionLocked"
-                      valuePropName="checked"
-                      initialValue={assignment.aiDescriptionLocked ?? false}
-                      noStyle
-                    >
-                      <Checkbox>
-                        <LockOutlined /> Lock (prevent auto-regeneration)
-                      </Checkbox>
-                    </Form.Item>
-                  </Space>
+                                rows={20}
+                                style={{ fontFamily: 'monospace' }}
+                              />
+                            </Form.Item>
+                          </div>
+                        ),
+                      },
+                      {
+                        label: 'AI Grading Assistance',
+                        key: 'ai-grading-assistance',
+                        forceRender: true,
+                        children: (
+                          <div style={{ paddingTop: 16 }}>
+                            <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
+                              This description provides context to the AI when generating suggested comments and
+                              submission summaries. It is auto-generated from assignment materials (files, tests,
+                              rubric) but can be edited manually. Only visible to instructors and graders.
+                            </p>
+                            <Form.Item
+                              name="aiDescription"
+                              label="AI Context Description"
+                              labelCol={{ span: 4 }}
+                              wrapperCol={{ span: 20 }}
+                              initialValue={assignment.aiDescription ?? ''}
+                            >
+                              <Input.TextArea
+                                placeholder="AI-generated description of what this assignment requires. Click 'Generate' to auto-create from assignment materials."
+                                rows={8}
+                                style={{ fontFamily: 'monospace' }}
+                              />
+                            </Form.Item>
+                            <Space style={{ marginBottom: 16 }}>
+                              <Button
+                                icon={<RobotOutlined />}
+                                loading={isGeneratingDescription}
+                                onClick={handleGenerateDescription}
+                                disabled={!aiDescriptionEnabled}
+                              >
+                                {isGeneratingDescription ? 'Generating...' : 'Generate from Assignment Materials'}
+                              </Button>
+                              <Form.Item
+                                name="aiDescriptionLocked"
+                                valuePropName="checked"
+                                initialValue={assignment.aiDescriptionLocked ?? false}
+                                noStyle
+                              >
+                                <Checkbox>
+                                  <LockOutlined /> Lock (prevent auto-regeneration)
+                                </Checkbox>
+                              </Form.Item>
+                            </Space>
+                          </div>
+                        ),
+                      },
+                    ]}
+                  />
                 </div>
               ),
             },

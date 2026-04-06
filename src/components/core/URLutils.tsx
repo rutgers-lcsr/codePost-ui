@@ -32,10 +32,21 @@ const encodeRe = /[%/#?&+,()]/g;
 
 export const encodeForLink = (pathComponent: string) => pathComponent.replace(encodeRe, (ch) => encodeMap[ch]);
 
-// Parentheses must be esscaped to use literally in a route
+// Characters that are special in React Router path syntax and must be escaped.
+// '/' would split into separate segments, '(' and ')' are used for optional segments.
+const routeEncodeMap: Record<string, string> = {
+  '/': '%2F',
+  '(': '%28',
+  ')': '%29',
+};
+const routeEncodeRe = /[/()]/g;
+
+// Parentheses must be escaped to use literally in a route
 // https://github.com/ReactTraining/react-router/blob/v3/docs/guides/RouteMatching.md
+// React Router v7 decodes URL segments before matching, so route paths must use
+// decoded characters except for path-syntax-significant ones (/, parens).
 export const encodeForRoute = (pathComponent: string) => {
-  return encodeForLink(pathComponent);
+  return pathComponent.replace(routeEncodeRe, (ch) => routeEncodeMap[ch]);
 };
 
 export const getRubricURL = (course: ICourseRef, assignment: IAssignmentNameRef) => {

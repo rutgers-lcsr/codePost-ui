@@ -21,7 +21,7 @@ import { Button, Empty, message, Modal, Tag, Tooltip } from 'antd';
 import flatten from 'lodash/flatten';
 import debounce from 'lodash/debounce';
 import queryString from 'query-string';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 /* codePost imports */
 import Loading from '../../components/core/Loading';
@@ -188,6 +188,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const context = React.useContext(ConsoleThemeContext);
   /* hooks */
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams<{ submissionId?: string }>();
   const [templateForceUpdates, setTemplateForceUpdates] = React.useState<{ [id: number]: number }>({});
   const [templateRefresh, setTemplateRefresh] = React.useState(0);
@@ -2164,6 +2165,12 @@ Days Late (After Credit):  ${daysLateAfterCredit}
     lastCursorRef.current = cursor;
   }, []);
 
+  const handleScrolledToComment = React.useCallback(() => {
+    const currentQuery = queryString.parse(location.search);
+    delete currentQuery.comment;
+    navigate({ search: queryString.stringify(currentQuery) }, { replace: true });
+  }, [location.search, navigate]);
+
   const handleUpdateCommentLocation = async (
     commentId: number,
     newStartLine: number,
@@ -2990,6 +2997,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             additiveGrading={false}
             rubricCategories={rubricCategories}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
+            onScrolledToComment={handleScrolledToComment}
           />
         );
 
@@ -3248,6 +3256,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             allRubricComments={Object.values(rubricComments).flat()}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
+            onScrolledToComment={handleScrolledToComment}
             aiEnabled={state.aiEnabled && state.aiFeatureStatus.comment_generation !== false}
             onPin={handlePinComment}
             forcedUpdates={templateForceUpdates}

@@ -37,6 +37,7 @@ interface ICommentsCoreProps extends IWithWindowWatcherProps {
   rubricCategories: RubricCategoryType[];
   allRubricComments?: RubricComment[];
   scrollToCommentID?: number;
+  onScrolledToComment?: () => void;
   aiEnabled?: boolean; // Whether AI comment generation is available for this course
   suggestedComments?: SuggestedCommentType[];
   onAcceptSuggestion?: (suggestion: SuggestedCommentType) => Promise<void>;
@@ -98,6 +99,8 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   // Refs
   const wrapperRef = useRef<HTMLDivElement>(null);
   const prevPropsRef = useRef<ICommentsCoreProps & ICommentsEditProps>(props);
+  const onScrolledToCommentRef = useRef(props.onScrolledToComment);
+  onScrolledToCommentRef.current = props.onScrolledToComment;
 
   const hoveredCommentId = useHoveredCommentId();
 
@@ -261,6 +264,7 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
 
     if (props.scrollToCommentID !== undefined) {
       jumpToComment(props.scrollToCommentID);
+      setTimeout(() => onScrolledToCommentRef.current?.(), 1000);
     }
 
     return () => {

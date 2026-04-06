@@ -4,20 +4,21 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
-  DownloadOutlined,
-  MinusCircleOutlined,
-  PlusOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
+  FireOutlined,
+  InboxOutlined,
   SettingOutlined,
   StopOutlined,
-  UploadOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Modal, Space, Spin, Tag, Tooltip, message } from 'antd';
-import type { ColumnType } from 'antd/es/table';
+import { Button, Modal, Spin, message } from 'antd';
 
 /* other library imports */
 import { Link, useNavigate } from 'react-router-dom';
@@ -47,8 +48,6 @@ import { openSubmission, openSubmissionInSameTab } from '../admin/other/AdminUti
 
 import CPLogo from '../core/CPLogo';
 
-import layoutVars from '../../styles/layout/_layoutVars';
-
 import { IBaseFileUpload } from '../admin/assignments/assignments/SubmissionUpload/FileReader';
 import UploadSubmissionDialog from '../admin/assignments/assignments/SubmissionUpload/UploadSubmissionDialog';
 
@@ -56,10 +55,11 @@ import { IComponentProps } from '../core/ComponentManager';
 
 import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
-import { CodePostDate } from '../utils/CodepostDate';
-
-import AssignmentCard, { SubmissionStatus } from './AssignmentCard';
-import './StudentConsole.css';
+import AssignmentRow from './AssignmentRow';
+import { SubmissionStatus } from './submissionStatus';
+import AssignmentSection from './AssignmentSection';
+import styles from './StudentConsole.module.scss';
+import SubmissionCelebration from './SubmissionCelebration';
 
 /**********************************************************************************************************************/
 
@@ -68,13 +68,6 @@ interface IStudentProps {
     assignmentID: number;
     files: IBaseFileUpload[];
   };
-}
-
-enum SUBMISSION_STATUS {
-  ASSIGNMENT_NOT_PUBLISHED,
-  NO_SUBMISSION,
-  SUBMISSION_VIEWED,
-  SUBMISSION_UNVIEWED,
 }
 
 enum CURRENT_PANEL {
@@ -205,7 +198,7 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
  * Displays assignments, submissions, and allows students to upload/manage their work
  */
 const StudentComponent: React.FC<StudentProps> = (props) => {
-  const { initialCourses, currentCourse, user, uploadShortcut, handleLogout, windowwidth } = props;
+  const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
 
   // State
@@ -217,6 +210,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const [currentPanel, setCurrentPanel] = useState<CURRENT_PANEL>(CURRENT_PANEL.TABLE);
   const [detailAssignment, setDetailAssignment] = useState<Assignment | undefined>(undefined);
   const [detailSubmission, setDetailSubmission] = useState<Submission | undefined>(undefined);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Set document title
   useEffect(() => {
@@ -252,14 +246,15 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     async (assignmentList: Assignment[]): Promise<Record<number, Submission[]>> => {
       const submissionsMap: Record<number, Submission[]> = {};
 
-      // Create a shallow copy to prevent mutations during async operations
-      const assignmentsCopy = [...assignmentList];
-
-      for (const assignment of assignmentsCopy) {
-        if (assignment.isReleased || assignment.allowStudentUpload || assignment.liveFeedbackMode) {
-          const subs = await fetchSubmissions(assignment.id, user.email!);
-          submissionsMap[assignment.id] = subs;
-        }
+      // Filter to eligible assignments and fetch in parallel batches
+      const eligible = assignmentList.filter((a) => a.isReleased || a.allowStudentUpload || a.liveFeedbackMode);
+      const batchSize = 6;
+      for (let i = 0; i < eligible.length; i += batchSize) {
+        const batch = eligible.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map((a) => fetchSubmissions(a.id, user.email!)));
+        batch.forEach((a, idx) => {
+          submissionsMap[a.id] = results[idx];
+        });
       }
       return submissionsMap;
     },
@@ -272,18 +267,18 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       email: string,
     ): Promise<{ [submissionID: number]: boolean }> => {
       const viewMap: { [submissionID: number]: boolean } = {};
-      const keys = Object.keys(submissionsMap);
-      for (const key of keys) {
-        const submissionList = submissionsMap[+key];
-        if (submissionList.length > 0) {
-          const submission = submissionList[0];
-          const history = await fetchHistory(submission.id, email);
-          for (const historyItem of history) {
+      const entries = Object.values(submissionsMap).filter((subs) => subs.length > 0);
+      const batchSize = 6;
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map((subs) => fetchHistory(subs[0].id, email)));
+        batch.forEach((subs, idx) => {
+          for (const historyItem of results[idx]) {
             if (historyItem.student === email) {
-              viewMap[submission.id] = historyItem.hasViewed;
+              viewMap[subs[0].id] = historyItem.hasViewed;
             }
           }
-        }
+        });
       }
       return viewMap;
     },
@@ -372,14 +367,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     [user.email],
   );
 
-  const openAndMarkViewed = useCallback(
-    (submission: Submission) => {
-      openSubmissionInSameTab(submission.id);
-      markViewed(submission);
-    },
-    [markViewed],
-  );
-
   const changePanel = useCallback(
     async (newPanel: CURRENT_PANEL, assignment?: Assignment, submission?: Submission) => {
       let latestSubmission: Submission | undefined;
@@ -446,6 +433,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         return;
       }
 
+      setShowCelebration(true);
+
       if (detailAssignment.liveFeedbackMode) {
         if (localStorage.getItem('source') !== 'codePost') {
           openSubmissionInSameTab(newSubmissionID);
@@ -478,362 +467,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     }
   }, []);
 
-  const getUploadContent = useCallback(
-    (assignment: Assignment, submission?: Submission) => {
-      if (!assignment.allowStudentUpload) {
-        return null;
-      }
-
-      const hideDueDate = currentCourse?.id === CODE_IN_PLACE_COURSE_ID;
-
-      // Present the assignment's due date to the student
-      const dueDateText =
-        assignment.uploadDueDate && !hideDueDate ? (
-          <span>
-            Due: &nbsp;
-            <CodePostDate datetime={assignment.uploadDueDate} />
-          </span>
-        ) : (
-          ''
-        );
-
-      // If the student has submitted, show the datetime of the student's most recent upload
-      const uploadDateText = submission?.dateUploaded ? (
-        <div>
-          Uploaded: <CodePostDate datetime={submission.dateUploaded} />
-        </div>
-      ) : null;
-
-      const uploadButton = (
-        <span>
-          <Tooltip title={submission && assignment.liveFeedbackMode ? 'Replace submission.' : 'Upload assignment.'}>
-            <Button
-              icon={<UploadOutlined />}
-              type="primary"
-              style={{ maxWidth: 180 }}
-              disabled={false}
-              onClick={() => {
-                if (submission && assignment.liveFeedbackMode) {
-                  Modal.confirm({
-                    title: 'Confirm file replacement',
-                    content: (
-                      <div>
-                        <p>
-                          If you replace your files, it will delete existing files and file versions, including any
-                          comments on those files.
-                        </p>
-                        <p>
-                          If you want to add a file to your submission or update a file click 'Add/Update files'
-                          instead.
-                        </p>
-                        <p>
-                          <b>Are you sure you want to continue?</b>
-                        </p>
-                      </div>
-                    ),
-                    okText: 'Continue',
-                    cancelText: 'Cancel',
-                    onOk: () => changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission),
-                  });
-                } else {
-                  changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
-                }
-              }}
-            >
-              Upload assignment
-            </Button>
-          </Tooltip>
-        </span>
-      );
-
-      const addFileButton =
-        !assignment.liveFeedbackMode || submission === undefined ? null : (
-          <Button
-            icon={<PlusOutlined />}
-            style={{ maxWidth: 160 }}
-            onClick={() => changePanel(CURRENT_PANEL.ADDFILES, assignment, submission)}
-            disabled={submission === undefined || submission.isFinalized}
-          >
-            Add/Update files
-          </Button>
-        );
-
-      const downloadButton =
-        assignment.files && assignment.files.length > 0 ? (
-          <Tooltip title="Download assignment files">
-            <Button
-              icon={<DownloadOutlined />}
-              style={{ maxWidth: 180 }}
-              onClick={() => downloadAssignment(assignment.id, assignment.name)}
-            >
-              Download assignment
-            </Button>
-          </Tooltip>
-        ) : null;
-
-      return (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            lineHeight: 2.2,
-          }}
-        >
-          <div>{uploadDateText}</div>
-          {dueDateText}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 15, flexWrap: 'wrap' }}>
-            <Space.Compact>
-              {downloadButton}
-              {assignment.isReleased && assignment.allowStudentUpload && uploadButton}
-              {addFileButton}
-            </Space.Compact>
-          </div>
-        </div>
-      );
-    },
-    [currentCourse, changePanel, downloadAssignment],
-  );
-
-  // NOTE: buildAssignmentsTable has been removed - replaced with card-based layout
-  // See AssignmentCard.tsx for the new card component implementation.
-
-  // @ts-expect-error buildAssignmentsTable is kept for reference but no longer used
-  // eslint-disable-next-line no-unused-vars
-  const _buildAssignmentsTable = useCallback(
-    (assignmentList: Assignment[], submissionsMap: Record<number, Submission[]>) => {
-      const modifyIf = (modMap: { [statusTarget: number]: number }) => {
-        return (row: { statusType: SUBMISSION_STATUS }) => {
-          const obj = {
-            colSpan: 1,
-            align: '' as 'left' | 'center' | 'right' | undefined,
-          };
-
-          if (row.statusType in modMap) {
-            obj.colSpan = modMap[row.statusType];
-            obj.align = 'center' as const;
-          }
-          return obj;
-        };
-      };
-
-      // We pre-calculate showGrades and showColumns to figure out the column spans
-      let showGrades = true;
-      let showPartners = true;
-
-      if (assignmentList) {
-        // If one visible assignment doesn't have hideGrades turned on, show the grades column
-        const visibleAssignments = assignmentList.filter((assn) => assn.isVisible);
-        showGrades = visibleAssignments.some((assn) => {
-          return !assn.hideGrades;
-        });
-        // If one visible assignment isn't student upload, or is student upload and allows partners, show partners
-        showPartners = visibleAssignments.some((assn) => {
-          const hidePartners = assn.allowStudentUpload && !assn.allowStudentUploadWithPartners;
-          return !hidePartners;
-        });
-      }
-
-      const aligner: 'left' | 'center' | 'right' = 'center';
-      // ModifyIF re-sets the column span of certain columns based on things we should show
-      // Code is the first column
-      // If there is no submission, it expands to take up the grades and partners columns (span = 3)
-      // If the submission isn't viewed, it expands to take up the grade column (span = 2)
-      type TableRowData = {
-        key: string;
-        assignment: string;
-        statusType: SUBMISSION_STATUS;
-        code: React.ReactNode;
-        grade?: React.ReactNode;
-        partners?: React.ReactNode;
-        upload?: React.ReactNode;
-        stats?: React.ReactNode;
-        disabled?: boolean;
-      };
-      let columns: ColumnType<TableRowData>[] = [
-        {
-          title: 'Assignment',
-          dataIndex: 'assignment',
-          key: 'assignment',
-        },
-        {
-          title: 'Code',
-          dataIndex: 'code',
-          key: 'code',
-          align: aligner,
-          onCell: modifyIf({
-            [SUBMISSION_STATUS.NO_SUBMISSION]: 1 + Number(showGrades) + Number(showPartners),
-            [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 1 + Number(showGrades) + Number(showPartners),
-            [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 1 + Number(showGrades),
-          }),
-        },
-      ];
-
-      // Optional upload column
-      const uploadColumn = {
-        title: 'Information',
-        dataIndex: 'upload',
-        key: 'upload',
-        align: aligner,
-      };
-
-      const gradeColumn = {
-        title: 'Grade',
-        dataIndex: 'grade',
-        key: 'grade',
-        align: aligner,
-        onCell: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-          [SUBMISSION_STATUS.SUBMISSION_UNVIEWED]: 0,
-        }),
-      };
-
-      const partnerColumn = {
-        title: 'Partners',
-        dataIndex: 'partners',
-        key: 'partners',
-        onCell: modifyIf({
-          [SUBMISSION_STATUS.NO_SUBMISSION]: 0,
-          [SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED]: 0,
-        }),
-        align: aligner,
-      };
-
-      const statsColumn = {
-        title: 'Stats',
-        dataIndex: 'stats',
-        key: 'stats',
-        align: aligner,
-      };
-
-      if (assignmentList) {
-        // if any of the visible assignments have a property to conditionally show a column, add it to columns
-        const visibleAssignments = assignmentList.filter((assn) => assn.isVisible);
-        columns = showPartners ? [...columns, partnerColumn] : columns;
-        columns = showGrades ? [...columns, gradeColumn] : columns;
-        columns = visibleAssignments.some((assn) => {
-          return assn.allowStudentUpload;
-        })
-          ? [...columns, uploadColumn]
-          : columns;
-        columns =
-          currentCourse &&
-          currentCourse.showStudentsStatistics &&
-          visibleAssignments.some((assn) => {
-            return assn.mean || assn.median;
-          })
-            ? [...columns, statsColumn]
-            : columns;
-      }
-
-      const data = sortAssignments(assignmentList).map((assignment) => {
-        const submission = assignment.id in submissionsMap ? submissionsMap[assignment.id][0] : undefined;
-        const uploadContent = getUploadContent(assignment, submission as Submission | undefined);
-
-        if (!assignment.isReleased && !assignment.liveFeedbackMode) {
-          // Case 1: assignment is not published and is not in live feedback mode
-          return {
-            key: assignment.name,
-            assignment: assignment.name,
-            statusType: SUBMISSION_STATUS.ASSIGNMENT_NOT_PUBLISHED,
-            code: (
-              <div>
-                {' '}
-                <StopOutlined /> &nbsp; Assignment not yet published
-              </div>
-            ),
-            disabled: true,
-            upload: uploadContent,
-          };
-        } else {
-          const hasStats = assignment.mean || assignment.median;
-          let statsContent;
-          if (hasStats) {
-            statsContent = (
-              <div>
-                Mean: {assignment.mean}/{assignment.points} <br /> Median: {assignment.median}/{assignment.points}
-              </div>
-            );
-          }
-
-          const toRet = {
-            key: assignment.name,
-            assignment: assignment.name,
-            stats: hasStats ? statsContent : '--',
-            upload: uploadContent,
-          };
-
-          if (submission === undefined) {
-            // Case 2: assignment is published, but student has no submission OR submission isn't finalized
-            const missingText = assignment.allowStudentUpload
-              ? "You haven't uploaded any code yet"
-              : "Your instructor hasn't transferred your submission to codePost yet";
-            return {
-              ...toRet,
-              code: (
-                <div>
-                  <MinusCircleOutlined /> &nbsp; {missingText}
-                </div>
-              ),
-              statusType: SUBMISSION_STATUS.NO_SUBMISSION,
-            };
-          } else if (!submission.isFinalized && !assignment.liveFeedbackMode) {
-            // Case 2: assignment is published, but student has no submission OR submission isn't finalized
-
-            const msg = (
-              <div>
-                <MinusCircleOutlined /> &nbsp; Your submission hasn't been reviewed yet
-              </div>
-            );
-
-            return {
-              ...toRet,
-              code: msg,
-              statusType: SUBMISSION_STATUS.NO_SUBMISSION,
-            };
-          } else {
-            // Case 3: assignment is published, and student has a submission
-
-            const open = () => {
-              markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
-            };
-
-            // Show Grade if the submission history doesn't exist (legacy), or if the submission has been viewed
-            const showGrade = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
-            return {
-              ...toRet,
-              partners:
-                submission.students !== undefined && submission.students.length === 1
-                  ? '--'
-                  : submission.students !== undefined &&
-                    submission.students
-                      .filter((student) => {
-                        return student !== user.email;
-                      })
-                      .join(', '),
-              grade: showGrade ? (
-                submission.grade !== null && submission.grade !== undefined ? (
-                  `${submission.grade}/${assignment.points}`
-                ) : null
-              ) : windowwidth > layoutVars.breakpoints.mobile.student ? (
-                <Tag onClick={() => openAndMarkViewed(submission)} style={{ cursor: 'pointer' }}>
-                  View feedback
-                </Tag>
-              ) : (
-                <Tag>Login on desktop to view</Tag>
-              ),
-              code: <Button onClick={open}>View feedback</Button>,
-              statusType: showGrade ? SUBMISSION_STATUS.SUBMISSION_VIEWED : SUBMISSION_STATUS.SUBMISSION_UNVIEWED,
-            };
-          }
-        }
-      });
-
-      return { columns, data };
-    },
-    [currentCourse, getUploadContent, markViewed, viewsBySubmission, user.email, windowwidth, openAndMarkViewed],
-  );
-
   const calculateLateDayCreditsAvailable = useCallback(
     (submissionsMap: Record<number, Submission[]>): number => {
       if (!currentCourse?.lateDayCreditsAllowable) {
@@ -863,22 +496,203 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   /* Render function
   /**********************************************************************************/
 
+  // Helper to determine submission status
+  const getSubmissionStatus = useCallback(
+    (assignment: Assignment, submission?: Submission): SubmissionStatus => {
+      // Not published only if none of the student-facing modes are enabled
+      if (!assignment.isReleased && !assignment.liveFeedbackMode && !assignment.allowStudentUpload) {
+        return SubmissionStatus.NOT_PUBLISHED;
+      }
+      if (!submission) {
+        return SubmissionStatus.NO_SUBMISSION;
+      }
+      // feedbackReleased is a separate flag from isReleased — feedback can be
+      // withheld even after the assignment is released for uploads.
+      const isFeedbackAvailable = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
+      if (!isFeedbackAvailable) {
+        return SubmissionStatus.NOT_REVIEWED;
+      }
+      const isViewed = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
+      return isViewed ? SubmissionStatus.SUBMITTED : SubmissionStatus.PENDING;
+    },
+    [viewsBySubmission],
+  );
+
+  // Group assignments into temporal sections
+  const groupedSections = useMemo(() => {
+    if (!currentCourse || !assignments[currentCourse.id]) return null;
+
+    const assignmentList = sortAssignments(assignments[currentCourse.id]);
+    const now = new Date();
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const overdue: Assignment[] = [];
+    const dueToday: Assignment[] = [];
+    const dueSoon: Assignment[] = [];
+    const upcoming: Assignment[] = [];
+    const completed: Assignment[] = [];
+    const unpublished: Assignment[] = [];
+
+    for (const assignment of assignmentList) {
+      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+      const status = getSubmissionStatus(assignment, submission);
+
+      if (status === SubmissionStatus.NOT_PUBLISHED) {
+        unpublished.push(assignment);
+      } else if (
+        status === SubmissionStatus.SUBMITTED ||
+        status === SubmissionStatus.NOT_REVIEWED ||
+        status === SubmissionStatus.PENDING
+      ) {
+        completed.push(assignment);
+      } else if (assignment.uploadDueDate) {
+        const dueDate = new Date(assignment.uploadDueDate);
+        if (dueDate < now) {
+          // Past due date — overdue if no submission, due today if within last 24h
+          if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
+            dueToday.push(assignment);
+          } else {
+            overdue.push(assignment);
+          }
+        } else if (dueDate <= endOfToday) {
+          dueToday.push(assignment);
+        } else if (dueDate <= weekFromNow) {
+          dueSoon.push(assignment);
+        } else {
+          upcoming.push(assignment);
+        }
+      } else {
+        upcoming.push(assignment);
+      }
+    }
+
+    return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
+  }, [currentCourse, assignments, submissions, getSubmissionStatus]);
+
+  // Progress calculation
+  const progress = useMemo(() => {
+    if (!groupedSections) return { completed: 0, total: 0, percent: 0 };
+    const total = groupedSections.all.filter(
+      (a) => getSubmissionStatus(a, submissions[a.id]?.[0]) !== SubmissionStatus.NOT_PUBLISHED,
+    ).length;
+    const done = groupedSections.completed.length;
+    return { completed: done, total, percent: total > 0 ? (done / total) * 100 : 0 };
+  }, [groupedSections, submissions, getSubmissionStatus]);
+
+  // Build a row for an assignment (shared renderer)
+  const renderAssignmentRow = useCallback(
+    (assignment: Assignment, opts: { showPartners: boolean; showStats: boolean; showUpload: boolean }) => {
+      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
+      const status = getSubmissionStatus(assignment, submission);
+      const students = submission?.students || [];
+      const partners = students.filter((s: string | null) => s && s !== user.email) as string[];
+      const isDisabled = status === SubmissionStatus.NOT_PUBLISHED;
+
+      return (
+        <AssignmentRow
+          key={assignment.id}
+          assignmentName={assignment.name}
+          status={status}
+          grade={submission?.grade ?? null}
+          maxPoints={assignment.points}
+          partners={partners}
+          meanGrade={assignment.mean}
+          medianGrade={assignment.median}
+          dueDate={assignment.uploadDueDate}
+          uploadDate={submission?.dateUploaded}
+          showStats={opts.showStats}
+          showPartners={opts.showPartners && partners.length > 0}
+          showUpload={opts.showUpload && assignment.allowStudentUpload}
+          allowStudentUpload={assignment.allowStudentUpload}
+          hasExistingSubmission={submission !== undefined}
+          hasDownload={assignment.files && assignment.files.length > 0}
+          liveFeedbackMode={assignment.liveFeedbackMode}
+          isFinalized={submission?.isFinalized ?? false}
+          hideGrades={assignment.hideGrades}
+          hideDueDate={currentCourse?.id === CODE_IN_PLACE_COURSE_ID}
+          disabled={isDisabled}
+          onViewFeedback={
+            (status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && submission
+              ? () => {
+                  markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
+                }
+              : undefined
+          }
+          onViewFiles={
+            status === SubmissionStatus.NOT_REVIEWED && submission
+              ? () => openSubmissionInSameTab(submission.id)
+              : undefined
+          }
+          onUpload={
+            assignment.allowStudentUpload
+              ? () => {
+                  if (submission && assignment.liveFeedbackMode) {
+                    Modal.confirm({
+                      title: 'Confirm file replacement',
+                      content: (
+                        <div>
+                          <p>
+                            If you replace your files, it will delete existing files and file versions, including any
+                            comments on those files.
+                          </p>
+                          <p>
+                            If you want to add a file to your submission or update a file click &apos;Add/Update
+                            files&apos; instead.
+                          </p>
+                          <p>
+                            <b>Are you sure you want to continue?</b>
+                          </p>
+                        </div>
+                      ),
+                      okText: 'Continue',
+                      cancelText: 'Cancel',
+                      onOk: () => changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission),
+                    });
+                  } else {
+                    changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission);
+                  }
+                }
+              : undefined
+          }
+          onAddFiles={
+            assignment.liveFeedbackMode && submission && !submission.isFinalized
+              ? () => changePanel(CURRENT_PANEL.ADDFILES, assignment, submission)
+              : undefined
+          }
+          onDownload={
+            assignment.files && assignment.files.length > 0
+              ? () => downloadAssignment(assignment.id, assignment.name)
+              : undefined
+          }
+        />
+      );
+    },
+    [submissions, getSubmissionStatus, user.email, markViewed, changePanel, downloadAssignment, currentCourse],
+  );
+
   // Render content
   let studentContent;
-  // if not loaded yet, render a get started div
   if (!currentCourse) {
     studentContent = (
-      <div style={{ padding: '40px', fontSize: 28 }}>
-        <div>Select course</div>
+      <div className={styles.console}>
+        <div className={styles.emptyState}>
+          <InboxOutlined className={styles.emptyIcon} />
+          <h2 className={styles.emptyTitle}>Select a course</h2>
+          <p className={styles.emptySubtext}>Choose a course from the menu above to view your assignments.</p>
+        </div>
       </div>
     );
   } else if (!assignments[currentCourse.id]) {
-    // Assignments haven't finished loading
-    studentContent = <Spin />;
+    studentContent = (
+      <div className={styles.console}>
+        <div className={styles.loadingState}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
   } else {
     const lateDayCredits = getLateDayCreditsComponent();
-
-    // Note: buildAssignmentsTable and rowClassName no longer needed with card layout
     const assignmentList = assignments[currentCourse.id];
 
     const defaultFiles =
@@ -888,129 +702,139 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         ? uploadShortcut.files
         : undefined;
 
-    // Determine which features to show based on course/assignment settings
     const visibleAssignments = assignmentList.filter((assn) => assn.isVisible);
-    // showGrades could be used in the future for additional UI elements
     const showPartners = visibleAssignments.some((assn) => {
       const hidePartners = assn.allowStudentUpload && !assn.allowStudentUploadWithPartners;
       return !hidePartners;
     });
-    const showStats =
-      currentCourse.showStudentsStatistics && visibleAssignments.some((assn) => assn.mean || assn.median);
+    const showStats = !!(
+      currentCourse.showStudentsStatistics && visibleAssignments.some((assn) => assn.mean || assn.median)
+    );
     const showUpload = visibleAssignments.some((assn) => assn.allowStudentUpload);
+    const rowOpts = { showPartners, showStats, showUpload };
 
-    // Helper to determine submission status
-    const getSubmissionStatus = (assignment: Assignment, submission?: Submission): SubmissionStatus => {
-      if (!assignment.isReleased && !assignment.liveFeedbackMode) {
-        return SubmissionStatus.NOT_PUBLISHED;
-      }
-      if (!submission) {
-        return SubmissionStatus.NO_SUBMISSION;
-      }
-      // Check if submission is ready for student to view feedback
-      // It's ready if: finalized, OR in liveFeedbackMode, OR feedback has been released
-      const isReviewComplete = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
-      if (!isReviewComplete) {
-        return SubmissionStatus.NOT_REVIEWED;
-      }
-      // Check if viewed
-      const isViewed = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
-      return isViewed ? SubmissionStatus.SUBMITTED : SubmissionStatus.PENDING;
-    };
+    const isLoading = isLoadingAssignments || isLoadingSubmissions;
+    const isEmpty = !isLoading && assignmentList.length === 0;
+    const hasAssignments = !isLoading && assignmentList.length > 0 && groupedSections;
 
     studentContent = (
-      <div className="student-console__container">
-        {/* Header Section */}
-        <div className="student-console__header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className={styles.console}>
+        {/* Header */}
+        <header className={styles.header}>
+          <div className={styles.headerTop}>
             <div>
-              <h1 className="student-console__title">{currentCourse.name}</h1>
-              <p className="student-console__subtitle">{currentCourse.period}</p>
+              <h1 className={styles.courseName}>{currentCourse.name}</h1>
+              <p className={styles.coursePeriod}>{currentCourse.period}</p>
             </div>
-            <div className="student-console__actions">
-              {lateDayCredits && <div className="student-console__late-credits">{lateDayCredits}</div>}
+            <div className={styles.headerMeta}>
+              {lateDayCredits && (
+                <div className={styles.lateCreditsPill}>
+                  <ClockCircleOutlined /> {lateDayCredits}
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Loading State */}
-        {(isLoadingAssignments || isLoadingSubmissions) && (
-          <div className="student-console__loading">
-            <Spin size="large" />
+          {/* Progress bar */}
+          {hasAssignments && progress.total > 0 && (
+            <div className={styles.progressBar}>
+              <div className={styles.progressLabel}>
+                <span className={styles.progressText}>Course progress &middot; {Math.round(progress.percent)}%</span>
+                <span className={styles.progressCount}>
+                  {progress.completed} of {progress.total} completed
+                </span>
+              </div>
+              <div
+                className={styles.progressTrack}
+                role="progressbar"
+                aria-valuenow={progress.percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div className={styles.progressFill} style={{ width: `${Math.max(progress.percent, 2)}%` }} />
+              </div>
+            </div>
+          )}
+        </header>
+
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className={styles.skeleton} style={{ marginBottom: 8 }} />
+            ))}
           </div>
         )}
 
-        {/* Empty State */}
-        {!isLoadingAssignments && !isLoadingSubmissions && assignmentList.length === 0 && (
-          <div className="student-console__empty">
-            <MinusCircleOutlined className="student-console__empty-icon" />
-            <div className="student-console__empty-text">No assignments yet</div>
-            <div className="student-console__empty-subtext">Check back later for new assignments</div>
+        {/* Empty state */}
+        {isEmpty && (
+          <div className={styles.emptyState}>
+            <InboxOutlined className={styles.emptyIcon} />
+            <h2 className={styles.emptyTitle}>No assignments yet</h2>
+            <p className={styles.emptySubtext}>
+              Your instructor hasn&apos;t published any assignments for this course yet. Check back later.
+            </p>
           </div>
         )}
 
-        {/* Assignment Cards Grid */}
-        {!isLoadingAssignments && !isLoadingSubmissions && assignmentList.length > 0 && (
-          <div className="assignment-card-grid">
-            {sortAssignments(assignmentList).map((assignment) => {
-              const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
-              const status = getSubmissionStatus(assignment, submission);
-              const students = submission?.students || [];
-              const partners = students.filter((s: string | null) => s && s !== user.email) as string[];
-              const isDisabled = status === SubmissionStatus.NOT_PUBLISHED;
+        {/* Assignment sections */}
+        {hasAssignments && (
+          <>
+            <AssignmentSection
+              title="Overdue"
+              count={groupedSections.overdue.length}
+              variant="overdue"
+              icon={<ExclamationCircleOutlined />}
+            >
+              {groupedSections.overdue.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
 
-              return (
-                <AssignmentCard
-                  key={assignment.id}
-                  assignmentName={assignment.name}
-                  status={status}
-                  grade={submission?.grade ?? null}
-                  maxPoints={assignment.points}
-                  partners={partners}
-                  meanGrade={assignment.mean}
-                  medianGrade={assignment.median}
-                  dueDate={assignment.uploadDueDate}
-                  uploadDate={submission?.dateUploaded}
-                  showStats={showStats}
-                  showPartners={showPartners && partners.length > 0}
-                  showUpload={showUpload && assignment.allowStudentUpload}
-                  allowStudentUpload={assignment.allowStudentUpload}
-                  hasExistingSubmission={submission !== undefined}
-                  hasDownload={assignment.files && assignment.files.length > 0}
-                  liveFeedbackMode={assignment.liveFeedbackMode}
-                  isFinalized={submission?.isFinalized ?? false}
-                  disabled={isDisabled}
-                  onViewFeedback={
-                    (status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && submission
-                      ? () => {
-                          markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
-                        }
-                      : undefined
-                  }
-                  onViewFiles={
-                    status === SubmissionStatus.NOT_REVIEWED && submission
-                      ? () => openSubmissionInSameTab(submission.id)
-                      : undefined
-                  }
-                  onUpload={
-                    assignment.allowStudentUpload
-                      ? () => changePanel(CURRENT_PANEL.UPLOADFILES, assignment, submission)
-                      : undefined
-                  }
-                  onAddFiles={
-                    assignment.liveFeedbackMode && submission && !submission.isFinalized
-                      ? () => changePanel(CURRENT_PANEL.ADDFILES, assignment, submission)
-                      : undefined
-                  }
-                  onDownload={
-                    assignment.files && assignment.files.length > 0
-                      ? () => downloadAssignment(assignment.id, assignment.name)
-                      : undefined
-                  }
-                />
-              );
-            })}
-          </div>
+            <AssignmentSection
+              title="Due Today"
+              count={groupedSections.dueToday.length}
+              variant="dueToday"
+              icon={<ClockCircleOutlined />}
+            >
+              {groupedSections.dueToday.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
+
+            <AssignmentSection
+              title="Due This Week"
+              count={groupedSections.dueSoon.length}
+              variant="dueSoon"
+              icon={<FireOutlined />}
+            >
+              {groupedSections.dueSoon.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
+
+            <AssignmentSection
+              title="Upcoming"
+              count={groupedSections.upcoming.length}
+              variant="upcoming"
+              icon={<CalendarOutlined />}
+            >
+              {groupedSections.upcoming.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
+
+            <AssignmentSection
+              title="Completed"
+              count={groupedSections.completed.length}
+              variant="completed"
+              icon={<CheckCircleOutlined />}
+              defaultCollapsed={groupedSections.completed.length > 3}
+            >
+              {groupedSections.completed.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
+
+            <AssignmentSection
+              title="Not Yet Published"
+              count={groupedSections.unpublished.length}
+              variant="unpublished"
+              icon={<StopOutlined />}
+            >
+              {groupedSections.unpublished.map((a) => renderAssignmentRow(a, rowOpts))}
+            </AssignmentSection>
+          </>
         )}
 
         {/* Upload Dialog */}
@@ -1068,7 +892,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     <CPFlex
       left={[
         <CPLogo cpType="dark" key="logo" onClick={openHome} />,
-        <span key="empty" />,
+        <Link key="dashboard" to="/student" className="internal-link" style={{ fontSize: 13, fontWeight: 500 }}>
+          Dashboard
+        </Link>,
         <CourseMenu key="course" courses={initialCourses} currentCourse={currentCourse} base="student" />,
       ]}
       right={[
@@ -1098,6 +924,10 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         hasSider={false}
         role={USER_TYPE.STUDENT}
       />
+      <SubmissionCelebration trigger={showCelebration} onComplete={() => setShowCelebration(false)} />
+      <button className={styles.celebrationDebugBtn} onClick={() => setShowCelebration(true)}>
+        🎉 Test Celebration
+      </button>
     </div>
   );
 };

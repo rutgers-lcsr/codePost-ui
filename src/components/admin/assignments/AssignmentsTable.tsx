@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   BarChartOutlined,
+  CheckCircleOutlined,
   CompassOutlined,
   DeleteOutlined,
   DownloadOutlined,
@@ -20,6 +21,7 @@ import {
   ImportOutlined,
   MailOutlined,
   MessageOutlined,
+  NumberOutlined,
   OrderedListOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
@@ -483,6 +485,32 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [updateAssignmentProp],
   );
 
+  // Helper to toggle hideGrades
+  const toggleHideGrades = useCallback(
+    (assignment: Assignment) => {
+      const hiding = assignment.hideGrades;
+      const action = hiding ? 'show' : 'hide';
+      const title = `Are you sure you want to ${action} grades?`;
+      const content = hiding
+        ? 'Students will be able to see their numeric grades on finalized submissions.'
+        : 'Students will see feedback and comments but not their numeric grade.';
+
+      Modal.confirm({
+        title,
+        content,
+        onOk: () => {
+          updateAssignmentProp({
+            id: assignment.id,
+            hideGrades: !hiding,
+          }).then(() => {
+            message.success(`Grades ${hiding ? 'shown' : 'hidden'} successfully.`);
+          });
+        },
+      });
+    },
+    [updateAssignmentProp],
+  );
+
   // Helper to get section names from IDs
   const getSectionNames = useCallback(
     (sectionIDs: number[]): string => {
@@ -551,18 +579,18 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           ),
         },
         {
-          key: 'onboarding',
-          label: (
-            <Link to={`${baseURL}/${encodedName}/onboarding`}>
-              <CompassOutlined /> &nbsp; Get started
-            </Link>
-          ),
-        },
-        {
           key: 'bulk-edit',
           label: (
             <Link to={`${baseURL}/${encodedName}/bulk-edit`}>
               <EditOutlined /> &nbsp; Bulk edit
+            </Link>
+          ),
+        },
+        {
+          key: 'onboarding',
+          label: (
+            <Link to={`${baseURL}/${encodedName}/onboarding`}>
+              <CompassOutlined /> &nbsp; Get started
             </Link>
           ),
         },
@@ -804,13 +832,85 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 <Button shape="circle" icon={<UploadOutlined />} />
               </Dropdown>
             </Tooltip>
-            <Tooltip title={assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}>
-              <Button
-                shape="circle"
-                icon={assignment.feedbackReleased ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                onClick={() => toggleSubmissionsReleased(assignment)}
-                danger={assignment.feedbackReleased}
-              />
+            <Tooltip title="Student visibility">
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'feedback',
+                      icon: assignment.feedbackReleased ? (
+                        <CheckCircleOutlined style={{ color: colors.brandPrimary }} />
+                      ) : (
+                        <MessageOutlined />
+                      ),
+                      label: (
+                        <span>
+                          {assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}
+                          <span
+                            style={{
+                              marginLeft: 8,
+                              fontSize: 11,
+                              color: assignment.feedbackReleased ? colors.brandPrimary : colors.neutralSecondaryText,
+                              fontWeight: assignment.feedbackReleased ? 600 : 400,
+                            }}
+                          >
+                            {assignment.feedbackReleased ? 'ON' : 'OFF'}
+                          </span>
+                        </span>
+                      ),
+                      onClick: () => toggleSubmissionsReleased(assignment),
+                    },
+                    {
+                      key: 'grades',
+                      icon: assignment.hideGrades ? (
+                        <EyeInvisibleOutlined
+                          style={{ color: assignment.feedbackReleased ? colors.actionRed : undefined }}
+                        />
+                      ) : (
+                        <NumberOutlined
+                          style={{ color: assignment.feedbackReleased ? colors.brandPrimary : undefined }}
+                        />
+                      ),
+                      label: (
+                        <span>
+                          {assignment.hideGrades ? 'Show grades' : 'Hide grades'}
+                          <span
+                            style={{
+                              marginLeft: 8,
+                              fontSize: 11,
+                              color: !assignment.feedbackReleased
+                                ? colors.neutralSecondaryText
+                                : assignment.hideGrades
+                                  ? colors.actionRed
+                                  : colors.brandPrimary,
+                              fontWeight: assignment.feedbackReleased ? 600 : 400,
+                            }}
+                          >
+                            {!assignment.feedbackReleased
+                              ? 'N/A'
+                              : assignment.hideGrades
+                                ? 'HIDDEN'
+                                : 'VISIBLE'}
+                          </span>
+                        </span>
+                      ),
+                      disabled: !assignment.feedbackReleased,
+                      onClick: () => toggleHideGrades(assignment),
+                    },
+                  ],
+                }}
+                trigger={['click']}
+              >
+                <Button
+                  shape="circle"
+                  icon={assignment.feedbackReleased ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  style={
+                    assignment.feedbackReleased
+                      ? { borderColor: colors.brandPrimary, color: colors.brandPrimary }
+                      : undefined
+                  }
+                />
+              </Dropdown>
             </Tooltip>
             <Tooltip title="Analyze grades & stats">
               <Dropdown menu={{ items: dataItems }} trigger={['click']}>

@@ -29,6 +29,7 @@ const { Sider, Content } = Layout;
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context.js';
 import Markdown from '../../features/code-review/code-panel/Markdown';
 import { CURSOR_DOMAIN } from '../../features/code-review/CodeConsoleEnums';
+import styles from './StudentConsole.module.scss';
 
 interface IProps {
   assignment?: AssignmentStudentType;
@@ -91,7 +92,7 @@ function ViewUpload(props: IProps) {
   }
 
   if (files.length === 0) {
-    return <div>No files for this submission</div>;
+    return <div className={styles.viewUploadEmpty}>No files for this submission</div>;
   }
 
   const activeIndex = Math.min(Math.max(parseInt(currentIndex, 10) || 0, 0), files.length - 1);
@@ -154,27 +155,33 @@ function ViewUpload(props: IProps) {
   const layoutStyle: CSSProperties = {
     backgroundColor: consoleTheme.mainBg,
     color: consoleTheme.text,
-    borderRadius: '12px',
+    borderRadius: 'var(--sc-radius-lg, 14px)',
     overflow: 'hidden',
-    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+    border: '1px solid var(--sc-border, #E8E3DC)',
+    boxShadow: 'var(--sc-shadow-lg, 0 8px 24px rgba(45, 42, 38, 0.08))',
   };
 
   const siderStyle: CSSProperties = {
-    backgroundColor: consoleTheme.siderBg,
-    borderRight: `1px solid ${borderColor}`,
+    backgroundColor: 'var(--sc-warm-bg, #FAF8F5)',
+    borderRight: `1px solid var(--sc-border-light, ${borderColor})`,
     paddingTop: 0,
   };
 
   const headerStyle: CSSProperties = {
     padding: '16px 20px',
-    fontWeight: 600,
-    letterSpacing: '0.01em',
-    color: consoleTheme.siderTitle,
+    fontFamily: 'var(--sc-font-body, "Plus Jakarta Sans", system-ui, sans-serif)',
+    fontSize: 'var(--sc-text-sm, 13px)',
+    fontWeight: 700,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    color: 'var(--sc-ink-muted, #78736A)',
+    borderBottom: '1px solid var(--sc-border-light, #F0EBE4)',
   };
 
   const menuStyle: CSSProperties = {
     backgroundColor: 'transparent',
     borderInlineEnd: 'none',
+    fontFamily: 'var(--sc-font-body, "Plus Jakarta Sans", system-ui, sans-serif)',
   };
 
   const contentStyle: CSSProperties = {
@@ -182,24 +189,23 @@ function ViewUpload(props: IProps) {
     padding: '24px',
     maxHeight: '70vh',
     overflow: 'auto',
+    fontFamily: 'var(--sc-font-mono, "JetBrains Mono", monospace)',
   };
 
   const menuItems: MenuProps['items'] = files.map((file, index) => {
     const key = index.toString();
     const isActive = key === selectedKey;
     const pathName = file.path ? `${file.path}/` : '';
-    const itemColor = isActive ? consoleTheme.commentTitleText : consoleTheme.siderMenuItemColor;
-    const helperTextColor = isActive
-      ? consoleTheme.commentTitleText
-      : (consoleTheme.commentRubricCommentNeutral ?? '#8c8c8c');
+    const itemColor = isActive ? consoleTheme.commentTitleText : 'var(--sc-ink-secondary, #5C574F)';
+    const helperTextColor = isActive ? consoleTheme.commentTitleText : 'var(--sc-ink-muted, #78736A)';
 
     return {
       key,
       icon: <FileOutlined style={{ color: itemColor }} />,
       style: {
         margin: '4px 12px',
-        borderRadius: '8px',
-        backgroundColor: isActive ? consoleTheme.commentTitle : 'transparent',
+        borderRadius: 'var(--sc-radius-sm, 6px)',
+        backgroundColor: isActive ? 'var(--sc-warm-elevated, #F5F1EC)' : 'transparent',
         color: itemColor,
         transition: 'background-color 0.2s ease, color 0.2s ease',
       },

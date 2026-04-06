@@ -53,8 +53,15 @@ describe('encodeForLink', () => {
 });
 
 describe('encodeForRoute', () => {
-  it('delegates to encodeForLink', () => {
-    expect(encodeForRoute('foo/bar')).toBe(encodeForLink('foo/bar'));
+  it('encodes slashes and parentheses for route paths', () => {
+    expect(encodeForRoute('foo/bar')).toBe('foo%2Fbar');
+    expect(encodeForRoute('HW (1)')).toBe('HW %281%29');
+  });
+
+  it('does not encode characters that React Router decodes from URLs', () => {
+    expect(encodeForRoute('Additive+Anon')).toBe('Additive+Anon');
+    expect(encodeForRoute('HW #1')).toBe('HW #1');
+    expect(encodeForRoute('50%')).toBe('50%');
   });
 });
 

@@ -1,0 +1,97 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
+// Student Console — "Warm Academic" Design Tokens
+
+:root {
+  // Typography
+  --sc-font-display: 'Fraunces', Georgia, serif;
+  --sc-font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --sc-font-mono: 'JetBrains Mono', 'PT Mono', monospace;
+
+  // Type Scale
+  --sc-text-xs: 0.75rem; // 12px
+  --sc-text-sm: 0.8125rem; // 13px
+  --sc-text-base: 0.875rem; // 14px
+  --sc-text-md: 1rem; // 16px
+  --sc-text-lg: 1.125rem; // 18px
+  --sc-text-xl: 1.5rem; // 24px
+  --sc-text-2xl: 2rem; // 32px
+
+  // Colors — Warm palette
+  --sc-warm-bg: #faf8f5;
+  --sc-warm-surface: #ffffff;
+  --sc-warm-elevated: #f5f1ec;
+  --sc-warm-elevated-hover: #ede8e1;
+
+  // Ink
+  --sc-ink: #2d2a26;
+  --sc-ink-secondary: #5c574f;
+  --sc-ink-muted: #78736a;
+  --sc-ink-faint: #b5afa6;
+
+  // Borders & dividers
+  --sc-border: #e8e3dc;
+  --sc-border-light: #f0ebe4;
+  --sc-divider: #f0ebe4;
+
+  // Brand (codePost green)
+  --sc-brand: #198665;
+  --sc-brand-hover: #147553;
+  --sc-brand-light: #e8f5ee;
+  --sc-brand-text: #ffffff;
+
+  // Accent — Terracotta (urgency)
+  --sc-accent: #c4704b;
+  --sc-accent-hover: #b3613d;
+  --sc-accent-light: #fdf0eb;
+
+  // Focus — Blue
+  --sc-focus: #4e78ff;
+  --sc-focus-light: #eef2ff;
+
+  // Status
+  --sc-status-success: #198665;
+  --sc-status-success-bg: #e8f5ee;
+  --sc-status-warning: #d4920a;
+  --sc-status-warning-bg: #fff8e6;
+  --sc-status-danger: #d94040;
+  --sc-status-danger-bg: #fef0f0;
+  --sc-status-neutral: #78736a;
+  --sc-status-neutral-bg: #f5f1ec;
+  --sc-status-muted: #b5afa6;
+  --sc-status-muted-bg: #faf8f5;
+
+  // Spacing
+  --sc-space-xs: 4px;
+  --sc-space-sm: 8px;
+  --sc-space-md: 12px;
+  --sc-space-lg: 16px;
+  --sc-space-xl: 24px;
+  --sc-space-2xl: 32px;
+  --sc-space-3xl: 48px;
+
+  // Radii
+  --sc-radius-sm: 6px;
+  --sc-radius-md: 10px;
+  --sc-radius-lg: 14px;
+  --sc-radius-pill: 100px;
+
+  // Shadows
+  --sc-shadow-sm: 0 1px 2px rgba(45, 42, 38, 0.04);
+  --sc-shadow-md: 0 2px 8px rgba(45, 42, 38, 0.06), 0 1px 2px rgba(45, 42, 38, 0.04);
+  --sc-shadow-lg: 0 8px 24px rgba(45, 42, 38, 0.08), 0 2px 8px rgba(45, 42, 38, 0.04);
+  --sc-shadow-hover: 0 12px 32px rgba(45, 42, 38, 0.1), 0 4px 12px rgba(45, 42, 38, 0.06);
+
+  // Transitions
+  --sc-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --sc-duration-fast: 150ms;
+  --sc-duration-normal: 250ms;
+  --sc-duration-slow: 400ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sc-duration-fast: 0ms;
+    --sc-duration-normal: 0ms;
+    --sc-duration-slow: 0ms;
+  }
+}

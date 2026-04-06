@@ -262,8 +262,16 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
   }, []);
 
   const loadTests = useCallback(
-    async (assignmentId: number) => {
+    async (assignmentId: number, assignment?: Assignment | AssignmentStudentType) => {
       if (isStudent) {
+        const assgn = assignment ?? selectedAssignment;
+        // Only load tests when student test runs are configured or live feedback is on
+        const hasStudentTestRuns = assgn?.maxStudentTestRuns != null && assgn.maxStudentTestRuns > 0;
+        const isLiveFeedback = assgn?.liveFeedbackMode ?? false;
+        if (!hasStudentTestRuns && !isLiveFeedback) {
+          return;
+        }
+
         setLoadingTests(true);
 
         // Fetch categories and initial test cases
@@ -285,7 +293,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         setLoadingTests(false);
       }
     },
-    [isStudent, normalizeStudentTestCase],
+    [isStudent, normalizeStudentTestCase, selectedAssignment],
   );
 
   // Update student tests (merged with results) when submission or assignment changes
@@ -293,21 +301,37 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     const updateStudentTests = async () => {
       if (!isStudent || !selectedAssignment) return;
 
+      // Only fetch test data when student test runs are configured or live feedback is on
+      const hasStudentTestRuns =
+        selectedAssignment.maxStudentTestRuns != null && selectedAssignment.maxStudentTestRuns > 0;
+      const isLiveFeedback = selectedAssignment.liveFeedbackMode ?? false;
+      if (!hasStudentTestRuns && !isLiveFeedback) return;
+
       if (submission) {
         try {
           const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
-          const testResults = await submissionsApi.testResultsRetrieve({
-            id: submission.id,
-          });
 
-          const latestTests = getLatestSubmissionTests(testResults.submissionTests || []);
-          const resultMap = new Map(latestTests.map((t) => [t.testCase, t]));
+          // Only merge in test results when feedback is released, submission is finalized, or in live feedback mode
+          const canSeeResults =
+            isLiveFeedback || selectedAssignment.feedbackReleased || submission.isFinalized;
 
-          const testsWithResults = studentTests.testCases.map((test) => {
-            const result = resultMap.get(test.id);
-            return normalizeStudentTestCase(test, result);
-          });
-          setTestCasesState(testsWithResults);
+          if (canSeeResults) {
+            const testResults = await submissionsApi.testResultsRetrieve({
+              id: submission.id,
+            });
+
+            const latestTests = getLatestSubmissionTests(testResults.submissionTests || []);
+            const resultMap = new Map(latestTests.map((t) => [t.testCase, t]));
+
+            const testsWithResults = studentTests.testCases.map((test) => {
+              const result = resultMap.get(test.id);
+              return normalizeStudentTestCase(test, result);
+            });
+            setTestCasesState(testsWithResults);
+          } else {
+            // Show test definitions without results
+            setTestCasesState(studentTests.testCases.map((test) => normalizeStudentTestCase(test)));
+          }
         } catch (e) {
           console.error(e);
         }
@@ -404,7 +428,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
       if (propsSelectedAssignment) {
         loadTemplates(propsSelectedAssignment);
-        loadTests(propsSelectedAssignment.id);
+        loadTests(propsSelectedAssignment.id, propsSelectedAssignment);
 
         if (propsSelectedStudents.length > 0) {
           let primaryStudent: string | null = null;
@@ -418,7 +442,15 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           if (primaryStudent !== null) {
             const sub = submissions[primaryStudent][propsSelectedAssignment.id];
             setSubmission(sub);
-            loadTestResults(sub, false);
+            // Only load test results for students when feedback is accessible
+            const canSeeResults =
+              !isStudent ||
+              propsSelectedAssignment.liveFeedbackMode ||
+              propsSelectedAssignment.feedbackReleased ||
+              sub.isFinalized;
+            if (canSeeResults) {
+              loadTestResults(sub, false);
+            }
           }
         }
       }
@@ -1275,10 +1307,17 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
     }
   }
 
+  // Only show the Tests tab when student test runs are configured or live feedback is on
+  const studentTestsEnabled = isStudent
+    ? (selectedAssignment?.maxStudentTestRuns != null && selectedAssignment.maxStudentTestRuns > 0) ||
+      (selectedAssignment?.liveFeedbackMode ?? false)
+    : true;
+
   const showTestsTab =
-    (testCategories.length > 0 && (!selectedAssignment?.nudgeMode || submissionTests.length > 0)) ||
-    testsLog ||
-    loadingTests;
+    studentTestsEnabled &&
+    ((testCategories.length > 0 && (!selectedAssignment?.nudgeMode || submissionTests.length > 0)) ||
+      testsLog ||
+      loadingTests);
 
   return (
     <Modal
