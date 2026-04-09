@@ -483,12 +483,16 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
     return Promise.resolve();
   };
 
-  const tabPaneStyle = { maxHeight: 'calc(100vh - 280px)', overflow: 'auto', minHeight: 200 };
+  const tabPaneStyle = { maxHeight: 'calc(100vh - 280px)', overflow: 'auto', minHeight: 200, padding: '4px 0' };
 
   return (
     <Modal
       open={open}
-      title={'Update assignment settings: ' + assignment.name}
+      title={
+        <span style={{ fontWeight: 600, fontSize: 16, letterSpacing: '-0.2px' }}>
+          {'Update assignment settings: ' + assignment.name}
+        </span>
+      }
       okText="Save"
       cancelText="Cancel"
       onCancel={onCancel}
@@ -496,7 +500,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
       confirmLoading={isLoading}
       width="90%"
       style={{ maxWidth: 1200, top: 20, maxHeight: '95vh' }}
-      styles={{ body: { overflow: 'auto', maxHeight: 'calc(95vh - 110px)' } }}
+      styles={{
+        body: { overflow: 'auto', maxHeight: 'calc(95vh - 110px)' },
+        header: { borderBottom: '1px solid rgba(0, 0, 0, 0.06)', paddingBottom: 16, marginBottom: 0 },
+      }}
       maskClosable={false}
       destroyOnHidden
     >
@@ -696,8 +703,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         <Switch disabled={!studentUploadEnabled} />
                       </Form.Item>
 
-                      <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                      <h3>Late Policy</h3>
+                      <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
+                      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
+                        Late Policy
+                      </h3>
 
                       <Form.Item
                         name="allowLateUploads"
@@ -757,8 +766,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         />
                       </Form.Item>
 
-                      <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                      <h3>Feedback Config</h3>
+                      <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
+                      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
+                        Feedback Config
+                      </h3>
 
                       <Form.Item
                         name="liveFeedbackMode"
@@ -858,8 +869,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     <Switch />
                   </Form.Item>
 
-                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                  <h3>Autograder Settings</h3>
+                  <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
+                  <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
+                    Autograder Settings
+                  </h3>
                   <Form.Item
                     name="runFilesOnSubmit"
                     label="Execute files on submit"
@@ -910,8 +923,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     <Switch />
                   </Form.Item>
 
-                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                  <h3>Anonymous Grading</h3>
+                  <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
+                  <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
+                    Anonymous Grading
+                  </h3>
                   <Form.Item
                     name="anonymousGrading"
                     label="Anonymous grading"
@@ -980,8 +995,10 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     <Switch />
                   </Form.Item>
 
-                  <div style={{ marginTop: 24, marginBottom: 24, borderTop: '1px solid #f0f0f0' }} />
-                  <h3>Regrade Requests</h3>
+                  <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
+                  <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
+                    Regrade Requests
+                  </h3>
 
                   <Form.Item
                     name="allowRegradeRequests"
@@ -1104,7 +1121,7 @@ Context:
                         forceRender: true,
                         children: (
                           <div style={{ paddingTop: 16 }}>
-                            <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
+                            <p style={{ fontSize: 13, color: 'rgba(0, 0, 0, 0.5)', marginBottom: 16, lineHeight: 1.6 }}>
                               This description provides context to the AI when generating suggested comments and
                               submission summaries. It is auto-generated from assignment materials (files, tests,
                               rubric) but can be edited manually. Only visible to instructors and graders.

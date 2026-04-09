@@ -17,7 +17,6 @@ import CPLogo from '../../core/CPLogo';
 
 import { USER_TYPE } from '../../../types/common';
 
-import themeVars from '../../../styles/abstracts/_theme.js';
 import layoutVars from '../../../styles/layout/_layoutVars';
 
 import useFixedWindow from '../../core/useFixedWindow';
@@ -73,10 +72,10 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
             height: '100vh',
             overflow: 'hidden',
             zIndex: 10,
-
             position: 'sticky',
             top: 0,
             left: 0,
+            borderRight: '1px solid rgba(255, 255, 255, 0.04)',
           }}
         >
           <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
@@ -92,9 +91,13 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
                 <div
                   style={{
                     textAlign: 'center',
-                    color: themeVars.theme.green4,
+                    color: 'rgba(255, 255, 255, 0.35)',
                     lineHeight: 1,
-                    paddingTop: 10,
+                    paddingTop: 12,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase',
                   }}
                 >{`${props.role} Console`}</div>
               </div>
@@ -103,7 +106,15 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           {props.navigation(collapsed)}
         </Sider>
       )}
-      <Layout style={{ minWidth: layoutVars.minWidths.admin, height: '100vh', overflowY: 'auto', overflowX: 'auto' }}>
+      <Layout
+        style={{
+          minWidth: layoutVars.minWidths.admin,
+          height: '100vh',
+          overflowY: 'auto',
+          overflowX: 'auto',
+          background: '#f4f5f7',
+        }}
+      >
         <Header className="layout--admin__header">{props.header}</Header>
         {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
           <Header className="layout--admin__banner">{props.banner}</Header>

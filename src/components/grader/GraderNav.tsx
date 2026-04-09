@@ -123,24 +123,34 @@ const GraderNav: React.FC<IProps> = (props) => {
         display: 'flex',
         alignItems: 'center',
         fontSize: 13,
-      },
+      } as React.CSSProperties,
       onClick: () => openLink('https://codepost.cs.rutgers.edu/scholarships/computer-science-education'),
     },
   ];
 
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        height: 'calc(100vh - 138px)',
+        paddingTop: 8,
+      }}
+    >
       <div>
         <Menu theme="dark" mode="inline" selectedKeys={[getDefaultSelectedKeys()]} items={mainMenuItems} />
       </div>
-      <div style={{ height: '100%' }}>
-        <Menu
-          theme="dark"
-          mode="inline"
-          style={{ position: 'absolute', bottom: 75 }}
-          selectedKeys={[]}
-          items={bottomMenuItems}
+      <div style={{ flexGrow: 1 }} />
+      <div>
+        <div
+          style={{
+            height: 1,
+            background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)',
+            margin: '8px 16px',
+          }}
         />
+        <Menu theme="dark" mode="inline" selectedKeys={[]} items={bottomMenuItems} />
       </div>
     </div>
   );

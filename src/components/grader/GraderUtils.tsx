@@ -152,21 +152,29 @@ const formatGradeText = (
 ): React.ReactElement => {
   if (sub.isFinalized) {
     const gradeDisplay = assignment ? `${sub.grade}/${assignment.points}` : `${sub.grade}`;
-    return <Text>{gradeDisplay}</Text>;
+    return <Text style={{ fontVariantNumeric: 'tabular-nums' }}>{gradeDisplay}</Text>;
   }
 
   if (sub.grader) {
-    return <Text strong>Unfinalized</Text>;
+    return (
+      <Text strong style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+        Unfinalized
+      </Text>
+    );
   }
 
-  return <Text strong>Unclaimed</Text>;
+  return (
+    <Text strong style={{ color: 'rgba(0, 0, 0, 0.3)' }}>
+      Unclaimed
+    </Text>
+  );
 };
 
 /**
  * Format grader text based on submission state
  */
 const formatGraderText = (grader: string | null | undefined): string | React.ReactElement => {
-  return grader ? grader : <Text strong>Unclaimed</Text>;
+  return grader ? grader : <Text style={{ color: 'rgba(0, 0, 0, 0.3)' }}>Unclaimed</Text>;
 };
 
 /**

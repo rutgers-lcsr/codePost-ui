@@ -247,14 +247,9 @@ class SectionDetailPanel extends Component<IProps, IState> {
     if (this.props.assignment.anonymousGrading) {
       anonymousToggle = (
         <div>
-          <div style={{ display: 'inline-block' }}>
-            Reveal students: &nbsp;
-            <Switch
-              defaultChecked={showingEmails}
-              onChange={this.toggleShowStudentEmails}
-              key="toggleShowStudents"
-              style={{ display: 'inline-block' }}
-            />
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span>Reveal students:</span>
+            <Switch defaultChecked={showingEmails} onChange={this.toggleShowStudentEmails} key="toggleShowStudents" />
           </div>
           <Divider type="vertical" style={{ height: 25 }} />
         </div>
@@ -351,7 +346,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
       <CPAdminDetail
         goBack={null}
         breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
-        title={`Section: ${this.state.activeSection.name}`}
+        title={<span style={{ letterSpacing: '-0.3px' }}>{`Section: ${this.state.activeSection.name}`}</span>}
         actions={[anonymousToggle, selectContent, claimButton]}
         content={content}
         gutterSize={0}

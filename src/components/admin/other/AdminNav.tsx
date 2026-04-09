@@ -56,8 +56,9 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     if (/\/roster\/sections(?:\/|$)/.test(pathname)) return 'roster/sections';
     if (/\/roster(?:\/|$)/.test(pathname)) return 'roster/students';
 
-    if (/\/settings\/webhooks(?:\/|$)/.test(pathname)) return 'course-settings/webhooks';
-    if (/\/settings(?:\/|$)/.test(pathname)) return 'course-settings/general';
+    if (/\/settings\/webhooks(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname))
+      return 'course-settings/webhooks';
+    if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings/general';
 
     if (/\/activity-log(?:\/|$)/.test(pathname)) return 'activity-log';
 
@@ -169,6 +170,13 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
 
   const footer = (
     <div>
+      <div
+        style={{
+          height: 1,
+          background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent)',
+          margin: '8px 16px',
+        }}
+      />
       <Menu
         theme="dark"
         mode="inline"
@@ -205,7 +213,15 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           },
         ]}
       />
-      <div className="version" style={{ color: '#848484', paddingLeft: 24, paddingBottom: 14 }}>
+      <div
+        style={{
+          color: 'rgba(255, 255, 255, 0.25)',
+          paddingLeft: 24,
+          paddingBottom: 16,
+          fontSize: 11,
+          letterSpacing: '0.3px',
+        }}
+      >
         {props.collapsed ? null : `v${process.env.REACT_APP_VERSION}`}
       </div>
     </div>
@@ -218,6 +234,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         height: props.windowheight - 90 - 48,
+        paddingTop: 8,
         overflow: 'auto',
       }}
     >

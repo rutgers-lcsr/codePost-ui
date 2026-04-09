@@ -86,9 +86,9 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
                 <CPAdminDetail
                   breadcrumbs={<Breadcrumb items={breadcrumbs} />}
                   goBack={null}
-                  title={<div>{props.title}</div>}
+                  title={<div style={{ letterSpacing: '-0.3px' }}>{props.title}</div>}
                   actions={props.actions}
-                  content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} />}
+                  content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} size="middle" />}
                   gutterSize={0}
                 />
               );

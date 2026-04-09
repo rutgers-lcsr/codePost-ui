@@ -85,19 +85,19 @@ const themeConfig: ThemeConfig = {
       paddingBlock: 8,
     },
     Collapse: {
-      headerBg: '#f2f2f2',
+      headerBg: '#f7f8fa',
       contentBg: '#ffffff',
-      headerPadding: '8px 16px',
+      headerPadding: '10px 16px',
       contentPadding: '16px',
     },
     Tooltip: {
       zIndexPopup: 2500,
     },
     Modal: {
-      // headerBg: '#1b1b1b',
-      titleColor: 'rgba(0, 0, 0, 0.8)',
+      titleColor: 'rgba(0, 0, 0, 0.85)',
       contentBg: '#ffffff',
       colorBgBase: '#000000',
+      borderRadiusLG: 10,
     },
     Tabs: {
       itemColor: 'rgba(0, 0, 0, 0.8)',

@@ -53,9 +53,9 @@ interface IProps {
 
 const MIN_ROWS = 10;
 const MANY_ROWS = 50;
-const HIGHLIGHT_BACKGROUND_COLOR = '#5CBB8B';
+const HIGHLIGHT_BACKGROUND_COLOR = '#48cc98';
 const SEARCH_PLACEHOLDER = 'Search...';
-const SEARCH_INPUT_WIDTH = 300;
+const SEARCH_INPUT_WIDTH = 320;
 
 /**********************************************************************************************************************/
 /* Helper Functions
@@ -292,15 +292,13 @@ const TableDetail: React.FC<IProps> = ({
   const tableContent = (
     <div>
       {!hideSearch && (
-        <div>
+        <div style={{ marginBottom: 20 }}>
           <Input.Search
             onChange={handleSearchChange}
             placeholder={SEARCH_PLACEHOLDER}
             style={{ width: SEARCH_INPUT_WIDTH }}
             allowClear
           />
-          <br />
-          <br />
         </div>
       )}
       <Table

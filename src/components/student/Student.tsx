@@ -13,6 +13,7 @@ import {
   ExclamationCircleOutlined,
   FireOutlined,
   InboxOutlined,
+  LeftOutlined,
   SettingOutlined,
   StopOutlined,
 } from '@ant-design/icons';
@@ -892,9 +893,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     <CPFlex
       left={[
         <CPLogo cpType="dark" key="logo" onClick={openHome} />,
-        <Link key="dashboard" to="/student" className="internal-link" style={{ fontSize: 13, fontWeight: 500 }}>
-          Dashboard
-        </Link>,
+        <Button key="back" type="link" onClick={() => navigate('/student')} style={{ color: 'inherit' }}>
+          <LeftOutlined /> Dashboard
+        </Button>,
         <CourseMenu key="course" courses={initialCourses} currentCourse={currentCourse} base="student" />,
       ]}
       right={[

@@ -472,7 +472,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     // Queue length display
     const queueLengthDisplay =
       queueLength !== null ? (
-        <Tag color="blue" icon={<InfoCircleOutlined />}>
+        <Tag color="blue" icon={<InfoCircleOutlined />} style={{ borderRadius: 4, fontWeight: 500, fontSize: 12 }}>
           {isLoadingQueueLength ? 'Loading...' : `${queueLength} in queue`}
         </Tag>
       ) : null;
@@ -599,7 +599,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
     // Consolidate actions into a single toolbar for better spacing control
     const toolbar = (
-      <Space size="large" align="center">
+      <Space size="middle" align="center" wrap>
         {assignment.anonymousGrading && canViewSubmissionInfo && (
           <Space size="small">
             <span>Reveal students:</span>
@@ -614,7 +614,13 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
     actions = [toolbar];
     content = (
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 20 }} loading={isLoadingSubmissions} />
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'] }}
+        loading={isLoadingSubmissions}
+        size="middle"
+      />
     );
   } else {
     let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
@@ -648,7 +654,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     <CPAdminDetail
       goBack={null}
       breadcrumbs={<Breadcrumb items={[...breadcrumbs, { title: assignment.name }]} />}
-      title={<div>{`Claimed by Me: ${assignment.name}`}</div>}
+      title={<div style={{ letterSpacing: '-0.3px' }}>{`Claimed by Me: ${assignment.name}`}</div>}
       titleInfo={tooltips.grader.mySubmissions.title}
       actions={actions}
       content={content}

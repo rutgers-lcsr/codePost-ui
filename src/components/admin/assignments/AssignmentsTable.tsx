@@ -747,7 +747,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         key: assignment.id,
         assignment: (
           <Space orientation="vertical" size={0}>
-            <Text strong style={{ fontSize: '16px' }}>
+            <Text strong style={{ fontSize: '15px', letterSpacing: '-0.2px' }}>
               {assignment.name}
               {(assignment.hideFrom ?? []).length > 0 && (
                 <Tooltip

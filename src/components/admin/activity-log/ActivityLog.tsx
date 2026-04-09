@@ -64,15 +64,9 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
 
   // Build a student email → user ID map from events (for filter)
   // We use email-based filtering via the student list from props
-  const studentOptions = useMemo(
-    () => students.map((email) => ({ value: email, label: email })),
-    [students],
-  );
+  const studentOptions = useMemo(() => students.map((email) => ({ value: email, label: email })), [students]);
 
-  const assignmentOptions = useMemo(
-    () => assignments.map((a) => ({ value: a.id, label: a.name })),
-    [assignments],
-  );
+  const assignmentOptions = useMemo(() => assignments.map((a) => ({ value: a.id, label: a.name })), [assignments]);
 
   const buildQueryParams = useCallback((): AuditLogQueryParams => {
     const params: AuditLogQueryParams = {
@@ -179,7 +173,7 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
         const entries = Object.entries(val);
         if (entries.length === 0) return '—';
         return (
-          <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)' }}>
+          <span style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.45)', fontFamily: 'monospace' }}>
             {entries.map(([k, v]) => `${k}: ${String(v)}`).join(', ')}
           </span>
         );
@@ -188,17 +182,24 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
   ];
 
   const breadcrumbs = (
-    <Breadcrumb
-      items={[
-        { title: currentCourse.name },
-        { title: currentCourse.period },
-        { title: 'Activity Log' },
-      ]}
-    />
+    <Breadcrumb items={[{ title: currentCourse.name }, { title: currentCourse.period }, { title: 'Activity Log' }]} />
   );
 
   const filters = (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+    <div
+      style={{
+        display: 'flex',
+        gap: 12,
+        flexWrap: 'wrap',
+        marginBottom: 20,
+        alignItems: 'center',
+        padding: '14px 16px',
+        background: '#fafbfc',
+        borderRadius: 8,
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+      }}
+    >
+      {' '}
       <Select
         allowClear
         showSearch
@@ -225,11 +226,7 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
         value={eventTypeFilter}
         onChange={setEventTypeFilter}
       />
-      <RangePicker
-        value={dateRange}
-        onChange={(dates) => setDateRange(dates)}
-        style={{ width: 280 }}
-      />
+      <RangePicker value={dateRange} onChange={(dates) => setDateRange(dates)} style={{ width: 280 }} />
     </div>
   );
 

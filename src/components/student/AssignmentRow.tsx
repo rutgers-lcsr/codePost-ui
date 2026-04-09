@@ -95,6 +95,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   meanGrade,
   medianGrade,
   dueDate,
+  uploadDate,
   showStats = false,
   showUpload = false,
   allowStudentUpload = false,
@@ -290,6 +291,11 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
             <div className={styles.rowSubline}>
               <span className={statusPillClass[status]}>{statusLabel[status]}</span>
               {dueDateFragment}
+              {uploadDate && status !== SubmissionStatus.NO_SUBMISSION && (
+                <span className={styles.rowDueDate}>
+                  Submitted <CodePostDate datetime={uploadDate} />
+                </span>
+              )}
             </div>
           </div>
           {hasStatsContent && (
@@ -302,12 +308,29 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
 
         {/* Right: action group */}
         <div className={styles.rowActions}>
-          {(primaryAction || secondaryButtons.length > 0) && (
-            <div className={styles.btnGroup} role="group" aria-label="Assignment actions">
-              {primaryAction}
-              {secondaryButtons}
-            </div>
-          )}
+          {primaryAction || secondaryButtons.length > 0 ? (
+            primaryAction ? (
+              <div className={styles.btnGroup} role="group" aria-label="Assignment actions">
+                {primaryAction}
+                {secondaryButtons}
+              </div>
+            ) : secondaryButtons.length === 1 && hasDownload && onDownload ? (
+              <button
+                className={styles.btnSecondary}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDownload();
+                }}
+                aria-label={`Download ${assignmentName}`}
+              >
+                <DownloadOutlined /> Download
+              </button>
+            ) : (
+              <div className={styles.btnGroup} role="group" aria-label="Assignment actions">
+                {secondaryButtons}
+              </div>
+            )
+          ) : null}
         </div>
       </div>
 

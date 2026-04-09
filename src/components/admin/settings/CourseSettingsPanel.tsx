@@ -185,11 +185,12 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {/* Course Name & Period */}
       <Card
         title={
-          <Typography.Title level={2} style={{ margin: 0 }}>
+          <Typography.Title level={2} style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
             Course Identity
           </Typography.Title>
         }
-        style={{ marginBottom: 24, maxWidth: 600 }}
+        style={{ marginBottom: 24, maxWidth: 600, borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)' }}
+        styles={{ header: { borderBottom: '1px solid rgba(0, 0, 0, 0.05)' } }}
       >
         <Flex vertical gap={16}>
           <Form.Item
@@ -246,12 +247,17 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {/* Toggle Settings */}
       <Card
         title={
-          <Typography.Title level={2} style={{ margin: 0 }}>
+          <Typography.Title level={2} style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
             Course Settings
           </Typography.Title>
         }
-        extra={<Text type="secondary">Configure course behavior</Text>}
-        style={{ marginBottom: 24, maxWidth: 800 }}
+        extra={
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Configure course behavior
+          </Text>
+        }
+        style={{ marginBottom: 24, maxWidth: 800, borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)' }}
+        styles={{ header: { borderBottom: '1px solid rgba(0, 0, 0, 0.05)' } }}
       >
         <Flex vertical gap={12}>
           {settingsData.map((setting) => (
@@ -261,6 +267,8 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
               style={{
                 background: setting.enabled ? (setting.danger ? '#fff2f0' : '#f6ffed') : '#fafafa',
                 borderColor: setting.enabled ? (setting.danger ? '#ffccc7' : '#b7eb8f') : '#f0f0f0',
+                borderRadius: 6,
+                transition: 'all 0.25s ease',
               }}
             >
               <Flex justify="space-between" align="flex-start">
@@ -298,12 +306,17 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {/* Additional Settings */}
       <Card
         title={
-          <Typography.Title level={2} style={{ margin: 0 }}>
+          <Typography.Title level={2} style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
             Additional Options
           </Typography.Title>
         }
-        extra={<Text type="secondary">Late days and timezone</Text>}
-        style={{ marginBottom: 24, maxWidth: 800 }}
+        extra={
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Late days and timezone
+          </Text>
+        }
+        style={{ marginBottom: 24, maxWidth: 800, borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)' }}
+        styles={{ header: { borderBottom: '1px solid rgba(0, 0, 0, 0.05)' } }}
       >
         <Flex vertical gap={12}>
           {/* Late Day Credits */}
@@ -355,11 +368,12 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {/* Course Info */}
       <Card
         title={
-          <Typography.Title level={2} style={{ margin: 0 }}>
+          <Typography.Title level={2} style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
             Course Information
           </Typography.Title>
         }
-        style={{ marginBottom: 24, maxWidth: 800 }}
+        style={{ marginBottom: 24, maxWidth: 800, borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)' }}
+        styles={{ header: { borderBottom: '1px solid rgba(0, 0, 0, 0.05)' } }}
       >
         <Descriptions column={1} bordered size="small">
           <Descriptions.Item label="Course ID">

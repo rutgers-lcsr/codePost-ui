@@ -265,27 +265,22 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
 
     // If we're in anonymous grading mode, add a toggle to reveal student emails
     const anonymousToggle = assignment.anonymousGrading ? (
-      <div style={{ display: 'inline-block', padding: '0px 20px' }}>
-        Reveal students: &nbsp;
-        <Switch
-          defaultChecked={showingEmails}
-          onChange={this.toggleShowStudentEmails}
-          key="toggleShowStudents"
-          style={{ display: 'inline-block' }}
-        />
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <span>Reveal students:</span>
+        <Switch defaultChecked={showingEmails} onChange={this.toggleShowStudentEmails} key="toggleShowStudents" />
       </div>
     ) : (
       <div />
     );
 
     const graderSelect = (
-      <div>
+      <div style={{ marginBottom: 20 }}>
         <Select
-          placeholder="Select Graders..."
+          placeholder="Filter by grader..."
           mode="multiple"
           onSelect={this.handleSelect}
           onDeselect={this.handleDeselect}
-          style={{ width: 500, marginBottom: 20 }}
+          style={{ width: 500 }}
         >
           {graders.map((grader) => {
             return (
@@ -308,7 +303,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
     const content = (
       <div>
         {graderSelect}
-        <Table columns={columns} dataSource={data} loading={this.state.isLoading} />
+        <Table columns={columns} dataSource={data} loading={this.state.isLoading} size="middle" />
       </div>
     );
 
@@ -316,7 +311,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       <CPAdminDetail
         breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
         goBack={null}
-        title={`All submissions: ${this.props.assignment.name}`}
+        title={<span style={{ letterSpacing: '-0.3px' }}>{`All submissions: ${this.props.assignment.name}`}</span>}
         actions={[anonymousToggle]}
         content={content}
         gutterSize={0}

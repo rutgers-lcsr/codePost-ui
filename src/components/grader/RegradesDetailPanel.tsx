@@ -118,13 +118,12 @@ const RegradesDetailPanel = (props: IProps) => {
   const revealStudents =
     props.isAnonymous && regradeSubmissions.length > 0 && typeof regradeSubmissions[0].students !== 'undefined' ? (
       <div>
-        <div style={{ display: 'inline-block' }}>
-          Reveal students: &nbsp;
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span>Reveal students:</span>
           <Switch
             defaultChecked={showStudentEmails}
             onChange={setShowStudentEmails.bind({}, !showStudentEmails)}
             key="toggleShowStudents"
-            style={{ display: 'inline-block' }}
             disabled={isLoading}
           />
         </div>
@@ -136,14 +135,13 @@ const RegradesDetailPanel = (props: IProps) => {
   const showAllRegrades =
     props.isAdmin || props.isSuperGrader ? (
       <div>
-        <div style={{ display: 'inline-block', marginLeft: 15 }}>
-          View all regrades: &nbsp;
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span>View all regrades:</span>
           <Switch
             aria-label={!viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
             defaultChecked={viewAll}
             onChange={setViewAll.bind(!viewAll)}
             key="toggleViewAll"
-            style={{ display: 'inline-block' }}
             disabled={isLoading}
           />
         </div>
@@ -173,8 +171,8 @@ const RegradesDetailPanel = (props: IProps) => {
     <CPAdminDetail
       breadcrumbs={<Breadcrumb items={[...props.breadcrumbs, { title: props.assignment.name }]} />}
       goBack={null}
-      title={<div>{`Regrade Requests: ${props.assignment.name}`}</div>}
-      titleInfo={'Quesitons or regrade requests from submissions that you have graded.'}
+      title={<div style={{ letterSpacing: '-0.3px' }}>{`Regrade Requests: ${props.assignment.name}`}</div>}
+      titleInfo={'Questions or regrade requests from submissions that you have graded.'}
       actions={actions}
       content={content}
       gutterSize={0}

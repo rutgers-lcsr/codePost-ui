@@ -221,6 +221,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
       dataSource={data}
       pagination={false}
       loading={props.isLoading}
+      size="middle"
     />
   );
 };

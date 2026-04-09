@@ -1,0 +1,423 @@
+/* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software. */
+/* Admin Dashboard — Course Overview */
+
+@use '../../styles/abstracts/student-console-tokens';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DASHBOARD CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dashboard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--sc-space-2xl) var(--sc-space-xl);
+  font-family: var(--sc-font-body);
+  color: var(--sc-ink);
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GREETING HEADER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.greeting {
+  margin-bottom: var(--sc-space-2xl);
+}
+
+.roleLabel {
+  font-family: var(--sc-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sc-brand);
+  margin: 0 0 var(--sc-space-sm);
+}
+
+.greetingTitle {
+  font-family: var(--sc-font-display);
+  font-size: var(--sc-text-2xl);
+  font-weight: 500;
+  color: var(--sc-ink);
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-optical-sizing: auto;
+}
+
+.greetingSubtitle {
+  font-size: var(--sc-text-base);
+  color: var(--sc-ink-muted);
+  margin: var(--sc-space-xs) 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMARY STRIP — stats at a glance
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.summaryStrip {
+  display: flex;
+  gap: var(--sc-space-md);
+  margin-bottom: var(--sc-space-3xl);
+  flex-wrap: wrap;
+}
+
+.summaryCard {
+  flex: 1 1 160px;
+  background: var(--sc-warm-surface);
+  border: 1px solid var(--sc-border-light);
+  border-radius: var(--sc-radius-md);
+  padding: var(--sc-space-lg) var(--sc-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  min-width: 140px;
+  transition:
+    border-color var(--sc-duration-fast) var(--sc-ease),
+    box-shadow var(--sc-duration-fast) var(--sc-ease);
+}
+
+.summaryCard:hover {
+  border-color: var(--sc-border);
+  box-shadow: var(--sc-shadow-sm);
+}
+
+.summaryCardBrand {
+  composes: summaryCard;
+  border-left: 3px solid var(--sc-brand);
+}
+
+.summaryCardAccent {
+  composes: summaryCard;
+  border-left: 3px solid var(--sc-accent);
+}
+
+.summaryCardWarning {
+  composes: summaryCard;
+  border-left: 3px solid var(--sc-status-warning);
+}
+
+.summaryCardNeutral {
+  composes: summaryCard;
+  border-left: 3px solid var(--sc-ink-faint);
+}
+
+.summaryValue {
+  font-family: var(--sc-font-display);
+  font-size: var(--sc-text-xl);
+  font-weight: 600;
+  color: var(--sc-ink);
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: var(--sc-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sc-ink-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION HEADER — "Your Courses" / "Archived"
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-md);
+  margin-bottom: var(--sc-space-lg);
+  padding-bottom: var(--sc-space-md);
+  border-bottom: 2px solid var(--sc-divider);
+}
+
+.sectionTitle {
+  font-family: var(--sc-font-body);
+  font-size: var(--sc-text-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sc-ink-muted);
+  margin: 0;
+}
+
+.sectionCount {
+  font-size: var(--sc-text-xs);
+  color: var(--sc-ink-muted);
+  background: var(--sc-warm-elevated);
+  padding: 3px 10px;
+  border-radius: var(--sc-radius-pill);
+  font-weight: 700;
+  border: 1px solid var(--sc-border-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FILTER BAR — search + period pills
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sc-space-md);
+  margin-bottom: var(--sc-space-xl);
+}
+
+.searchInput {
+  max-width: 360px;
+  font-family: var(--sc-font-body);
+  flex-shrink: 0;
+}
+
+.periodFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-sm);
+  align-items: center;
+}
+
+.periodPill {
+  font-family: var(--sc-font-body);
+  font-size: var(--sc-text-xs);
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: var(--sc-radius-pill);
+  border: 1px solid var(--sc-border-light);
+  background: var(--sc-warm-surface);
+  color: var(--sc-ink-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--sc-duration-fast) var(--sc-ease),
+    border-color var(--sc-duration-fast) var(--sc-ease),
+    color var(--sc-duration-fast) var(--sc-ease);
+  white-space: nowrap;
+}
+
+.periodPill:hover {
+  border-color: var(--sc-border);
+  background: var(--sc-warm-elevated);
+  color: var(--sc-ink-secondary);
+}
+
+.periodPillActive {
+  composes: periodPill;
+  background: var(--sc-brand-light);
+  border-color: var(--sc-brand);
+  color: var(--sc-brand);
+}
+
+.periodPillActive:hover {
+  background: var(--sc-brand-light);
+  border-color: var(--sc-brand-hover);
+  color: var(--sc-brand-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COURSE CARDS GRID
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sc-space-lg);
+  margin-bottom: var(--sc-space-3xl);
+}
+
+.courseCard {
+  background: var(--sc-warm-surface);
+  border: 1px solid var(--sc-border-light);
+  border-radius: var(--sc-radius-lg);
+  padding: var(--sc-space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-md);
+  cursor: pointer;
+  transition:
+    border-color var(--sc-duration-fast) var(--sc-ease),
+    box-shadow var(--sc-duration-fast) var(--sc-ease),
+    transform var(--sc-duration-fast) var(--sc-ease);
+  text-decoration: none;
+  color: inherit;
+}
+
+.courseCard:hover {
+  border-color: var(--sc-border);
+  box-shadow: var(--sc-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.courseCard:focus-visible {
+  outline: 2px solid var(--sc-focus);
+  outline-offset: 2px;
+}
+
+.courseCardArchived {
+  composes: courseCard;
+  opacity: 0.7;
+}
+
+.courseCardArchived:hover {
+  opacity: 0.85;
+}
+
+.courseCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sc-space-md);
+}
+
+.courseCardName {
+  font-family: var(--sc-font-display);
+  font-size: var(--sc-text-lg);
+  font-weight: 500;
+  color: var(--sc-ink);
+  margin: 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.courseCardBadges {
+  display: flex;
+  gap: var(--sc-space-sm);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.courseCardPeriod {
+  font-size: var(--sc-text-xs);
+  font-weight: 600;
+  color: var(--sc-ink-muted);
+  background: var(--sc-warm-elevated);
+  padding: 2px 10px;
+  border-radius: var(--sc-radius-pill);
+  white-space: nowrap;
+  border: 1px solid var(--sc-border-light);
+}
+
+.courseCardArchivedBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sc-status-warning);
+  background: var(--sc-status-warning-bg);
+  padding: 2px 8px;
+  border-radius: var(--sc-radius-pill);
+  white-space: nowrap;
+  border: 1px solid rgba(212, 146, 10, 0.15);
+}
+
+.courseCardStats {
+  display: flex;
+  gap: var(--sc-space-xl);
+  font-size: var(--sc-text-sm);
+  color: var(--sc-ink-muted);
+}
+
+.courseCardStat {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-xs);
+}
+
+.courseCardStatIcon {
+  font-size: var(--sc-text-sm);
+  color: var(--sc-ink-faint);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px var(--sc-space-xl);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  color: var(--sc-ink-faint);
+  margin-bottom: var(--sc-space-lg);
+  opacity: 0.6;
+}
+
+.emptyTitle {
+  font-family: var(--sc-font-display);
+  font-size: var(--sc-text-lg);
+  font-weight: 500;
+  color: var(--sc-ink-secondary);
+  margin: 0 0 var(--sc-space-sm);
+}
+
+.emptySubtext {
+  font-size: var(--sc-text-base);
+  color: var(--sc-ink-muted);
+  max-width: 360px;
+}
+
+/* Loading skeleton */
+.skeleton {
+  height: 64px;
+  border-radius: var(--sc-radius-md);
+  background: linear-gradient(
+    90deg,
+    var(--sc-warm-elevated) 25%,
+    var(--sc-warm-elevated-hover) 37%,
+    var(--sc-warm-elevated) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: var(--sc-space-lg);
+  }
+
+  .greetingTitle {
+    font-size: var(--sc-text-xl);
+  }
+
+  .summaryStrip {
+    flex-direction: column;
+  }
+
+  .summaryCard {
+    flex: 1 1 auto;
+  }
+
+  .courseGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .courseCard,
+  .courseCard:hover {
+    transition: none;
+    transform: none;
+  }
+
+  .skeleton {
+    animation: none;
+    background: var(--sc-warm-elevated);
+  }
+}

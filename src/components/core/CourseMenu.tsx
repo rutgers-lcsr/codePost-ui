@@ -9,13 +9,13 @@ import { useCallback, useMemo, useState } from 'react';
 /* other library imports */
 import { Link } from 'react-router-dom';
 import { theme, Input } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, SearchOutlined } from '@ant-design/icons';
 
-/* codePost imports */
 /* codePost imports */
 import { Course } from '../../api-client';
 
 import { encodeForLink } from '../core/URLutils';
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import CPDropdown from './CPDropdown';
 
@@ -176,6 +176,27 @@ const CourseMenu = (props: IProps) => {
       key: 'no-results',
       label: <span style={{ color: token.colorTextTertiary }}>No courses found</span>,
       disabled: true,
+    });
+  }
+
+  // "View all courses" link at the bottom
+  if (props.courses.length > 1) {
+    menuItems.push({
+      type: 'divider' as const,
+      key: 'dashboard-divider',
+    });
+    menuItems.push({
+      key: 'view-all',
+      label: (
+        <Link
+          to={`/${props.base}/`}
+          onClick={() => LOCAL_SETTINGS.defaultCourse.setter(0)}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, color: token.colorTextSecondary }}
+        >
+          <AppstoreOutlined />
+          View all courses
+        </Link>
+      ),
     });
   }
 

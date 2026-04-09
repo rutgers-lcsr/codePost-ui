@@ -31,10 +31,10 @@ interface ICPAdminDetailProps {
 
 // Constants
 const SMALL_SCREEN_MARGIN = '20px 15px';
-const LARGE_SCREEN_MARGIN = '20px 60px';
-const SMALL_SCREEN_PADDING = '20px 15px';
-const LARGE_SCREEN_PADDING = '20px 35px';
-const DEFAULT_GUTTER_SIZE = 10;
+const LARGE_SCREEN_MARGIN = '24px 48px';
+const SMALL_SCREEN_PADDING = '24px 16px';
+const LARGE_SCREEN_PADDING = '28px 36px';
+const DEFAULT_GUTTER_SIZE = 12;
 const BREADCRUMB_GUTTER_SIZE = 10;
 const TITLE_INFO_PADDING_LEFT = 10;
 
@@ -78,7 +78,12 @@ const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
   const subheaderLeft = useMemo(
     () => [
       <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
-        <div role="heading" aria-level={1} className="cp-label cp-label--large cp-label--bold">
+        <div
+          role="heading"
+          aria-level={1}
+          className="cp-label cp-label--large cp-label--bold"
+          style={{ letterSpacing: '-0.3px' }}
+        >
           {title}
         </div>
         {titleTooltip}
@@ -100,7 +105,8 @@ const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
     () => ({
       padding: contentPadding,
       margin: contentMargin,
-      transition: '0.3s',
+      transition: 'padding 0.3s ease, margin 0.3s ease',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
     }),
     [contentPadding, contentMargin],
   );

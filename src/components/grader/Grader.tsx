@@ -132,8 +132,15 @@ const Grader: React.FC<IComponentProps> = (props) => {
   let graderPanelContent;
   if (!currentCourse) {
     graderPanelContent = (
-      <div style={{ padding: '40px', fontSize: 28 }}>
-        <div>Select course</div>
+      <div
+        style={{
+          padding: '60px 40px',
+          fontSize: 20,
+          color: 'rgba(0, 0, 0, 0.35)',
+          fontWeight: 500,
+        }}
+      >
+        <div>Select a course to get started</div>
       </div>
     );
   } else {
