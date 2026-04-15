@@ -20,6 +20,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
 import { Course, Section } from '../../../api-client';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
@@ -66,6 +67,8 @@ export interface IManageStudentsProps {
 const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
   const location = useLocation();
   const [activeStudent, setActiveStudent] = useState<string>('');
+  const courseCaps = useCourseCapabilities(props.currentCourse?.id);
+  const canManageRoster = courseCaps.manage_roster !== false;
 
   const sendActivationEmail = useCallback(
     (student: string) => {
@@ -240,9 +243,11 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
                 <Button shape="circle" icon={<ProfileOutlined />} />
               </Link>
             </Tooltip>
-            <Tooltip title="Unenroll">
-              <Button shape="circle" icon={<UserDeleteOutlined />} onClick={() => removeStudent(studentEmail)} />
-            </Tooltip>
+            {canManageRoster && (
+              <Tooltip title="Unenroll">
+                <Button shape="circle" icon={<UserDeleteOutlined />} onClick={() => removeStudent(studentEmail)} />
+              </Tooltip>
+            )}
           </Space>
         ),
       };
@@ -288,21 +293,23 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         course={props.currentCourse}
         isDisabled={false}
       />,
-      <RosterFileUpload
-        key="upload"
-        roleType="student"
-        students={props.students}
-        graders={props.graders}
-        admins={props.admins}
-        sections={props.sections}
-        sectionsByStudent={props.sectionsByStudent}
-        changeRoster={props.updateRoster}
-        isDisabled={false}
-        updateSection={props.updateSection}
-        emailNewUsers={props.currentCourse?.emailNewUsers ?? false}
-        createSection={props.createSection}
-        course={props.currentCourse}
-      />,
+      canManageRoster ? (
+        <RosterFileUpload
+          key="upload"
+          roleType="student"
+          students={props.students}
+          graders={props.graders}
+          admins={props.admins}
+          sections={props.sections}
+          sectionsByStudent={props.sectionsByStudent}
+          changeRoster={props.updateRoster}
+          isDisabled={false}
+          updateSection={props.updateSection}
+          emailNewUsers={props.currentCourse?.emailNewUsers ?? false}
+          createSection={props.createSection}
+          course={props.currentCourse}
+        />
+      ) : null,
     ].filter(Boolean);
   }, [props, inactiveEmails]);
 

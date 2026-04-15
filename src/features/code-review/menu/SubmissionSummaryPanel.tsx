@@ -7,6 +7,7 @@ import CPButton from '../../../components/core/CPButton';
 import AIFeedbackWidget from '../../../components/core/AIFeedbackWidget';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import type { SubmissionSummaryType } from '../../../types/models';
+import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 const { Text } = Typography;
 
@@ -36,6 +37,14 @@ const SubmissionSummaryPanel: React.FC<SubmissionSummaryPanelProps> = ({
   const { consoleTheme } = useContext(ConsoleThemeContext);
   const [localLoading, setLocalLoading] = useState(false);
   const loading = isGenerating || localLoading;
+
+  // Overlay isAdmin with capability from store (any cached course key)
+  const cache = usePermissionsStore((s) => s.cache);
+  const capIsAdmin = (() => {
+    const courseKey = Object.keys(cache).find((k) => k.startsWith('course:'));
+    if (courseKey && cache[courseKey]?.caps.view_ai_usage !== undefined) return cache[courseKey].caps.view_ai_usage;
+    return isAdmin;
+  })();
 
   const handleGenerate = async () => {
     if (!onGenerateSummary) return;
@@ -184,7 +193,7 @@ const SubmissionSummaryPanel: React.FC<SubmissionSummaryPanelProps> = ({
       </div>
 
       {/* Generation metadata — visible to admins */}
-      {isAdmin && summary.generationMetadata && (
+      {capIsAdmin && summary.generationMetadata && (
         <Text
           style={{
             display: 'block',
@@ -205,7 +214,7 @@ const SubmissionSummaryPanel: React.FC<SubmissionSummaryPanelProps> = ({
         style={{
           marginTop: 10,
           paddingTop: 8,
-          borderTop: isAdmin && summary.generationMetadata ? 'none' : `1px solid ${consoleTheme.commentTitleBorder}`,
+          borderTop: capIsAdmin && summary.generationMetadata ? 'none' : `1px solid ${consoleTheme.commentTitleBorder}`,
         }}
       >
         <AIFeedbackWidget

@@ -11,6 +11,7 @@ import { Button, Divider, Input, Modal, Select, Table } from 'antd';
 import { assignmentsApi, commentsApi, filesApi } from '../../../api-client/clients';
 import { CommentType } from '../../../utils/comments';
 import { AssignmentType, RubricCategoryType, RubricCommentType } from '../../../types/models';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -33,8 +34,10 @@ interface CommentRow {
 }
 
 const CustomCommentExplorer = (props: IProps) => {
+  const courseCaps = useCourseCapabilities(props.assignment.course);
+  const canViewAllGraders = !!courseCaps.view_roster;
   const [comments, setComments] = React.useState<CommentType[]>([]);
-  const [grader, setGrader] = React.useState(props.isAdmin ? '' : props.user);
+  const [grader, setGrader] = React.useState(canViewAllGraders ? '' : props.user);
   const [selected, setSelected] = React.useState<React.Key[]>([]);
   const [activeRubricComment, setActiveRubricComment] = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
@@ -143,7 +146,7 @@ const CustomCommentExplorer = (props: IProps) => {
         </Button>,
       ]}
     >
-      {props.isAdmin && (
+      {canViewAllGraders && (
         <div>
           Grader:{' '}
           <Select style={{ width: 200 }} onChange={setGrader} defaultValue={grader} disabled={loading}>

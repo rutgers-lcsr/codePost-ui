@@ -200,7 +200,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           Save AI Settings
         </CPButton>
       }
-      style={{ marginBottom: 24, maxWidth: 800 }}
+      style={{ marginBottom: 24 }}
     >
       {isLoading ? (
         <Text type="secondary">Loading AI settings...</Text>

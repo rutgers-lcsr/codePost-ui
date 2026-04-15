@@ -29,7 +29,6 @@ interface IProps {
   assignments: AssignmentType[];
   course: Course;
   graderEmail: string;
-  isAdmin: boolean;
 }
 
 const MySubmissionsPanel: React.FC<IProps> = (props) => {
@@ -106,7 +105,6 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
       course={props.course}
       actions={[]}
       title="Claimed by me"
-      isAdmin={props.isAdmin}
       graderEmail={props.graderEmail}
       data={data}
       columns={columns}

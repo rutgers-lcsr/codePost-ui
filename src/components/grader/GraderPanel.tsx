@@ -22,6 +22,7 @@ import { AssignmentType } from '../../types/models';
 
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
+import { usePermissionsStore } from '../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -70,6 +71,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
             path={`${encodeForRoute(assignment.name)}`}
             element={React.createElement(() => {
               LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
+              usePermissionsStore.getState().fetchAssignmentCapabilities(assignment.id);
               return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
             })}
           />

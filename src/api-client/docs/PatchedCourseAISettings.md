@@ -15,6 +15,8 @@ Serializer for course AI configuration. Admin-only access.
 | `aiCommentsDisabled` | boolean                               |
 | `aiUseOwnSettings`   | boolean                               |
 | `aiTokenRates`       | any                                   |
+| `aiFeatureConfig`    | any                                   |
+| `aiFeatures`         | { [key: string]: boolean              | undefined; } |
 | `aiEnabled`          | boolean                               |
 | `aiCommentsEnabled`  | boolean                               |
 | `orgAiAvailable`     | boolean                               |

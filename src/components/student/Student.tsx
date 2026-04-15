@@ -32,12 +32,12 @@ import CPFlex from '../core/CPFlex';
 import { USER_TYPE } from '../../types/common';
 
 import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/common';
-import { AssignmentsApi, Configuration, Course, StudentSubmission, Submission } from '../../api-client';
+import { Course, StudentSubmission, Submission } from '../../api-client';
 import type {
   StudentUploadCreateRequest,
   StudentUploadPartialUpdateRequest,
 } from '../../api-client/apis/AssignmentsApi';
-import { getAuthToken } from '../../utils/auth';
+import { assignmentsApi } from '../../api-client/clients';
 import { getHeaders } from '../../utils/generics';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
@@ -61,6 +61,7 @@ import { SubmissionStatus } from './submissionStatus';
 import AssignmentSection from './AssignmentSection';
 import styles from './StudentConsole.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
+import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -148,14 +149,7 @@ const updateHistory = async (
   return [];
 };
 
-const getAssignmentsApi = () => {
-  return new AssignmentsApi(
-    new Configuration({
-      basePath: process.env.REACT_APP_API_URL,
-      accessToken: getAuthToken(),
-    }),
-  );
-};
+
 
 const toSubmission = (submission: StudentSubmission): Submission => {
   return {
@@ -171,8 +165,7 @@ const createStudentUpload = async (
   assignmentId: number,
   payload: StudentUploadCreateRequest['assignment'],
 ): Promise<Submission> => {
-  const api = getAssignmentsApi();
-  const created = await api.studentUploadCreate({ id: assignmentId, assignment: payload });
+  const created = await assignmentsApi.studentUploadCreate({ id: assignmentId, assignment: payload });
   return toSubmission(created);
 };
 
@@ -180,8 +173,7 @@ const updateStudentUpload = async (
   assignmentId: number,
   payload: NonNullable<StudentUploadPartialUpdateRequest['patchedAssignment']>,
 ): Promise<Submission> => {
-  const api = getAssignmentsApi();
-  const updated = await api.studentUploadPartialUpdate({ id: assignmentId, patchedAssignment: payload });
+  const updated = await assignmentsApi.studentUploadPartialUpdate({ id: assignmentId, patchedAssignment: payload });
   return toSubmission(updated);
 };
 
@@ -201,6 +193,9 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
+
+  // Subscribe to the permissions cache so capability checks in renderAssignmentRow re-evaluate
+  const permissionsCache = usePermissionsStore((s) => s.cache);
 
   // State
   const [assignments, setAssignments] = useState<Record<number, Assignment[]>>({});
@@ -224,9 +219,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   const loadAssignments = useCallback(
     async (courses: Course[]): Promise<Record<number, Assignment[]>> => {
-      const api = getAssignmentsApi();
       const assignmentArrays = await Promise.all(
-        courses.map(async (course: Course) => Promise.all(course.assignments.map((id) => api.retrieve({ id })))),
+        courses.map(async (course: Course) => Promise.all(course.assignments.map((id) => assignmentsApi.retrieve({ id })))),
       );
 
       const result: Record<number, Assignment[]> = {};
@@ -626,7 +620,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
               : undefined
           }
           onUpload={
-            assignment.allowStudentUpload
+            assignment.allowStudentUpload &&
+            selectCaps(usePermissionsStore.getState(), `assignment:${assignment.id}`).upload_submission === true
               ? () => {
                   if (submission && assignment.liveFeedbackMode) {
                     Modal.confirm({
@@ -662,14 +657,16 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
               : undefined
           }
           onDownload={
-            assignment.files && assignment.files.length > 0
+            assignment.files &&
+            assignment.files.length > 0 &&
+            selectCaps(usePermissionsStore.getState(), `assignment:${assignment.id}`).download_assignment_files === true
               ? () => downloadAssignment(assignment.id, assignment.name)
               : undefined
           }
         />
       );
     },
-    [submissions, getSubmissionStatus, user.email, markViewed, changePanel, downloadAssignment, currentCourse],
+    [submissions, getSubmissionStatus, user.email, markViewed, changePanel, downloadAssignment, currentCourse, permissionsCache],
   );
 
   // Render content

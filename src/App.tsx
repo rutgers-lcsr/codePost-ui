@@ -86,8 +86,6 @@ const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', '
 
 /*****************************************************************************/
 
-const superUsers = ['james@codepost.io', 'vinay@codepost.io', 'richard@codepost.io'];
-
 /*****************************************************************************/
 
 const App: React.FC = () => {
@@ -350,7 +348,7 @@ Firefox:
           const normalizedUser = normalizeUser(json.user);
           setUser(normalizedUser);
           setToRedirect(shouldRedirect);
-          setIsSuperUser(superUsers.indexOf(normalizedUser.email ?? '') > -1);
+          setIsSuperUser(normalizedUser.codePostAdmin === true);
 
           (window as Window & typeof globalThis & { gtag?: (...args: unknown[]) => void }).gtag?.('set', {
             user_id: normalizedUser.id,
@@ -417,7 +415,7 @@ Firefox:
             }
             setUser(normalizedUser);
             setTriedLoading(true);
-            setIsSuperUser((prev) => superUsers.indexOf(normalizedUser.email ?? '') > -1 || prev);
+            setIsSuperUser((prev) => normalizedUser.codePostAdmin === true || prev);
             setAuthType('JWT');
 
             refreshToken(normalizedUser);

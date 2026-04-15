@@ -17,6 +17,7 @@ import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 import { GrUserAdmin } from 'react-icons/gr';
 /* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 import type { UserType } from '../../types/models';
 
@@ -87,6 +88,8 @@ const RoleItem = (props: IRoleProps) => {
 };
 
 const Home = (props: IProps) => {
+  const platformCaps = usePlatformCapabilities();
+
   const items = [
     props.isStudent ? (
       <Col xs={24} sm={12} md={8} lg={6} key="student">
@@ -103,12 +106,12 @@ const Home = (props: IProps) => {
         <RoleItem title="Admin Console" icon={<PiChalkboardTeacherFill />} linkTo="/admin" />
       </Col>
     ) : null,
-    props.user.codePostAdmin ? (
+    platformCaps.access_admin_dashboard ? (
       <Col xs={24} sm={12} md={8} lg={6} key="dashboard">
         <RoleItem title="Staff Console" icon={<GrUserAdmin />} linkTo="/dashboard" />
       </Col>
     ) : null,
-    props.user.isOrgStaff ? (
+    platformCaps.manage_organization ? (
       <Col xs={24} sm={12} md={8} lg={6} key="org">
         <RoleItem title="Organization Console" icon={<TeamOutlined />} linkTo="/organization" />
       </Col>

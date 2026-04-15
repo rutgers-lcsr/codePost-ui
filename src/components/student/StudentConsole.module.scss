@@ -14,7 +14,7 @@
   padding: 32px 48px;
   font-family: var(--sc-font-body);
   color: var(--sc-ink);
-  min-height: 100vh;
+  min-height: 100%;
   box-sizing: border-box;
 }
 
@@ -1062,6 +1062,27 @@
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Medium screens — tighter padding, compress grid */
+@media (max-width: 900px) {
+  .console {
+    padding: 24px 24px;
+  }
+
+  .rowMain {
+    grid-template-columns: 1fr 60px auto;
+    gap: var(--sc-space-lg);
+  }
+
+  .rowActions {
+    min-width: unset;
+  }
+
+  .sectionList {
+    padding: 0 var(--sc-space-sm);
+  }
+}
+
+/* Small screens — stack layout */
 @media (max-width: 768px) {
   .console {
     padding: var(--sc-space-lg);
@@ -1076,22 +1097,25 @@
     gap: var(--sc-space-md);
   }
 
+  .headerMeta {
+    flex-wrap: wrap;
+  }
+
   .rowMain {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
     gap: var(--sc-space-md);
     padding: var(--sc-space-lg);
   }
 
-  .rowDueDate,
-  .rowGrade,
-  .rowActions {
-    text-align: left;
+  .rowGrade {
     min-width: unset;
+    text-align: right;
   }
 
   .rowActions {
-    display: flex;
+    grid-column: 1 / -1;
     justify-content: flex-start;
+    min-width: unset;
   }
 
   .rowDetail {
@@ -1106,6 +1130,45 @@
 
   .sortControl {
     justify-content: flex-start;
+  }
+
+  .sectionList {
+    padding: 0;
+  }
+
+  .celebrationCard {
+    margin: var(--sc-space-lg);
+    padding: 32px 24px;
+  }
+}
+
+/* Extra small — compact view */
+@media (max-width: 500px) {
+  .console {
+    padding: var(--sc-space-md) var(--sc-space-sm);
+  }
+
+  .rowMain {
+    grid-template-columns: 1fr;
+    gap: var(--sc-space-sm);
+    padding: var(--sc-space-md);
+  }
+
+  .rowGrade {
+    text-align: left;
+  }
+
+  .section {
+    margin-bottom: var(--sc-space-xl);
+  }
+
+  .sectionHeader {
+    gap: var(--sc-space-sm);
+  }
+
+  .btnPrimary {
+    font-size: var(--sc-text-xs);
+    padding: var(--sc-space-xs) var(--sc-space-md);
   }
 }
 

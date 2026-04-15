@@ -30,7 +30,6 @@ interface IProps {
   sections: SectionType[];
   course: Course;
   graderEmail: string;
-  isAdmin: boolean;
 }
 
 interface IState {

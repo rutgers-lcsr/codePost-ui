@@ -227,13 +227,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/build/`;
@@ -293,13 +288,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/build_status/`;
@@ -360,13 +350,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{environmentId}/cleanup/`;
@@ -428,13 +413,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{environmentId}/convert-to-manual/`;
@@ -496,13 +476,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/`;
@@ -561,13 +536,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/`;
@@ -625,13 +595,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/dockerfile/`;
@@ -694,13 +659,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/eject/`;
@@ -751,13 +711,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/`;
@@ -814,13 +769,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/`;
@@ -882,13 +832,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/preview/`;
@@ -952,13 +897,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/`;
@@ -1019,13 +959,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{environmentId}/rollback/`;
@@ -1087,13 +1022,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/runAll/`;
@@ -1155,13 +1085,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/run/`;
@@ -1221,13 +1146,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{environmentId}/status/`;
@@ -1295,13 +1215,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/environments/{id}/`;
@@ -1363,13 +1278,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/code/`;
@@ -1430,13 +1340,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/file/async/`;
@@ -1487,13 +1392,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/file/cache/check/`;
@@ -1552,13 +1452,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/file/`;
@@ -1619,13 +1514,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/file/streaming/`;
@@ -1685,13 +1575,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/notebook-cell/`;
@@ -1752,13 +1637,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/execute/notebook/`;
@@ -1809,13 +1689,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/shell/metrics/`;
@@ -1872,13 +1747,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/tasks/{id}/`;
@@ -1939,13 +1809,8 @@ export class AutograderApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/autograder/v2/run/`;

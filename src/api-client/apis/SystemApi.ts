@@ -101,13 +101,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/activity/`;
@@ -161,13 +156,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/aiModels/`;
@@ -234,13 +224,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/aiUsage/`;
@@ -293,13 +278,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/banner/`;
@@ -350,13 +330,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/banner/`;
@@ -402,13 +377,8 @@ export class SystemApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/system/health/`;

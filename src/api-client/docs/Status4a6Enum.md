@@ -1,6 +1,6 @@
-# ToolStatusEnum
+# Status4a6Enum
 
-- `pending` - Pending _ `approved` - Approved _ `rejected` - Rejected
+- `draft` - Draft _ `active` - Active _ `candidate` - Candidate \* `retired` - Retired
 
 ## Properties
 

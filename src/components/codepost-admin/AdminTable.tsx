@@ -11,6 +11,7 @@ import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 import AdminTableToolbar from './AdminTableToolbar';
 import { AdminData } from './Dashboard';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 interface AdminTableProps {
   admins: AdminData[];
@@ -22,83 +23,92 @@ interface GroupedAdminData {
   courses: { name: string; period: string }[];
 }
 
-const columns: ColumnsType<GroupedAdminData> = [
-  {
-    title: 'Admin Email',
-    dataIndex: 'email',
-    key: 'email',
-    render: (email: string) => (
-      <Space>
-        <UserOutlined style={{ color: colors.brandAccent }} />
-        <strong>{email}</strong>
-      </Space>
-    ),
-    sorter: (a, b) => a.email.localeCompare(b.email),
-  },
-  {
-    title: 'Organization',
-    dataIndex: 'organizations',
-    key: 'organization',
-    render: (orgs: Organization[]) => (
-      <Space direction="vertical" size="small">
-        {orgs.map((org) => (
-          <Space key={org.id}>
-            <Space>
-              <GlobalOutlined style={{ color: colors.actionBlue }} />
-              {org.name}
-            </Space>
-            <Tag color="blue">{org.shortname}</Tag>
-          </Space>
-        ))}
-      </Space>
-    ),
-    filters: [], // Generated dynamically
-    onFilter: (value, record) => record.organizations.some((org) => org.shortname === value),
-  },
-  {
-    title: 'Courses',
-    dataIndex: 'courses',
-    key: 'courses',
-    render: (courses: { name: string; period: string }[]) => (
-      <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-        <Space direction="vertical" size={1}>
-          {courses.map((c, i) => (
-            <Space key={i} style={{ fontSize: '12px' }}>
-              <BookOutlined style={{ color: colors.actionGreen, fontSize: '10px' }} />
-              <span>{c.name}</span>
-              <Tag color="green" style={{ margin: 0, fontSize: '10px', lineHeight: '18px' }}>
-                {c.period}
-              </Tag>
-            </Space>
-          ))}
-        </Space>
-      </div>
-    ),
-  },
-  {
-    title: 'Actions',
-    key: 'actions',
-    width: 120,
-    render: (_: unknown, record: GroupedAdminData) => (
-      <Tooltip title="Login as this user">
-        <Button
-          type="primary"
-          size="small"
-          icon={<LoginOutlined />}
-          onClick={() => {
-            window.location.href = `/loginAs?email=${encodeURIComponent(record.email)}`;
-          }}
-        >
-          Login As
-        </Button>
-      </Tooltip>
-    ),
-  },
-];
-
 const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
   const [searchValue, setSearchValue] = useState('');
   const [pageSize, setPageSize] = useDefaultPageSize();
+  const platformCaps = usePlatformCapabilities();
+  const canImpersonate = platformCaps.impersonate_user !== false;
+
+  const columns: ColumnsType<GroupedAdminData> = useMemo(
+    () => [
+      {
+        title: 'Admin Email',
+        dataIndex: 'email',
+        key: 'email',
+        render: (email: string) => (
+          <Space>
+            <UserOutlined style={{ color: colors.brandAccent }} />
+            <strong>{email}</strong>
+          </Space>
+        ),
+        sorter: (a: GroupedAdminData, b: GroupedAdminData) => a.email.localeCompare(b.email),
+      },
+      {
+        title: 'Organization',
+        dataIndex: 'organizations',
+        key: 'organization',
+        render: (orgs: Organization[]) => (
+          <Space direction="vertical" size="small">
+            {orgs.map((org) => (
+              <Space key={org.id}>
+                <Space>
+                  <GlobalOutlined style={{ color: colors.actionBlue }} />
+                  {org.name}
+                </Space>
+                <Tag color="blue">{org.shortname}</Tag>
+              </Space>
+            ))}
+          </Space>
+        ),
+        filters: [], // Generated dynamically
+        onFilter: (value, record) => record.organizations.some((org) => org.shortname === value),
+      },
+      {
+        title: 'Courses',
+        dataIndex: 'courses',
+        key: 'courses',
+        render: (courses: { name: string; period: string }[]) => (
+          <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+            <Space direction="vertical" size={1}>
+              {courses.map((c, i) => (
+                <Space key={i} style={{ fontSize: '12px' }}>
+                  <BookOutlined style={{ color: colors.actionGreen, fontSize: '10px' }} />
+                  <span>{c.name}</span>
+                  <Tag color="green" style={{ margin: 0, fontSize: '10px', lineHeight: '18px' }}>
+                    {c.period}
+                  </Tag>
+                </Space>
+              ))}
+            </Space>
+          </div>
+        ),
+      },
+      ...(canImpersonate
+        ? [
+            {
+              title: 'Actions',
+              key: 'actions',
+              width: 120,
+              render: (_: unknown, record: GroupedAdminData) => (
+                <Tooltip title="Login as this user">
+                  <Button
+                    type="primary"
+                    size="small"
+                    icon={<LoginOutlined />}
+                    onClick={() => {
+                      window.location.href = `/loginAs?email=${encodeURIComponent(record.email)}`;
+                    }}
+                  >
+                    Login As
+                  </Button>
+                </Tooltip>
+              ),
+            },
+          ]
+        : []),
+    ],
+    [canImpersonate],
+  );
 
   // Group admins by email
   const groupedAdmins: GroupedAdminData[] = useMemo(() => {

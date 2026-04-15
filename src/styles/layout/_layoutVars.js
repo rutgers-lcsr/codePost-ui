@@ -9,6 +9,7 @@ const gradeSmallScreenBreakpoint = 1025;
 const gradeHeaderSmallScreenBreakpoint = 750; //breakpoint at which gradeHeader goes to smallest possible view
 
 const adminSmallScreenBreakpoint = 1000;
+const adminCompactBreakpoint = 800; // Compact layout for narrow/embedded views
 
 // maxWidths
 const homeMaxWidth = 600;
@@ -17,6 +18,7 @@ const gradeSiderMaxWidthSmallScreen = 200; // Fat sider for grade screen
 
 const siderMaxWidthNormal = 200; // Normal sider for course management screens
 const siderMaxWidthSmallScreen = 165; // Normal sider for course management screens
+const siderMaxWidthCompact = 130; // Compact sider for narrow embedded views
 
 // minWidths, after which the page will scroll
 const gradeMinWidth = 600; // minimum width of the grade content
@@ -32,6 +34,7 @@ export default {
       grade: gradeSmallScreenBreakpoint,
       gradeHeader: gradeHeaderSmallScreenBreakpoint,
       admin: adminSmallScreenBreakpoint,
+      adminCompact: adminCompactBreakpoint,
     },
   },
   maxWidths: {
@@ -40,6 +43,7 @@ export default {
     gradeSiderSmallScreen: gradeSiderMaxWidthSmallScreen,
     siderNormal: siderMaxWidthNormal,
     siderSmallScreen: siderMaxWidthSmallScreen,
+    siderCompact: siderMaxWidthCompact,
   },
   minWidths: {
     grade: gradeMinWidth,

@@ -22,6 +22,7 @@ import RegradesDetailPanel from './RegradesDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
 
 import { encodeForLink } from '../core/URLutils';
+import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 const RegradePanelShell = GraderPanelBuilder(RegradesDetailPanel);
 
@@ -34,8 +35,6 @@ interface IProps {
   course: Course;
   user: UserType;
   isAnonymous: boolean;
-  isAdmin: boolean;
-  isSuperGrader: boolean;
 }
 
 interface IState {
@@ -164,19 +163,13 @@ class RegradesPanel extends React.Component<IProps, IState> {
       };
     });
 
-    let viewToggle = <div />;
-    if (this.props.isAdmin || this.props.isSuperGrader) {
-      viewToggle = (
-        <div>
-          View all regrades: &nbsp;
-          <Switch
-            aria-label={!this.state.viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
-            onChange={this.toggleViewAll}
-            defaultChecked={this.state.viewAll}
-          />
-        </div>
-      );
-    }
+    const viewToggle = (
+      <RegradeViewAllToggle
+        courseId={this.props.course.id}
+        viewAll={this.state.viewAll}
+        onToggle={this.toggleViewAll}
+      />
+    );
 
     return (
       <RegradePanelShell
@@ -192,5 +185,28 @@ class RegradesPanel extends React.Component<IProps, IState> {
     );
   }
 }
+
+/** Functional wrapper so we can use useCourseCapabilities inside a class component's render. */
+const RegradeViewAllToggle: React.FC<{
+  courseId: number;
+  viewAll: boolean;
+  onToggle: () => void;
+}> = ({ courseId, viewAll, onToggle }) => {
+  const courseCaps = useCourseCapabilities(courseId);
+  const canManageRegrades = !!courseCaps.manage_regrades;
+
+  if (!canManageRegrades) return <div />;
+
+  return (
+    <div>
+      View all regrades: &nbsp;
+      <Switch
+        aria-label={!viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
+        onChange={onToggle}
+        defaultChecked={viewAll}
+      />
+    </div>
+  );
+};
 
 export default RegradesPanel;

@@ -34,12 +34,12 @@ import {
   TestCasesByCategory,
   TestsBySubmission,
 } from '../../../../core/testFetchUtils';
+import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
 
 interface IProps {
   breadcrumbs?: Array<{ title: React.ReactNode }>;
   submissions: SubmissionInfoType[];
   currentAssignment: AssignmentType;
-  isAdmin: boolean;
   tableOnly: boolean;
   fullSubmissionsLoadComplete: boolean;
 }
@@ -48,6 +48,8 @@ type EnvironmentState = EnvironmentType & { isRunning?: boolean };
 
 export const TestingSummary = (props: IProps) => {
   const location = useLocation();
+  const courseCaps = useCourseCapabilities(props.currentAssignment.course);
+  const canManageTests = courseCaps.manage_test_cases ?? false;
 
   // ************************** State Variables ******************************
   // objects
@@ -98,7 +100,7 @@ export const TestingSummary = (props: IProps) => {
         setTestCasesByCategory(casesByCategory);
         const currEnv = await fetchEnvironment(props.currentAssignment);
         setEnv(currEnv);
-        if (props.isAdmin) {
+        if (canManageTests) {
           // Admin console, read paginated test results
           fetchPaginatedResults();
         } else {
@@ -177,7 +179,7 @@ export const TestingSummary = (props: IProps) => {
 
   // ******************************* Return  *******************************
   //  Only allow run all and edit tests if admin
-  const actions = !props.isAdmin
+  const actions = !canManageTests
     ? []
     : [
         <RunAllTests

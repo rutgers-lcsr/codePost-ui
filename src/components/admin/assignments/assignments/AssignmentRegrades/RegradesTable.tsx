@@ -28,6 +28,7 @@ import CPButton from '../../../../../components/core/CPButton';
 import { openSubmission } from '../../../other/AdminUtils';
 
 import { CodePostDate } from '../../../../utils/CodepostDate';
+import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -60,8 +61,6 @@ interface IRegradesTableProps {
 
   isAnonymous?: boolean;
   isLoading?: boolean;
-
-  isAdmin: boolean;
 }
 
 enum RESPONSE_STATUS {
@@ -71,6 +70,8 @@ enum RESPONSE_STATUS {
 }
 
 const RegradesTable = (props: IRegradesTableProps) => {
+  const courseCaps = useCourseCapabilities(props.assignment.course);
+  const canManageRegrades = !!courseCaps.manage_regrades;
   // *********************** STATE VARIABLES *************************
   const [modalVisible, setModalVisibility] = useState(false);
   const [activeSubmission, setActiveSubmission] = useState<
@@ -227,7 +228,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
 
   const rows = regradeSubmissions.map((submission) => {
     const isAbleToChange =
-      props.isAdmin || submission.questionResponder === props.user.email || submission.questionResponder === null;
+      canManageRegrades || submission.questionResponder === props.user.email || submission.questionResponder === null;
     const isAbleToClose = submission.questionIsOpen && submission.questionResponse;
     const isClaimedByMe = submission.questionResponder === props.user.email;
     const isClosed = !submission.questionIsOpen;
@@ -385,7 +386,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
   return (
     <div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-        {props.isAdmin && (
+        {canManageRegrades && (
           <CPButton cpType="secondary" icon={<InfoCircleOutlined />} onClick={openInstructionsModal}>
             Edit Instructions
           </CPButton>

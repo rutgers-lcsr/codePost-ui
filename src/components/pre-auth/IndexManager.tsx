@@ -99,6 +99,18 @@ class IndexManager extends React.Component<IndexManagerProps> {
           <Route path="/logout" element={<Logout handleLogout={this.props.handleLogout} />} />
 
           <Route
+            path="/login/:orgShortname"
+            element={
+              <LoginForm
+                handleLogin={this.props.handleLogin}
+                error={this.props.error}
+                redirectAfterLogin={true}
+                maintenanceMode={false}
+              />
+            }
+          />
+
+          <Route
             path="/login"
             element={
               <LoginForm

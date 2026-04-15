@@ -19,6 +19,7 @@ import Highlighter from 'react-highlight-words';
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
 import { Course, Section } from '../../../api-client';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
@@ -65,6 +66,8 @@ export interface IManageAdminsProps {
 
 const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
   const { updateRoster } = props;
+  const courseCaps = useCourseCapabilities(props.currentCourse?.id);
+  const canManageRoster = courseCaps.manage_roster !== false;
   const removeAdmin = useCallback(
     (toRemove: string) => {
       confirm({
@@ -128,21 +131,23 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         course={props.currentCourse}
         isDisabled={false}
       />,
-      <RosterFileUpload
-        key={1}
-        roleType="admin"
-        students={props.students}
-        graders={props.graders}
-        admins={props.admins}
-        sections={props.sections}
-        sectionsByStudent={props.sectionsByStudent}
-        changeRoster={props.updateRoster}
-        isDisabled={false}
-        updateSection={props.updateSection}
-        emailNewUsers={props.currentCourse.emailNewUsers ?? false}
-        createSection={props.createSection}
-        course={props.currentCourse}
-      />,
+      canManageRoster ? (
+        <RosterFileUpload
+          key={1}
+          roleType="admin"
+          students={props.students}
+          graders={props.graders}
+          admins={props.admins}
+          sections={props.sections}
+          sectionsByStudent={props.sectionsByStudent}
+          changeRoster={props.updateRoster}
+          isDisabled={false}
+          updateSection={props.updateSection}
+          emailNewUsers={props.currentCourse.emailNewUsers ?? false}
+          createSection={props.createSection}
+          course={props.currentCourse}
+        />
+      ) : null,
     ];
 
     columns = [
@@ -208,8 +213,8 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
               <Button
                 shape="circle"
                 icon={<UserDeleteOutlined />}
-                disabled={isSelf}
-                onClick={isSelf ? undefined : () => removeAdmin(adminEmail)}
+                disabled={isSelf || !canManageRoster}
+                onClick={isSelf || !canManageRoster ? undefined : () => removeAdmin(adminEmail)}
               />
             </Tooltip>
           </Space>

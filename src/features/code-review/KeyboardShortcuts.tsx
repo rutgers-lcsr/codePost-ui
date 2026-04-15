@@ -3,6 +3,7 @@ import * as React from 'react';
 import { OS, getOperatingSystem, osControlKey } from '../../components/core/operatingSystem';
 import { ConsoleThemeContext, consoleThemes } from '../../styles/abstracts/_console-theme-context';
 import shortcuts from './keyboard_shortcuts.tsx';
+import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
 
 import { Drawer, Tabs, Tooltip, ConfigProvider, theme } from 'antd';
 
@@ -75,8 +76,16 @@ const KeyboardShortcuts = (props: IKeyboardShortCutsProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const isLight = consoleTheme === consoleThemes.light;
 
+  // Overlay isStudent with capability from store
+  const capGradeSubmission = usePermissionsStore((s) => {
+    const subKey = Object.keys(s.cache).find((k) => k.startsWith('submission:'));
+    if (!subKey) return undefined;
+    return selectCaps(s, subKey).grade_submission;
+  });
+  const isStudent = capGradeSubmission !== undefined ? !capGradeSubmission : props.isStudent;
+
   const filteredShortcuts = shortcuts.filter((category: IShortcutCategory) => {
-    return props.isStudent ? !category.graderOnly : category;
+    return isStudent ? !category.graderOnly : category;
   });
 
   const tabItems = filteredShortcuts.map((category: IShortcutCategory) => ({

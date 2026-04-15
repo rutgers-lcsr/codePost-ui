@@ -21,6 +21,7 @@ import {
   ImportOutlined,
   MailOutlined,
   MessageOutlined,
+  MoreOutlined,
   NumberOutlined,
   OrderedListOutlined,
   QuestionCircleOutlined,
@@ -61,6 +62,9 @@ import update from 'immutability-helper';
 
 import { TableDetail } from '../other/TableDetail';
 
+import useWindowSize from '../../../components/core/useWindowSize';
+import layoutVars from '../../../styles/layout/_layoutVars';
+
 /* other library imports */
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -90,6 +94,8 @@ import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 import DownloadGrades from './assignments/DownloadGrades';
 
 import { Logger } from '../../../utils/logger';
+
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 import {
   calculateMultipleAssignmentProgressStats,
@@ -197,6 +203,14 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const sortAssignments = (assignments: Assignment[]) => {
     return assignments.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
   };
+  const windowSize = useWindowSize();
+  const isCompact = windowSize.width < layoutVars.breakpoints.smallScreen.admin;
+  const courseCaps = useCourseCapabilities(props.currentCourse?.id);
+  const canCreateAssignment = courseCaps.create_assignment !== false;
+  const canEditAssignment = courseCaps.edit_assignment ?? canCreateAssignment; // fall back to create_assignment if edit_assignment not yet loaded
+  const canEditRubric = courseCaps.edit_rubric !== false;
+  const canViewStats = courseCaps.view_analytics !== false;
+  const canReleaseGrades = courseCaps.release_grades !== false;
   const {
     assignments,
     submissions,
@@ -540,19 +554,20 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      width: '230px',
+      width: isCompact ? 100 : 140,
     },
     {
       title: 'Progress',
       dataIndex: 'progress',
       key: 'progress',
-      width: '350px',
+      width: isCompact ? '30%' : '35%',
     },
     {
-      title: 'Actions',
+      title: '',
       dataIndex: 'actions',
       key: 'actions',
       align: 'right' as alignType,
+      width: isCompact ? 48 : undefined,
     },
   ];
 
@@ -692,7 +707,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
                 />
               </span>
-              <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" />
+              <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" disabled={!canEditAssignment} />
             </Flex>
 
             <Flex justify="space-between" align="center">
@@ -777,29 +792,42 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Popover>
         ),
         progress: (
-          <div style={{ paddingRight: 20 }}>
-            <div className="display-flex align-items-center" style={{ marginBottom: 4 }}>
-              <Space separator={<span style={{ color: colors.neutralBorder }}>|</span>}>
+          <Tooltip
+            title={
+              <span>
+                {totalSubmissions} submissions · {missing} missing · {percent}% graded
+              </span>
+            }
+          >
+            <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
+              <div style={{ whiteSpace: 'nowrap', fontSize: '12px', marginBottom: 4 }}>
                 <Text
                   type={totalSubmissions === 0 ? 'secondary' : undefined}
                   className={totalSubmissions > 0 ? 'text-link' : ''}
-                  onClick={totalSubmissions > 0 ? () => openDrawer(assignment, DRAWER_TYPE.Submitted) : undefined}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (totalSubmissions > 0) openDrawer(assignment, DRAWER_TYPE.Submitted);
+                  }}
+                  style={{ fontSize: '12px' }}
                 >
-                  {totalSubmissions} Submissions
+                  {totalSubmissions}
                 </Text>
+                <span style={{ color: colors.neutralBorder, margin: '0 3px' }}>/</span>
                 <Text
                   type="secondary"
                   className={missing > 0 ? 'text-link' : ''}
-                  onClick={() => openDrawer(assignment, DRAWER_TYPE.Missing)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDrawer(assignment, DRAWER_TYPE.Missing);
+                  }}
+                  style={{ fontSize: '12px', color: missing > 0 ? colors.actionRed : undefined }}
                 >
-                  {missing} Missing
+                  {missing}
                 </Text>
-                <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-                  {percent}% Graded
+                <Text type="secondary" style={{ fontSize: '12px', marginLeft: 6 }}>
+                  {percent}%
                 </Text>
-              </Space>
-            </div>
-            <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
+              </div>
               <Progress
                 percent={percent}
                 showInfo={false}
@@ -808,25 +836,116 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 size="small"
               />
             </div>
-          </div>
+          </Tooltip>
         ),
-        actions: (
+        actions: isCompact ? (
+          <Dropdown
+            menu={{
+              items: [
+                ...(canEditAssignment
+                  ? [
+                      {
+                        key: 'configure',
+                        label: 'Configure',
+                        icon: <SettingOutlined />,
+                        children: configItems,
+                      },
+                    ]
+                  : []),
+                ...(canEditRubric
+                  ? [
+                      {
+                        key: 'rubric',
+                        label: (
+                          <Link to={`${baseURL}/rubrics/${encodedName}`}>
+                            <OrderedListOutlined /> Edit rubric
+                          </Link>
+                        ),
+                      },
+                    ]
+                  : []),
+                ...(canEditAssignment
+                  ? [
+                      {
+                        key: 'environment',
+                        label: (
+                          <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+                            <FileDoneOutlined /> Environment & Tests
+                          </Link>
+                        ),
+                      },
+                    ]
+                  : []),
+                {
+                  key: 'uploads',
+                  label: 'Manage submissions',
+                  icon: <UploadOutlined />,
+                  children: uploadItems,
+                },
+                { type: 'divider' as const },
+                {
+                  key: 'feedback',
+                  icon: assignment.feedbackReleased ? (
+                    <CheckCircleOutlined style={{ color: colors.brandPrimary }} />
+                  ) : (
+                    <MessageOutlined />
+                  ),
+                  label: assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback',
+                  disabled: !canReleaseGrades,
+                  onClick: () => toggleSubmissionsReleased(assignment),
+                },
+                {
+                  key: 'grades',
+                  icon: assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />,
+                  label: assignment.hideGrades ? 'Show grades' : 'Hide grades',
+                  disabled: !assignment.feedbackReleased || !canReleaseGrades,
+                  onClick: () => toggleHideGrades(assignment),
+                },
+                { type: 'divider' as const },
+                ...dataItems,
+                ...(canEditAssignment
+                  ? [
+                      { type: 'divider' as const },
+                      {
+                        key: 'delete',
+                        label: (
+                          <Link to={`${baseURL}/${encodedName}/delete`}>
+                            <DeleteOutlined /> Delete
+                          </Link>
+                        ),
+                        danger: true,
+                      },
+                    ]
+                  : []),
+              ],
+            }}
+            trigger={['click']}
+          >
+            <Button shape="circle" icon={<MoreOutlined />} />
+          </Dropdown>
+        ) : (
           <Space>
-            <Tooltip title="Configure assignment">
-              <Dropdown menu={{ items: configItems }} trigger={['click']}>
-                <Button shape="circle" icon={<SettingOutlined />} />
-              </Dropdown>
-            </Tooltip>
-            <Tooltip title="Edit rubric">
-              <Link to={`${baseURL}/rubrics/${encodedName}`}>
-                <Button shape="circle" icon={<OrderedListOutlined />} />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Environment & Tests">
-              <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-                <Button shape="circle" icon={<FileDoneOutlined />} />
-              </Link>
-            </Tooltip>
+            {canEditAssignment && (
+              <Tooltip title="Configure assignment">
+                <Dropdown menu={{ items: configItems }} trigger={['click']}>
+                  <Button shape="circle" icon={<SettingOutlined />} />
+                </Dropdown>
+              </Tooltip>
+            )}
+            {canEditRubric && (
+              <Tooltip title="Edit rubric">
+                <Link to={`${baseURL}/rubrics/${encodedName}`}>
+                  <Button shape="circle" icon={<OrderedListOutlined />} />
+                </Link>
+              </Tooltip>
+            )}
+            {canEditAssignment && (
+              <Tooltip title="Environment & Tests">
+                <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+                  <Button shape="circle" icon={<FileDoneOutlined />} />
+                </Link>
+              </Tooltip>
+            )}
             <Tooltip title="Manage submissions">
               <Dropdown menu={{ items: uploadItems }} trigger={['click']}>
                 <Button shape="circle" icon={<UploadOutlined />} />
@@ -859,6 +978,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                         </span>
                       ),
                       onClick: () => toggleSubmissionsReleased(assignment),
+                      disabled: !canReleaseGrades,
                     },
                     {
                       key: 'grades',
@@ -886,15 +1006,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                               fontWeight: assignment.feedbackReleased ? 600 : 400,
                             }}
                           >
-                            {!assignment.feedbackReleased
-                              ? 'N/A'
-                              : assignment.hideGrades
-                                ? 'HIDDEN'
-                                : 'VISIBLE'}
+                            {!assignment.feedbackReleased ? 'N/A' : assignment.hideGrades ? 'HIDDEN' : 'VISIBLE'}
                           </span>
                         </span>
                       ),
-                      disabled: !assignment.feedbackReleased,
+                      disabled: !assignment.feedbackReleased || !canReleaseGrades,
                       onClick: () => toggleHideGrades(assignment),
                     },
                   ],
@@ -912,16 +1028,20 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 />
               </Dropdown>
             </Tooltip>
-            <Tooltip title="Analyze grades & stats">
-              <Dropdown menu={{ items: dataItems }} trigger={['click']}>
-                <Button shape="circle" icon={<BarChartOutlined />} />
-              </Dropdown>
-            </Tooltip>
-            <Tooltip title="Delete assignment">
-              <Link to={`${baseURL}/${encodedName}/delete`}>
-                <Button shape="circle" danger icon={<DeleteOutlined />} />
-              </Link>
-            </Tooltip>
+            {canViewStats && (
+              <Tooltip title="Analyze grades & stats">
+                <Dropdown menu={{ items: dataItems }} trigger={['click']}>
+                  <Button shape="circle" icon={<BarChartOutlined />} />
+                </Dropdown>
+              </Tooltip>
+            )}
+            {canEditAssignment && (
+              <Tooltip title="Delete assignment">
+                <Link to={`${baseURL}/${encodedName}/delete`}>
+                  <Button shape="circle" danger icon={<DeleteOutlined />} />
+                </Link>
+              </Tooltip>
+            )}
           </Space>
         ),
       };
@@ -929,15 +1049,17 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     .filter((assignment): assignment is AssignmentRow => assignment !== null);
 
   const tableActions: React.ReactNode[] = [
-    <NewAssignmentDialog
-      key={1}
-      {...props}
-      currentCourse={currentCourse}
-      assignments={assignments}
-      courses={props.courses}
-      createAssignment={createAssignment}
-      timezone={currentCourse.timezone || 'UTC'}
-    />,
+    canCreateAssignment ? (
+      <NewAssignmentDialog
+        key={1}
+        {...props}
+        currentCourse={currentCourse}
+        assignments={assignments}
+        courses={props.courses}
+        createAssignment={createAssignment}
+        timezone={currentCourse.timezone || 'UTC'}
+      />
+    ) : null,
     <Link key={2} to={`${baseURL}/download/grades`}>
       <CPButton cpType="secondary" icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
         Download grades
@@ -1186,6 +1308,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
         hideSearch={true}
         components={components}
+        tableProps={{ scroll: { x: 'max-content' } }}
         onRow={(_record: Record<string, unknown>, index?: number) =>
           ({
             index: index ?? 0,

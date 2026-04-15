@@ -47,12 +47,11 @@ import { CIPGraderModal } from '../cip/components';
 /**********************************************************************************************************************/
 
 const Grader: React.FC<IComponentProps> = (props) => {
-  const { currentCourse, superGraderCourses, sectionsLed } = props;
+  const { currentCourse, sectionsLed } = props;
 
   // State
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
-  const [isSuperGrader, setIsSuperGrader] = useState<boolean>(false);
   const [localSectionsLed, setLocalSectionsLed] = useState<Section[]>([]);
 
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
@@ -74,13 +73,11 @@ const Grader: React.FC<IComponentProps> = (props) => {
 
       Promise.all(promises).then((newAssignments) => {
         // Calculate derived state dependent on course
-        const newIsSuperGrader = superGraderCourses.some((course) => course.id === currentCourse.id);
         const newSectionsLed = sectionsLed
           .slice()
           .filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
 
         setAssignments(newAssignments);
-        setIsSuperGrader(newIsSuperGrader);
         setLocalSectionsLed(newSectionsLed);
         // setIsLoading(false);
 
@@ -94,11 +91,10 @@ const Grader: React.FC<IComponentProps> = (props) => {
       // setIsLoading(false);
       setAssignments([]);
       setLocalSectionsLed([]);
-      setIsSuperGrader(false);
     }
     // intentionally depends on course ID only to avoid re-fetch loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCourse?.id, superGraderCourses, sectionsLed]);
+  }, [currentCourse?.id, sectionsLed]);
 
   // ADD THIS BACK TO TURN ON THE SURVEY AGAIN
   // useEffect(() => {
@@ -150,9 +146,7 @@ const Grader: React.FC<IComponentProps> = (props) => {
         assignments={assignments}
         user={props.user}
         localSectionsLed={localSectionsLed}
-        isSuperGrader={isSuperGrader}
         someRegrades={someRegrades}
-        isRubricEditor={!!(currentCourse && currentCourse.isRubricEditor)}
       />
     );
   }
@@ -219,11 +213,10 @@ const Grader: React.FC<IComponentProps> = (props) => {
         {...props}
         baseURL={graderBaseURL}
         collapsed={collapsed}
-        isSuperGrader={isSuperGrader}
         isSectionLeader={localSectionsLed.length > 0}
         regradesAllowed={someRegrades}
         activateQueue={!!(currentCourse && currentCourse.activateQueue)}
-        isRubricEditor={!!(currentCourse && currentCourse.isRubricEditor)}
+        courseId={currentCourse?.id}
       />
     );
   };

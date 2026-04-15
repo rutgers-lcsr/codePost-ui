@@ -9,10 +9,10 @@ import * as React from 'react';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Input, Typography } from 'antd';
+import { Alert, Input, Spin, Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 /* codePost imports */
 import PreAuthLayout from './PreAuthLayout';
@@ -36,10 +36,59 @@ const LoginForm: React.FC<ILoginFormProps> = ({
   redirectAfterLogin,
   maintenanceMode,
 }) => {
+  const { orgShortname } = useParams<{ orgShortname: string }>();
+  const [searchParams] = useSearchParams();
+  const passwordBypass = searchParams.get('password') === 'true';
+
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [step, setStep] = React.useState<'email' | 'password'>('email');
+  const [ssoChecking, setSsoChecking] = React.useState(!passwordBypass);
+  const [ssoError, setSsoError] = React.useState('');
+
+  // On mount: check SSO config for main org or per-org shortname
+  React.useEffect(() => {
+    if (passwordBypass) return;
+
+    const checkSsoConfig = async () => {
+      try {
+        const url = orgShortname
+          ? `${process.env.REACT_APP_API_URL}/auth/sso/config/${encodeURIComponent(orgShortname)}/`
+          : `${process.env.REACT_APP_API_URL}/auth/sso/config/`;
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          if (orgShortname && res.status === 404) {
+            setSsoError(`Organization "${orgShortname}" not found.`);
+          }
+          setSsoChecking(false);
+          return;
+        }
+
+        const data = await res.json();
+
+        // Per-org route
+        if (orgShortname) {
+          if (data.found && data.sso_enabled) {
+            window.location.href = `${process.env.REACT_APP_API_URL}/auth/sso/login/${data.provider}/?org=${data.org_id}`;
+            return;
+          }
+        }
+        // Main org route
+        else if (data.main_org && data.sso_enabled) {
+          window.location.href = `${process.env.REACT_APP_API_URL}/auth/sso/login/${data.provider}/?org=${data.org_id}`;
+          return;
+        }
+
+        setSsoChecking(false);
+      } catch {
+        setSsoChecking(false);
+      }
+    };
+
+    checkSsoConfig();
+  }, [orgShortname, passwordBypass]);
 
   const performLogin = React.useCallback(async () => {
     setLoading(true);
@@ -126,85 +175,102 @@ const LoginForm: React.FC<ILoginFormProps> = ({
           <div />
         )}
         <br />
-        <Typography.Title level={1}>{title}</Typography.Title>
-        <form onSubmit={(e) => e.preventDefault()}>
-          <Input
-            prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-            placeholder="Email address"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={maintenanceMode || step !== 'email'}
-            autoFocus={step === 'email'}
-          />
-
-          {step === 'password' && (
-            <>
-              <br />
-              <br />
-              <Input.Password
-                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                placeholder="Password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={handleKeyPress}
-                visibilityToggle={false}
-                disabled={maintenanceMode}
-                autoFocus
-              />
-            </>
-          )}
-
-          {renderError(error)}
-
-          <br />
-          <br />
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {step === 'email' && (
-              <CPButton onClick={checkSSO} cpType="primary" loading={loading} disabled={maintenanceMode || !email}>
-                Continue
-              </CPButton>
-            )}
-
-            {step === 'password' && (
-              <CPButton onClick={performLogin} cpType="primary" loading={loading} disabled={maintenanceMode}>
-                Log In
-              </CPButton>
-            )}
-
-            {step !== 'email' && (
-              <a
-                onClick={() => {
-                  setStep('email');
-                  setPassword('');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                Use a different email
-              </a>
-            )}
+        {ssoChecking ? (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <Spin size="large" />
+            <br />
+            <br />
+            <Typography.Text type="secondary">Redirecting to login...</Typography.Text>
           </div>
-        </form>
-        <br />
-        <br />
-        <br />
-        <br />
-        <Link to="/forgot-password" className="text-link">
-          Forgot password?
-        </Link>
-        <br />
-        <a
-          onClick={() => {
-            window.open('/docs/faq#missing-email', '_blank');
-          }}
-          style={{ cursor: 'pointer' }}
-          className="text-link"
-        >
-          Where's my sign up email?
-        </a>
+        ) : (
+          <>
+            <Typography.Title level={1}>{title}</Typography.Title>
+            {ssoError && (
+              <>
+                <Alert title="Error" description={ssoError} type="error" showIcon />
+                <br />
+              </>
+            )}
+            <form onSubmit={(e) => e.preventDefault()}>
+              <Input
+                prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                placeholder="Email address"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={handleKeyPress}
+                disabled={maintenanceMode || step !== 'email'}
+                autoFocus={step === 'email'}
+              />
+
+              {step === 'password' && (
+                <>
+                  <br />
+                  <br />
+                  <Input.Password
+                    prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    visibilityToggle={false}
+                    disabled={maintenanceMode}
+                    autoFocus
+                  />
+                </>
+              )}
+
+              {renderError(error)}
+
+              <br />
+              <br />
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {step === 'email' && (
+                  <CPButton onClick={checkSSO} cpType="primary" loading={loading} disabled={maintenanceMode || !email}>
+                    Continue
+                  </CPButton>
+                )}
+
+                {step === 'password' && (
+                  <CPButton onClick={performLogin} cpType="primary" loading={loading} disabled={maintenanceMode}>
+                    Log In
+                  </CPButton>
+                )}
+
+                {step !== 'email' && (
+                  <a
+                    onClick={() => {
+                      setStep('email');
+                      setPassword('');
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Use a different email
+                  </a>
+                )}
+              </div>
+            </form>
+            <br />
+            <br />
+            <br />
+            <br />
+            <Link to="/forgot-password" className="text-link">
+              Forgot password?
+            </Link>
+            <br />
+            <a
+              onClick={() => {
+                window.open('/docs/faq#missing-email', '_blank');
+              }}
+              style={{ cursor: 'pointer' }}
+              className="text-link"
+            >
+              Where's my sign up email?
+            </a>
+          </>
+        )}
       </div>
     </PreAuthLayout>
   );

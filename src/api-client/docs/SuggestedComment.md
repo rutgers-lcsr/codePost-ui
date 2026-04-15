@@ -18,6 +18,9 @@
 | `acceptedBy`         | number                                                      |
 | `acceptedComment`    | number                                                      |
 | `generationMetadata` | any                                                         |
+| `promptVariant`      | number                                                      |
+| `generationBatch`    | string                                                      |
+| `firstViewedAt`      | string                                                      |
 | `created`            | string                                                      |
 | `modified`           | string                                                      |
 

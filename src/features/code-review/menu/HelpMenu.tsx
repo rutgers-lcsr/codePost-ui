@@ -5,6 +5,7 @@ import { QuestionCircleOutlined, ThunderboltOutlined, BookOutlined } from '@ant-
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import shortcuts from '../keyboard_shortcuts';
 import { IShortcutCategory } from '../KeyboardShortcuts';
+import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -17,14 +18,18 @@ export const HelpMenuTitle = () => {
   );
 };
 
-interface IHelpers {
-  isStudent: boolean;
-}
-
-const HelpMenu = (props: IHelpers) => {
+const HelpMenu = () => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const isLight = consoleTheme === consoleThemes.light;
   const theme = consoleTheme;
+
+  // Overlay isStudent with capability from store
+  const capGradeSubmission = usePermissionsStore((s) => {
+    const subKey = Object.keys(s.cache).find((k) => k.startsWith('submission:'));
+    if (!subKey) return undefined;
+    return selectCaps(s, subKey).grade_submission;
+  });
+  const isStudent = capGradeSubmission === false;
 
   return (
     <div
@@ -37,10 +42,10 @@ const HelpMenu = (props: IHelpers) => {
       }}
     >
       <Title level={4} style={{ color: theme.text }}>
-        <BookOutlined /> {props.isStudent ? 'Student Help' : 'Grader Help'}
+        <BookOutlined /> {isStudent ? 'Student Help' : 'Grader Help'}
       </Title>
       <Paragraph style={{ color: theme.text }}>
-        {props.isStudent
+        {isStudent
           ? 'Welcome to the code console! Here are some resources to help you review your code.'
           : 'Welcome to the grading console! Here are some resources to help you grade efficiently.'}
       </Paragraph>
@@ -52,7 +57,7 @@ const HelpMenu = (props: IHelpers) => {
       </Title>
 
       {shortcuts
-        .filter((category: IShortcutCategory) => (props.isStudent ? !category.graderOnly : true))
+        .filter((category: IShortcutCategory) => (isStudent ? !category.graderOnly : true))
         .map((category: IShortcutCategory, index: number) => (
           <Card
             key={index}
@@ -80,7 +85,7 @@ const HelpMenu = (props: IHelpers) => {
           </Card>
         ))}
 
-      {!props.isStudent && (
+      {!isStudent && (
         <>
           <Divider style={{ borderColor: theme.codeBorder }} />
 

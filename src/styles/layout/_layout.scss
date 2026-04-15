@@ -37,7 +37,7 @@
 #Grade {
   // Prevent body scroll - all scrolling should be in specific containers
   overflow: hidden;
-  height: 100vh;
+  height: 100%;
 
   header button {
     font-size: 12px !important;
@@ -169,7 +169,7 @@
 }
 
 #Admin .layout--admin {
-  min-height: 100vh;
+  min-height: 100%;
 
   table {
     padding-bottom: 15px;
@@ -370,7 +370,7 @@
 }
 
 .layout--standard-console {
-  min-height: 100vh;
+  min-height: 100%;
 
   &__sider {
     background-color: #fff;

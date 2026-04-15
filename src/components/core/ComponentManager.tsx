@@ -23,6 +23,9 @@ import { CourseContext } from '../core/Contexts';
 
 import { encodeForRoute, encodeForLink } from '../core/URLutils';
 
+import { usePermissionsStore } from '../../stores/usePermissionsStore';
+import type { Capabilities } from '../../stores/usePermissionsStore';
+
 /**********************************************************************************************************************/
 
 interface IComponentManagerProps {
@@ -94,6 +97,13 @@ const ComponentManager = (
     useEffect(() => {
       LOCAL_SETTINGS.defaultCourse.setter(course.id);
     }, [course.id]);
+
+    // Populate capabilities store from the embedded serializer field
+    useEffect(() => {
+      if (course.capabilities && Object.keys(course.capabilities).length > 0) {
+        usePermissionsStore.getState().setCapabilities(`course:${course.id}`, course.capabilities as Capabilities);
+      }
+    }, [course.id, course.capabilities]);
 
     return (
       <CourseContext.Provider value={course}>

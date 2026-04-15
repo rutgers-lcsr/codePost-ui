@@ -16,6 +16,8 @@ Serializer for organization-level AI configuration.
 | `aiCoursePolicy`     | [AiCoursePolicyEnum](AiCoursePolicyEnum.md) |
 | `aiEnabledCourseIds` | Array&lt;number&gt;                         |
 | `aiTokenRates`       | any                                         |
+| `aiFeatureConfig`    | any                                         |
+| `aiFeatures`         | { [key: string]: boolean                    | undefined; } |
 | `aiEnabled`          | boolean                                     |
 | `aiCommentsEnabled`  | boolean                                     |
 | `hasApiKey`          | boolean                                     |

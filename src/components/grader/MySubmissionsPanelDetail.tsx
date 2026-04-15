@@ -50,6 +50,7 @@ import { AnonymousSubmissionInfoType, AssignmentType, SectionType, SubmissionTyp
 import { ADMIN } from '../../routes';
 import { BUTTON_STATE } from '../../types/common';
 import { withQueryParams } from '../../utils/apiClient';
+import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -80,7 +81,6 @@ interface IProps {
   assignment: AssignmentType;
   course: Course;
   graderEmail: string;
-  isAdmin: boolean;
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
@@ -159,7 +159,10 @@ const getSectionParameters = (sections: SectionType[]): Array<SectionType | unde
 /* Main Component
 /**********************************************************************************************************************/
 
-const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, graderEmail, isAdmin, breadcrumbs }) => {
+const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, graderEmail, breadcrumbs }) => {
+  const courseCaps = useCourseCapabilities(course?.id);
+  const capIsAdmin = !!courseCaps.edit_course_settings;
+
   // State
   const [currentSections, setCurrentSections] = useState<SectionType[]>([]);
   const [sections, setSections] = useState<SectionType[]>([]);
@@ -189,11 +192,11 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         setIsLoadingSubmissions(false);
       });
 
-      loadSections(course, isAdmin).then((secs) => {
+      loadSections(course, capIsAdmin).then((secs) => {
         setSections(secs);
       });
     },
-    [graderEmail, course, isAdmin],
+    [graderEmail, course, capIsAdmin],
   );
 
   // Fetch queue length
@@ -624,7 +627,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     );
   } else {
     let emptyMessage: string | React.ReactElement = 'No submissions yet. Click claim to start grading!';
-    if (isAdmin) {
+    if (capIsAdmin) {
       emptyMessage = (
         <span>
           This is where you can claim submissions to grade. If you're looking to manage your course, head to the{' '}

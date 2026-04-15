@@ -78,13 +78,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/`;
@@ -140,13 +135,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/{id}/`;
@@ -196,13 +186,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/`;
@@ -259,13 +244,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/{id}/`;
@@ -322,13 +302,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/{id}/`;
@@ -398,13 +373,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/{id}/submissions/`;
@@ -469,13 +439,8 @@ export class SectionsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/sections/{id}/`;

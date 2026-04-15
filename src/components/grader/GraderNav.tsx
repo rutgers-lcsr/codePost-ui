@@ -14,18 +14,22 @@ import { Menu } from 'antd';
 
 import { Link, useLocation } from 'react-router-dom';
 
+import { useCourseCapabilities } from '../../stores/usePermissionsStore';
+
 interface IProps {
   collapsed: boolean;
-  isSuperGrader: boolean;
   isSectionLeader: boolean;
   regradesAllowed: boolean;
   activateQueue: boolean;
   baseURL: string;
-  isRubricEditor: boolean;
+  courseId?: number;
 }
 
 const GraderNav: React.FC<IProps> = (props) => {
   const location = useLocation();
+  const courseCaps = useCourseCapabilities(props.courseId);
+  const showAllSubmissions = !!courseCaps.manage_regrades;
+  const showRubrics = !!courseCaps.edit_rubric;
   const panel = location.pathname.replace(props.baseURL, '').split('/')[1] || '';
 
   const assignment = location.pathname.replace(props.baseURL, '').split('/')[2] || '';
@@ -77,7 +81,7 @@ const GraderNav: React.FC<IProps> = (props) => {
           },
         ]
       : []),
-    ...(props.isSuperGrader
+    ...(showAllSubmissions
       ? [
           {
             key: '2',
@@ -95,7 +99,7 @@ const GraderNav: React.FC<IProps> = (props) => {
           },
         ]
       : []),
-    ...(props.isRubricEditor
+    ...(showRubrics
       ? [
           {
             key: '4',
@@ -134,7 +138,7 @@ const GraderNav: React.FC<IProps> = (props) => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        height: 'calc(100vh - 138px)',
+        height: 'calc(100% - 138px)',
         paddingTop: 8,
       }}
     >

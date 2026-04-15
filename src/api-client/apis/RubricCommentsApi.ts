@@ -79,13 +79,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/comments/`;
@@ -146,13 +141,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/`;
@@ -208,13 +198,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/`;
@@ -272,13 +257,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/feedbackScore/`;
@@ -329,13 +309,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/`;
@@ -392,13 +367,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/`;
@@ -455,13 +425,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/`;
@@ -526,13 +491,8 @@ export class RubricCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/rubricComments/{id}/`;

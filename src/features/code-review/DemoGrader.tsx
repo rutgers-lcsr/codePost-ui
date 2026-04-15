@@ -789,7 +789,6 @@ const DemoGrader: React.FC = () => {
       assignments={REAL_GRADER_ASSIGNMENTS}
       course={DEMO_CURRENT_COURSE}
       graderEmail={'grader1@university.edu'}
-      isAdmin={false}
     />
   );
 
@@ -1103,7 +1102,6 @@ const DemoGrader: React.FC = () => {
           updateSubmission={updateRegradeSubmission}
           isAnonymous={!showRegradeStudents}
           isLoading={false}
-          isAdmin={false}
         />
       }
       gutterSize={0}

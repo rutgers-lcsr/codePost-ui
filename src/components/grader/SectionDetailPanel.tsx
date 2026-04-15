@@ -331,7 +331,6 @@ class SectionDetailPanel extends Component<IProps, IState> {
                     currentAssignment={this.props.assignment}
                     submissions={filteredSubmissions}
                     fullSubmissionsLoadComplete={!this.state.isLoading}
-                    isAdmin={false}
                     tableOnly={true}
                   />
                 </>

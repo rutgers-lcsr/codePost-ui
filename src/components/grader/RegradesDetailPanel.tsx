@@ -18,6 +18,7 @@ import { Assignment } from '../../types/common';
 import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
+import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -25,8 +26,6 @@ interface IProps {
   assignment: AssignmentType;
   user: UserType;
   isAnonymous: boolean;
-  isAdmin: boolean;
-  isSuperGrader: boolean;
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
@@ -35,6 +34,8 @@ const RegradesDetailPanel = (props: IProps) => {
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
   const [isLoading, setLoading] = useState(false);
   const [viewAll, setViewAll] = useState(false);
+  const courseCaps = useCourseCapabilities(props.assignment.course);
+  const canManageRegrades = !!courseCaps.manage_regrades;
 
   const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
     try {
@@ -132,23 +133,22 @@ const RegradesDetailPanel = (props: IProps) => {
       <div />
     );
 
-  const showAllRegrades =
-    props.isAdmin || props.isSuperGrader ? (
-      <div>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <span>View all regrades:</span>
-          <Switch
-            aria-label={!viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
-            defaultChecked={viewAll}
-            onChange={setViewAll.bind(!viewAll)}
-            key="toggleViewAll"
-            disabled={isLoading}
-          />
-        </div>
+  const showAllRegrades = canManageRegrades ? (
+    <div>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <span>View all regrades:</span>
+        <Switch
+          aria-label={!viewAll ? 'View all regrade requests' : 'View my regrade requests only'}
+          defaultChecked={viewAll}
+          onChange={setViewAll.bind(!viewAll)}
+          key="toggleViewAll"
+          disabled={isLoading}
+        />
       </div>
-    ) : (
-      <div />
-    );
+    </div>
+  ) : (
+    <div />
+  );
 
   const actions = [revealStudents, showAllRegrades];
 
@@ -162,7 +162,6 @@ const RegradesDetailPanel = (props: IProps) => {
         updateSubmission={updateSubmission}
         isLoading={isLoading}
         isAnonymous={!showStudentEmails}
-        isAdmin={props.isAdmin}
       />
     </div>
   );

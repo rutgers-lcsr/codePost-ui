@@ -30,6 +30,7 @@ import { TestManager } from './manager/TestManager';
 import { fetchEnvironment } from '../../../../core/testFetchUtils';
 
 import { AssignmentFile, Environment } from '../../../../../api-client';
+import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -62,10 +63,12 @@ export const TestingSetup = (props: IProps) => {
   }, [params.tabKey, location.pathname, navigate]);
 
   // Check permissions: Admin or Course Admin
+  const courseCaps = useCourseCapabilities(props.currentAssignment.course);
   const isCourseAdmin =
-    props.user.codePostAdmin ||
-    (props.user.courseadminCourses &&
-      props.user.courseadminCourses.some((c) => c.id === props.currentAssignment.course));
+    courseCaps.manage_test_cases ??
+    (props.user.codePostAdmin ||
+      (props.user.courseadminCourses &&
+        props.user.courseadminCourses.some((c) => c.id === props.currentAssignment.course)));
 
   /************************** Fetch data ******************************/
   useEffect(() => {

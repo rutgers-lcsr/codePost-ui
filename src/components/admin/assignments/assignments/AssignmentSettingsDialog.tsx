@@ -483,7 +483,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
     return Promise.resolve();
   };
 
-  const tabPaneStyle = { maxHeight: 'calc(100vh - 280px)', overflow: 'auto', minHeight: 200, padding: '4px 0' };
+  const tabPaneStyle = { maxHeight: 'calc(100dvh - 280px)', overflow: 'auto', minHeight: 200, padding: '4px 0' };
 
   return (
     <Modal

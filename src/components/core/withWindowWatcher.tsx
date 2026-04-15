@@ -9,11 +9,11 @@ export interface IWithWindowWatcherProps {
 type WithoutWindowWatcherProps<P extends IWithWindowWatcherProps> = Omit<P, keyof IWithWindowWatcherProps>;
 
 const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.ComponentType<P>) => {
-  return class WrappedComponent extends React.Component<
-    WithoutWindowWatcherProps<P>,
+  class WrappedComponent extends React.Component<
+    WithoutWindowWatcherProps<P> & { forwardedRef?: React.Ref<unknown> },
     { width: number; height: number }
   > {
-    public constructor(props: WithoutWindowWatcherProps<P>) {
+    public constructor(props: WithoutWindowWatcherProps<P> & { forwardedRef?: React.Ref<unknown> }) {
       super(props);
       this.state = { width: 0, height: 0 };
       this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -33,9 +33,26 @@ const withWindowWatcher = <P extends IWithWindowWatcherProps>(Component: React.C
     };
 
     public render() {
-      return <Component {...(this.props as P)} windowwidth={this.state.width} windowheight={this.state.height} />;
+      const { forwardedRef, ...rest } = this.props;
+      return (
+        <Component
+          {...(rest as unknown as P)}
+          ref={forwardedRef}
+          windowwidth={this.state.width}
+          windowheight={this.state.height}
+        />
+      );
     }
-  };
+  }
+
+  const ForwardedComponent = React.forwardRef<unknown, WithoutWindowWatcherProps<P>>((props, ref) => {
+    const allProps = { ...props, forwardedRef: ref } as WithoutWindowWatcherProps<P> & {
+      forwardedRef?: React.Ref<unknown>;
+    };
+    return <WrappedComponent {...allProps} />;
+  });
+  ForwardedComponent.displayName = `withWindowWatcher(${Component.displayName || Component.name || 'Component'})`;
+  return ForwardedComponent;
 };
 
 export default withWindowWatcher;

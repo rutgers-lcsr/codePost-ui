@@ -4,11 +4,17 @@ import { Modal, Button, ConfigProvider, theme } from 'antd';
 import HelpMenu from './HelpMenu';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 
 const HelpModal = () => {
   const showHelpModal = useCodeConsoleStore((s) => s.showHelpModal);
   const setShowHelpModal = useCodeConsoleStore((s) => s.setShowHelpModal);
-  const isStudent = useCodeConsoleStore((s) => s.isStudent);
+  const capGradeSubmission = usePermissionsStore((s) => {
+    const subKey = Object.keys(s.cache).find((k) => k.startsWith('submission:'));
+    if (!subKey) return undefined;
+    return selectCaps(s, subKey).grade_submission;
+  });
+  const isStudent = capGradeSubmission === false;
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const isLight = consoleTheme === consoleThemes.light;
 
@@ -41,7 +47,7 @@ const HelpModal = () => {
         }}
         title={<span style={{ color: textColor }}>{showHelpModal && isStudent ? 'Student Help' : 'Grader Help'}</span>}
       >
-        <HelpMenu isStudent={isStudent} />
+        <HelpMenu />
       </Modal>
     </ConfigProvider>
   );

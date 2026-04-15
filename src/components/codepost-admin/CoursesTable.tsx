@@ -21,6 +21,7 @@ import useDefaultPageSize from '../utils/useDefaultPageSize';
 
 import AdminTableToolbar from './AdminTableToolbar';
 import NewCourseDialog from './NewCourseDialog';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 const addEmailToSet = (target: Set<string>, email: string | null | undefined) => {
   if (email) target.add(email);
@@ -42,6 +43,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
   const [searchValue, setSearchValue] = useState('');
   const [pageSize, setPageSize] = useDefaultPageSize();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const platformCaps = usePlatformCapabilities();
+  const canCreateCourse = platformCaps.create_course !== false;
 
   const coursesWithData: CourseWithRoster[] = useMemo(() => {
     return courses.map((course) => {
@@ -257,8 +260,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
         searchPlaceholder="Search by course name, period, or organization…"
         searchValue={searchValue}
         onSearch={setSearchValue}
-        createLabel="Create Course"
-        onCreate={() => setShowCreateDialog(true)}
+        createLabel={canCreateCourse ? 'Create Course' : undefined}
+        onCreate={canCreateCourse ? () => setShowCreateDialog(true) : undefined}
       />
 
       <Table

@@ -35,7 +35,10 @@ const CPFlex: React.FC<ICPFlexProps> = (props) => {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', ...props.style }} className={props.className}>
+    <div
+      style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, ...props.style }}
+      className={props.className}
+    >
       <div style={{ display: 'flex', alignItems: 'center' }}>{leftNodes}</div>
       <div style={{ margin: '0 auto', alignItems: 'center', display: 'flex' }}>{middleNodes}</div>
       <div style={{ display: 'flex', alignItems: 'center' }}>{rightNodes}</div>

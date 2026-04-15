@@ -9,8 +9,13 @@ All URIs are relative to _http://localhost_
 | [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
 | [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
 | [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
+| [**apiKeysCreate**](CoursesApi.md#apikeyscreate)                                         | **POST** /courses/{id}/apiKeys/               |             |
+| [**apiKeysDestroy**](CoursesApi.md#apikeysdestroy)                                       | **DELETE** /courses/{id}/apiKeys/{keyId}/     |             |
+| [**apiKeysPartialUpdate**](CoursesApi.md#apikeyspartialupdate)                           | **PATCH** /courses/{id}/apiKeys/{keyId}/      |             |
+| [**apiKeysRetrieve**](CoursesApi.md#apikeysretrieve)                                     | **GET** /courses/{id}/apiKeys/                |             |
 | [**auditLogExportRetrieve**](CoursesApi.md#auditlogexportretrieve)                       | **GET** /courses/{id}/auditLogExport/         |             |
 | [**auditLogList**](CoursesApi.md#auditloglist)                                           | **GET** /courses/{id}/auditLog/               |             |
+| [**capabilitiesRetrieve**](CoursesApi.md#capabilitiesretrieve)                           | **GET** /courses/{id}/capabilities/           |             |
 | [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/     |             |
 | [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/       |             |
 | [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/         |             |
@@ -55,8 +60,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -92,7 +97,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -129,8 +134,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -163,7 +168,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -203,8 +208,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -240,7 +245,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -277,8 +282,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -311,7 +316,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -348,8 +353,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -391,7 +396,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -403,6 +408,308 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 | ----------- | ----------- | ---------------- |
 | **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## apiKeysCreate
+
+> CourseAPIKeyCreateResponse apiKeysCreate(id, courseAPIKeyCreate)
+
+List or create course-scoped API keys.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { ApiKeysCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // CourseAPIKeyCreate
+    courseAPIKeyCreate: ...,
+  } satisfies ApiKeysCreateRequest;
+
+  try {
+    const data = await api.apiKeysCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                   | Type                                        | Description                                     | Notes                     |
+| ---------------------- | ------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                 | `number`                                    | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **courseAPIKeyCreate** | [CourseAPIKeyCreate](CourseAPIKeyCreate.md) |                                                 |                           |
+
+### Return type
+
+[**CourseAPIKeyCreateResponse**](CourseAPIKeyCreateResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## apiKeysDestroy
+
+> CourseAPIKeyRead apiKeysDestroy(id, keyId)
+
+Update or revoke a single course API key.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { ApiKeysDestroyRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // string
+    keyId: keyId_example,
+  } satisfies ApiKeysDestroyRequest;
+
+  try {
+    const data = await api.apiKeysDestroy(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name      | Type     | Description                                     | Notes                     |
+| --------- | -------- | ----------------------------------------------- | ------------------------- |
+| **id**    | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **keyId** | `string` |                                                 | [Defaults to `undefined`] |
+
+### Return type
+
+[**CourseAPIKeyRead**](CourseAPIKeyRead.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## apiKeysPartialUpdate
+
+> CourseAPIKeyRead apiKeysPartialUpdate(id, keyId, patchedCourse)
+
+Update or revoke a single course API key.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { ApiKeysPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // string
+    keyId: keyId_example,
+    // PatchedCourse (optional)
+    patchedCourse: ...,
+  } satisfies ApiKeysPartialUpdateRequest;
+
+  try {
+    const data = await api.apiKeysPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name              | Type                              | Description                                     | Notes                     |
+| ----------------- | --------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**            | `number`                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **keyId**         | `string`                          |                                                 | [Defaults to `undefined`] |
+| **patchedCourse** | [PatchedCourse](PatchedCourse.md) |                                                 | [Optional]                |
+
+### Return type
+
+[**CourseAPIKeyRead**](CourseAPIKeyRead.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## apiKeysRetrieve
+
+> CourseAPIKeyCreateResponse apiKeysRetrieve(id)
+
+List or create course-scoped API keys.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { ApiKeysRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies ApiKeysRetrieveRequest;
+
+  try {
+    const data = await api.apiKeysRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**CourseAPIKeyCreateResponse**](CourseAPIKeyCreateResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **201**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
@@ -431,8 +738,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -480,7 +787,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -520,8 +827,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -575,7 +882,81 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## capabilitiesRetrieve
+
+> CapabilitiesResponse capabilitiesRetrieve(id, descriptions)
+
+Return the requesting user\&#39;s capabilities for this course.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { CapabilitiesRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // boolean | Include human-readable descriptions for each capability. (optional)
+    descriptions: true,
+  } satisfies CapabilitiesRetrieveRequest;
+
+  try {
+    const data = await api.capabilitiesRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name             | Type      | Description                                              | Notes                                |
+| ---------------- | --------- | -------------------------------------------------------- | ------------------------------------ |
+| **id**           | `number`  | A unique integer value identifying this course.          | [Defaults to `undefined`]            |
+| **descriptions** | `boolean` | Include human-readable descriptions for each capability. | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**CapabilitiesResponse**](CapabilitiesResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -615,8 +996,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -652,7 +1033,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -692,8 +1073,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -729,7 +1110,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -766,8 +1147,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -800,7 +1181,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -840,8 +1221,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -874,7 +1255,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -914,8 +1295,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -951,7 +1332,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -988,8 +1369,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1022,7 +1403,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1059,8 +1440,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1086,7 +1467,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1126,8 +1507,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1163,7 +1544,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1203,8 +1584,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1240,7 +1621,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1277,8 +1658,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1311,7 +1692,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1351,8 +1732,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1388,7 +1769,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1425,8 +1806,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1459,7 +1840,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1499,8 +1880,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1536,7 +1917,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1573,8 +1954,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1607,7 +1988,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1644,8 +2025,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1684,7 +2065,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1724,8 +2105,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1761,7 +2142,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1798,8 +2179,8 @@ async function example() {
     apiKey: 'YOUR API KEY',
     // To configure API key authorization: cookieAuth
     apiKey: 'YOUR API KEY',
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: 'YOUR BEARER TOKEN',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
   });
   const api = new CoursesApi(config);
 
@@ -1832,7 +2213,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 
@@ -1872,8 +2253,8 @@ async function example() {
     apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
-    // Configure HTTP bearer authorization: jwtAuth
-    accessToken: "YOUR BEARER TOKEN",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
@@ -1909,7 +2290,7 @@ example().catch(console.error);
 
 ### Authorization
 
-[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [jwtAuth](../README.md#jwtAuth)
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
 
 ### HTTP request headers
 

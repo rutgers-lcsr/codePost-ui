@@ -25,6 +25,7 @@ import AdminPageHeader from './AdminPageHeader';
 import AdminTableToolbar from './AdminTableToolbar';
 import NewUserDialog from './NewUserDialog';
 import EditUserDialog from './EditUserDialog';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 const isNonEmptyEmail = (email: string | null | undefined): email is string => Boolean(email);
 
@@ -53,6 +54,8 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<UserType | null>(null);
+  const platformCaps = usePlatformCapabilities();
+  const canImpersonate = platformCaps.impersonate_user !== false;
 
   // Build comprehensive user list from rosters AND User.list()
   const usersMap = useMemo(() => {
@@ -333,18 +336,20 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
               />
             </Tooltip>
           )}
-          <Tooltip title="Login as this user">
-            <Button
-              type="primary"
-              size="small"
-              icon={<LoginOutlined />}
-              onClick={() => {
-                window.location.href = `/loginAs?email=${encodeURIComponent(record.email)}`;
-              }}
-            >
-              Login As
-            </Button>
-          </Tooltip>
+          {canImpersonate && (
+            <Tooltip title="Login as this user">
+              <Button
+                type="primary"
+                size="small"
+                icon={<LoginOutlined />}
+                onClick={() => {
+                  window.location.href = `/loginAs?email=${encodeURIComponent(record.email)}`;
+                }}
+              >
+                Login As
+              </Button>
+            </Tooltip>
+          )}
         </Space>
       ),
     },

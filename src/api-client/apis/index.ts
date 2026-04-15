@@ -1,11 +1,13 @@
 // @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+export { AiFeaturesApi } from './AiFeaturesApi';
 export { AssignmentDataSetsApi } from './AssignmentDataSetsApi';
 export { AssignmentFilesApi } from './AssignmentFilesApi';
 export { AssignmentsApi } from './AssignmentsApi';
 export { AuthApi } from './AuthApi';
 export { AutograderApi } from './AutograderApi';
+export { CapabilitiesApi } from './CapabilitiesApi';
 export { CommentTemplatesApi } from './CommentTemplatesApi';
 export { CommentsApi } from './CommentsApi';
 export { CourseFilesApi } from './CourseFilesApi';
@@ -16,6 +18,10 @@ export { ImpersonateApi } from './ImpersonateApi';
 export { LogsApi } from './LogsApi';
 export { OrganizationsApi } from './OrganizationsApi';
 export { OttApi } from './OttApi';
+export { PromptExperimentsApi } from './PromptExperimentsApi';
+export { PromptFeedbackApi } from './PromptFeedbackApi';
+export { PromptTypesApi } from './PromptTypesApi';
+export { PromptVariantsApi } from './PromptVariantsApi';
 export { RegistrationApi } from './RegistrationApi';
 export { RubricCategoriesApi } from './RubricCategoriesApi';
 export { RubricCommentsApi } from './RubricCommentsApi';

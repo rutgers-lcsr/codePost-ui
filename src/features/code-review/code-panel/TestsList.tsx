@@ -24,6 +24,7 @@ import {
 import { autograderApi, submissionsApi } from '../../../api-client/clients';
 import { useTaskPolling } from '../../../hooks/useTaskPolling';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { buildDemoExecutionResults } from './demoExecution';
 import { getLatestSubmissionTests } from '../../../utils/submissionTests';
@@ -297,6 +298,12 @@ const TestsList: React.FC<TestsListProps> = ({
   const isStudent = useCodeConsoleStore((s) => s.isStudent);
   const testsAffectGrade = useCodeConsoleStore((s) => s.assignment?.testsAffectGrade ?? true);
   const setStoreTests = useCodeConsoleStore((s) => s.setTests);
+
+  // Use capability store for run_autograder, falling back to !isStudent
+  const capRunAutograder = usePermissionsStore((s) =>
+    submissionId ? selectCaps(s, `submission:${submissionId}`).run_autograder : undefined,
+  );
+  const canRunTests = capRunAutograder ?? !isStudent;
 
   const fetchResults = async () => {
     if (demoMode) {
@@ -691,7 +698,7 @@ const TestsList: React.FC<TestsListProps> = ({
                 }}
               >
                 {/* Run Button and Syntax Tag */}
-                {!isStudent && (
+                {canRunTests && (
                   <div style={{ marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
                     {syntaxTag}
                     <Tooltip title="Run this test only">
@@ -1218,7 +1225,7 @@ const TestsList: React.FC<TestsListProps> = ({
         <Title level={5} style={{ margin: 0 }}>
           Test Results
         </Title>
-        {!isStudent && (
+        {canRunTests && (
           <Button
             type="primary"
             icon={<PlayCircleOutlined />}

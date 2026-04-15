@@ -69,7 +69,6 @@ const AssignmentRegrades = (props: IAssignmentRegradesProps) => {
           refreshCourseData={props.refreshCourseData}
           user={props.user}
           updateSubmission={props.updateSubmission}
-          isAdmin={true}
         />
       }
     />

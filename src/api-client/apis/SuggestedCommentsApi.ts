@@ -33,6 +33,9 @@ export interface AcceptCreateRequest {
     | 'acceptedBy'
     | 'acceptedComment'
     | 'generationMetadata'
+    | 'promptVariant'
+    | 'generationBatch'
+    | 'firstViewedAt'
     | 'created'
     | 'modified'
   >;
@@ -54,6 +57,9 @@ export interface CreateRequest {
     | 'acceptedBy'
     | 'acceptedComment'
     | 'generationMetadata'
+    | 'promptVariant'
+    | 'generationBatch'
+    | 'firstViewedAt'
     | 'created'
     | 'modified'
   >;
@@ -80,6 +86,9 @@ export interface PartialUpdateRequest {
     | 'acceptedBy'
     | 'acceptedComment'
     | 'generationMetadata'
+    | 'promptVariant'
+    | 'generationBatch'
+    | 'firstViewedAt'
     | 'created'
     | 'modified'
   >;
@@ -102,6 +111,9 @@ export interface RejectCreateRequest {
     | 'acceptedBy'
     | 'acceptedComment'
     | 'generationMetadata'
+    | 'promptVariant'
+    | 'generationBatch'
+    | 'firstViewedAt'
     | 'created'
     | 'modified'
   >;
@@ -128,6 +140,9 @@ export interface UpdateRequest {
     | 'acceptedBy'
     | 'acceptedComment'
     | 'generationMetadata'
+    | 'promptVariant'
+    | 'generationBatch'
+    | 'firstViewedAt'
     | 'created'
     | 'modified'
   >;
@@ -168,13 +183,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/accept/`;
@@ -229,13 +239,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/`;
@@ -291,13 +296,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/`;
@@ -347,13 +347,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/`;
@@ -410,13 +405,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/`;
@@ -478,13 +468,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/reject/`;
@@ -541,13 +526,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/`;
@@ -605,13 +585,8 @@ export class SuggestedCommentsApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/suggestedComments/{id}/`;

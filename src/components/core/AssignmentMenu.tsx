@@ -77,7 +77,7 @@ const AssignmentMenu = (props: IProps) => {
     <CPDropdown
       value={selectorText}
       menu={{ items: menuItems }}
-      popupRender={(menu) => <div style={{ maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}>{menu}</div>}
+      popupRender={(menu) => <div style={{ maxHeight: 'calc(100dvh - 60px)', overflowY: 'auto' }}>{menu}</div>}
     />
   );
 };

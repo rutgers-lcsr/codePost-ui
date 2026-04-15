@@ -14,10 +14,14 @@
  */
 
 import * as runtime from '../runtime';
-import type { CheckSSOAvailabilityResponse } from '../models/index';
+import type { CheckSSOAvailabilityResponse, MainOrgSSOConfig, OrgSSOConfig } from '../models/index';
 
 export interface SsoCallbackRetrieveRequest {
   provider: string;
+}
+
+export interface SsoConfigRetrieve2Request {
+  shortname: string;
 }
 
 export interface SsoLoginRetrieveRequest {
@@ -57,13 +61,8 @@ export class AuthApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/auth/sso/callback/{provider}/`;
@@ -113,13 +112,8 @@ export class AuthApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/auth/sso/check/`;
@@ -144,6 +138,114 @@ export class AuthApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CheckSSOAvailabilityResponse> {
     const response = await this.ssoCheckRetrieveRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns SSO configuration for the main/default organization. Used by the frontend to auto-redirect to SSO on the default login page.
+   */
+  async ssoConfigRetrieveRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<MainOrgSSOConfig>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/auth/sso/config/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns SSO configuration for the main/default organization. Used by the frontend to auto-redirect to SSO on the default login page.
+   */
+  async ssoConfigRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MainOrgSSOConfig> {
+    const response = await this.ssoConfigRetrieveRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns SSO configuration for a specific organization by shortname. Used by the frontend for per-org login pages (e.g. /login/RU).
+   */
+  async ssoConfigRetrieve2Raw(
+    requestParameters: SsoConfigRetrieve2Request,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<OrgSSOConfig>> {
+    if (requestParameters['shortname'] == null) {
+      throw new runtime.RequiredError(
+        'shortname',
+        'Required parameter "shortname" was null or undefined when calling ssoConfigRetrieve2().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/auth/sso/config/{shortname}/`;
+    urlPath = urlPath.replace(`{${'shortname'}}`, encodeURIComponent(String(requestParameters['shortname'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns SSO configuration for a specific organization by shortname. Used by the frontend for per-org login pages (e.g. /login/RU).
+   */
+  async ssoConfigRetrieve2(
+    requestParameters: SsoConfigRetrieve2Request,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<OrgSSOConfig> {
+    const response = await this.ssoConfigRetrieve2Raw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -176,13 +278,8 @@ export class AuthApi extends runtime.BaseAPI {
       headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
     }
 
-    if (this.configuration && this.configuration.accessToken) {
-      const token = this.configuration.accessToken;
-      const tokenString = await token('jwtAuth', []);
-
-      if (tokenString) {
-        headerParameters['Authorization'] = `Bearer ${tokenString}`;
-      }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
     }
 
     let urlPath = `/auth/sso/login/{provider}/`;

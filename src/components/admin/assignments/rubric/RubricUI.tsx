@@ -409,7 +409,7 @@ const RubricUI = ({
         <div
           style={{
             display: 'flex',
-            height: 'calc(100vh - 200px)',
+            height: 'calc(100dvh - 200px)',
             border: '1px solid #f0f0f0',
             borderRadius: '8px',
             overflow: 'hidden',

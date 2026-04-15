@@ -3,7 +3,7 @@ import { FC, lazy } from 'react';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 import { Course, Section } from '../../api-client';
-import type { CourseType, UserType } from '../../types/models';
+import type { UserType } from '../../types/models';
 import { Assignment } from '../../types/common';
 
 // Lazy-loaded route components
@@ -17,6 +17,7 @@ import RubricUI from '../admin/assignments/rubric/RubricUI';
 import RubricOverview from '../admin/assignments/rubric/RubricOverview';
 import { encodeForRoute } from '../core/URLutils';
 import { useLocation, useParams } from 'react-router-dom';
+import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 interface LegacyRouteProps {
   match: { params: Record<string, string | undefined>; url: string; path: string; isExact: boolean };
@@ -55,9 +56,7 @@ interface GraderRoutesProps {
   assignments: Assignment[];
   user: UserType;
   localSectionsLed: Section[];
-  isSuperGrader: boolean;
   someRegrades: boolean;
-  isRubricEditor: boolean;
 }
 
 const GraderRoutes: FC<GraderRoutesProps> = ({
@@ -65,11 +64,11 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
   assignments,
   user,
   localSectionsLed,
-  isSuperGrader,
   someRegrades,
-  isRubricEditor,
 }) => {
-  const isAdmin = user.courseadminCourses.some((el: CourseType) => el.id === currentCourse.id);
+  const courseCaps = useCourseCapabilities(currentCourse?.id);
+  const showAllSubmissions = !!courseCaps.manage_regrades;
+  const showRubrics = !!courseCaps.edit_rubric;
 
   return (
     <Routes>
@@ -83,7 +82,6 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
               assignments={assignments as unknown as Assignment[]}
               course={currentCourse}
               graderEmail={user.email!}
-              isAdmin={isAdmin}
             />
           }
         />
@@ -98,12 +96,11 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
               course={currentCourse}
               graderEmail={user.email!}
               sections={localSectionsLed as unknown as Section[]}
-              isAdmin={isAdmin}
             />
           }
         />
       )}
-      {isSuperGrader && (
+      {showAllSubmissions && (
         <Route
           key="all_submissions"
           path="all_submissions/*"
@@ -120,14 +117,12 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
               assignments={assignments as unknown as Assignment[]}
               user={user}
               isAnonymous={false}
-              isAdmin={isAdmin}
-              isSuperGrader={isSuperGrader}
             />
           }
         />
       )}
       <Route path="video" key="video" element={<Navigate to="/docs" replace />} />
-      {isRubricEditor && (
+      {showRubrics && (
         <Route
           path="rubrics/*"
           element={

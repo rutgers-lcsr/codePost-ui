@@ -46,9 +46,11 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
   };
 
   const siderWidth =
-    windowSize.width < layoutVars.breakpoints.smallScreen.admin
-      ? layoutVars.maxWidths.siderSmallScreen
-      : layoutVars.maxWidths.siderNormal;
+    windowSize.width < layoutVars.breakpoints.smallScreen.adminCompact
+      ? layoutVars.maxWidths.siderCompact
+      : windowSize.width < layoutVars.breakpoints.smallScreen.admin
+        ? layoutVars.maxWidths.siderSmallScreen
+        : layoutVars.maxWidths.siderNormal;
 
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {
@@ -69,7 +71,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           collapsed={collapsed}
           onCollapse={onCollapse}
           style={{
-            height: '100vh',
+            height: '100%',
             overflow: 'hidden',
             zIndex: 10,
             position: 'sticky',
@@ -109,7 +111,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
       <Layout
         style={{
           minWidth: layoutVars.minWidths.admin,
-          height: '100vh',
+          height: '100%',
           overflowY: 'auto',
           overflowX: 'auto',
           background: '#f4f5f7',

@@ -28,6 +28,7 @@ import CourseMenu from '../core/CourseMenu';
 import Referral from '../core/Referral';
 import RoleMenu from '../core/RoleMenu';
 import NewCourseDialog from './other/NewCourseDialog';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 /* types */
 import {
@@ -1114,10 +1115,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   const courseURL = props.currentCourse ? formatCourseURL(props.currentCourse) : props.baseURL;
 
+  const platformCaps = usePlatformCapabilities();
+  const canCreateCourse = platformCaps.create_course !== false;
+
   const dropdown = (
     <CourseMenu base="admin" panel="assignments" courses={courses} currentCourse={props.currentCourse} />
   );
-  const createButton = <NewCourseDialog courses={courses} createCourse={createCourse} />;
+  const createButton = canCreateCourse ? <NewCourseDialog courses={courses} createCourse={createCourse} /> : null;
   const headerLeft = [dropdown, createButton];
 
   const logout = (
@@ -1150,7 +1154,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
   const header = <CPFlex left={headerLeft} right={headerRight} gutterSize={10} />;
 
-  const navigation = (collapsed: boolean) => <AdminNav baseURL={courseURL} collapsed={collapsed} />;
+  const navigation = (collapsed: boolean) => (
+    <AdminNav baseURL={courseURL} collapsed={collapsed} courseId={props.currentCourse?.id} />
+  );
 
   const banner =
     props.currentCourse && assignments && assignments.length === 1 ? (

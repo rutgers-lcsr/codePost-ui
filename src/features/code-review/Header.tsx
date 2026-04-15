@@ -68,6 +68,7 @@ import useHotkeys, { MINUS_KEY, PLUS_KEY, U_KEY } from './useHotkeys';
 import useWindowSize from '../../components/core/useWindowSize';
 import { LOCAL_SETTINGS } from '../../components/utils/LocalSettings';
 import { useCodeConsoleStore } from '../../stores/useCodeConsoleStore';
+import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
 
 import { encodeForLink } from '../../components/core/URLutils';
 
@@ -323,6 +324,20 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  // Use capability store for unfinalize, falling back to prop
+  const submissionId = props.submission?.id;
+  const capCanUnfinalize = usePermissionsStore((s) =>
+    submissionId ? selectCaps(s, `submission:${submissionId}`).unfinalize_submission : undefined,
+  );
+  const capCanFinalize = usePermissionsStore((s) =>
+    submissionId ? selectCaps(s, `submission:${submissionId}`).finalize_submission : undefined,
+  );
+  const capNotifyStudents = usePermissionsStore((s) =>
+    submissionId ? selectCaps(s, `submission:${submissionId}`).notify_students_feedback : undefined,
+  );
+  const canUnfinalize = capCanUnfinalize ?? props.canUnfinalize;
+  const canFinalize = capCanFinalize !== false;
+
   const [nudge, setNudge] = React.useState(false);
   const triggerNudge = async (event: MouseEvent) => {
     const safeAreaClasses = ['comment-share'];
@@ -367,11 +382,13 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   const onClick = async () => {
     if (isFinalized) {
-      if (props.canUnfinalize) {
+      if (canUnfinalize) {
         executeToggle();
       } else {
         message.warning("You aren't able to unfinalize this submission.");
       }
+    } else if (!canFinalize) {
+      message.warning("You don't have permission to finalize this submission.");
     } else {
       if (props.minComments > 0 && props.numComments < props.minComments) {
         Modal.confirm({
@@ -383,7 +400,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
         });
         // FIXME: This doesn't cover the situation where both settings are enabled
         // course.enableStudentFeedbackNotifications and mincomments
-      } else if (props.course.enableStudentFeedbackNotifications) {
+      } else if (props.course.enableStudentFeedbackNotifications && capNotifyStudents !== false) {
         const studentText = `student${
           props.submission.students ? (props.submission.students.length > 1 ? 's' : '') : '(s)'
         }`;
@@ -471,7 +488,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
 
   let toggleNotice;
   if (isFinalized) {
-    if (props.canUnfinalize) {
+    if (canUnfinalize) {
       toggleNotice = `This submission is finalized. Unfinalize to modify it. [${osControlKey()} shift f]`;
     } else {
       toggleNotice = "You aren't able to unfinalize this submission. Please contact an admin if you made a mistake";
@@ -495,9 +512,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
               aria-label={isFinalized ? 'Click to unfinalize' : 'Click to Finalize'}
               checked={isFinalized}
               onClick={onClick}
-              disabled={
-                (props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !props.canUnfinalize)
-              }
+              disabled={(props.submission.grader === null && !props.isOnlyGrader) || (isFinalized && !canUnfinalize)}
               loading={isLoading}
             />
           </span>
@@ -827,9 +842,6 @@ export const SubheaderTitle = (props: ISubheaderTitleProps) => {
 
 interface IHeaderMenuProps {
   claimSubmission: () => void;
-  isStudent: boolean;
-  isDemo?: boolean;
-  isAdmin: boolean;
   course?: Course;
   assignment: AssignmentType;
   submission?: StudentSubmissionType | AnonymousSubmissionType;
@@ -838,9 +850,20 @@ interface IHeaderMenuProps {
 export const HeaderMenu = (props: IHeaderMenuProps) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
 
+  // Read capabilities from the store, falling back to old prop-based logic
+  const courseId = props.course?.id;
+  const capClaimSubmissions = usePermissionsStore((s) =>
+    courseId ? selectCaps(s, `course:${courseId}`).claim_submissions : undefined,
+  );
+  const capEditRubric = usePermissionsStore((s) =>
+    courseId ? selectCaps(s, `course:${courseId}`).edit_rubric : undefined,
+  );
+
+  const canClaimSubmissions = capClaimSubmissions ?? false;
+  const canEditRubricInAdmin = capEditRubric ?? false;
+
   // Only register claim submission hotkey for non-students
-  const canClaimSubmissions = !props.isStudent && !props.isDemo && props.course?.activateQueue;
-  useHotkeys(U_KEY, canClaimSubmissions ? props.claimSubmission : () => {}, canClaimSubmissions);
+  useHotkeys(U_KEY, canClaimSubmissions ? props.claimSubmission : () => {}, !!canClaimSubmissions);
 
   const groupStyle = {
     padding: '5px 20px',
@@ -883,9 +906,8 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
       style: groupStyle,
       className: 'header-menu',
     },
-    ...(props.isStudent || props.isDemo || (props.course && !props.course.activateQueue)
-      ? []
-      : [
+    ...(canClaimSubmissions
+      ? [
           {
             key: 'claim',
             label: (
@@ -897,8 +919,9 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
             style: itemStyle,
             className: 'header-menu',
           },
-        ]),
-    ...(props.isAdmin && props.course
+        ]
+      : []),
+    ...(canEditRubricInAdmin && props.course
       ? [
           {
             key: 'rubric',

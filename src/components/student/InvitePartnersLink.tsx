@@ -17,6 +17,7 @@ import type {
 
 import type { SubmissionPartnerLinkResponse } from '../../api-client';
 import { Submission } from '../../services/submission';
+import { usePermissionsStore, selectCaps, EMPTY_CAPS } from '../../stores/usePermissionsStore';
 
 interface IInvitePartnersLinkProps {
   assignment?: AssignmentType | AssignmentStudentType | { allowStudentUploadWithPartners?: boolean };
@@ -26,6 +27,10 @@ interface IInvitePartnersLinkProps {
 const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
   const [link, setLink] = React.useState<SubmissionPartnerLinkResponse | undefined>(undefined);
   const host = hostname();
+
+  const subId = props.submission?.id;
+  const subCaps = usePermissionsStore((s) => (subId ? selectCaps(s, `submission:${subId}`) : EMPTY_CAPS));
+  const canManagePartners = subCaps.manage_partners !== false;
 
   React.useEffect(() => {
     const getPartnerLink = async () => {
@@ -64,7 +69,8 @@ const InvitePartnersLink = (props: IInvitePartnersLinkProps) => {
     props.assignment === undefined ||
     !props.assignment.allowStudentUploadWithPartners ||
     props.submission === undefined ||
-    link === undefined
+    link === undefined ||
+    !canManagePartners
   ) {
     return null;
   }

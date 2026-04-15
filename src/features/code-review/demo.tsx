@@ -99,6 +99,7 @@ const demoCourseBase: Course = {
   studentsCanSeeGraders: false,
   studentCount: 0,
   isRubricEditor: true,
+  capabilities: {},
   webhooks: [],
 };
 

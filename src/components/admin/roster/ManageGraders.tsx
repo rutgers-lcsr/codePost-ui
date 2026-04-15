@@ -20,6 +20,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { USER_APP, USER_TYPE } from '../../../types/common';
 
 import { Course, Section } from '../../../api-client';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 import DownloadRoster from './other/DownloadRoster';
 import RosterFileUpload from './other/RosterFileUpload';
@@ -64,6 +65,8 @@ export interface IManageGradersProps {
 const ManageGraders: React.FC<IManageGradersProps> = (props) => {
   const location = useLocation();
   const { updateRoster } = props;
+  const courseCaps = useCourseCapabilities(props.currentCourse?.id);
+  const canManageRoster = courseCaps.manage_roster !== false;
 
   const sendActivationEmail = useCallback(
     (grader: string) => {
@@ -157,21 +160,23 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         isDisabled={false}
         downloadType={USER_TYPE.GRADER}
       />,
-      <RosterFileUpload
-        key={1}
-        roleType="grader"
-        students={props.students}
-        graders={props.graders}
-        admins={props.admins}
-        sections={props.sections}
-        sectionsByStudent={props.sectionsByStudent}
-        changeRoster={props.updateRoster}
-        isDisabled={false}
-        updateSection={props.updateSection}
-        emailNewUsers={props.currentCourse.emailNewUsers ?? false}
-        createSection={props.createSection}
-        course={props.currentCourse}
-      />,
+      canManageRoster ? (
+        <RosterFileUpload
+          key={1}
+          roleType="grader"
+          students={props.students}
+          graders={props.graders}
+          admins={props.admins}
+          sections={props.sections}
+          sectionsByStudent={props.sectionsByStudent}
+          changeRoster={props.updateRoster}
+          isDisabled={false}
+          updateSection={props.updateSection}
+          emailNewUsers={props.currentCourse.emailNewUsers ?? false}
+          createSection={props.createSection}
+          course={props.currentCourse}
+        />
+      ) : null,
     ];
 
     const aligner: 'left' | 'center' | 'right' = 'center';
@@ -315,7 +320,12 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
               </Link>
             </Tooltip>
             <Tooltip title="Unenroll">
-              <Button shape="circle" icon={<UserDeleteOutlined />} onClick={() => removeGrader(graderEmail)} />
+              <Button
+                shape="circle"
+                icon={<UserDeleteOutlined />}
+                disabled={!canManageRoster}
+                onClick={() => removeGrader(graderEmail)}
+              />
             </Tooltip>
           </Space>
         ),

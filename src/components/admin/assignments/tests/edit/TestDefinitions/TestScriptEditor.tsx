@@ -20,6 +20,7 @@ import { assignmentsApi } from '../../../../../../api-client/clients';
 import { AssignmentFileType } from '../../../../../../types/models';
 import { File as CodePostFile } from '../../../../../../utils/file';
 import { getCourseAISettings } from '../../../../../../utils/aiService';
+import { useAssignmentCapabilities } from '../../../../../../stores/usePermissionsStore';
 import { useTreeSitter } from '../../../../../../hooks/useTreeSitter';
 import { useSymbolExtraction, MonacoSuggestion } from '../../../../../../hooks/useSymbolExtraction';
 
@@ -44,6 +45,8 @@ export const TestScriptEditor = (props: IProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aiEnabled, setAiEnabled] = useState(false);
+  const assignCaps = useAssignmentCapabilities(props.assignmentId);
+  const capCanGenerateTests = assignCaps.generate_ai_test_cases !== false;
   const [viewMode, setViewMode] = useState<'code' | 'card' | 'split'>('split');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [debouncedCode, setDebouncedCode] = useState(props.code);
@@ -141,7 +144,7 @@ export const TestScriptEditor = (props: IProps) => {
   );
 
   const onGenerate = async () => {
-    if (!aiEnabled) return;
+    if (!aiEnabled || !capCanGenerateTests) return;
 
     setIsGenerating(true);
     setError(null);
@@ -668,7 +671,7 @@ export const TestScriptEditor = (props: IProps) => {
         </Radio.Group>
         <div style={{ width: 1, height: 20, background: '#d9d9d9', marginLeft: isFullScreen ? 12 : 0 }} />
         {isFullScreen && <div style={{ flex: 1 }} />} {/* Spacer to push buttons right in full screen */}
-        {aiEnabled && (
+        {aiEnabled && capCanGenerateTests && (
           <Button
             type="primary"
             icon={<ThunderboltOutlined />}

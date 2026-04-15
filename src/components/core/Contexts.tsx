@@ -28,8 +28,7 @@ export const defaultCourse: Course = {
   studentsCanSeeGraders: false,
   studentCount: 0,
   isRubricEditor: false,
-  // Add other required fields if any, checking type definition would be verifying.
-  // Assuming these are all required fields in Course.
+  capabilities: {},
 };
 
 export const CourseContext = React.createContext<Course>(defaultCourse);

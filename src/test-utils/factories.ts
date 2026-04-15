@@ -175,6 +175,7 @@ export const mockCourse: CourseType = {
   studentsCanSeeGraders: false,
   studentCount: 0,
   isRubricEditor: false,
+  capabilities: {},
   webhooks: [],
 };
 

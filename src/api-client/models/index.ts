@@ -263,6 +263,43 @@ export enum AiCoursePolicyEnum {
 }
 
 /**
+ *
+ * @export
+ * @interface AiFeaturesList200ResponseInner
+ */
+export interface AiFeaturesList200ResponseInner {
+  /**
+   *
+   * @type {string}
+   * @memberof AiFeaturesList200ResponseInner
+   */
+  key?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AiFeaturesList200ResponseInner
+   */
+  label?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AiFeaturesList200ResponseInner
+   */
+  description?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AiFeaturesList200ResponseInner
+   */
+  defaultEnabled?: boolean;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof AiFeaturesList200ResponseInner
+   */
+  requires?: Array<string>;
+}
+/**
  * * `gemini` - Google Gemini
  * * `openai` - OpenAI
  * * `ollama` - Ollama (Self-hosted)
@@ -1366,6 +1403,344 @@ export interface AsyncTaskResponse {
   status: string;
 }
 /**
+ * Request body for ``POST /capabilities/batch/``.
+ *
+ * Each key must be ``"course:{id}"``, ``"assignment:{id}"``,
+ * ``"submission:{id}"``, or ``"platform"``.
+ * @export
+ * @interface BatchCapabilitiesRequest
+ */
+export interface BatchCapabilitiesRequest {
+  /**
+   * List of resource keys, e.g. ["course:1", "assignment:5", "submission:42", "platform"].
+   * @type {Array<string>}
+   * @memberof BatchCapabilitiesRequest
+   */
+  keys: Array<string>;
+}
+/**
+ * Response for ``POST /capabilities/batch/``.
+ *
+ * Returns ``{ results: { "course:1": { ... }, "assignment:5": { ... } } }``.
+ * @export
+ * @interface BatchCapabilitiesResponse
+ */
+export interface BatchCapabilitiesResponse {
+  /**
+   * Map of resource keys to their capability maps.
+   * @type {{ [key: string]: BatchCapabilitiesResponseResultsValue | undefined; }}
+   * @memberof BatchCapabilitiesResponse
+   */
+  results: { [key: string]: BatchCapabilitiesResponseResultsValue | undefined };
+}
+/**
+ *
+ * @export
+ * @interface BatchCapabilitiesResponseResultsValue
+ */
+export interface BatchCapabilitiesResponseResultsValue {
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewCourse?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  editCourseSettings?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageRoster?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewRoster?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageSections?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAnalytics?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  configureAi?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAiUsage?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  createAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  claimSubmissions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAuditLog?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  changeInviteCode?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageCourseApiKeys?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  editAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  copyAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  editRubric?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewRubric?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  releaseGrades?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageExtensions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewQueue?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageTestCases?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAssignmentStatistics?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  uploadSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  generateAiTestCases?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageDatasets?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  downloadAssignmentFiles?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  gradeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  commentOnSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  finalizeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  unfinalizeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewStudentIdentity?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  requestRegrade?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageRegrades?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  runAutograder?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  runCode?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  generateAiComments?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  managePartners?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  notifyStudentsFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewAiAssistance?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  triggerAiAssistance?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageGlobalTemplates?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  viewSubmissionHistory?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  provideCommentFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  createCourse?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  manageOrganization?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  impersonateUser?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
+  accessAdminDashboard?: boolean;
+}
+/**
  *
  * @export
  * @interface BeforeStudentUploadResponse
@@ -1401,6 +1776,61 @@ export interface BeforeStudentUploadResponse {
    * @memberof BeforeStudentUploadResponse
    */
   adjustedDaysLate?: number;
+}
+/**
+ * Behavioral metrics comparing both variants.
+ * @export
+ * @interface BehavioralMetrics
+ */
+export interface BehavioralMetrics {
+  /**
+   *
+   * @type {VariantBehavioralStats}
+   * @memberof BehavioralMetrics
+   */
+  variantA: VariantBehavioralStats;
+  /**
+   *
+   * @type {VariantBehavioralStats}
+   * @memberof BehavioralMetrics
+   */
+  variantB: VariantBehavioralStats;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BehavioralMetrics
+   */
+  variantAConfident: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BehavioralMetrics
+   */
+  variantBConfident: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof BehavioralMetrics
+   */
+  batchAcceptanceRateA: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof BehavioralMetrics
+   */
+  batchAcceptanceRateB: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof BehavioralMetrics
+   */
+  minAssignmentsThreshold: number;
+  /**
+   *
+   * @type {number}
+   * @memberof BehavioralMetrics
+   */
+  minSamplesThreshold: number;
 }
 /**
  * * `default` - default
@@ -1447,6 +1877,331 @@ export interface CacheCheckResponse {
    * @memberof CacheCheckResponse
    */
   executedBy?: string | null;
+}
+/**
+ * Serializer for the capabilities endpoint.
+ *
+ * Returns ``{ "capabilitiesMap": { cap_key: bool, ... } }``.
+ * The field is named in camelCase so the API response matches the
+ * generated TypeScript client property name (no camelCase renderer
+ * middleware is installed).
+ * @export
+ * @interface CapabilitiesResponse
+ */
+export interface CapabilitiesResponse {
+  /**
+   *
+   * @type {CapabilitiesResponseCapabilitiesMap}
+   * @memberof CapabilitiesResponse
+   */
+  capabilitiesMap: CapabilitiesResponseCapabilitiesMap;
+}
+/**
+ * Map of capability keys to boolean values.
+ * @export
+ * @interface CapabilitiesResponseCapabilitiesMap
+ */
+export interface CapabilitiesResponseCapabilitiesMap {
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewCourse?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  editCourseSettings?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageRoster?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewRoster?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageSections?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAnalytics?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  configureAi?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAiUsage?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  createAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  claimSubmissions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAuditLog?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  changeInviteCode?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageCourseApiKeys?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  editAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  copyAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAssignment?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  editRubric?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewRubric?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  releaseGrades?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageExtensions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewQueue?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageTestCases?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAssignmentStatistics?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  uploadSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  generateAiTestCases?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageDatasets?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  downloadAssignmentFiles?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  gradeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  commentOnSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  finalizeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  unfinalizeSubmission?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewStudentIdentity?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  requestRegrade?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageRegrades?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  runAutograder?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  runCode?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  generateAiComments?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  managePartners?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  notifyStudentsFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewAiAssistance?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  triggerAiAssistance?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageGlobalTemplates?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewSubmissionHistory?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  provideCommentFeedback?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  createCourse?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  manageOrganization?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  impersonateUser?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  accessAdminDashboard?: boolean;
 }
 /**
  * Result of a single health probe.
@@ -1883,6 +2638,12 @@ export interface Course {
   readonly isRubricEditor: boolean;
   /**
    *
+   * @type {{ [key: string]: boolean | undefined; }}
+   * @memberof Course
+   */
+  readonly capabilities: { [key: string]: boolean | undefined };
+  /**
+   *
    * @type {number}
    * @memberof Course
    */
@@ -1949,6 +2710,18 @@ export interface CourseAISettings {
    */
   aiTokenRates?: any | null;
   /**
+   * Per-feature AI toggles. JSON: {"comment_generation": true, "suggested_comments": false, ...}
+   * @type {any}
+   * @memberof CourseAISettings
+   */
+  aiFeatureConfig?: any | null;
+  /**
+   *
+   * @type {{ [key: string]: boolean | undefined; }}
+   * @memberof CourseAISettings
+   */
+  readonly aiFeatures: { [key: string]: boolean | undefined };
+  /**
    *
    * @type {boolean}
    * @memberof CourseAISettings
@@ -1998,6 +2771,117 @@ export enum CourseAISettingsAiProviderEnum {
   Custom = 'custom',
 }
 
+/**
+ * Input serializer for creating a new course API key.
+ * @export
+ * @interface CourseAPIKeyCreate
+ */
+export interface CourseAPIKeyCreate {
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreate
+   */
+  name: string;
+}
+/**
+ * Response serializer that includes the raw key (shown only once).
+ * @export
+ * @interface CourseAPIKeyCreateResponse
+ */
+export interface CourseAPIKeyCreateResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  name: string;
+  /**
+   * The full API key. This is only shown once.
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  key: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  keyPrefix: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  createdBy: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  created: string;
+}
+/**
+ * Read-only representation of a course API key (never exposes the full key).
+ * @export
+ * @interface CourseAPIKeyRead
+ */
+export interface CourseAPIKeyRead {
+  /**
+   *
+   * @type {number}
+   * @memberof CourseAPIKeyRead
+   */
+  readonly id: number;
+  /**
+   * A human-readable label for this key.
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  name: string;
+  /**
+   * First characters of the raw key, used for fast lookup.
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  keyPrefix: string;
+  /**
+   * If False, the key is revoked.
+   * @type {boolean}
+   * @memberof CourseAPIKeyRead
+   */
+  isActive?: boolean;
+  /**
+   * Last time this key was used to authenticate.
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  lastUsedAt?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  readonly createdBy: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyRead
+   */
+  modified?: string;
+}
 /**
  * Read-only serializer for course audit events.
  * @export
@@ -3467,6 +4351,43 @@ export interface LogSuccessResponse {
   success: boolean;
 }
 /**
+ *
+ * @export
+ * @interface MainOrgSSOConfig
+ */
+export interface MainOrgSSOConfig {
+  /**
+   *
+   * @type {boolean}
+   * @memberof MainOrgSSOConfig
+   */
+  mainOrg: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof MainOrgSSOConfig
+   */
+  ssoEnabled?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof MainOrgSSOConfig
+   */
+  orgId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof MainOrgSSOConfig
+   */
+  orgName?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof MainOrgSSOConfig
+   */
+  provider?: string;
+}
+/**
  * Full response shape returned by both GET and PATCH /system/banner/.
  * @export
  * @interface MaintenanceBannerResponse
@@ -3669,6 +4590,43 @@ export enum NullEnum {}
 /**
  *
  * @export
+ * @interface OrgSSOConfig
+ */
+export interface OrgSSOConfig {
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrgSSOConfig
+   */
+  found: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof OrgSSOConfig
+   */
+  ssoEnabled?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof OrgSSOConfig
+   */
+  orgId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof OrgSSOConfig
+   */
+  orgName?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof OrgSSOConfig
+   */
+  provider?: string;
+}
+/**
+ *
+ * @export
  * @interface Organization
  */
 export interface Organization {
@@ -3788,6 +4746,18 @@ export interface OrganizationAISettings {
    */
   aiTokenRates?: any | null;
   /**
+   * Per-feature AI toggles. JSON: {"comment_generation": true, "suggested_comments": false, ...}
+   * @type {any}
+   * @memberof OrganizationAISettings
+   */
+  aiFeatureConfig?: any | null;
+  /**
+   *
+   * @type {{ [key: string]: boolean | undefined; }}
+   * @memberof OrganizationAISettings
+   */
+  readonly aiFeatures: { [key: string]: boolean | undefined };
+  /**
    *
    * @type {boolean}
    * @memberof OrganizationAISettings
@@ -3874,6 +4844,68 @@ export interface PaginatedCourseAuditEventList {
    * @memberof PaginatedCourseAuditEventList
    */
   results: Array<CourseAuditEvent>;
+}
+/**
+ *
+ * @export
+ * @interface PaginatedPromptExperimentList
+ */
+export interface PaginatedPromptExperimentList {
+  /**
+   *
+   * @type {number}
+   * @memberof PaginatedPromptExperimentList
+   */
+  count: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedPromptExperimentList
+   */
+  next?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedPromptExperimentList
+   */
+  previous?: string | null;
+  /**
+   *
+   * @type {Array<PromptExperiment>}
+   * @memberof PaginatedPromptExperimentList
+   */
+  results: Array<PromptExperiment>;
+}
+/**
+ *
+ * @export
+ * @interface PaginatedPromptFeedbackList
+ */
+export interface PaginatedPromptFeedbackList {
+  /**
+   *
+   * @type {number}
+   * @memberof PaginatedPromptFeedbackList
+   */
+  count: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedPromptFeedbackList
+   */
+  next?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedPromptFeedbackList
+   */
+  previous?: string | null;
+  /**
+   *
+   * @type {Array<PromptFeedback>}
+   * @memberof PaginatedPromptFeedbackList
+   */
+  results: Array<PromptFeedback>;
 }
 /**
  *
@@ -3998,6 +5030,37 @@ export interface PaginatedSubmissionWithTestsList {
    * @memberof PaginatedSubmissionWithTestsList
    */
   results: Array<SubmissionWithTests>;
+}
+/**
+ *
+ * @export
+ * @interface PaginatedSystemPromptVariantList
+ */
+export interface PaginatedSystemPromptVariantList {
+  /**
+   *
+   * @type {number}
+   * @memberof PaginatedSystemPromptVariantList
+   */
+  count: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedSystemPromptVariantList
+   */
+  next?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PaginatedSystemPromptVariantList
+   */
+  previous?: string | null;
+  /**
+   *
+   * @type {Array<SystemPromptVariant>}
+   * @memberof PaginatedSystemPromptVariantList
+   */
+  results: Array<SystemPromptVariant>;
 }
 /**
  *
@@ -4740,6 +5803,12 @@ export interface PatchedCourse {
   readonly isRubricEditor?: boolean;
   /**
    *
+   * @type {{ [key: string]: boolean | undefined; }}
+   * @memberof PatchedCourse
+   */
+  readonly capabilities?: { [key: string]: boolean | undefined };
+  /**
+   *
    * @type {number}
    * @memberof PatchedCourse
    */
@@ -4805,6 +5874,18 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   aiTokenRates?: any | null;
+  /**
+   * Per-feature AI toggles. JSON: {"comment_generation": true, "suggested_comments": false, ...}
+   * @type {any}
+   * @memberof PatchedCourseAISettings
+   */
+  aiFeatureConfig?: any | null;
+  /**
+   *
+   * @type {{ [key: string]: boolean | undefined; }}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly aiFeatures?: { [key: string]: boolean | undefined };
   /**
    *
    * @type {boolean}
@@ -5384,6 +6465,12 @@ export interface PatchedOrganizationAISettingsUpdate {
    * @memberof PatchedOrganizationAISettingsUpdate
    */
   aiTokenRates?: any | null;
+  /**
+   * Per-feature AI toggles. JSON: {"comment_generation": true, "suggested_comments": false, ...}
+   * @type {any}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiFeatureConfig?: any | null;
 }
 
 /**
@@ -5398,6 +6485,193 @@ export enum PatchedOrganizationAISettingsUpdateAiProviderEnum {
   Custom = 'custom',
 }
 
+/**
+ *
+ * @export
+ * @interface PatchedPromptExperiment
+ */
+export interface PatchedPromptExperiment {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly id?: number;
+  /**
+   * Human-readable experiment name.
+   * @type {string}
+   * @memberof PatchedPromptExperiment
+   */
+  name?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptExperiment
+   */
+  promptType?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptExperiment
+   */
+  variantA?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptExperiment
+   */
+  variantB?: number;
+  /**
+   *
+   * @type {SystemPromptVariantSummary}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly variantADetail?: SystemPromptVariantSummary;
+  /**
+   *
+   * @type {SystemPromptVariantSummary}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly variantBDetail?: SystemPromptVariantSummary;
+  /**
+   * Current experiment lifecycle state.
+   *
+   * * `running` - Running
+   * * `paused` - Paused
+   * * `completed` - Completed
+   * @type {PromptExperimentStatusEnum}
+   * @memberof PatchedPromptExperiment
+   */
+  status?: PromptExperimentStatusEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptExperiment
+   */
+  sampleRate?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly startedBy?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly completedAt?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptExperiment
+   */
+  readonly modified?: string;
+}
+
+/**
+ * Serializer for creating and reading PromptFeedback records.
+ * @export
+ * @interface PatchedPromptFeedback
+ */
+export interface PatchedPromptFeedback {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  readonly id?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  experiment?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  variantUsed?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  chosenVariant?: number | null;
+  /**
+   * The grader who provided this feedback.
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  readonly user?: number | null;
+  /**
+   * Standalone rating: 1 = thumbs up, -1 = thumbs down.
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  rating?: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  feedbackText?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  aiOutputA?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  aiOutputB?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedPromptFeedback
+   */
+  usageRecord?: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  promptType?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedPromptFeedback
+   */
+  isCustomContext?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  contextHash?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedPromptFeedback
+   */
+  readonly modified?: string;
+}
 /**
  *
  * @export
@@ -5920,6 +7194,24 @@ export interface PatchedSuggestedComment {
    */
   readonly generationMetadata?: any | null;
   /**
+   * The prompt variant used to generate this suggestion.
+   * @type {number}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly promptVariant?: number | null;
+  /**
+   * UUID grouping all suggestions from a single generation call.
+   * @type {string}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly generationBatch?: string | null;
+  /**
+   * Timestamp when a grader first saw this suggestion (set on list fetch).
+   * @type {string}
+   * @memberof PatchedSuggestedComment
+   */
+  readonly firstViewedAt?: string | null;
+  /**
    *
    * @type {string}
    * @memberof PatchedSuggestedComment
@@ -5929,6 +7221,85 @@ export interface PatchedSuggestedComment {
    *
    * @type {string}
    * @memberof PatchedSuggestedComment
+   */
+  readonly modified?: string;
+}
+
+/**
+ *
+ * @export
+ * @interface PatchedSystemPromptVariant
+ */
+export interface PatchedSystemPromptVariant {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSystemPromptVariant
+   */
+  readonly id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSystemPromptVariant
+   */
+  promptType?: string;
+  /**
+   * Human-readable label (e.g. 'Concise Feedback v2').
+   * @type {string}
+   * @memberof PatchedSystemPromptVariant
+   */
+  name?: string;
+  /**
+   * The prompt template. May contain {placeholder} variables.
+   * @type {string}
+   * @memberof PatchedSystemPromptVariant
+   */
+  text?: string;
+  /**
+   * Lifecycle status. Only one variant per prompt_type may be 'active'.
+   *
+   * * `draft` - Draft
+   * * `active` - Active
+   * * `candidate` - Candidate
+   * * `retired` - Retired
+   * @type {Status4a6Enum}
+   * @memberof PatchedSystemPromptVariant
+   */
+  status?: Status4a6Enum;
+  /**
+   * Version number within this prompt's lineage.
+   * @type {number}
+   * @memberof PatchedSystemPromptVariant
+   */
+  readonly version?: number;
+  /**
+   * The variant this was derived from (for lineage tracking).
+   * @type {number}
+   * @memberof PatchedSystemPromptVariant
+   */
+  parent?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSystemPromptVariant
+   */
+  readonly createdBy?: number;
+  /**
+   * Arbitrary metadata (auto-generation context, improvement notes, etc.).
+   * @type {any}
+   * @memberof PatchedSystemPromptVariant
+   */
+  metadata?: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSystemPromptVariant
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSystemPromptVariant
    */
   readonly modified?: string;
 }
@@ -6352,6 +7723,304 @@ export interface PendingAdminActionResponse {
 /**
  *
  * @export
+ * @interface PromptExperiment
+ */
+export interface PromptExperiment {
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperiment
+   */
+  readonly id: number;
+  /**
+   * Human-readable experiment name.
+   * @type {string}
+   * @memberof PromptExperiment
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptExperiment
+   */
+  promptType: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperiment
+   */
+  variantA: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperiment
+   */
+  variantB: number;
+  /**
+   *
+   * @type {SystemPromptVariantSummary}
+   * @memberof PromptExperiment
+   */
+  readonly variantADetail: SystemPromptVariantSummary;
+  /**
+   *
+   * @type {SystemPromptVariantSummary}
+   * @memberof PromptExperiment
+   */
+  readonly variantBDetail: SystemPromptVariantSummary;
+  /**
+   * Current experiment lifecycle state.
+   *
+   * * `running` - Running
+   * * `paused` - Paused
+   * * `completed` - Completed
+   * @type {PromptExperimentStatusEnum}
+   * @memberof PromptExperiment
+   */
+  status?: PromptExperimentStatusEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperiment
+   */
+  sampleRate: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperiment
+   */
+  readonly startedBy: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptExperiment
+   */
+  readonly completedAt: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptExperiment
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptExperiment
+   */
+  readonly modified: string;
+}
+
+/**
+ * Aggregated results for a completed (or running) experiment.
+ * @export
+ * @interface PromptExperimentResults
+ */
+export interface PromptExperimentResults {
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  experimentId: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptExperimentResults
+   */
+  promptType: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  totalFeedback: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  variantAWins: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  variantBWins: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  ties: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  defaultPoolCount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  customPoolCount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  thumbsUp: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptExperimentResults
+   */
+  thumbsDown: number;
+  /**
+   *
+   * @type {BehavioralMetrics}
+   * @memberof PromptExperimentResults
+   */
+  behavioral: BehavioralMetrics;
+}
+/**
+ * * `running` - Running
+ * * `paused` - Paused
+ * * `completed` - Completed
+ * @export
+ * @enum {string}
+ */
+export enum PromptExperimentStatusEnum {
+  Running = 'running',
+  Paused = 'paused',
+  Completed = 'completed',
+}
+
+/**
+ * Serializer for creating and reading PromptFeedback records.
+ * @export
+ * @interface PromptFeedback
+ */
+export interface PromptFeedback {
+  /**
+   *
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  experiment?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  variantUsed?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  chosenVariant?: number | null;
+  /**
+   * The grader who provided this feedback.
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  readonly user: number | null;
+  /**
+   * Standalone rating: 1 = thumbs up, -1 = thumbs down.
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  rating?: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  feedbackText?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  aiOutputA?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  aiOutputB?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PromptFeedback
+   */
+  usageRecord?: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  promptType: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PromptFeedback
+   */
+  isCustomContext?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  contextHash?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptFeedback
+   */
+  readonly modified: string;
+}
+/**
+ *
+ * @export
+ * @interface PromptTypesList200ResponseInner
+ */
+export interface PromptTypesList200ResponseInner {
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTypesList200ResponseInner
+   */
+  key?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTypesList200ResponseInner
+   */
+  label?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTypesList200ResponseInner
+   */
+  description?: string;
+}
+/**
+ *
+ * @export
  * @interface RegisterAndSetPasswordRequest
  */
 export interface RegisterAndSetPasswordRequest {
@@ -6716,6 +8385,21 @@ export interface ShellMetricsSession {
   lastActivity?: number | null;
 }
 /**
+ * * `draft` - Draft
+ * * `active` - Active
+ * * `candidate` - Candidate
+ * * `retired` - Retired
+ * @export
+ * @enum {string}
+ */
+export enum Status4a6Enum {
+  Draft = 'draft',
+  Active = 'active',
+  Candidate = 'candidate',
+  Retired = 'retired',
+}
+
+/**
  * * `ok` - ok
  * * `warning` - warning
  * * `error` - error
@@ -6994,6 +8678,12 @@ export interface SubmissionCheckPermissionResponse {
    * @memberof SubmissionCheckPermissionResponse
    */
   filesOnly: boolean;
+  /**
+   *
+   * @type {BatchCapabilitiesResponseResultsValue}
+   * @memberof SubmissionCheckPermissionResponse
+   */
+  capabilities?: BatchCapabilitiesResponseResultsValue;
 }
 /**
  * Serializer for SubmissionFile objects.
@@ -7192,6 +8882,12 @@ export interface SubmissionSummary {
    * @memberof SubmissionSummary
    */
   readonly generationMetadata: any | null;
+  /**
+   * Number of times this summary has been regenerated.
+   * @type {number}
+   * @memberof SubmissionSummary
+   */
+  readonly regenerationCount: number;
   /**
    *
    * @type {string}
@@ -7443,6 +9139,24 @@ export interface SuggestedComment {
    */
   readonly generationMetadata: any | null;
   /**
+   * The prompt variant used to generate this suggestion.
+   * @type {number}
+   * @memberof SuggestedComment
+   */
+  readonly promptVariant: number | null;
+  /**
+   * UUID grouping all suggestions from a single generation call.
+   * @type {string}
+   * @memberof SuggestedComment
+   */
+  readonly generationBatch: string | null;
+  /**
+   * Timestamp when a grader first saw this suggestion (set on list fetch).
+   * @type {string}
+   * @memberof SuggestedComment
+   */
+  readonly firstViewedAt: string | null;
+  /**
    *
    * @type {string}
    * @memberof SuggestedComment
@@ -7554,6 +9268,128 @@ export interface SystemHealthResponse {
    * @memberof SystemHealthResponse
    */
   recentEvents1h: number;
+}
+
+/**
+ *
+ * @export
+ * @interface SystemPromptVariant
+ */
+export interface SystemPromptVariant {
+  /**
+   *
+   * @type {number}
+   * @memberof SystemPromptVariant
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemPromptVariant
+   */
+  promptType: string;
+  /**
+   * Human-readable label (e.g. 'Concise Feedback v2').
+   * @type {string}
+   * @memberof SystemPromptVariant
+   */
+  name: string;
+  /**
+   * The prompt template. May contain {placeholder} variables.
+   * @type {string}
+   * @memberof SystemPromptVariant
+   */
+  text: string;
+  /**
+   * Lifecycle status. Only one variant per prompt_type may be 'active'.
+   *
+   * * `draft` - Draft
+   * * `active` - Active
+   * * `candidate` - Candidate
+   * * `retired` - Retired
+   * @type {Status4a6Enum}
+   * @memberof SystemPromptVariant
+   */
+  status?: Status4a6Enum;
+  /**
+   * Version number within this prompt's lineage.
+   * @type {number}
+   * @memberof SystemPromptVariant
+   */
+  readonly version: number;
+  /**
+   * The variant this was derived from (for lineage tracking).
+   * @type {number}
+   * @memberof SystemPromptVariant
+   */
+  parent?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof SystemPromptVariant
+   */
+  readonly createdBy: number;
+  /**
+   * Arbitrary metadata (auto-generation context, improvement notes, etc.).
+   * @type {any}
+   * @memberof SystemPromptVariant
+   */
+  metadata?: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemPromptVariant
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemPromptVariant
+   */
+  readonly modified: string;
+}
+
+/**
+ * Lightweight serializer for embedding inside experiment responses.
+ * @export
+ * @interface SystemPromptVariantSummary
+ */
+export interface SystemPromptVariantSummary {
+  /**
+   *
+   * @type {number}
+   * @memberof SystemPromptVariantSummary
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemPromptVariantSummary
+   */
+  readonly promptType: string;
+  /**
+   * Human-readable label (e.g. 'Concise Feedback v2').
+   * @type {string}
+   * @memberof SystemPromptVariantSummary
+   */
+  name: string;
+  /**
+   * Lifecycle status. Only one variant per prompt_type may be 'active'.
+   *
+   * * `draft` - Draft
+   * * `active` - Active
+   * * `candidate` - Candidate
+   * * `retired` - Retired
+   * @type {Status4a6Enum}
+   * @memberof SystemPromptVariantSummary
+   */
+  status?: Status4a6Enum;
+  /**
+   * Version number within this prompt's lineage.
+   * @type {number}
+   * @memberof SystemPromptVariantSummary
+   */
+  version?: number;
 }
 
 /**
@@ -8195,6 +10031,67 @@ export interface ValidateOTTRequest {
    * @memberof ValidateOTTRequest
    */
   token: string;
+}
+/**
+ * Behavioral stats for a single variant.
+ * @export
+ * @interface VariantBehavioralStats
+ */
+export interface VariantBehavioralStats {
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  total: number;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  accepted: number;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  rejected: number;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  pending: number;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  acceptanceRate: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  rejectionRate: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  editRate: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  avgTimeToDecideSeconds: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof VariantBehavioralStats
+   */
+  distinctAssignments: number;
 }
 /**
  *

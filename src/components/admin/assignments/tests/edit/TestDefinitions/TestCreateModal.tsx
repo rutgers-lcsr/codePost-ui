@@ -5,6 +5,7 @@ import { RobotOutlined, CodeOutlined, FileTextOutlined } from '@ant-design/icons
 import { assignmentsApi } from '../../../../../../api-client/clients';
 import { AssignmentFileType } from '../../../../../../types/models';
 import { getCourseAISettings } from '../../../../../../utils/aiService';
+import { useAssignmentCapabilities } from '../../../../../../stores/usePermissionsStore';
 
 import { RubricCategory, RubricComment } from '../../../../../../api-client';
 
@@ -30,6 +31,8 @@ export const TestCreateModal = (props: IProps) => {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [selectedContextFile, setSelectedContextFile] = useState<number | undefined>(undefined);
   const [isGenerating, setIsGenerating] = useState(false);
+  const assignCaps = useAssignmentCapabilities(props.assignmentId);
+  const capCanGenerateTests = assignCaps.generate_ai_test_cases !== false;
 
   // Editor State
   const [manualCode, setManualCode] = useState('');
@@ -135,7 +138,7 @@ export const TestCreateModal = (props: IProps) => {
   };
 
   const generateAndFinish = async () => {
-    if (!aiEnabled) {
+    if (!aiEnabled || !capCanGenerateTests) {
       message.error('AI test generation is not enabled for this course.');
       return;
     }
@@ -232,7 +235,7 @@ export const TestCreateModal = (props: IProps) => {
             </Radio>
           </Card>
 
-          {aiEnabled && (
+          {aiEnabled && capCanGenerateTests && (
             <Card
               hoverable
               className={creationMethod === 'ai' ? 'ant-card-bordered-primary' : ''}

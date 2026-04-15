@@ -94,7 +94,6 @@ export const AssignmentTests = (props: IProps) => {
             breadcrumbs={breadcrumbs}
             currentAssignment={assignment}
             submissions={props.submissions}
-            isAdmin={true}
             tableOnly={false}
             fullSubmissionsLoadComplete={props.fullSubmissionsLoadComplete}
           />

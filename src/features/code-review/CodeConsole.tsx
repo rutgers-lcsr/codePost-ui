@@ -72,6 +72,10 @@ import type { ExecutionResult } from '../../utils/fileExecution';
 import { brandColors } from '../../theme/colors';
 import { Submission as SubmissionService } from '../../services/submission';
 import { getLatestSubmissionTests } from '../../utils/submissionTests';
+import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
+import type { Capabilities } from '../../stores/usePermissionsStore';
+import { EMPTY_CAPS } from '../../stores/usePermissionsStore';
+import { useShallow } from 'zustand/react/shallow';
 
 type CursorSnapshot = { startLine: number; endLine?: number; startChar?: number; endChar?: number };
 type RubricMenuUIProps = React.ComponentProps<typeof RubricMenuUI>['props'];
@@ -249,6 +253,12 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
   // temporaryFileContent removed to prevent parent re-renders
 
+  // Capabilities from the permissions store (populated during mount via checkPermission)
+  const submissionId = params.submissionId ? +params.submissionId : undefined;
+  const submissionCaps = usePermissionsStore(
+    useShallow((s) => (submissionId ? selectCaps(s, `submission:${submissionId}`) : EMPTY_CAPS)),
+  );
+
   // AI grading assistance state (local — not in Zustand)
   const [suggestedComments, setSuggestedComments] = React.useState<SuggestedCommentType[]>([]);
   const [submissionSummary, setSubmissionSummary] = React.useState<SubmissionSummaryType | null>(null);
@@ -373,6 +383,9 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       wordWrap,
     ],
   );
+
+  // Commenting readOnly: finalized OR capability denied
+  const isCommentReadOnly = !!state.submission?.isFinalized || submissionCaps.comment_on_submission === false;
 
   // Backwards-compatible setState that updates Zustand store
   const setState = React.useCallback((updater: React.SetStateAction<ICodeConsoleState>) => {
@@ -673,22 +686,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     [props.user.courseadminCourses],
   );
 
-  const isSuperGrader = React.useCallback(
-    (assignmentToCheck: AssignmentType | undefined) => {
-      if (!assignmentToCheck || !assignmentToCheck.course) {
-        return false;
-      }
-      if (isCourseAdmin(assignmentToCheck)) return true;
-
-      return props.user.superGraderCourses
-        .map((course) => {
-          return course.id;
-        })
-        .includes(assignmentToCheck.course);
-    },
-    [isCourseAdmin, props.user.superGraderCourses],
-  );
-
   // Component mount logic
   const componentDidMountLogic = React.useCallback(async () => {
     // CommandBar loading callbacks
@@ -730,6 +727,14 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     let permissionLevel: PERMISSION_LEVEL;
     try {
       const permissions = await submissionsApi.checkPermissionRetrieve({ id: submissionID });
+
+      // Feed capabilities into the permissions store
+      if (permissions.capabilities) {
+        usePermissionsStore
+          .getState()
+          .setCapabilities(`submission:${submissionID}`, permissions.capabilities as Capabilities);
+      }
+
       if (permissions.write) {
         permissionLevel = PERMISSION_LEVEL.WRITE;
       } else if (permissions.filesOnly) {
@@ -778,7 +783,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     // Everything we need to load
     let submission: StudentSubmissionType | AnonymousSubmissionType | undefined;
-    let assignment: AssignmentType;
+    let assignment: AssignmentType | undefined;
     let files: FileWithId[] = [];
     let comments: IFileToCommentsMap = {};
     let commentRubricComments: ICommentToRubricCommentMap = {};
@@ -1033,11 +1038,11 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         let graders: string[] = [];
         let students: string[] = [];
 
-        const isSuperGrader = props.user.superGraderCourses.some((c) => c.id === assignment.course);
+        const isSuperGrader = props.user.superGraderCourses.some((c) => c.id === assignment!.course);
 
-        if (isCourseAdmin(assignment) || isSuperGrader) {
+        if (isCourseAdmin(assignment!) || isSuperGrader) {
           const roster = (await coursesApi.rosterRetrieve({
-            id: assignment.course,
+            id: assignment!.course,
           })) as unknown as CourseRoster;
           graders = [...(roster.graders || []), ...(roster.courseAdmins || [])].filter(
             (grader): grader is string => typeof grader === 'string',
@@ -1129,6 +1134,16 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         break;
       }
     }
+
+    // Populate the permissions store with course capabilities from the embedded serializer field
+    if (course && course.capabilities) {
+      usePermissionsStore.getState().setCapabilities(`course:${course.id}`, course.capabilities as Capabilities);
+    }
+
+    // Fetch assignment-level capabilities so the DevPanel shows them alongside submission caps
+    if (assignment) {
+      usePermissionsStore.getState().fetchAssignmentCapabilities(assignment.id);
+    }
   }, [
     location.pathname,
     isCourseAdmin,
@@ -1173,7 +1188,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
   // Fetch AI suggested comments and submission summary when a grader opens a submission
   React.useEffect(() => {
-    if (permissionLevel !== PERMISSION_LEVEL.WRITE || !submission || !aiEnabled) return;
+    if (!submissionCaps.generate_ai_comments || !submission || !aiEnabled) return;
     const subId = submission.id;
     let cancelled = false;
     // Fetch suggested comments (only if feature is enabled)
@@ -1223,7 +1238,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     return () => {
       cancelled = true;
     };
-  }, [permissionLevel, submission?.id, aiEnabled, aiFeatureStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [submissionCaps.generate_ai_comments, submission?.id, aiEnabled, aiFeatureStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // NOTE: URL sync effect was removed.
   // - URL params (tab, file) are only read on initial load in componentDidMountLogic
@@ -1283,7 +1298,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         return;
       }
 
-      if (permissionLevel === PERMISSION_LEVEL.WRITE) {
+      if (submissionCaps.comment_on_submission) {
         changeActiveComment(commentId);
       }
 
@@ -1292,7 +1307,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         commentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     },
-    [changeActiveComment, permissionLevel],
+    [changeActiveComment, submissionCaps.comment_on_submission],
   );
 
   const changeSelectedFile = React.useCallback(
@@ -2377,6 +2392,17 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   let siderTooltips: Array<React.ReactNode | string> = []; // Added for shortcuts
   let sider: React.ReactElement[] = [];
 
+  // Capability-based admin/supergrader (caps are always loaded before this code runs)
+  const capIsAdmin = !!submissionCaps.edit_course_settings;
+  const capIsSuperGrader = !!submissionCaps.manage_global_templates;
+  const capCanEditRubric = !!submissionCaps.edit_rubric;
+  const capDownloadFiles = submissionCaps.download_assignment_files !== false;
+  const capViewFeedback = submissionCaps.view_feedback !== false;
+  const capViewRubric = submissionCaps.view_rubric !== false;
+  const capCommentOnSubmission = submissionCaps.comment_on_submission !== false;
+  const capRunAutograder = submissionCaps.run_autograder;
+  const capGenerateAiComments = submissionCaps.generate_ai_comments;
+
   const toolbarWidgets: React.ReactElement[] = [];
 
   // Build structured toolbar with left (actions) and right (toggles) groups
@@ -2419,12 +2445,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 
       if (executableExtensions.includes(ext)) {
         // Edit toggle — compact outline style
-        if (permissionLevel === PERMISSION_LEVEL.WRITE) {
-          const isGrader = assignment && props.user.graderCourses.some((c) => c.id === assignment.course);
-          const canEditSubmission =
-            props.user.codePostAdmin ||
-            isCourseAdmin(assignment) ||
-            (isGrader && assignment && assignment.gradersCanEditSubmissions);
+        if (submissionCaps.grade_submission) {
+          const canEditSubmission = capIsAdmin || (assignment && assignment.gradersCanEditSubmissions);
 
           if (canEditSubmission) {
             leftActions.push(
@@ -2461,7 +2483,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             file={selectedFile}
             disabled={false}
             onExecutionComplete={handleExecutionComplete}
-            canWrite={permissionLevel === PERMISSION_LEVEL.WRITE}
+            canWrite={submissionCaps.run_code === true}
             codeOverride={
               state.isEditMode && selectedFile
                 ? useCodeConsoleStore.getState().temporaryFileContent[selectedFile.id]
@@ -2607,7 +2629,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
 			/*********************************************************/
 
     middleHeader =
-      state.hideGrades || permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY
+      state.hideGrades || submissionCaps.view_feedback === false
         ? []
         : [
             <GradeButton
@@ -2691,8 +2713,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <HeaderMenu
             key="menu"
             claimSubmission={claimSubmission}
-            isStudent={state.isStudent}
-            isAdmin={isCourseAdmin(assignment)}
             course={state.course}
             assignment={assignment}
             submission={readOnlySubmission}
@@ -2734,7 +2754,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               fileId={selectedFile!.id}
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
-              readOnly={!!submission!.isFinalized}
+              readOnly={isCommentReadOnly}
               addComment={addComment}
               user={props.user.email!}
               onHighlightClick={onHighlightClick}
@@ -2757,7 +2777,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               showExplanations={true}
               comments={comments[selectedFile!.id]}
               rubricComments={commentRubricComments}
-              readOnly={!!submission!.isFinalized}
+              readOnly={isCommentReadOnly}
               file={selectedFile!}
               fileIDs={fileIDs}
               activeCommentID={activeCommentID}
@@ -2790,7 +2810,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CommentHighlightProvider
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
-              readOnly={!!submission!.isFinalized}
+              readOnly={isCommentReadOnly}
               user={props.user.email!}
               onHighlightClick={(_e: React.MouseEvent) => {
                 // Highlight clicks are handled by CodePanelLayout for scroll sync in demo grader mode.
@@ -2822,7 +2842,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             submission={submission!}
             courseLateDayCreditsAllowable={state.course?.lateDayCreditsAllowable ?? null}
             graders={state.graders}
-            isCourseAdmin={isCourseAdmin(assignment)}
+            isCourseAdmin={capIsAdmin}
             updateGrader={updateGrader}
             addLateDayCreditComment={addLateDayCreditComment}
             isStudentMode={false}
@@ -2893,7 +2913,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             currentUserEmail={props.user.email!}
             refreshTrigger={templateRefresh}
             currentFilePath={selectedFile?.name}
-            isSuperGrader={isSuperGrader(assignment)}
+            isSuperGrader={capIsSuperGrader}
             demoTemplates={getDemoPinnedTemplates(props.user.email!)}
           />,
         ];
@@ -2920,9 +2940,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <HeaderMenu
             key="menu"
             claimSubmission={claimSubmission}
-            isStudent={state.isStudent}
-            isDemo={true}
-            isAdmin={isCourseAdmin(assignment)}
             course={state.course}
             assignment={assignment}
             submission={readOnlySubmission}
@@ -3029,8 +3046,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <HeaderMenu
           key="menu"
           claimSubmission={claimSubmission}
-          isStudent={state.isStudent}
-          isAdmin={isCourseAdmin(assignment)}
           course={state.course}
           assignment={assignment}
           submission={readOnlySubmission}
@@ -3160,8 +3175,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <HeaderMenu
           key="menu"
           claimSubmission={claimSubmission}
-          isStudent={state.isStudent}
-          isAdmin={isCourseAdmin(assignment)}
           course={state.course}
           assignment={assignment}
           submission={submission}
@@ -3183,9 +3196,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           small={true}
         />,
         <ThemeToggle key="theme-toggle" small={true} />,
-        <DownloadCode key="download-code" submission={submission!} />,
+        ...(capDownloadFiles ? [<DownloadCode key="download-code" submission={submission!} />] : []),
         controls,
-        <ViewAsStudent key="view-as-student" pathname={location.pathname} />,
+        ...(capViewFeedback ? [<ViewAsStudent key="view-as-student" pathname={location.pathname} />] : []),
         <FinalizeButton
           key="subheader-finalize"
           course={state.course!}
@@ -3193,7 +3206,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           toggleFinalized={toggleFinalized}
           numComments={Object.values(comments).flat().length}
           minComments={state.course?.minComments ?? 0}
-          canUnfinalize={!state.course!.noUnfinalize || isCourseAdmin(assignment)}
+          canUnfinalize={true}
           isOnlyGrader={state.graders.length === 1}
         />,
       ];
@@ -3208,7 +3221,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             fileId={selectedFile!.id}
             file={selectedFile!}
             comments={comments[selectedFile!.id]}
-            readOnly={!!submission!.isFinalized}
+            readOnly={isCommentReadOnly}
             addComment={addComment}
             user={props.user.email!}
             onHighlightClick={onHighlightClick}
@@ -3231,7 +3244,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             showExplanations={true}
             comments={comments[selectedFile!.id]}
             rubricComments={commentRubricComments}
-            readOnly={!!submission!.isFinalized}
+            readOnly={isCommentReadOnly}
             file={selectedFile!}
             fileIDs={fileIDs}
             activeCommentID={activeCommentID}
@@ -3257,18 +3270,20 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             showCursor={state.showCursor}
             scrollToCommentID={parseInt(queryString.parse(location.search).comment as string)}
             onScrolledToComment={handleScrolledToComment}
-            aiEnabled={state.aiEnabled && state.aiFeatureStatus.comment_generation !== false}
+            aiEnabled={
+              state.aiEnabled && state.aiFeatureStatus.comment_generation !== false && capGenerateAiComments !== false
+            }
             onPin={handlePinComment}
             forcedUpdates={templateForceUpdates}
             suggestedComments={
-              state.aiFeatureStatus.suggested_comments !== false
+              state.aiFeatureStatus.suggested_comments !== false && capGenerateAiComments !== false
                 ? suggestedComments.filter((s) => s.file === selectedFile!.id)
                 : []
             }
             onAcceptSuggestion={handleAcceptSuggestion}
             onRejectSuggestion={handleRejectSuggestion}
             onGenerateFileSuggestions={
-              state.aiFeatureStatus.suggested_comments !== false
+              state.aiFeatureStatus.suggested_comments !== false && capGenerateAiComments !== false
                 ? () => handleGenerateFileSuggestions(selectedFile!.id)
                 : undefined
             }
@@ -3283,11 +3298,11 @@ Days Late (After Credit):  ${daysLateAfterCredit}
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
               suggestions={
-                state.aiFeatureStatus.suggested_comments !== false
+                state.aiFeatureStatus.suggested_comments !== false && capGenerateAiComments !== false
                   ? suggestedComments.filter((s) => s.file === selectedFile!.id)
                   : []
               }
-              readOnly={!!submission!.isFinalized}
+              readOnly={isCommentReadOnly}
               user={props.user.email!}
               onHighlightClick={(_e: React.MouseEvent) => {
                 // This is called from CodePanelLayout's scroll sync handler
@@ -3311,7 +3326,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <CustomCommentExplorer
               graders={state.graders}
               user={props.user.email!}
-              isAdmin={isCourseAdmin(assignment)}
+              isAdmin={capIsAdmin}
               assignment={assignment}
               rubricComments={Object.values(rubricComments).flat()}
               rubricCategories={rubricCategories}
@@ -3339,7 +3354,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           courseLateDayCreditsAllowable={state.course?.lateDayCreditsAllowable ?? null}
           submission={submission!}
           graders={state.graders}
-          isCourseAdmin={isCourseAdmin(assignment)}
+          isCourseAdmin={capIsAdmin}
           updateGrader={updateGrader}
           addLateDayCreditComment={addLateDayCreditComment}
           isStudentMode={state.isStudent}
@@ -3354,7 +3369,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       );
 
       // 2. Tests
-      if (isCourseAdmin(assignment) || state.testCategories.length > 0) {
+      if (capRunAutograder !== false && (capIsAdmin || state.testCategories.length > 0)) {
         sider.push(
           <ConnectedTestsMenu
             key="tests-menu"
@@ -3391,50 +3406,52 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       siderTooltips.push(<FileMenuTooltip key="files-tooltip" files={files} />);
 
       // 4. Rubric
-      sider.push(
-        <RubricManager
-          key="rubric-menu"
-          assignment={assignment as Assignment}
-          submissions={[]}
-          onCancel={onCancel}
-          reloadInterval={state.rubricReload}
-          setRubric={setRubric}
-          shouldLoadFeedback={false}
-          shouldLoadInstanceLists={!!assignment.showFrequentlyUsedRubricComments}
-        >
-          {({ props, state: rubricState, helpers }: IRubricManagerParams) => {
-            const propz: RubricMenuUIProps = {
-              ...props,
-              handleRubricCommentClick: onRubricCommentClick,
-              hasActiveComment: outerState.activeCommentID !== undefined,
-              toggleEditRubricMode: toggleEditRubricMode,
-              editRubricMode: outerState.editRubricMode,
-              setRubric: setRubric,
-              turnOnReload: turnOnReload,
-              turnOffReload: turnOffReload,
-              canUserEdit:
-                isCourseAdmin(outerState.assignment) ||
-                outerState.assignment!.collaborativeRubricMode ||
-                (outerState.course?.isRubricEditor ?? false),
-              showCursor: outerState.showCursor,
-              updateCursorDomain: updateCursorDomain,
-              demoMode: outerState.noSave === true,
-              showFrequent: !!(outerState.assignment !== undefined
-                ? outerState.assignment.showFrequentlyUsedRubricComments
-                : false),
-              course: outerState.course!,
-            };
-            return <RubricMenuUI props={propz} state={rubricState} helpers={helpers} />;
-          }}
-        </RubricManager>,
-      );
-      siderTitles.push('Rubric');
-      siderTooltips.push(
-        <RubricTooltip key="rubric-tooltip" itemsApplied={Object.values(rubricComments).flat().length} />,
-      );
+      if (capViewRubric) {
+        sider.push(
+          <RubricManager
+            key="rubric-menu"
+            assignment={assignment as Assignment}
+            submissions={[]}
+            onCancel={onCancel}
+            reloadInterval={state.rubricReload}
+            setRubric={setRubric}
+            shouldLoadFeedback={false}
+            shouldLoadInstanceLists={!!assignment.showFrequentlyUsedRubricComments}
+          >
+            {({ props, state: rubricState, helpers }: IRubricManagerParams) => {
+              const propz: RubricMenuUIProps = {
+                ...props,
+                handleRubricCommentClick: onRubricCommentClick,
+                hasActiveComment: outerState.activeCommentID !== undefined,
+                toggleEditRubricMode: toggleEditRubricMode,
+                editRubricMode: outerState.editRubricMode,
+                setRubric: setRubric,
+                turnOnReload: turnOnReload,
+                turnOffReload: turnOffReload,
+                canUserEdit:
+                  capCanEditRubric ||
+                  outerState.assignment!.collaborativeRubricMode ||
+                  (outerState.course?.isRubricEditor ?? false),
+                showCursor: outerState.showCursor,
+                updateCursorDomain: updateCursorDomain,
+                demoMode: outerState.noSave === true,
+                showFrequent: !!(outerState.assignment !== undefined
+                  ? outerState.assignment.showFrequentlyUsedRubricComments
+                  : false),
+                course: outerState.course!,
+              };
+              return <RubricMenuUI props={propz} state={rubricState} helpers={helpers} />;
+            }}
+          </RubricManager>,
+        );
+        siderTitles.push('Rubric');
+        siderTooltips.push(
+          <RubricTooltip key="rubric-tooltip" itemsApplied={Object.values(rubricComments).flat().length} />,
+        );
+      }
 
       // 5. Templates
-      if (assignment) {
+      if (assignment && capCommentOnSubmission) {
         sider.push(
           <TemplateMenu
             key="template-menu"
@@ -3443,7 +3460,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             currentUserEmail={props.user.email!}
             refreshTrigger={templateRefresh}
             currentFilePath={selectedFile?.name}
-            isSuperGrader={isSuperGrader(assignment)}
+            isSuperGrader={capIsSuperGrader}
           />,
         );
         siderTitles.push('Pinned Comments');
@@ -3451,15 +3468,19 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       }
 
       // 6. AI Summary (only when AI is enabled and submission_summary feature is on)
-      if (state.aiEnabled && state.aiFeatureStatus.submission_summary !== false) {
+      if (
+        state.aiEnabled &&
+        state.aiFeatureStatus.submission_summary !== false &&
+        submissionCaps.view_ai_assistance !== false
+      ) {
         sider.push(
           <SubmissionSummaryPanel
             key="ai-summary"
             title="AI Summary"
             summary={submissionSummary}
-            onGenerateSummary={handleGenerateSummary}
+            onGenerateSummary={submissionCaps.trigger_ai_assistance !== false ? handleGenerateSummary : undefined}
             isGenerating={isGeneratingSummary}
-            isAdmin={isCourseAdmin(assignment)}
+            isAdmin={capIsAdmin}
             promptVariantId={summaryMeta.promptVariantId}
             experimentId={summaryMeta.experimentId}
             isCustomContext={summaryMeta.isCustomContext}
@@ -3539,7 +3560,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         )}
         {/* KeyboardShortcuts drawer removed - consolidated into HelpModal */}
         <HelpModal />
-        {permissionLevel === PERMISSION_LEVEL.WRITE && assignment !== undefined && submission !== undefined ? (
+        {capRunAutograder !== false && assignment !== undefined && submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
             open={state.showInlineTestsModal}

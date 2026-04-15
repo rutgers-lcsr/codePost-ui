@@ -23,7 +23,16 @@ import type { CreateRequest } from '';
 
 async function example() {
   console.log("🚀 Testing  SDK...");
-  const api = new TokenVerifyApi();
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new TokenVerifyApi(config);
 
   const body = {
     // TokenVerify
@@ -54,7 +63,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth)
 
 ### HTTP request headers
 

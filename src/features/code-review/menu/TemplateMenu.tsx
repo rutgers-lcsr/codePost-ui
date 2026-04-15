@@ -14,6 +14,7 @@ import { commentTemplatesApi } from '../../../api-client/clients';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { colors } from '../../../theme/colors';
 import { useSpring, animated } from 'react-spring';
+import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 
 interface ITemplateMenuProps {
   assignmentId: number;
@@ -32,9 +33,15 @@ const TemplateMenu: React.FC<ITemplateMenuProps> = (props) => {
     currentUserEmail,
     refreshTrigger,
     currentFilePath,
-    isSuperGrader,
+    isSuperGrader: isSuperGraderProp,
     demoTemplates,
   } = props;
+
+  // Use capability store for manage_global_templates, falling back to prop
+  const capManageGlobal = usePermissionsStore((s) =>
+    assignmentId > 0 ? selectCaps(s, `assignment:${assignmentId}`).manage_global_templates : undefined,
+  );
+  const isSuperGrader = capManageGlobal ?? !!isSuperGraderProp;
   const [templates, setTemplates] = React.useState<CommentTemplateType[]>([]);
   const [loading, setLoading] = React.useState(false);
   // State for template editing has been moved to TemplateCard

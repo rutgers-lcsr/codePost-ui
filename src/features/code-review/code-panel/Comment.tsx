@@ -51,6 +51,7 @@ import { scrollHighlightIntoView, useCommentHighlightStore, useHoveredCommentId 
 import CommentToRubric from './CommentToRubric';
 
 import { generateComment } from '../../../utils/aiService';
+import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
 
@@ -163,6 +164,24 @@ const Comment: React.FC<ICommentProps> = (props) => {
   const hoveredCommentId = useHoveredCommentId();
   const isContextHovered = hoveredCommentId === props.comment.id;
   const prevPropsRef = useRef<ICommentProps>(undefined);
+
+  // Read AI capability from the permissions store for this file's submission
+  const submissionCapKey = props.file.submission ? `submission:${props.file.submission}` : undefined;
+  const capGenerateAi = usePermissionsStore((s) => {
+    if (submissionCapKey) {
+      return selectCaps(s, submissionCapKey).generate_ai_comments;
+    }
+    return undefined;
+  });
+  const canGenerateAi = capGenerateAi ?? false;
+
+  // Read provide_comment_feedback capability for this file's submission
+  const capProvideFeedback = usePermissionsStore((s) => {
+    if (submissionCapKey) {
+      return selectCaps(s, submissionCapKey).provide_comment_feedback;
+    }
+    return undefined;
+  });
 
   // Destructure callback functions to use in dependency arrays (prevents entire props object being a dependency)
   const { setCommentPlacements, changeActive, removeRubricComment, updateFeedback } = props;
@@ -1086,7 +1105,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
               e.target.value = temp_value;
             }}
           />
-          {!props.isStudent && props.aiEnabled && (
+          {canGenerateAi && (
             <CPTooltip title="Generate AI comment (Ctrl+G)" hideThisOnHideTips={true}>
               <Button
                 type="text"
@@ -1325,7 +1344,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
 
   let feedback = null;
 
-  if (props.isStudent && props.rubricComment && props.studentFeedbackOn) {
+  if (props.isStudent && props.rubricComment && props.studentFeedbackOn && capProvideFeedback !== false) {
     const feedbackScore = props.comment.feedback;
 
     const handleMouseDownThumbsDown = (e: React.MouseEvent) => {

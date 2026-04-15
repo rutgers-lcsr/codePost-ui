@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* React imports */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useMemo } from 'react';
 
 /* antd imports */
 import { Tag } from 'antd';
@@ -30,6 +30,8 @@ import AssignmentsTable from './AssignmentsTable';
 import { DETAIL_TYPE } from './types';
 
 import { encodeForRoute } from '../../core/URLutils';
+
+import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 import Loading from '../../core/Loading';
 
@@ -135,6 +137,23 @@ const RoutePropsWrapper = ({ render }: { render: (props: LegacyRouteProps) => Re
 };
 
 const ManageAssignments = (props: IManageAssignmentsProps) => {
+  const location = useLocation();
+
+  // Detect active assignment from URL and fetch its capabilities for the inspector
+  const activeAssignment = useMemo(() => {
+    const path = location.pathname;
+    return props.assignments.find((a) => {
+      const encoded = encodeForRoute(a.name);
+      return path.includes(`/${encoded}/`) || path.endsWith(`/${encoded}`);
+    });
+  }, [location.pathname, props.assignments]);
+
+  useEffect(() => {
+    if (activeAssignment) {
+      usePermissionsStore.getState().fetchAssignmentCapabilities(activeAssignment.id);
+    }
+  }, [activeAssignment?.id]);
+
   if (!props.loadComplete || props.currentCourse === undefined) {
     return <Loading />;
   }

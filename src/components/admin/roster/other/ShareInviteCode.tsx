@@ -8,6 +8,7 @@ import { Button, Modal, Input, Tooltip, Checkbox, message } from 'antd';
 
 import { coursesApi } from '../../../../api-client/clients';
 import type { Course } from '../../../../api-client';
+import { useCourseCapabilities } from '../../../../stores/usePermissionsStore';
 
 interface IProps {
   course: Course;
@@ -19,6 +20,8 @@ const ShareInviteCode = (props: IProps) => {
   const [whitelist, setWhitelist] = React.useState(props.course.emailWhitelist);
   const [inviteCode, setInviteCode] = React.useState(props.course.inviteCode);
   const [enabled, setEnabled] = React.useState(props.course.inviteCodeEnabled);
+  const courseCaps = useCourseCapabilities(props.course.id);
+  const canChangeInviteCode = courseCaps.change_invite_code !== false;
 
   // Sync state with props if needed, but primarily relying on local state for the modal
   React.useEffect(() => {
@@ -120,7 +123,7 @@ const ShareInviteCode = (props: IProps) => {
         </Tooltip>
         &nbsp;
         <Tooltip title="Reset your invite code.">
-          <Button icon={<RedoOutlined />} onClick={resetCode} disabled={!enabled}>
+          <Button icon={<RedoOutlined />} onClick={resetCode} disabled={!enabled || !canChangeInviteCode}>
             Reset
           </Button>
         </Tooltip>

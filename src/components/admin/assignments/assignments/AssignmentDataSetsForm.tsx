@@ -6,6 +6,7 @@ import * as React from 'react';
 import { assignmentDataSetsApi } from '../../../../api-client/clients';
 import { getAuthToken } from '../../../../utils/auth';
 import { AssignmentDataSetType } from '../../../../types/models';
+import { useAssignmentCapabilities } from '../../../../stores/usePermissionsStore';
 
 interface IProps {
   assignmentId: number;
@@ -14,6 +15,8 @@ interface IProps {
 }
 
 const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDatasetsChange }) => {
+  const assignCaps = useAssignmentCapabilities(assignmentId);
+  const canManageDatasets = assignCaps.manage_datasets !== false;
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
@@ -216,6 +219,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           onChange={(checked) => handleToggleActive(record, checked)}
           checkedChildren="Active"
           unCheckedChildren="Inactive"
+          disabled={!canManageDatasets}
         />
       ),
     },
@@ -224,13 +228,26 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       key: 'actions',
       render: (_: unknown, record: AssignmentDataSetType) => (
         <Space>
-          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => showModal(record)}>
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+            disabled={!canManageDatasets}
+          >
             Edit
           </Button>
           <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(record)}>
             Download
           </Button>
-          <Button type="link" size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
+          <Button
+            type="link"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+            disabled={!canManageDatasets}
+          >
             Delete
           </Button>
         </Space>
@@ -248,7 +265,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             code.
           </div>
         </div>
-        <Button type="primary" icon={<UploadOutlined />} onClick={() => showModal()}>
+        <Button type="primary" icon={<UploadOutlined />} onClick={() => showModal()} disabled={!canManageDatasets}>
           Upload Dataset
         </Button>
       </div>

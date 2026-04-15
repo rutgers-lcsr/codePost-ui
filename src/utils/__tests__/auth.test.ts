@@ -58,6 +58,11 @@ describe('getDecodedTokenPayload', () => {
 });
 
 describe('handleUnauthorized', () => {
+  beforeEach(() => {
+    // Mock fetch so tryRefreshToken fails gracefully (simulates refresh failure)
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 401 }));
+  });
+
   it('clears auth storage when token exists', async () => {
     // Reset modules to get a fresh didHandleUnauthorized flag
     vi.resetModules();
@@ -82,7 +87,7 @@ describe('handleUnauthorized', () => {
     const authModule = await import('../auth');
     const localSettingsModule = await import('../../components/utils/LocalSettings');
 
-    authModule.handleUnauthorized();
+    await authModule.handleUnauthorized();
 
     expect(localStorage.removeItem).toHaveBeenCalledWith('token');
     expect(localStorage.removeItem).toHaveBeenCalledWith('isSuperUser');
@@ -107,7 +112,7 @@ describe('handleUnauthorized', () => {
     vi.mocked(localSettingsModule.clearLocalSettings).mockClear();
     vi.mocked(localStorage.removeItem).mockClear();
 
-    authModule.handleUnauthorized();
+    await authModule.handleUnauthorized();
 
     expect(localStorage.removeItem).not.toHaveBeenCalled();
     expect(localSettingsModule.clearLocalSettings).not.toHaveBeenCalled();
@@ -132,11 +137,11 @@ describe('handleUnauthorized', () => {
 
     const authModule = await import('../auth');
 
-    authModule.handleUnauthorized();
+    await authModule.handleUnauthorized();
     vi.mocked(localStorage.removeItem).mockClear();
 
     // Second call should be a no-op
-    authModule.handleUnauthorized();
+    await authModule.handleUnauthorized();
     expect(localStorage.removeItem).not.toHaveBeenCalled();
   });
 
@@ -165,7 +170,7 @@ describe('handleUnauthorized', () => {
       throw new Error('Storage full');
     });
 
-    authModule.handleUnauthorized();
+    await authModule.handleUnauthorized();
     // Redirect still happens despite the first removeItem failure
     expect(window.location.href).toBe('/');
   });
@@ -192,7 +197,7 @@ describe('handleUnauthorized', () => {
     const authModule = await import('../auth');
 
     // Should not throw — catches internally
-    expect(() => authModule.handleUnauthorized()).not.toThrow();
+    await expect(authModule.handleUnauthorized()).resolves.not.toThrow();
     // Should still redirect
     expect(window.location.href).toBe('/');
   });

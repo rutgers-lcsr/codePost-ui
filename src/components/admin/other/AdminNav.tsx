@@ -18,14 +18,20 @@ import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
 interface IAdminNavProps extends IWithWindowWatcherProps {
   collapsed: boolean;
   baseURL: string;
+  courseId?: number;
 }
 
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const location = useLocation();
+  const courseCaps = useCourseCapabilities(props.courseId);
+  const canManageSections = courseCaps.manage_sections !== false;
+  const canViewAuditLog = courseCaps.view_audit_log !== false;
+  const canEditSettings = courseCaps.edit_course_settings !== false;
   // Extract the base URL (up to /admin/courseName/period) by removing any nested paths
   const getCourseBaseURL = () => {
     // baseURL might be something like /admin/CourseName/Period/assignments/overview
@@ -138,32 +144,44 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
               key: 'roster/admins',
               label: <Link to={`${courseBaseURL}/roster/admins`}>Admins</Link>,
             },
-            {
-              key: 'roster/sections',
-              label: <Link to={`${courseBaseURL}/roster/sections`}>Sections</Link>,
-            },
+            ...(canManageSections
+              ? [
+                  {
+                    key: 'roster/sections',
+                    label: <Link to={`${courseBaseURL}/roster/sections`}>Sections</Link>,
+                  },
+                ]
+              : []),
           ],
         },
-        {
-          key: 'activity-log',
-          icon: <AuditOutlined />,
-          label: <Link to={`${courseBaseURL}/activity-log`}>Activity Log</Link>,
-        },
-        {
-          key: 'course-settings',
-          icon: <SettingOutlined />,
-          label: 'Course Settings',
-          children: [
-            {
-              key: 'course-settings/general',
-              label: <Link to={`${courseBaseURL}/settings`}>General</Link>,
-            },
-            {
-              key: 'course-settings/webhooks',
-              label: <Link to={`${courseBaseURL}/settings/webhooks`}>Webhooks</Link>,
-            },
-          ],
-        },
+        ...(canViewAuditLog
+          ? [
+              {
+                key: 'activity-log',
+                icon: <AuditOutlined />,
+                label: <Link to={`${courseBaseURL}/activity-log`}>Activity Log</Link>,
+              },
+            ]
+          : []),
+        ...(canEditSettings
+          ? [
+              {
+                key: 'course-settings',
+                icon: <SettingOutlined />,
+                label: 'Course Settings',
+                children: [
+                  {
+                    key: 'course-settings/general',
+                    label: <Link to={`${courseBaseURL}/settings`}>General</Link>,
+                  },
+                  {
+                    key: 'course-settings/webhooks',
+                    label: <Link to={`${courseBaseURL}/settings/webhooks`}>Webhooks</Link>,
+                  },
+                ],
+              },
+            ]
+          : []),
       ]}
     />
   );

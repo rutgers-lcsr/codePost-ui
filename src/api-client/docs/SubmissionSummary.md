@@ -8,6 +8,7 @@
 | `submission`         | number |
 | `text`               | string |
 | `generationMetadata` | any    |
+| `regenerationCount`  | number |
 | `created`            | string |
 | `modified`           | string |
 

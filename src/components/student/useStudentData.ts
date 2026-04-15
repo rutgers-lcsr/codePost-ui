@@ -1,9 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
 import { useCallback, useEffect, useState } from 'react';
-import { AssignmentsApi, Configuration, Course, Submission } from '../../api-client';
+import { Course, Submission } from '../../api-client';
+import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
-import { getAuthToken } from '../../utils/auth';
 import { getHeaders } from '../../utils/generics';
 import { SubmissionStatus } from './submissionStatus';
 
@@ -15,14 +15,6 @@ interface SubmissionHistoryItem {
   student: string;
   hasViewed: boolean;
 }
-
-const getAssignmentsApi = () =>
-  new AssignmentsApi(
-    new Configuration({
-      basePath: process.env.REACT_APP_API_URL,
-      accessToken: getAuthToken(),
-    }),
-  );
 
 const fetchSubmissions = async (assignmentId: number, student: string): Promise<Submission[]> => {
   const res = await fetch(
@@ -59,7 +51,7 @@ export const updateHistory = async (
   return res.ok ? res.json() : [];
 };
 
-export { fetchSubmissions, fetchHistory, getAssignmentsApi };
+export { fetchSubmissions, fetchHistory };
 
 const sortAssignments = <T extends { sortKey?: number; id: number }>(objs: T[]): T[] => {
   return [...objs].sort((a, b) => {
@@ -133,9 +125,8 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
 
   const loadAssignments = useCallback(
     async (courseList: Course[]): Promise<Record<number, Assignment[]>> => {
-      const api = getAssignmentsApi();
       const assignmentArrays = await Promise.all(
-        courseList.map(async (course) => Promise.all(course.assignments.map((id) => api.retrieve({ id })))),
+        courseList.map(async (course) => Promise.all(course.assignments.map((id) => assignmentsApi.retrieve({ id })))),
       );
       const result: Record<number, Assignment[]> = {};
       courseList.forEach((course, i) => {
