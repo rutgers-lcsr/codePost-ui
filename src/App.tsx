@@ -568,6 +568,16 @@ Firefox:
     [user, handleLogout, addAssignment, deleteAssignment, addCreatedCourse],
   );
 
+  const graderAccessibleCoursesMemo = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          [...(user?.graderCourses ?? []), ...(user?.superGraderCourses ?? [])].map((course) => [course.id, course]),
+        ).values(),
+      ),
+    [user?.graderCourses, user?.superGraderCourses],
+  );
+
   // Render
   if (toRedirect) {
     return <Navigate to="/" replace />;
@@ -611,13 +621,9 @@ Firefox:
 
   if (user !== undefined) {
     const courseAdminCourses = user.courseadminCourses;
-    const graderCourses = user.graderCourses;
     const studentCourses = user.studentCourses;
-    const superGraderCourses = user.superGraderCourses;
 
-    const graderAccessibleCourses = Array.from(
-      new Map([...graderCourses, ...superGraderCourses].map((course) => [course.id, course])).values(),
-    );
+    const graderAccessibleCourses = graderAccessibleCoursesMemo;
 
     const isStudent = studentCourses.length > 0;
     const isGrader = graderAccessibleCourses.length > 0;

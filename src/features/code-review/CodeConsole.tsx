@@ -45,6 +45,9 @@ import {
   submissionsApi,
   suggestedCommentsApi,
 } from '../../api-client/clients';
+import { useQueryClient } from '@tanstack/react-query';
+import { usePrefetchNextSubmission } from './hooks/usePrefetchNextSubmission';
+import { assignmentKeys, submissionKeys } from '../../lib/queryKeys';
 import {
   Comment as ApiComment,
   Course,
@@ -194,6 +197,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams<{ submissionId?: string }>();
+  const queryClient = useQueryClient();
   const [templateForceUpdates, setTemplateForceUpdates] = React.useState<{ [id: number]: number }>({});
   const [templateRefresh, setTemplateRefresh] = React.useState(0);
 
@@ -258,6 +262,9 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
   const submissionCaps = usePermissionsStore(
     useShallow((s) => (submissionId ? selectCaps(s, `submission:${submissionId}`) : EMPTY_CAPS)),
   );
+
+  // Prefetch next submission for faster grading flow
+  usePrefetchNextSubmission(submissionId, assignment, course, props.user.email, isLoading);
 
   // AI grading assistance state (local — not in Zustand)
   const [suggestedComments, setSuggestedComments] = React.useState<SuggestedCommentType[]>([]);
@@ -726,7 +733,11 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
     let permissionLevel: PERMISSION_LEVEL;
     try {
-      const permissions = await submissionsApi.checkPermissionRetrieve({ id: submissionID });
+      const permissions = await queryClient.ensureQueryData({
+        queryKey: submissionKeys.permissions(submissionID),
+        queryFn: () => submissionsApi.checkPermissionRetrieve({ id: submissionID }),
+        staleTime: 30_000,
+      });
 
       // Feed capabilities into the permissions store
       if (permissions.capabilities) {
@@ -842,7 +853,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
 
-        course = (await coursesApi.retrieve({ id: assignment.course })) as unknown as Course;
+        // Start course fetch immediately (chained off assignment — runs while we process files below)
+        const coursePromise = coursesApi.retrieve({ id: assignment.course }).then((c) => c as unknown as Course);
 
         // Files are already included in the response as full objects
         files = (submissionData.files as FileWithId[]) || [];
@@ -862,6 +874,8 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
         commentRubricComments = {};
         rubricCategories = [];
         tests = [];
+
+        course = await coursePromise;
 
         setState((prev) => ({
           ...prev,
@@ -886,16 +900,37 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       }
       case PERMISSION_LEVEL.READ: {
         // load the data a reader has access to
-        submission = (await submissionsApi.retrieve({ id: submissionID })) as unknown as StudentSubmissionType;
-        [assignment, [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
+        const readSubmission = (await queryClient.ensureQueryData({
+          queryKey: submissionKeys.detail(submissionID),
+          queryFn: () => submissionsApi.retrieve({ id: submissionID }),
+          staleTime: 30_000,
+        })) as unknown as StudentSubmissionType;
+        submission = readSubmission;
+        [[assignment, course], [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
           await Promise.all([
-            assignmentsApi.retrieve({ id: submission.assignment }).then((a) => a as unknown as AssignmentType),
-            SubmissionService.loadData(submission) as unknown as [
+            queryClient
+              .ensureQueryData({
+                queryKey: assignmentKeys.detail(readSubmission.assignment),
+                queryFn: () => assignmentsApi.retrieve({ id: readSubmission.assignment }),
+                staleTime: 60_000,
+              })
+              .then(async (a) => {
+                const assnTyped = a as unknown as AssignmentType;
+                const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
+                return [assnTyped, c] as const;
+              }),
+            SubmissionService.loadData(readSubmission) as unknown as [
               FileWithId[],
               IFileToCommentsMap,
               ICommentToRubricCommentMap,
             ],
-            assignmentsApi.rubricRetrieve({ id: submission.assignment }).then((res) => {
+            queryClient
+              .ensureQueryData({
+                queryKey: assignmentKeys.rubric(readSubmission.assignment),
+                queryFn: () => assignmentsApi.rubricRetrieve({ id: readSubmission.assignment }),
+                staleTime: 60_000,
+              })
+              .then((res) => {
               const rubric = res as unknown as { rubricCategories: RubricCategory[]; rubricComments: RubricComment[] };
               const rCats = (rubric.rubricCategories || [])
                 .map((cat) => ({
@@ -914,8 +949,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
-
-        course = await coursesApi.retrieve({ id: assignment.course }).then((c) => c as unknown as Course);
 
         files = files.sort((a, b) => {
           return a.name.localeCompare(b.name);
@@ -992,16 +1025,48 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
       case PERMISSION_LEVEL.WRITE: {
         // load the data a writer has access to
 
-        const writableSubmission = (await submissionsApi.retrieve({ id: submissionID })) as AnonymousSubmissionType;
-        [assignment, [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
+        const writableSubmission = (await queryClient.ensureQueryData({
+          queryKey: submissionKeys.detail(submissionID),
+          queryFn: () => submissionsApi.retrieve({ id: submissionID }),
+          staleTime: 30_000,
+        })) as AnonymousSubmissionType;
+
+        // Check for prefetched files data
+        const cachedFiles = queryClient.getQueryData(submissionKeys.files(submissionID)) as
+          | [FileWithId[], IFileToCommentsMap, ICommentToRubricCommentMap]
+          | undefined;
+
+        [[assignment, course], [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
           await Promise.all([
-            assignmentsApi.retrieve({ id: writableSubmission.assignment }).then((a) => a as unknown as AssignmentType),
-            SubmissionService.loadData(writableSubmission) as unknown as [
-              FileWithId[],
-              IFileToCommentsMap,
-              ICommentToRubricCommentMap,
-            ],
-            assignmentsApi.rubricRetrieve({ id: writableSubmission.assignment }).then((res) => {
+            queryClient
+              .ensureQueryData({
+                queryKey: assignmentKeys.detail(writableSubmission.assignment),
+                queryFn: () => assignmentsApi.retrieve({ id: writableSubmission.assignment }),
+                staleTime: 60_000,
+              })
+              .then(async (a) => {
+                const assnTyped = a as unknown as AssignmentType;
+                const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
+                return [assnTyped, c] as const;
+              }),
+            cachedFiles
+              ? (Promise.resolve(cachedFiles) as unknown as [
+                  FileWithId[],
+                  IFileToCommentsMap,
+                  ICommentToRubricCommentMap,
+                ])
+              : (SubmissionService.loadData(writableSubmission) as unknown as [
+                  FileWithId[],
+                  IFileToCommentsMap,
+                  ICommentToRubricCommentMap,
+                ]),
+            queryClient
+              .ensureQueryData({
+                queryKey: assignmentKeys.rubric(writableSubmission.assignment),
+                queryFn: () => assignmentsApi.rubricRetrieve({ id: writableSubmission.assignment }),
+                staleTime: 60_000,
+              })
+              .then((res) => {
               const rubric = res as unknown as { rubricCategories: RubricCategory[]; rubricComments: RubricComment[] };
               const rCats = (rubric.rubricCategories || [])
                 .map((cat) => ({
@@ -1020,8 +1085,6 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
           ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
-
-        course = await coursesApi.retrieve({ id: assignment.course }).then((c) => c as unknown as Course);
         let assignmentFiles: AssignmentFileType[] = [];
         if (assignment.templateMode) {
           assignmentFiles = await Promise.all(
@@ -1154,6 +1217,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
     props.user.email,
     props.user.superGraderCourses,
     setState,
+    queryClient,
   ]);
 
   // useEffect to call componentDidMount logic on component mount - ONLY ONCE
@@ -2401,6 +2465,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   const capViewRubric = submissionCaps.view_rubric !== false;
   const capCommentOnSubmission = submissionCaps.comment_on_submission !== false;
   const capRunAutograder = submissionCaps.run_autograder;
+  const capViewTestResults = submissionCaps.view_test_results !== false;
   const capGenerateAiComments = submissionCaps.generate_ai_comments;
 
   const toolbarWidgets: React.ReactElement[] = [];
@@ -3368,8 +3433,8 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         <SubmissionInfoTooltip key="submission-info-tooltip" submission={submission!} assignment={assignment} />,
       );
 
-      // 2. Tests
-      if (capRunAutograder !== false && (capIsAdmin || state.testCategories.length > 0)) {
+      // 2. Tests (visible if user can view test results and there are test categories, or user is admin)
+      if (capViewTestResults && (capIsAdmin || state.testCategories.length > 0)) {
         sider.push(
           <ConnectedTestsMenu
             key="tests-menu"
@@ -3560,7 +3625,7 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         )}
         {/* KeyboardShortcuts drawer removed - consolidated into HelpModal */}
         <HelpModal />
-        {capRunAutograder !== false && assignment !== undefined && submission !== undefined ? (
+        {capViewTestResults && assignment !== undefined && submission !== undefined ? (
           <InlineTestsModal
             key="inline-tests-modal"
             open={state.showInlineTestsModal}

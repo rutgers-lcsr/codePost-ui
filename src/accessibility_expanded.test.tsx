@@ -4,6 +4,7 @@ import { render, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const { act } = React;
 
 // Component Imports
@@ -211,10 +212,17 @@ const axeConfig = {
   },
 };
 
+const createTestQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+
 const renderWithRouter = async (ui: React.ReactElement, routerProps?: React.ComponentProps<typeof MemoryRouter>) => {
   let result: ReturnType<typeof render>;
   await act(async () => {
-    result = render(<MemoryRouter {...routerProps}>{ui}</MemoryRouter>);
+    result = render(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter {...routerProps}>{ui}</MemoryRouter>
+      </QueryClientProvider>,
+    );
   });
   await act(async () => {
     await Promise.resolve();

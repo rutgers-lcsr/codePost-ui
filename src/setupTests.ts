@@ -48,6 +48,22 @@ vi.mock('@wistia/wistia-player-react', () => {
   };
 });
 
+// jsdom doesn't implement IntersectionObserver; provide a no-op mock.
+class MockIntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+}
+Object.defineProperty(window, 'IntersectionObserver', {
+  configurable: true,
+  writable: true,
+  value: MockIntersectionObserver,
+});
+
 (globalThis as Record<string, unknown>).DOMMatrix = class DOMMatrix {
   a = 1;
   b = 0;

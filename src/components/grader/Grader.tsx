@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -22,13 +22,9 @@ import { tooltips } from '../core/tooltips';
 
 /* codePost imports */
 
-import { assignmentsApi } from '../../api-client/clients';
+import { useAssignmentsQuery } from '../admin/hooks';
 
 import { USER_TYPE } from '../../types/common';
-
-import { Assignment } from '../../types/common';
-
-import { Section } from '../../api-client';
 
 import GraderNav from './GraderNav';
 
@@ -50,58 +46,14 @@ const Grader: React.FC<IComponentProps> = (props) => {
   const { currentCourse, sectionsLed } = props;
 
   // State
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const { data: assignments = [] } = useAssignmentsQuery(currentCourse);
 
-  const [localSectionsLed, setLocalSectionsLed] = useState<Section[]>([]);
+  const localSectionsLed = useMemo(() => {
+    if (!currentCourse) return [];
+    return sectionsLed.filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
+  }, [currentCourse, sectionsLed]);
 
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
-
-  // Refs for timer logging (keeping original behavior though it was commented out)
-  const timerRef = useRef<number>(Date.now());
-  const timesRef = useRef<number[]>([]);
-
-  // 1. Initial Load & Course Change
-  useEffect(() => {
-    // If we have a course, load assignments
-    if (currentCourse) {
-      if (assignments.length === 0) {
-        // setIsLoading(true);
-      }
-
-      // Load assignments
-      const promises = (currentCourse.assignments || []).map((id) => assignmentsApi.retrieve({ id }));
-
-      Promise.all(promises).then((newAssignments) => {
-        // Calculate derived state dependent on course
-        const newSectionsLed = sectionsLed
-          .slice()
-          .filter((section) => currentCourse.sections.indexOf(section.id) !== -1);
-
-        setAssignments(newAssignments);
-        setLocalSectionsLed(newSectionsLed);
-        // setIsLoading(false);
-
-        // Timer logging (porting logic from componentDidUpdate)
-        const current = Date.now() - timerRef.current;
-        timesRef.current = [...timesRef.current, current];
-        // console.log('ASSIGNMENTS COMPLETE: ', current);
-      });
-    } else {
-      // No course, just stop loading
-      // setIsLoading(false);
-      setAssignments([]);
-      setLocalSectionsLed([]);
-    }
-    // intentionally depends on course ID only to avoid re-fetch loops
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCourse?.id, sectionsLed]);
-
-  // ADD THIS BACK TO TURN ON THE SURVEY AGAIN
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setShowBanner(true);
-  //   }, 1000);
-  // }, []);
 
   useEffect(() => {
     document.title = 'codePost - Grader Console';

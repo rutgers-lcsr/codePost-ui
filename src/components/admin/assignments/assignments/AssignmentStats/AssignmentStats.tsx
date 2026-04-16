@@ -15,6 +15,7 @@ import {
   Table,
   Typography,
 } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import { colors } from '../../../../../theme/colors';
 import CPButton from '../../../../../components/core/CPButton';
 import CPTooltip from '../../../../../components/core/CPTooltip';
@@ -22,7 +23,6 @@ import { tooltips } from '../../../../../components/core/tooltips';
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { Assignment, SubmissionInfoType } from '../../../../../types/common';
 import { Course } from '../../../../../api-client';
-import type { AssignmentAnalyticsGradeDistribution, AssignmentAnalyticsResponse } from '../../../../../api-client';
 import { IStudentSubmissionsDataTable } from '../../../../../types/common';
 import {
   calculateFullStats,
@@ -38,6 +38,7 @@ import GradeDistributionChart from './charts/GradeDistributionChart';
 import GraderWorkloadChart from './charts/GraderWorkloadChart';
 import GradingTimelineChart from './charts/GradingTimelineChart';
 import TestResultsChart from './charts/TestResultsChart';
+import { assignmentKeys } from '../../../../../lib/queryKeys';
 
 const { Title } = Typography;
 
@@ -74,67 +75,22 @@ const AssignmentStats: FC<IProps> = (props) => {
   }>({ title: '', subtitle: '', content: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [analytics, setAnalytics] = useState<AssignmentAnalyticsResponse | null>(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
-  const [gradeDistribution, setGradeDistribution] = useState<AssignmentAnalyticsGradeDistribution[] | null>(null);
-  const [gradeDistLoading, setGradeDistLoading] = useState(true);
   const [buckets, setBuckets] = useState<number>(10);
+
+  const analyticsQuery = useQuery({
+    queryKey: assignmentKeys.analytics(assignment.id, buckets),
+    queryFn: () => AssignmentService.readAnalytics(assignment.id, buckets),
+  });
+
+  const analytics = analyticsQuery.data ?? null;
+  const analyticsLoading = analyticsQuery.isPending;
+  const gradeDistribution = analyticsQuery.data?.gradeDistribution ?? null;
+  const gradeDistLoading = analyticsQuery.isPending;
 
   useEffect(() => {
     // resets loading state when props refresh
     setIsLoading(false);
   }, [props]);
-
-  // Fetch all analytics (except grade distribution uses default buckets)
-  useEffect(() => {
-    let cancelled = false;
-    setAnalyticsLoading(true);
-    AssignmentService.readAnalytics(assignment.id, buckets)
-      .then((data) => {
-        if (!cancelled) {
-          setAnalytics(data);
-          setGradeDistribution(data.gradeDistribution);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setAnalytics(null);
-          setGradeDistribution(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setAnalyticsLoading(false);
-          setGradeDistLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignment.id]);
-
-  // Re-fetch only grade distribution when buckets change (skip initial load)
-  useEffect(() => {
-    // Don't fetch on initial mount — the main effect handles that
-    if (analyticsLoading) return;
-    let cancelled = false;
-    setGradeDistLoading(true);
-    AssignmentService.readAnalytics(assignment.id, buckets)
-      .then((data) => {
-        if (!cancelled) setGradeDistribution(data.gradeDistribution);
-      })
-      .catch(() => {
-        if (!cancelled) setGradeDistribution(null);
-      })
-      .finally(() => {
-        if (!cancelled) setGradeDistLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buckets]);
 
   const openDrawer = useCallback(
     (targetAssignment: Assignment, type: DRAWER_TYPE) => {

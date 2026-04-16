@@ -6,6 +6,7 @@
 /* external imports */
 import { Breadcrumb, Skeleton, Tag } from 'antd';
 import * as React from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 /* codePost imports */
 import type { Course, Webhook } from '../../../api-client';
@@ -21,53 +22,18 @@ interface IProps {
 }
 
 const WebhooksPanel = (props: IProps) => {
-  const [webhooks, setWebhooks] = React.useState<Webhook[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const [justSaved, setJustSaved] = React.useState<boolean>(false);
 
-  // const columns = [
-  //   {
-  //     title: 'Enabled',
-  //     dataIndex: 'enabled',
-  //     key: 'enabled',
-  //   },
-  //   {
-  //     title: 'Object',
-  //     dataIndex: 'object',
-  //     key: 'object',
-  //     align: 'center' as AlignType,
-  //     render: (object: string) => {
-  //       return <Tag>{object}</Tag>;
-  //     },
-  //   },
-  //   {
-  //     title: 'Action',
-  //     dataIndex: 'action',
-  //     key: 'action',
-  //   },
-  //   {
-  //     title: 'Target',
-  //     dataIndex: 'target',
-  //     key: 'target',
-  //   },
-  // ];
-
-  React.useEffect(() => {
-    const fetchWebhooks = async () => {
-      if (props.currentCourse.webhooks !== undefined) {
-        const res: Webhook[] = await Promise.all(
-          props.currentCourse.webhooks.map(async (id: number) => {
-            return await webhooksApi.retrieve({ id });
-          }),
-        );
-
-        setWebhooks(res);
-        setLoading(false);
-      }
-    };
-    fetchWebhooks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: webhooks = [], isPending: loading } = useQuery({
+    queryKey: ['webhooks', props.currentCourse.id] as const,
+    queryFn: async (): Promise<Webhook[]> => {
+      if (!props.currentCourse.webhooks?.length) return [];
+      return Promise.all(
+        props.currentCourse.webhooks.map((id: number) => webhooksApi.retrieve({ id })),
+      );
+    },
+    enabled: (props.currentCourse.webhooks?.length ?? 0) > 0,
+  });
 
   React.useEffect(() => {
     const hide = () => {

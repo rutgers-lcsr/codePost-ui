@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 /* antd imports */
@@ -51,6 +51,8 @@ import { ADMIN } from '../../routes';
 import { BUTTON_STATE } from '../../types/common';
 import { withQueryParams } from '../../utils/apiClient';
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { graderKeys } from '../../lib/queryKeys';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -162,66 +164,56 @@ const getSectionParameters = (sections: SectionType[]): Array<SectionType | unde
 const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, graderEmail, breadcrumbs }) => {
   const courseCaps = useCourseCapabilities(course?.id);
   const capIsAdmin = !!courseCaps.edit_course_settings;
+  const queryClient = useQueryClient();
 
   // State
   const [currentSections, setCurrentSections] = useState<SectionType[]>([]);
-  const [sections, setSections] = useState<SectionType[]>([]);
-  const [submissions, setSubmissions] = useState<AnonymousSubmissionInfoType[]>([]);
   const [buttonState, setButtonState] = useState<BUTTON_STATE>(BUTTON_STATE.Active);
-  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState<boolean>(true);
   const [filterType, setFilterType] = useState<FILTER_TYPE>(FILTER_TYPE.NONE);
   const [showStudentEmails, setShowStudentEmails] = useState<boolean>(false);
-  const [canViewSubmissionInfo, setCanViewSubmissionInfo] = useState<boolean>(false);
   const [claimAmount, setClaimAmount] = useState<number>(DEFAULT_CLAIM_AMOUNT);
-  const [queueLength, setQueueLength] = useState<number | null>(null);
-  const [isLoadingQueueLength, setIsLoadingQueueLength] = useState<boolean>(false);
 
-  const intervalRef = useRef<number | null>(null);
+  // Submissions query with 15s polling
+  const submissionsQueryKey = graderKeys.submissions(assignment.id, graderEmail);
+  const { data: submissions = [], isLoading: isLoadingSubmissions } = useQuery({
+    queryKey: submissionsQueryKey,
+    queryFn: () => loadSubmissions(assignment, graderEmail),
+    refetchInterval: LOADING_INTERVAL,
+    refetchIntervalInBackground: false,
+  });
 
-  /***********************************************************************************
-  /* API operations
-  /**********************************************************************************/
+  const canViewSubmissionInfo = submissions.length > 0 ? typeof submissions[0].students !== 'undefined' : false;
 
-  const changeAssignment = useCallback(
-    (newAssignment: AssignmentType) => {
-      setIsLoadingSubmissions(true);
+  // Sections query (no polling needed)
+  const { data: sections = [] } = useQuery({
+    queryKey: graderKeys.sections(course.id),
+    queryFn: () => loadSections(course, capIsAdmin),
+  });
 
-      loadSubmissions(newAssignment, graderEmail).then((subs) => {
-        setSubmissions(subs);
-        setCanViewSubmissionInfo(subs.length > 0 ? typeof subs[0].students !== 'undefined' : false);
-        setIsLoadingSubmissions(false);
-      });
-
-      loadSections(course, capIsAdmin).then((secs) => {
-        setSections(secs);
-      });
-    },
-    [graderEmail, course, capIsAdmin],
-  );
-
-  // Fetch queue length
-  const fetchQueueLength = useCallback(
-    async (assignmentId: number, sections?: SectionType[]): Promise<number | null> => {
+  // Queue length query with 15s polling
+  const sectionIds = currentSections.map((s) => s.id);
+  const queueLengthQueryKey = graderKeys.queueLength(assignment.id, sectionIds.length > 0 ? sectionIds : undefined);
+  const { data: queueLength = null, isLoading: isLoadingQueueLength } = useQuery({
+    queryKey: queueLengthQueryKey,
+    queryFn: async () => {
       try {
         const params = new URLSearchParams();
-        if (sections && sections.length > 0) {
-          sections.forEach((section) => {
+        if (currentSections.length > 0) {
+          currentSections.forEach((section) => {
             params.append('section', section.id.toString());
           });
         }
-
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/queueLength/?${params.toString()}`,
+          `${process.env.REACT_APP_API_URL}/assignments/${assignment.id}/queueLength/?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
           },
         );
-
         if (response.ok) {
           const data = await response.json();
-          return data.unclaimed || 0;
+          return (data.unclaimed || 0) as number | null;
         }
         return null;
       } catch (error) {
@@ -229,8 +221,13 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         return null;
       }
     },
-    [],
-  );
+    refetchInterval: LOADING_INTERVAL,
+    refetchIntervalInBackground: false,
+  });
+
+  /***********************************************************************************
+  /* API operations
+  /**********************************************************************************/
 
   const fetchSubmission = useCallback(
     async (assignmentId: number, section?: SectionType, amount: number = 1): Promise<SubmissionType[] | undefined> => {
@@ -259,8 +256,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       let submission;
       const sectionParameters = getSectionParameters(sections);
 
-      // Note that calling fetchSubmission with section=undefined performs
-      // the fetchSubmission operation without a section filter
       for (const section of sectionParameters) {
         submission = await fetchSubmission(assignmentId, section, amount);
         if (submission) {
@@ -269,38 +264,37 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       }
 
       if (submission) {
-        setSubmissions((prev) => [...prev, ...submission]);
+        queryClient.setQueryData(
+          submissionsQueryKey,
+          (old: AnonymousSubmissionInfoType[] | undefined) => [...(old ?? []), ...submission],
+        );
       }
 
       return submission;
     },
-    [fetchSubmission],
+    [fetchSubmission, queryClient, submissionsQueryKey],
   );
 
-  const releaseSubmission = useCallback(async (submission: SubmissionType): Promise<SubmissionType> => {
-    // Legacy: Submission.update(payload)
-    // const payload = {
-    //   id: submission.id,
-    //   grader: null, // API expects null or string? legacy was ''
-    //   isFinalized: false,
-    // };
+  const releaseSubmission = useCallback(
+    async (submission: SubmissionType): Promise<SubmissionType> => {
+      const released = await submissionsApi.partialUpdate({
+        id: submission.id,
+        patchedSubmission: { grader: null, isFinalized: false },
+      });
 
-    const released = await submissionsApi.partialUpdate({
-      id: submission.id,
-      patchedSubmission: { grader: null, isFinalized: false },
-    });
+      queryClient.setQueryData(
+        submissionsQueryKey,
+        (old: AnonymousSubmissionInfoType[] | undefined) => (old ?? []).filter((sub) => sub.id !== released.id),
+      );
 
-    setSubmissions((prev) => prev.filter((sub) => sub.id !== released.id));
+      return released;
+    },
+    [queryClient, submissionsQueryKey],
+  );
 
-    return released;
-  }, []);
-
-  const updateQueueLength = useCallback(async () => {
-    setIsLoadingQueueLength(true);
-    const length = await fetchQueueLength(assignment.id, currentSections.length > 0 ? currentSections : undefined);
-    setQueueLength(length);
-    setIsLoadingQueueLength(false);
-  }, [assignment.id, currentSections, fetchQueueLength]);
+  const updateQueueLength = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queueLengthQueryKey });
+  }, [queryClient, queueLengthQueryKey]);
 
   const getAnotherSubmission = useCallback(async () => {
     setButtonState(BUTTON_STATE.Loading);
@@ -311,7 +305,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       setButtonState(BUTTON_STATE.Active);
     }
     // Update queue length after claiming
-    await updateQueueLength();
+    updateQueueLength();
   }, [assignment.id, currentSections, claimAmount, claimSubmission, updateQueueLength]);
 
   /***********************************************************************************
@@ -380,27 +374,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     },
     [releaseSubmission, updateQueueLength],
   );
-
-  /***********************************************************************************
-  /* Effects
-  /**********************************************************************************/
-
-  // Initial load and interval setup
-  useEffect(() => {
-    changeAssignment(assignment);
-    updateQueueLength();
-
-    intervalRef.current = window.setInterval(() => {
-      changeAssignment(assignment);
-      updateQueueLength();
-    }, LOADING_INTERVAL);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [assignment, changeAssignment, updateQueueLength]);
 
   /***********************************************************************************
   /* Render helpers

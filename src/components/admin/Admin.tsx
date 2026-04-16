@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -12,6 +12,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button, Empty } from 'antd';
 
 /* other library imports */
+import { useQueryClient } from '@tanstack/react-query';
 import cloneDeep from 'lodash/cloneDeep';
 import uniqBy from 'lodash/uniqBy';
 import queryString from 'query-string';
@@ -40,7 +41,7 @@ import {
 } from '../../types/common';
 
 /* API library */
-import { Course, CourseFile, CourseRoster, Section } from '../../api-client';
+import { Course, CourseFile, Section } from '../../api-client';
 import type {
   CreateRequest as AssignmentCreateRequest,
   PartialUpdateRequest as AssignmentPartialUpdateRequest,
@@ -60,8 +61,19 @@ import {
   submissionFilesApi,
 } from '../../api-client/clients';
 import { Assignment, SubmissionInfoType, UploadFile } from '../../types/common';
-import { SubmissionHistory } from '../../api-client';
 import { withQueryParams } from '../../utils/apiClient';
+
+import {
+  useAssignmentsQuery,
+  sanitizeAssignment,
+  useRosterQuery,
+  normalizeRoster,
+  useSectionsQuery,
+  useSubmissionsQuery,
+  useViewHistoriesQuery,
+} from './hooks';
+import type { RosterData } from './hooks';
+import { assignmentKeys, courseKeys } from '../../lib/queryKeys';
 
 import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 
@@ -87,6 +99,7 @@ const formatCourseURL = (course: Course) => {
 const Admin: React.FC<IComponentProps> = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   /**** UI control data ****/
   const [onboardingModalVisible, setOnboardingModalVisible] = useState(false);
@@ -95,83 +108,43 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /**** Top-level course data ****/
   const [courses, setCourses] = useState<Course[]>([]);
 
-  /**** Roster data ****/
-  const [rosterLoadComplete, setRosterLoadComplete] = useState(false);
-  const [students, setStudents] = useState<string[]>([]);
-  const [inactiveStudents, setInactiveStudents] = useState<string[]>([]);
-  const [graders, setGraders] = useState<string[]>([]);
-  const [inactiveGraders, setInactiveGraders] = useState<string[]>([]);
-  const [admins, setAdmins] = useState<string[]>([]);
-  const [superGraders, setSuperGraders] = useState<string[]>([]);
-  const [rubricEditors, setRubricEditors] = useState<string[]>([]);
-  const [notActivated, setNotActivated] = useState<string[]>([]);
+  /**** Query-based data fetching ****/
+  const courseId = props.currentCourse?.id;
 
-  /**** Sections data ****/
-  const [sectionsLoadComplete, setSectionsLoadComplete] = useState(false);
-  const [sections, setSections] = useState<Section[]>([]);
-  const [sectionsByStudent, setSectionsByStudent] = useState<{ [studentEmail: string]: Section }>({});
+  const assignmentsQuery = useAssignmentsQuery(props.currentCourse);
+  const assignments = assignmentsQuery.data ?? [];
 
-  /**** Assignments data ****/
-  const [assignmentsLoadComplete, setAssignmentsLoadComplete] = useState(false);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const rosterQuery = useRosterQuery(courseId);
+  const roster = rosterQuery.data;
+  const students = roster?.students ?? [];
+  const inactiveStudents = roster?.inactive_students ?? [];
+  const graders = roster?.graders ?? [];
+  const inactiveGraders = roster?.inactive_graders ?? [];
+  const admins = roster?.courseAdmins ?? [];
+  const superGraders = roster?.superGraders ?? [];
+  const rubricEditors = roster?.rubricEditors ?? [];
+  const notActivated = roster?.not_activated ?? [];
 
-  /*** Submissions data ****/
-  const [partialSubmissionsLoadComplete, setPartialSubmissionsLoadComplete] = useState(false);
-  const [fullSubmissionsLoadComplete, setFullSubmissionsLoadComplete] = useState(false);
-  const [submissionsByUserLoadComplete, setSubmissionsByUserLoadComplete] = useState(false);
-  const [submissions, setSubmissions] = useState<IAssignmentToSubmissionsMap>({});
-  const [submissionsByStudent, setSubmissionsByStudent] = useState<IStudentSubmissionsDataTable>({});
-  const [submissionsByGrader, setSubmissionsByGrader] = useState<IGraderSubmissionsDataTable>({});
-  const [viewsBySubmission, setViewsBySubmission] = useState<{ [submissionID: number]: { [student: string]: string } }>(
-    {},
-  );
+  const sectionsQuery = useSectionsQuery(courseId);
+  const sections = sectionsQuery.data ?? [];
 
-  type RosterData = {
-    id?: number;
-    name?: string;
-    period?: string;
-    students: string[];
-    graders: string[];
-    inactive_students: string[];
-    inactive_graders: string[];
-    inactive_courseAdmins?: string[];
-    courseAdmins: string[];
-    superGraders: string[];
-    rubricEditors: string[];
-    not_activated: string[];
-    organization?: number;
-  };
-
-  // Refs for async data access
-  const rosterRef = useRef<RosterData | undefined>(undefined);
-  const assignmentsRef = useRef<Assignment[]>([]);
-  const lastLoadedCourseIdRef = useRef<number | undefined>(undefined);
-
-  // Initialize state based on props (mimicking constructor)
-  useEffect(() => {
-    const showCIPModal = !props.user.hasCredentials;
-    const hasOnboardingParam = Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding');
-    const hasDismissed = localStorage.getItem('cp_onboarding_dismissed') === '1';
-    const showOnboarding = hasOnboardingParam || (props.initialCourses.length === 0 && !hasDismissed);
-
-    queueMicrotask(() => {
-      setOnboardingModalVisible(showOnboarding && !showCIPModal);
-      setCipModalVisible(showCIPModal);
-      setCourses(props.initialCourses);
+  const sectionsByStudent = useMemo(() => {
+    const map: { [email: string]: Section } = {};
+    sections.forEach((sec) => {
+      sec.students.forEach((stu) => {
+        if (stu) map[stu] = sec;
+      });
     });
-  }, [location.search, props.initialCourses, props.user.hasCredentials]);
+    return map;
+  }, [sections]);
 
-  // Document Title
-  useEffect(() => {
-    document.title = 'codePost - Admin Console';
-  }, [navigate]);
+  const submissionsQuery = useSubmissionsQuery(courseId, assignmentsQuery.data);
+  const submissions = submissionsQuery.data ?? {};
 
-  /***********************************************************************************
-  /* Helper Functions (Business Logic)
-  /**********************************************************************************/
+  const viewHistoriesQuery = useViewHistoriesQuery(courseId, assignmentsQuery.data);
+  const viewsBySubmission = viewHistoriesQuery.data ?? {};
 
-  /* GENERATORS (Pure functions mostly) */
-
+  /**** Derived data ****/
   const generateSubmissionsByUser = (
     rosterToUse: {
       students: string[];
@@ -202,14 +175,12 @@ const Admin: React.FC<IComponentProps> = (props) => {
       const assignmentSubs = submissionsToUse[assignment.id];
       if (assignmentSubs) {
         assignmentSubs.forEach((submission: SubmissionInfoType) => {
-          // NOTE: students in submission.students might be inactive
           (submission.students as (string | null)[]).forEach((student: string | null) => {
             if (student && student in subsByStudent) {
               subsByStudent[student][assignment.id] = submission;
             }
           });
 
-          // NOTE: graders in submission.students might be inactive
           if (submission.grader && submission.grader in subsByGrader) {
             subsByGrader[submission.grader][assignment.id].push(submission);
           }
@@ -217,55 +188,50 @@ const Admin: React.FC<IComponentProps> = (props) => {
       }
     });
 
-    return {
-      subsByStudent,
-      subsByGrader,
-    };
+    return { subsByStudent, subsByGrader };
   };
 
-  /* DATA UPDATERS */
-
-  // This function needs access to current state, so we wrap it or read state inside
-  const updateSubmissionsByUser = (
-    roster?: {
-      students: string[];
-      graders: string[];
-      inactive_students: string[];
-      inactive_graders: string[];
-    },
-    submissionsParam?: IAssignmentToSubmissionsMap,
-    assignmentsParam?: Assignment[],
-    callback?: () => void,
-  ) => {
-    const submissionsToUse = submissionsParam !== undefined ? submissionsParam : submissions;
-    const assignmentsToUse = assignmentsParam !== undefined ? assignmentsParam : assignments;
-
-    let rosterToUse;
-    if (roster) {
-      rosterToUse = roster;
-    } else {
-      rosterToUse = {
-        students: students,
-        graders: graders,
-        inactive_graders: inactiveGraders,
-        inactive_students: inactiveStudents,
-      };
+  const { subsByStudent: submissionsByStudent, subsByGrader: submissionsByGrader } = useMemo(() => {
+    if (!roster || assignments.length === 0) {
+      return { subsByStudent: {} as IStudentSubmissionsDataTable, subsByGrader: {} as IGraderSubmissionsDataTable };
     }
+    return generateSubmissionsByUser(
+      { students, graders, inactive_students: inactiveStudents, inactive_graders: inactiveGraders },
+      submissions,
+      assignments,
+    );
+  }, [roster, students, graders, inactiveStudents, inactiveGraders, submissions, assignments]);
 
-    const subsByUser = generateSubmissionsByUser(rosterToUse, submissionsToUse, assignmentsToUse);
+  /**** Loading states ****/
+  const rosterLoadComplete = !rosterQuery.isPending;
+  const sectionsLoadComplete = !sectionsQuery.isPending;
+  const assignmentsLoadComplete = !assignmentsQuery.isPending;
+  const partialSubmissionsLoadComplete = !submissionsQuery.isPending;
+  const fullSubmissionsLoadComplete = !submissionsQuery.isPending;
+  const submissionsByUserLoadComplete = rosterLoadComplete && !submissionsQuery.isPending;
 
-    setSubmissionsByStudent(subsByUser.subsByStudent);
-    setSubmissionsByGrader(subsByUser.subsByGrader);
-    setSubmissionsByUserLoadComplete(true);
+  // Initialize state based on props (mimicking constructor)
+  useEffect(() => {
+    const showCIPModal = !props.user.hasCredentials;
+    const hasOnboardingParam = Object.prototype.hasOwnProperty.call(queryString.parse(location.search), 'onboarding');
+    const hasDismissed = localStorage.getItem('cp_onboarding_dismissed') === '1';
+    const showOnboarding = hasOnboardingParam || (props.initialCourses.length === 0 && !hasDismissed);
 
-    if (callback) callback();
-  };
+    setOnboardingModalVisible(showOnboarding && !showCIPModal);
+    setCipModalVisible(showCIPModal);
+    setCourses(props.initialCourses);
+  }, [location.search, props.initialCourses, props.user.hasCredentials]);
+
+  // Document Title
+  useEffect(() => {
+    document.title = 'codePost - Admin Console';
+  }, [navigate]);
+
+  /***********************************************************************************
+  /* Helper Functions (Business Logic)
+  /**********************************************************************************/
 
   /* LOADERS */
-
-  const sortAssignments = (assignments: Assignment[]) => {
-    return assignments.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
-  };
 
   type AssignmentCreatePayload = AssignmentCreateRequest['assignment'];
   type AssignmentPatchPayload = AssignmentPartialUpdateRequest['patchedAssignment'];
@@ -274,288 +240,15 @@ const Admin: React.FC<IComponentProps> = (props) => {
   type SubmissionFileCreatePayload = SubmissionFileCreateRequest['submissionFile'];
   type SectionPatchPayload = SectionPartialUpdateRequest['patchedSection'];
 
-  const normalizeRoster = (roster: CourseRoster | RosterData): RosterData => {
-    if ('inactive_students' in roster) {
-      return roster as RosterData;
-    }
-
-    const toStrings = (values?: Array<string | null>) => (values ?? []).filter((v): v is string => Boolean(v));
-    const rosterApi = roster as CourseRoster;
-
-    return {
-      id: rosterApi.id,
-      name: rosterApi.name,
-      period: rosterApi.period,
-      students: toStrings(rosterApi.students),
-      inactive_students: toStrings(rosterApi.inactiveStudents),
-      inactive_graders: toStrings(rosterApi.inactiveGraders),
-      inactive_courseAdmins: toStrings(rosterApi.inactiveCourseAdmins),
-      graders: toStrings(rosterApi.graders),
-      superGraders: toStrings(rosterApi.superGraders),
-      rubricEditors: toStrings(rosterApi.rubricEditors),
-      courseAdmins: toStrings(rosterApi.courseAdmins),
-      not_activated: rosterApi.notActivated ?? [],
-      organization: rosterApi.organization,
-    };
+  /** Invalidate all course data queries for the current course */
+  const refreshCourseData = () => {
+    if (!courseId) return;
+    queryClient.invalidateQueries({ queryKey: assignmentKeys.list(courseId) });
+    queryClient.invalidateQueries({ queryKey: assignmentKeys.submissions(courseId) });
+    queryClient.invalidateQueries({ queryKey: assignmentKeys.viewHistories(courseId) });
+    queryClient.invalidateQueries({ queryKey: courseKeys.roster(courseId) });
+    queryClient.invalidateQueries({ queryKey: courseKeys.sections(courseId) });
   };
-
-  const sanitizeAssignment = (result: Assignment): Assignment => ({
-    ...result,
-    isReleased: result.isReleased ?? false,
-    feedbackReleased: result.feedbackReleased ?? false,
-    hideGrades: result.hideGrades ?? false,
-    isVisible: result.isVisible ?? false,
-    allowStudentUpload: result.allowStudentUpload ?? false,
-    allowStudentUploadWithPartners: result.allowStudentUploadWithPartners ?? false,
-    commentFeedback: result.commentFeedback ?? false,
-    anonymousGrading: result.anonymousGrading ?? false,
-    hideGradersFromStudents: result.hideGradersFromStudents ?? false,
-    allowRegradeRequests: result.allowRegradeRequests ?? false,
-    liveFeedbackMode: result.liveFeedbackMode ?? false,
-    additiveGrading: result.additiveGrading ?? false,
-    collaborativeRubricMode: result.collaborativeRubricMode ?? false,
-    forcedRubricMode: result.forcedRubricMode ?? false,
-    templateMode: result.templateMode ?? false,
-    showFrequentlyUsedRubricComments: result.showFrequentlyUsedRubricComments ?? false,
-    allowLateUploads: result.allowLateUploads ?? false,
-    nudgeMode: result.nudgeMode ?? false,
-    runFilesOnSubmit: result.runFilesOnSubmit ?? true,
-    runTestsOnSubmit: result.runTestsOnSubmit ?? true,
-    testsAffectGrade: result.testsAffectGrade ?? true,
-
-    sortKey: result.sortKey ?? 0,
-    points: result.points,
-    maxLateDays: result.maxLateDays ?? 0,
-    course: result.course,
-
-    environment: result.environment ?? null,
-    maxStudentTestRuns: result.maxStudentTestRuns ?? null,
-    mean: result.mean ?? null,
-    median: result.median ?? null,
-
-    explanation: result.explanation ?? '',
-    regradeInstructions: result.regradeInstructions ?? '',
-
-    uploadDueDate: result.uploadDueDate ?? null,
-    regradeDeadline: result.regradeDeadline ?? null,
-    studentsCanSeeGraders: result.studentsCanSeeGraders ?? null,
-
-    rubricCategories: result.rubricCategories ?? [],
-    files: result.files ?? [],
-    fileTemplates: result.fileTemplates ?? [],
-    testCategories: result.testCategories ?? [],
-    dataSets: result.dataSets ?? [],
-    hideFrom: result.hideFrom ?? [],
-    lateDeductions: result.lateDeductions ?? [],
-  });
-
-  const loadAssignmentsData = (course: Course): Promise<Assignment[]> => {
-    if (!course.assignments) return Promise.resolve([]);
-
-    const promises = course.assignments.map((id) => assignmentsApi.retrieve({ id }));
-    return Promise.all(promises).then((results) => {
-      // Sanitize fields
-      const sanitized = results.map(sanitizeAssignment);
-
-      const sorted = sortAssignments(sanitized);
-      setAssignments(sorted);
-      setAssignmentsLoadComplete(true);
-      return sorted;
-    });
-  };
-
-  const loadRosterData = (course: Course) => {
-    if (!course) return Promise.resolve();
-
-    return coursesApi.rosterRetrieve({ id: course.id }).then((roster) => {
-      const r = normalizeRoster(roster);
-      setStudents(r.students);
-      setInactiveStudents(r.inactive_students);
-      setGraders(r.graders);
-      setInactiveGraders(r.inactive_graders);
-      setAdmins(r.courseAdmins);
-      setSuperGraders(r.superGraders);
-      setRubricEditors(r.rubricEditors);
-      setNotActivated(r.not_activated);
-      setRosterLoadComplete(true);
-      rosterRef.current = r;
-      return r;
-    });
-  };
-
-  const loadPaginatedSections = (course: Course) => {
-    const fetchAllSections = async () => {
-      const pageSize = 200;
-      let page = 1;
-      let allSections: Section[] = [];
-
-      while (true) {
-        const response = await coursesApi.sectionsList({ id: course.id, page, pageSize });
-        const results = response.results ?? [];
-        allSections = allSections.concat(results);
-
-        if (!response.next) {
-          break;
-        }
-
-        page += 1;
-      }
-
-      return allSections;
-    };
-
-    return fetchAllSections().then((sectionsList) => {
-      const sectionMap: { [studentEmail: string]: Section } = {};
-
-      sectionsList.forEach((sec) => {
-        sec.students.forEach((stu) => {
-          if (stu) {
-            sectionMap[stu] = sec;
-          }
-        });
-      });
-
-      setSections(sectionsList);
-      setSectionsByStudent(sectionMap);
-      setSectionsLoadComplete(true);
-      return sectionsList;
-    });
-  };
-
-  /* New loaders using generated client */
-  const fetchAssignmentSubmissionsCompact = async (assignmentId: number): Promise<SubmissionInfoType[]> => {
-    const pageSize = 1000;
-    let page = 1;
-    let allResults: SubmissionInfoType[] = [];
-    const assignmentsApiWithCompact = withQueryParams(assignmentsApi, { compact: 1 });
-
-    while (true) {
-      const response = await assignmentsApiWithCompact.submissionsListRaw({ id: assignmentId, page, pageSize });
-      const data = (await response.raw.json()) as unknown;
-      if (Array.isArray(data)) {
-        allResults = data as SubmissionInfoType[];
-        break;
-      }
-
-      const results = ((data as { results?: SubmissionInfoType[] } | undefined)?.results ?? []) as SubmissionInfoType[];
-      allResults = allResults.concat(results);
-
-      if (!(data as { next?: string | null } | undefined)?.next) {
-        break;
-      }
-
-      page += 1;
-    }
-
-    return allResults;
-  };
-
-  const loadSubmissionsData = (_course: Course, loadedAssignments: Assignment[]) => {
-    setPartialSubmissionsLoadComplete(false);
-    setFullSubmissionsLoadComplete(false);
-
-    if (!loadedAssignments || loadedAssignments.length === 0) {
-      setPartialSubmissionsLoadComplete(true);
-      setFullSubmissionsLoadComplete(true);
-      return;
-    }
-
-    const promises = loadedAssignments.map((a) => fetchAssignmentSubmissionsCompact(a.id));
-
-    Promise.all(promises).then((results) => {
-      const newSubmissions: IAssignmentToSubmissionsMap = {};
-
-      results.forEach((subsResponse: SubmissionInfoType[], index) => {
-        const assignmentID = loadedAssignments[index].id;
-        newSubmissions[assignmentID] = subsResponse ?? [];
-      });
-
-      setSubmissions(newSubmissions);
-
-      if (rosterRef.current) {
-        updateSubmissionsByUser(rosterRef.current, newSubmissions, loadedAssignments);
-      }
-
-      setPartialSubmissionsLoadComplete(true);
-      setFullSubmissionsLoadComplete(true);
-    });
-  };
-
-  const loadViewsBySubmissionData = (_course: Course, loadedAssignments: Assignment[]) => {
-    const fetchAllSubmissionHistories = async (assignmentId: number) => {
-      const pageSize = 200;
-      let page = 1;
-      let allResults: SubmissionHistory[] = [];
-
-      while (true) {
-        const response = await assignmentsApi.submissionHistoriesList({ id: assignmentId, page, pageSize });
-        const results = response.results ?? [];
-        allResults = allResults.concat(results as SubmissionHistory[]);
-
-        if (!response.next) {
-          break;
-        }
-
-        page += 1;
-      }
-
-      return allResults;
-    };
-
-    loadedAssignments.forEach((assignment) => {
-      fetchAllSubmissionHistories(assignment.id).then((viewHistoryList) => {
-        setViewsBySubmission((prev) => {
-          const newViews = { ...prev };
-          viewHistoryList.forEach((h) => {
-            const { submission, student, hasViewed, dateViewed } = h;
-            if (!(submission in newViews)) {
-              newViews[submission] = {};
-            }
-            if (hasViewed && dateViewed) {
-              newViews[submission][student] = dateViewed;
-            }
-          });
-          return newViews;
-        });
-      });
-    });
-  };
-
-  const loadAllCourseData = (course: Course) => {
-    setRosterLoadComplete(false);
-    setSectionsLoadComplete(false);
-    setAssignmentsLoadComplete(false);
-
-    // 1. Assignments
-    loadAssignmentsData(course).then((loadedAssignments) => {
-      if (props.currentCourse?.id !== course.id) return;
-
-      assignmentsRef.current = loadedAssignments;
-
-      // 2. Submissions & Views (depend on assignments)
-      loadSubmissionsData(course, loadedAssignments);
-      loadViewsBySubmissionData(course, loadedAssignments);
-    });
-
-    // 3. Roster (Independent)
-    loadRosterData(course);
-
-    // 4. Sections (Independent)
-    loadPaginatedSections(course);
-  };
-
-  // Load Course Data when currentCourse changes
-  useEffect(() => {
-    const currentCourse = props.currentCourse;
-    if (!currentCourse) return;
-    if (lastLoadedCourseIdRef.current === currentCourse.id) return;
-
-    lastLoadedCourseIdRef.current = currentCourse.id;
-
-    queueMicrotask(() => {
-      loadAllCourseData(currentCourse);
-    });
-  });
 
   /***********************************************************************************
   /* Pagination Callbacks
@@ -730,27 +423,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     }
 
     if (roster) {
-      switch (userType) {
-        case USER_APP.Student:
-          setStudents(roster.students);
-          setInactiveStudents(roster.inactive_students);
-          updateSubmissionsByUser(roster);
-          break;
-        case USER_APP.Grader:
-          setGraders(roster.graders);
-          setInactiveGraders(roster.inactive_graders);
-          updateSubmissionsByUser(roster);
-          break;
-        case USER_APP.CourseAdmin:
-          setAdmins(roster.courseAdmins);
-          break;
-        case USER_APP.SuperGrader:
-          setSuperGraders(roster.superGraders);
-          break;
-        case USER_APP.RubricEditor:
-          setRubricEditors(roster.rubricEditors);
-          break;
-      }
+      queryClient.setQueryData(courseKeys.roster(currentCourse.id), roster);
     }
   };
 
@@ -768,10 +441,10 @@ const Admin: React.FC<IComponentProps> = (props) => {
     };
 
     return sectionsApi.create({ section: payload }).then((section: Section) => {
-      setSections([...sections, section]);
-      if (props.currentCourse) {
-        // Previously mutated course sections list. Skipping for now as currentCourse is likely immutable prop
-      }
+      queryClient.setQueryData(courseKeys.sections(props.currentCourse!.id), (old: Section[] | undefined) => [
+        ...(old ?? []),
+        section,
+      ]);
       return section;
     });
   };
@@ -780,20 +453,10 @@ const Admin: React.FC<IComponentProps> = (props) => {
     const sectionIndex = sections.findIndex((s) => s.id === sectionID);
     if (sectionIndex === -1) return Promise.reject('No section with this ID exists.');
 
-    const thisSection = sections[sectionIndex];
-    const sectionStudents = thisSection.students;
-
     return sectionsApi.destroy({ id: sectionID }).then(() => {
-      const newSections = sections.filter((s) => s.id !== sectionID);
-      const newSectionsByStudent = { ...sectionsByStudent };
-      sectionStudents.forEach((student) => {
-        if (student) {
-          delete newSectionsByStudent[student];
-        }
-      });
-
-      setSections(newSections);
-      setSectionsByStudent(newSectionsByStudent);
+      queryClient.setQueryData(courseKeys.sections(courseId!), (old: Section[] | undefined) =>
+        (old ?? []).filter((s) => s.id !== sectionID),
+      );
     });
   };
 
@@ -811,26 +474,17 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     return sectionsApi.partialUpdate({ id, patchedSection: payload }).then((newSection) => {
       const newStudents = newSection.students;
-      const removedStudents = oldStudents.filter((student) => !newStudents.includes(student));
       const addedStudents = newStudents.filter((student) => !oldStudents.includes(student));
 
-      const sectionMap = { ...sectionsByStudent };
-      for (const removed of removedStudents) {
-        if (removed) delete sectionMap[removed];
-      }
-      for (const added of addedStudents) {
-        if (added) sectionMap[added] = newSection;
-      }
-
-      const otherSections = sections
-        .filter((s) => s.id !== newSection.id)
-        .map((el) => ({
-          ...el,
-          students: el.students.filter((stu) => addedStudents.indexOf(stu) === -1),
-        }));
-
-      setSections([...otherSections, newSection]);
-      setSectionsByStudent(sectionMap);
+      queryClient.setQueryData(courseKeys.sections(courseId!), (old: Section[] | undefined) => {
+        const otherSections = (old ?? [])
+          .filter((s) => s.id !== newSection.id)
+          .map((el) => ({
+            ...el,
+            students: el.students.filter((stu) => addedStudents.indexOf(stu) === -1),
+          }));
+        return [...otherSections, newSection];
+      });
     });
   };
 
@@ -861,12 +515,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
     const payload: AssignmentPatchPayload = rest as AssignmentPatchPayload;
     return assignmentsApi.partialUpdate({ id, patchedAssignment: payload }).then((updatedGenerated) => {
       const assignment = sanitizeAssignment(updatedGenerated);
-      setAssignments(assignments.map((assn) => (assn.id === assignment.id ? assignment : assn)));
+      queryClient.setQueryData(assignmentKeys.list(courseId!), (old: Assignment[] | undefined) =>
+        (old ?? []).map((assn) => (assn.id === assignment.id ? assignment : assn)),
+      );
     });
   };
 
   const shallowUpdateAssignment = (assignmentID: number, field: string, value: number) => {
-    setAssignments(assignments.map((assn) => (assn.id === assignmentID ? { ...assn, [field]: value } : assn)));
+    queryClient.setQueryData(assignmentKeys.list(courseId!), (old: Assignment[] | undefined) =>
+      (old ?? []).map((assn) => (assn.id === assignmentID ? { ...assn, [field]: value } : assn)),
+    );
   };
 
   const createAssignment = (
@@ -896,16 +554,17 @@ const Admin: React.FC<IComponentProps> = (props) => {
     // assignmentsApi is imported from clients
     return assignmentsApi.create({ assignment: payload }).then((resp) => {
       const assignment = sanitizeAssignment(resp);
-      const newSubsByGrader = { ...submissionsByGrader };
-      graders.forEach((grader) => {
-        newSubsByGrader[grader][assignment.id] = [];
-      });
 
-      const newAssignments = uniqBy([...assignments, assignment], (a) => a.name);
-
-      setSubmissions((prev) => ({ ...prev, [assignment.id]: [] }));
-      setAssignments(newAssignments);
-      setSubmissionsByGrader(newSubsByGrader);
+      queryClient.setQueryData(assignmentKeys.list(courseId!), (old: Assignment[] | undefined) =>
+        uniqBy([...(old ?? []), assignment], (a) => a.name),
+      );
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => ({
+          ...(old ?? {}),
+          [assignment.id]: [],
+        }),
+      );
 
       props.addAssignment(assignment);
       return assignment;
@@ -916,21 +575,20 @@ const Admin: React.FC<IComponentProps> = (props) => {
     const { currentCourse } = props;
     if (!currentCourse) return Promise.reject();
 
-    // assignmentsApi is imported from clients
-
     return assignmentsApi.destroy({ id: toDelete.id }).then(() => {
-      const newAssignments = assignments.filter((el) => el.id !== toDelete.id);
-      // We need to remove it from submissions map
-      const newSubmissions = { ...submissions };
-      delete newSubmissions[toDelete.id];
+      queryClient.setQueryData(assignmentKeys.list(courseId!), (old: Assignment[] | undefined) =>
+        (old ?? []).filter((el) => el.id !== toDelete.id),
+      );
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => {
+          const newSubmissions = { ...(old ?? {}) };
+          delete newSubmissions[toDelete.id];
+          return newSubmissions;
+        },
+      );
 
       props.deleteAssignment(toDelete);
-
-      setAssignments(newAssignments);
-      setSubmissions(newSubmissions);
-
-      // Update by user mappings
-      updateSubmissionsByUser(undefined, newSubmissions, newAssignments);
     });
   };
 
@@ -952,9 +610,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
     });
 
     return Promise.all(promises).then((updatedSubmissions) => {
-      const newSubmissions = { ...submissions, [assignmentID]: updatedSubmissions };
-      setSubmissions(newSubmissions);
-      updateSubmissionsByUser(undefined, newSubmissions, undefined);
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => ({
+          ...(old ?? {}),
+          [assignmentID]: updatedSubmissions,
+        }),
+      );
     });
   };
 
@@ -964,57 +626,21 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     if (oldSubmission === undefined) return Promise.reject('Submission does not exist');
 
-    // submissionsApi is imported from clients
     const payload = toUpdate as SubmissionPatchPayload;
     return submissionsApi.partialUpdate({ id: toUpdate.id, patchedSubmission: payload }).then((updated) => {
       const updatedSubmission = updated as SubmissionInfoType;
-      const newAssignmentSubs = [
-        ...submissions[assignmentID].filter((s) => s.id !== updatedSubmission.id),
-        updatedSubmission,
-      ];
-      const newSubmissions = { ...submissions, [assignmentID]: newAssignmentSubs };
 
-      // Update student mappings
-      const newSubmissionsByStudent = { ...submissionsByStudent };
-      const removedStudents = (oldSubmission.students as (string | null)[]).filter(
-        (student) => student && updatedSubmission.students.indexOf(student) < 0,
-      ) as string[];
-
-      removedStudents.forEach((student) => {
-        if (newSubmissionsByStudent[student]) {
-          delete newSubmissionsByStudent[student][assignmentID];
-        }
-      });
-
-      (updatedSubmission.students as (string | null)[]).forEach((student) => {
-        if (student) {
-          const s = student as string;
-          if (!newSubmissionsByStudent[s]) {
-            newSubmissionsByStudent[s] = {};
-          }
-          newSubmissionsByStudent[s][assignmentID] = updatedSubmission;
-        }
-      });
-
-      // Update grader mappings
-      const newGraderMap = { ...submissionsByGrader };
-      if (oldSubmission.grader && oldSubmission.grader !== updatedSubmission.grader) {
-        newGraderMap[oldSubmission.grader][assignmentID] = newGraderMap[oldSubmission.grader][assignmentID].filter(
-          (s) => s.id !== updatedSubmission.id,
-        );
-      }
-
-      if (updatedSubmission.grader) {
-        const existingGraderSubs = newGraderMap[updatedSubmission.grader!][assignmentID] || [];
-        newGraderMap[updatedSubmission.grader!][assignmentID] = [
-          ...existingGraderSubs.filter((s) => s.id !== updatedSubmission.id),
-          updatedSubmission,
-        ];
-      }
-
-      setSubmissions(newSubmissions);
-      setSubmissionsByStudent(newSubmissionsByStudent);
-      setSubmissionsByGrader(newGraderMap);
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => {
+          const prev = old ?? {};
+          const newAssignmentSubs = [
+            ...(prev[assignmentID] ?? []).filter((s) => s.id !== updatedSubmission.id),
+            updatedSubmission,
+          ];
+          return { ...prev, [assignmentID]: newAssignmentSubs };
+        },
+      );
     });
   };
 
@@ -1032,26 +658,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
 
     // submissionsApi is imported from clients
     return submissionsApi.destroy({ id: sub.id }).then(() => {
-      const newAssignmentSubs = submissions[assignmentID].filter((s) => s.id !== sub.id);
-      const newSubmissions = { ...submissions, [assignmentID]: newAssignmentSubs };
-
-      const newSubmissionsByStudent = { ...submissionsByStudent };
-      (sub.students as (string | null)[]).forEach((student) => {
-        if (student && newSubmissionsByStudent[student]) {
-          delete newSubmissionsByStudent[student][assignmentID];
-        }
-      });
-
-      const newSubmissionsByGrader = { ...submissionsByGrader };
-      if (sub.grader) {
-        newSubmissionsByGrader[sub.grader][assignmentID] = newSubmissionsByGrader[sub.grader][assignmentID].filter(
-          (s) => s.id !== sub.id,
-        );
-      }
-
-      setSubmissions(newSubmissions);
-      setSubmissionsByStudent(newSubmissionsByStudent);
-      setSubmissionsByGrader(newSubmissionsByGrader);
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => {
+          const prev = old ?? {};
+          return { ...prev, [assignmentID]: (prev[assignmentID] ?? []).filter((s) => s.id !== sub.id) };
+        },
+      );
     });
   };
 
@@ -1093,17 +706,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
     return submissionsApi.create({ submission: submissionPayload }).then((submission) => {
       const filesPromise = addFilesToSubmission(submission, files);
 
-      const newSubmissionsByStudent = { ...submissionsByStudent };
-      partners.forEach((student) => {
-        if (!newSubmissionsByStudent[student]) newSubmissionsByStudent[student] = {};
-        newSubmissionsByStudent[student][assignment.id] = submission;
-      });
-
-      const newSubmissions = { ...submissions };
-      newSubmissions[submission.assignment] = [...newSubmissions[submission.assignment], submission];
-
-      setSubmissionsByStudent(newSubmissionsByStudent);
-      setSubmissions(newSubmissions);
+      queryClient.setQueryData(
+        assignmentKeys.submissions(courseId!),
+        (old: IAssignmentToSubmissionsMap | undefined) => {
+          const prev = old ?? {};
+          return {
+            ...prev,
+            [submission.assignment]: [...(prev[submission.assignment] ?? []), submission],
+          };
+        },
+      );
 
       return filesPromise.then(() => submission);
     });
@@ -1232,7 +844,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         bulkUpdateSubmissions={bulkUpdateSubmissions}
         courses={courses}
         // Actions
-        refreshCourseData={() => loadAllCourseData(props.currentCourse!)}
+        refreshCourseData={refreshCourseData}
         rubricEditors={rubricEditors}
       />
     );

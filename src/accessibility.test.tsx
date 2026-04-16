@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Component Imports
 import IndexManager from './components/pre-auth/IndexManager';
@@ -86,6 +87,8 @@ const stripStylesAndRunAxe = async (container: HTMLElement) => {
   return axe(container, axeConfig);
 };
 
+const createTestQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+
 describe('Accessibility', () => {
   it('should have no violations on Public Auth Pages', async () => {
     const { container } = render(
@@ -143,9 +146,11 @@ describe('Accessibility', () => {
 
   it('should have no violations on the Student Console (Student)', async () => {
     const { container } = render(
-      <MemoryRouter>
-        <Student {...mockStudentProps} />
-      </MemoryRouter>,
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter>
+          <Student {...mockStudentProps} />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
 
     const results = await stripStylesAndRunAxe(container);
@@ -154,19 +159,21 @@ describe('Accessibility', () => {
 
   it('should have no violations on Grader Console', async () => {
     const { container } = render(
-      <MemoryRouter>
-        <GraderManager
-          initialCourses={[mockCourse]}
-          user={mockUser}
-          handleLogout={vi.fn()}
-          baseURL=""
-          addAssignment={vi.fn()}
-          deleteAssignment={vi.fn()}
-          addCourse={vi.fn()}
-          superGraderCourses={[]}
-          sectionsLed={[]}
-        />
-      </MemoryRouter>,
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter>
+          <GraderManager
+            initialCourses={[mockCourse]}
+            user={mockUser}
+            handleLogout={vi.fn()}
+            baseURL=""
+            addAssignment={vi.fn()}
+            deleteAssignment={vi.fn()}
+            addCourse={vi.fn()}
+            superGraderCourses={[]}
+            sectionsLed={[]}
+          />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
 
     const results = await stripStylesAndRunAxe(container);
@@ -175,19 +182,21 @@ describe('Accessibility', () => {
 
   it('should have no violations on Admin Console', async () => {
     const { container } = render(
-      <MemoryRouter>
-        <AdminManager
-          initialCourses={[mockCourse]}
-          user={mockUser}
-          handleLogout={vi.fn()}
-          baseURL=""
-          addAssignment={vi.fn()}
-          deleteAssignment={vi.fn()}
-          addCourse={vi.fn()}
-          superGraderCourses={[]}
-          sectionsLed={[]}
-        />
-      </MemoryRouter>,
+      <QueryClientProvider client={createTestQueryClient()}>
+        <MemoryRouter>
+          <AdminManager
+            initialCourses={[mockCourse]}
+            user={mockUser}
+            handleLogout={vi.fn()}
+            baseURL=""
+            addAssignment={vi.fn()}
+            deleteAssignment={vi.fn()}
+            addCourse={vi.fn()}
+            superGraderCourses={[]}
+            sectionsLed={[]}
+          />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
 
     const results = await stripStylesAndRunAxe(container);
@@ -196,10 +205,13 @@ describe('Accessibility', () => {
 
   it('should have no violations on Code Console (Demo)', async () => {
     // Known to fail runtime, but keeping test structure
+    const testQueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <MemoryRouter>
-        <CodeConsole inDemoMode={true} user={mockUser} handleLogout={vi.fn()} />
-      </MemoryRouter>,
+      <QueryClientProvider client={testQueryClient}>
+        <MemoryRouter>
+          <CodeConsole inDemoMode={true} user={mockUser} handleLogout={vi.fn()} />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     // Skip axe check for now as runtime error persists
     // const results = await axe(container, axeConfig);

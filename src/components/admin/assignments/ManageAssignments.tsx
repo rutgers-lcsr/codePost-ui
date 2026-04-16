@@ -12,6 +12,7 @@ import { Tag } from 'antd';
 /* other library imports */
 
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 /* codePost imports */
 /* codePost imports */
@@ -34,6 +35,10 @@ import { encodeForRoute } from '../../core/URLutils';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 import Loading from '../../core/Loading';
+
+import { assignmentKeys } from '../../../lib/queryKeys';
+import { Assignment as AssignmentService } from '../../../services/assignment';
+import { assignmentsApi } from '../../../api-client/clients';
 
 // Lazy load heavy sub-components for code splitting
 const RubricManager = lazy(() => import('../../../components/core/rubric/RubricManager'));
@@ -138,6 +143,7 @@ const RoutePropsWrapper = ({ render }: { render: (props: LegacyRouteProps) => Re
 
 const ManageAssignments = (props: IManageAssignmentsProps) => {
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   // Detect active assignment from URL and fetch its capabilities for the inspector
   const activeAssignment = useMemo(() => {
@@ -151,8 +157,28 @@ const ManageAssignments = (props: IManageAssignmentsProps) => {
   useEffect(() => {
     if (activeAssignment) {
       usePermissionsStore.getState().fetchAssignmentCapabilities(activeAssignment.id);
+
+      // Prefetch analytics and assignment detail for this assignment
+      queryClient.prefetchQuery({
+        queryKey: assignmentKeys.analytics(activeAssignment.id),
+        queryFn: () => AssignmentService.readAnalytics(activeAssignment.id, 10),
+        staleTime: 30_000,
+      });
+      queryClient.prefetchQuery({
+        queryKey: assignmentKeys.detail(activeAssignment.id),
+        queryFn: async () => {
+          const result = await assignmentsApi.retrieve({ id: activeAssignment.id });
+          return result;
+        },
+        staleTime: 30_000,
+      });
+      queryClient.prefetchQuery({
+        queryKey: assignmentKeys.rubric(activeAssignment.id),
+        queryFn: () => AssignmentService.readRubric(activeAssignment.id),
+        staleTime: 30_000,
+      });
     }
-  }, [activeAssignment?.id]);
+  }, [activeAssignment?.id, queryClient]);
 
   if (!props.loadComplete || props.currentCourse === undefined) {
     return <Loading />;

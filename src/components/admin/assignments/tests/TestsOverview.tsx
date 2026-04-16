@@ -3,10 +3,11 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Breadcrumb, Button, Empty } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -23,7 +24,6 @@ interface IProps {
 
 const TestsOverview = (props: IProps) => {
   const location = useLocation();
-  const [envBuildStatuses, setEnvBuildStatuses] = useState<{ [key: number]: number }>({});
 
   const columns = [
     { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
@@ -40,46 +40,35 @@ const TestsOverview = (props: IProps) => {
     });
   }, [props.assignments]);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchStatuses = async () => {
-      // Skip polling when the tab is not visible to reduce unnecessary load
-      if (document.hidden) return;
+  const envIds = React.useMemo(
+    () => uniqueAssignments.filter((a) => a.environment !== null).map((a) => a.environment!),
+    [uniqueAssignments],
+  );
 
+  const { data: envBuildStatuses = {} } = useQuery({
+    queryKey: ['envBuildStatuses', ...envIds],
+    queryFn: async () => {
       const statuses: { [key: number]: number } = {};
-      const promises = uniqueAssignments
-        .filter((a) => a.environment !== null)
-        .map(async (a) => {
-          try {
-            if (a.environment) {
-              const env = await autograderApi.environmentsRetrieve({ id: a.environment });
-              statuses[a.environment] = env.buildStatus;
+      await Promise.all(
+        uniqueAssignments
+          .filter((a) => a.environment !== null)
+          .map(async (a) => {
+            try {
+              if (a.environment) {
+                const env = await autograderApi.environmentsRetrieve({ id: a.environment });
+                statuses[a.environment] = env.buildStatus;
+              }
+            } catch (e) {
+              console.error(`Failed to fetch environment status for assignment ${a.name}`, e);
             }
-          } catch (e) {
-            console.error(`Failed to fetch environment status for assignment ${a.name}`, e);
-          }
-        });
-
-      await Promise.all(promises);
-
-      if (isMounted) {
-        setEnvBuildStatuses((prev) => {
-          // Only update state if statuses actually changed
-          const changed = Object.keys(statuses).some((key) => prev[Number(key)] !== statuses[Number(key)]);
-          return changed ? statuses : prev;
-        });
-      }
-    };
-
-    fetchStatuses();
-    // Poll every 15s instead of 3s — active builds are rare and don't need sub-second updates
-    const interval = setInterval(fetchStatuses, 15000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [uniqueAssignments]);
+          }),
+      );
+      return statuses;
+    },
+    enabled: envIds.length > 0,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
+  });
 
   const data = uniqueAssignments.map((assignment) => {
     return {

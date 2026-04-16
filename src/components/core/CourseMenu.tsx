@@ -18,6 +18,7 @@ import { encodeForLink } from '../core/URLutils';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 import CPDropdown from './CPDropdown';
+import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 
 /**********************************************************************************************************************/
 
@@ -36,6 +37,7 @@ const CourseMenu = (props: IProps) => {
   const { token } = theme.useToken();
   const [searchText, setSearchText] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const prefetchCourse = usePrefetchCourse();
 
   const handleOpenChange = useCallback((open: boolean) => {
     setDropdownOpen(open);
@@ -110,7 +112,7 @@ const CourseMenu = (props: IProps) => {
       menuItems.push({
         key: course.id,
         label: (
-          <Link to={encodedCourseLink(props.base, course, props.panel)}>
+          <Link to={encodedCourseLink(props.base, course, props.panel)} onMouseEnter={() => prefetchCourse(course)}>
             <div
               style={{
                 display: 'flex',
@@ -150,7 +152,7 @@ const CourseMenu = (props: IProps) => {
       menuItems.push({
         key: course.id,
         label: (
-          <Link to={encodedCourseLink(props.base, course, props.panel)}>
+          <Link to={encodedCourseLink(props.base, course, props.panel)} onMouseEnter={() => prefetchCourse(course)}>
             <div
               style={{
                 display: 'flex',

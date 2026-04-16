@@ -17,9 +17,11 @@ import {
   Typography,
 } from 'antd';
 import { CopyOutlined, DeleteOutlined, KeyOutlined, PlusOutlined } from '@ant-design/icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { Course } from '../../../services/course';
 import type { CourseAPIKey, CourseAPIKeyCreateResponse } from '../../../services/course';
+import { assignmentKeys } from '../../../lib/queryKeys';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -32,27 +34,18 @@ interface ICourseAPIKeysCardProps {
 }
 
 const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [keys, setKeys] = React.useState<CourseAPIKey[]>([]);
+  const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   const [newKeyName, setNewKeyName] = React.useState('');
   const [isCreating, setIsCreating] = React.useState(false);
   const [createdKey, setCreatedKey] = React.useState<CourseAPIKeyCreateResponse | null>(null);
 
-  const fetchKeys = React.useCallback(async () => {
-    try {
-      const data = await Course.listAPIKeys(courseId);
-      setKeys(data);
-    } catch (err) {
-      console.error('Failed to fetch API keys:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [courseId]);
+  const queryKey = assignmentKeys.apiKeys(courseId);
 
-  React.useEffect(() => {
-    fetchKeys();
-  }, [fetchKeys]);
+  const { data: keys = [], isLoading } = useQuery({
+    queryKey,
+    queryFn: () => Course.listAPIKeys(courseId),
+  });
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) {
@@ -65,7 +58,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       setCreatedKey(result);
       setNewKeyName('');
       message.success('API key created.');
-      fetchKeys();
+      queryClient.invalidateQueries({ queryKey });
     } catch (err: unknown) {
       const errObj = err as { body?: { error?: string } };
       message.error(errObj?.body?.error ?? 'Failed to create API key.');
@@ -78,7 +71,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     try {
       await Course.deleteAPIKey(courseId, keyId);
       message.success('API key revoked.');
-      fetchKeys();
+      queryClient.invalidateQueries({ queryKey });
     } catch {
       message.error('Failed to revoke API key.');
     }
@@ -88,7 +81,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     try {
       await Course.updateAPIKey(courseId, key.id, { isActive: !key.isActive });
       message.success(key.isActive ? 'API key deactivated.' : 'API key reactivated.');
-      fetchKeys();
+      queryClient.invalidateQueries({ queryKey });
     } catch {
       message.error('Failed to update API key.');
     }

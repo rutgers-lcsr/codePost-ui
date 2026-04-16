@@ -18,6 +18,7 @@
 
 import React, { type ReactElement } from 'react';
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 
 // ─── Mock Factories ──────────────────────────────────────────────────────────
@@ -151,8 +152,16 @@ export function renderWithProviders(
   ui: ReactElement,
   { initialEntries = ['/'], ...renderOptions }: RenderWithProvidersOptions = {},
 ): RenderResult {
+  const testQueryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+
   function Wrapper({ children }: { children: React.ReactNode }) {
-    return <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>;
+    return (
+      <QueryClientProvider client={testQueryClient}>
+        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+      </QueryClientProvider>
+    );
   }
 
   return render(ui, { wrapper: Wrapper, ...renderOptions });

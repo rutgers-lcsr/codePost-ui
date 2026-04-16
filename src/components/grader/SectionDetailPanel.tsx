@@ -107,22 +107,25 @@ class SectionDetailPanel extends Component<IProps, IState> {
   // student, load that student's submissions for the active assignment
   public loadSubmissionsForSection = async () => {
     const submissionMap: Record<number, Record<string, SubmissionType | null>> = {};
-    for (const section of this.props.sections) {
-      const mapValue: Record<string, SubmissionType | null> = {};
-      const submissions = await sectionsApi.submissionsList({
-        id: section.id,
-        assignment: this.props.assignment.id,
-      });
-      this.loadHistories(submissions);
 
-      for (const student of section.students) {
-        if (student) {
-          mapValue[student] = submissions.find((el) => el.students && el.students.indexOf(student) > -1) ?? null;
+    await Promise.all(
+      this.props.sections.map(async (section) => {
+        const mapValue: Record<string, SubmissionType | null> = {};
+        const submissions = await sectionsApi.submissionsList({
+          id: section.id,
+          assignment: this.props.assignment.id,
+        });
+        this.loadHistories(submissions);
+
+        for (const student of section.students) {
+          if (student) {
+            mapValue[student] = submissions.find((el) => el.students && el.students.indexOf(student) > -1) ?? null;
+          }
         }
-      }
 
-      submissionMap[section.id] = mapValue;
-    }
+        submissionMap[section.id] = mapValue;
+      }),
+    );
 
     return submissionMap;
   };

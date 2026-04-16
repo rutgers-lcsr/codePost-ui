@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Representative components covering auth, marketing, and app pages.
 // Color tokens come from the shared theme, so a subset gives good coverage.
@@ -126,10 +127,13 @@ describe.sequential('Color Contrast Accessibility', () => {
   }, 30000);
 
   it('should have no contrast violations on Student Console', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
     const { container } = render(
-      <MemoryRouter>
-        <Student {...mockStudentProps} />
-      </MemoryRouter>,
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <Student {...mockStudentProps} />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
     const results = await axe(container, contrastConfig);
     if (results.violations.length > 0) {

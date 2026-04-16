@@ -40,6 +40,7 @@ export type Capability =
   | 'request_regrade'
   | 'manage_regrades'
   | 'run_autograder'
+  | 'view_test_results'
   | 'run_code'
   | 'generate_ai_comments'
   | 'manage_partners'
@@ -94,6 +95,7 @@ export const CAPABILITY_DESCRIPTIONS: Record<Capability, string> = {
   request_regrade: 'Submit a regrade request on a finalized submission.',
   manage_regrades: 'Review, approve, or reject regrade requests.',
   run_autograder: 'Execute autograder test cases against a submission.',
+  view_test_results: 'View autograder test results on a submission.',
   run_code: 'Execute submission code in the sandboxed environment.',
   generate_ai_comments: 'Trigger AI-powered comment generation on a submission.',
   manage_partners: 'Create or remove partner links on a submission.',

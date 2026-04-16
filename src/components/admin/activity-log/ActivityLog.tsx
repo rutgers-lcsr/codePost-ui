@@ -1,9 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Breadcrumb, Button, DatePicker, Select, Table, Tag, Empty, Skeleton } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
 import type { Course } from '../../../api-client';
 import type { CourseAuditEvent } from '../../../services/courseAuditLog';
@@ -50,9 +51,6 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
 const PAGE_SIZE = 25;
 
 const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students }) => {
-  const [events, setEvents] = useState<CourseAuditEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [exporting, setExporting] = useState(false);
 
@@ -68,7 +66,7 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
 
   const assignmentOptions = useMemo(() => assignments.map((a) => ({ value: a.id, label: a.name })), [assignments]);
 
-  const buildQueryParams = useCallback((): AuditLogQueryParams => {
+  const queryParams = useMemo((): AuditLogQueryParams => {
     const params: AuditLogQueryParams = {
       page,
       pageSize: PAGE_SIZE,
@@ -81,35 +79,27 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
     return params;
   }, [page, studentFilter, assignmentFilter, eventTypeFilter, dateRange]);
 
-  const fetchEvents = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = buildQueryParams();
-      const response = await CourseAuditLogService.list(currentCourse.id, params);
-      setEvents(response.results ?? []);
-      setTotal(response.count ?? 0);
-    } catch (err) {
-      console.error('Failed to fetch audit log:', err);
-      setEvents([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentCourse.id, buildQueryParams]);
+  const { data, isPending: loading } = useQuery({
+    queryKey: ['auditLog', currentCourse.id, queryParams] as const,
+    queryFn: () => CourseAuditLogService.list(currentCourse.id, queryParams),
+    placeholderData: keepPreviousData,
+  });
 
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+  const events = data?.results ?? [];
+  const total = data?.count ?? 0;
 
   // Reset to page 1 when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [studentFilter, assignmentFilter, eventTypeFilter, dateRange]);
+  const resetPage = useCallback(() => setPage(1), []);
+
+  const handleStudentFilter = useCallback((v: string | undefined) => { setStudentFilter(v); resetPage(); }, [resetPage]);
+  const handleAssignmentFilter = useCallback((v: number | undefined) => { setAssignmentFilter(v); resetPage(); }, [resetPage]);
+  const handleEventTypeFilter = useCallback((v: string | undefined) => { setEventTypeFilter(v); resetPage(); }, [resetPage]);
+  const handleDateRange = useCallback((dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => { setDateRange(dates); resetPage(); }, [resetPage]);
 
   const handleExport = async () => {
     setExporting(true);
     try {
-      const params = buildQueryParams();
+      const params = { ...queryParams };
       // Remove pagination for export
       delete params.page;
       delete params.pageSize;
@@ -207,7 +197,7 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
         style={{ width: 220 }}
         options={studentOptions}
         value={studentFilter}
-        onChange={setStudentFilter}
+        onChange={handleStudentFilter}
         filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
       />
       <Select
@@ -216,7 +206,7 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
         style={{ width: 200 }}
         options={assignmentOptions}
         value={assignmentFilter}
-        onChange={setAssignmentFilter}
+        onChange={handleAssignmentFilter}
       />
       <Select
         allowClear
@@ -224,9 +214,9 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
         style={{ width: 200 }}
         options={EVENT_TYPE_OPTIONS}
         value={eventTypeFilter}
-        onChange={setEventTypeFilter}
+        onChange={handleEventTypeFilter}
       />
-      <RangePicker value={dateRange} onChange={(dates) => setDateRange(dates)} style={{ width: 280 }} />
+      <RangePicker value={dateRange} onChange={(dates) => handleDateRange(dates)} style={{ width: 280 }} />
     </div>
   );
 

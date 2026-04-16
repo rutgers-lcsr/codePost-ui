@@ -5,6 +5,7 @@
 
 /* react imports */
 import * as React from 'react';
+import { useEffect } from 'react';
 
 /* antd imports */
 import { Breadcrumb, Table } from 'antd';
@@ -41,6 +42,60 @@ interface IDetailProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
 }
 
+/** Stable route element that sets the active assignment without causing remounts */
+const AssignmentRouteElement = <T extends IDetailProps>({
+  assignment,
+  detailProps,
+  breadcrumbs,
+  DetailComponent,
+}: {
+  assignment: AssignmentType;
+  detailProps: IParentProps & T;
+  breadcrumbs: Array<{ title: React.ReactNode }>;
+  DetailComponent: React.ComponentType<T>;
+}) => {
+  useEffect(() => {
+    LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
+    usePermissionsStore.getState().fetchAssignmentCapabilities(assignment.id);
+  }, [assignment.id]);
+  return <DetailComponent {...detailProps} assignment={assignment} breadcrumbs={breadcrumbs} />;
+};
+
+/** Stable index route element — redirects to stored assignment or shows table */
+const IndexRouteElement = ({
+  assignments,
+  breadcrumbs,
+  title,
+  actions,
+  columns,
+  data,
+  isLoading,
+}: {
+  assignments: AssignmentType[];
+  breadcrumbs: Array<{ title: React.ReactNode }>;
+  title: string;
+  actions: React.ReactElement[];
+  columns: TableProps<Record<string, unknown>>['columns'];
+  data: Record<string, unknown>[];
+  isLoading: boolean;
+}) => {
+  const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
+  const matchedAssignment = assignments.find((assn) => assn.id === storedID);
+  if (matchedAssignment) {
+    return <Navigate to={`${encodeForLink(matchedAssignment.name)}`} replace />;
+  }
+  return (
+    <CPAdminDetail
+      breadcrumbs={<Breadcrumb items={breadcrumbs} />}
+      goBack={null}
+      title={<div style={{ letterSpacing: '-0.3px' }}>{title}</div>}
+      actions={actions}
+      content={<Table columns={columns} dataSource={data} loading={isLoading} size="middle" />}
+      gutterSize={0}
+    />
+  );
+};
+
 function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.ComponentType<T>) {
   const BuiltGraderPanel = (props: IParentProps & T) => {
     const navigate = useNavigate();
@@ -69,33 +124,29 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
           <Route
             key={assignment.id}
             path={`${encodeForRoute(assignment.name)}`}
-            element={React.createElement(() => {
-              LOCAL_SETTINGS.defaultAssignment.setter(assignment.id);
-              usePermissionsStore.getState().fetchAssignmentCapabilities(assignment.id);
-              return <DetailComponent {...props} assignment={assignment} breadcrumbs={breadcrumbs} />;
-            })}
+            element={
+              <AssignmentRouteElement
+                assignment={assignment}
+                detailProps={props}
+                breadcrumbs={breadcrumbs}
+                DetailComponent={DetailComponent}
+              />
+            }
           />
         ))}
         <Route
           index
-          element={React.createElement(() => {
-            const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
-            const matchedAssignment = props.assignments.find((assn) => assn.id === storedID);
-            if (matchedAssignment) {
-              return <Navigate to={`${encodeForLink(matchedAssignment.name)}`} replace />;
-            } else {
-              return (
-                <CPAdminDetail
-                  breadcrumbs={<Breadcrumb items={breadcrumbs} />}
-                  goBack={null}
-                  title={<div style={{ letterSpacing: '-0.3px' }}>{props.title}</div>}
-                  actions={props.actions}
-                  content={<Table columns={props.columns} dataSource={data} loading={props.isLoading} size="middle" />}
-                  gutterSize={0}
-                />
-              );
-            }
-          })}
+          element={
+            <IndexRouteElement
+              assignments={props.assignments}
+              breadcrumbs={breadcrumbs}
+              title={props.title}
+              actions={props.actions}
+              columns={props.columns}
+              data={data}
+              isLoading={props.isLoading}
+            />
+          }
         />
       </Routes>
     );

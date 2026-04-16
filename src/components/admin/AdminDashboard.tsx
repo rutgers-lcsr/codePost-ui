@@ -9,6 +9,7 @@ import { motion } from 'motion/react';
 import { Course } from '../../api-client';
 import { encodedCourseLink } from '../core/CourseMenu';
 import { useAdminDashboardData } from './useAdminDashboardData';
+import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import styles from './AdminDashboard.module.scss';
 
@@ -38,6 +39,7 @@ function getGreeting(): string {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) => {
   const { stats, activeCourses, archivedCourses } = useAdminDashboardData(courses);
+  const prefetchCourse = usePrefetchCourse();
   const [searchText, setSearchText] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
@@ -185,7 +187,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.08 + i * 0.04, ease: [0.4, 0, 0.2, 1] }}
               >
-                <Link to={encodedCourseLink('admin', course, 'assignments/overview')} className={styles.courseCard}>
+                <Link
+                  to={encodedCourseLink('admin', course, 'assignments/overview')}
+                  className={styles.courseCard}
+                  onMouseEnter={() => prefetchCourse(course)}
+                >
                   <div className={styles.courseCardHeader}>
                     <h3 className={styles.courseCardName}>{course.name}</h3>
                     <div className={styles.courseCardBadges}>
@@ -232,6 +238,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
                 <Link
                   to={encodedCourseLink('admin', course, 'assignments/overview')}
                   className={styles.courseCardArchived}
+                  onMouseEnter={() => prefetchCourse(course)}
                 >
                   <div className={styles.courseCardHeader}>
                     <h3 className={styles.courseCardName}>{course.name}</h3>

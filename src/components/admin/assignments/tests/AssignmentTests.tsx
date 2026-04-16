@@ -4,16 +4,18 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 /* antd imports */
 
 /* other library imports */
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 /* codePost object imports */
 import { assignmentsApi } from '../../../../api-client/clients';
 import { AssignmentType, SubmissionInfoType, UserType } from '../../../../types/models';
+import { assignmentKeys } from '../../../../lib/queryKeys';
 
 /* codePost component imports */
 import { TestingSetup } from './edit/TestingSetup';
@@ -32,20 +34,18 @@ interface IProps {
 
 export const AssignmentTests = (props: IProps) => {
   const location = useLocation();
-  // ************************** State Variables ******************************
-  const [assignment, setAssignment] = useState(props.activeAssignment);
 
-  // ************************** Fetch data ******************************
-  useEffect(() => {
-    // We want to make sure we have the latest assignment information (test language, test categories)
-    const fetchData = async () => {
-      const updatedAssignment = (await assignmentsApi.retrieve({
-        id: props.activeAssignment.id,
-      })) as unknown as AssignmentType;
-      setAssignment(updatedAssignment);
-    };
-    fetchData();
-  }, [props.activeAssignment]);
+  // Fetch the latest assignment data to ensure test language/categories are current
+  const { data: fetchedAssignment } = useQuery({
+    queryKey: assignmentKeys.detail(props.activeAssignment.id),
+    queryFn: async () => {
+      const result = await assignmentsApi.retrieve({ id: props.activeAssignment.id });
+      return result as unknown as AssignmentType;
+    },
+    initialData: props.activeAssignment,
+  });
+
+  const assignment = fetchedAssignment;
 
   // ***************** API / State change functions ***********************
 

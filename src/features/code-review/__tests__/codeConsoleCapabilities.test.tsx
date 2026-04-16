@@ -91,6 +91,7 @@ const ADMIN_CAPS: Capabilities = {
   request_regrade: false,
   manage_regrades: true,
   run_autograder: true,
+  view_test_results: true,
   run_code: true,
   generate_ai_comments: true,
   manage_partners: false,
@@ -141,6 +142,7 @@ const GRADER_CAPS: Capabilities = {
   request_regrade: false,
   manage_regrades: false,
   run_autograder: true,
+  view_test_results: true,
   run_code: true,
   generate_ai_comments: true,
   manage_partners: false,
@@ -191,6 +193,7 @@ const STUDENT_CAPS: Capabilities = {
   request_regrade: true,
   manage_regrades: false,
   run_autograder: false,
+  view_test_results: true,
   run_code: true,
   generate_ai_comments: false,
   manage_partners: false,
@@ -598,8 +601,9 @@ describe('Code Console capability-based rendering', () => {
         expect(STUDENT_CAPS.request_regrade).toBe(true);
       });
 
-      it('can run code but not autograder', () => {
+      it('can run code and view test results but not run autograder', () => {
         expect(STUDENT_CAPS.run_code).toBe(true);
+        expect(STUDENT_CAPS.view_test_results).toBe(true);
         expect(STUDENT_CAPS.run_autograder).toBe(false);
       });
 
@@ -653,16 +657,18 @@ describe('Code Console capability-based rendering', () => {
   // TestsList – run_autograder
   // -----------------------------------------------------------------------
   describe('TestsList capabilities', () => {
-    it('grader has run_autograder=true', () => {
+    it('grader has run_autograder=true and view_test_results=true', () => {
       seedCaps(SUBMISSION_KEY, GRADER_CAPS);
       const caps = usePermissionsStore.getState().cache[SUBMISSION_KEY]?.caps;
       expect(caps?.run_autograder).toBe(true);
+      expect(caps?.view_test_results).toBe(true);
     });
 
-    it('student has run_autograder=false (cannot run autograder)', () => {
+    it('student has run_autograder=false but view_test_results=true', () => {
       seedCaps(SUBMISSION_KEY, STUDENT_CAPS);
       const caps = usePermissionsStore.getState().cache[SUBMISSION_KEY]?.caps;
       expect(caps?.run_autograder).toBe(false);
+      expect(caps?.view_test_results).toBe(true);
     });
   });
 
@@ -696,6 +702,7 @@ describe('Code Console capability-based rendering', () => {
       capViewRubric: caps.view_rubric !== false,
       capCommentOnSubmission: caps.comment_on_submission !== false,
       capRunAutograder: caps.run_autograder,
+      capViewTestResults: caps.view_test_results !== false,
       capGenerateAiComments: caps.generate_ai_comments,
       isCommentReadOnly: caps.comment_on_submission === false,
     });
@@ -710,6 +717,7 @@ describe('Code Console capability-based rendering', () => {
       expect(d.capViewRubric).toBe(true);
       expect(d.capCommentOnSubmission).toBe(true);
       expect(d.capRunAutograder).toBe(true);
+      expect(d.capViewTestResults).toBe(true);
       expect(d.capGenerateAiComments).toBe(true);
       expect(d.isCommentReadOnly).toBe(false);
     });
@@ -735,6 +743,8 @@ describe('Code Console capability-based rendering', () => {
       expect(d.capViewFeedback).toBe(true);
       expect(d.capViewRubric).toBe(false);
       expect(d.capCommentOnSubmission).toBe(false);
+      expect(d.capViewTestResults).toBe(true);
+      expect(d.capRunAutograder).toBe(false);
       expect(d.isCommentReadOnly).toBe(true);
     });
 

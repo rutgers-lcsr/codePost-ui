@@ -4,11 +4,12 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 /* antd imports */
 import { Breadcrumb, Switch } from 'antd';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 /* codePost imports */
@@ -19,6 +20,7 @@ import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../typ
 
 import RegradesTable from '../admin/assignments/assignments/AssignmentRegrades/RegradesTable';
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
+import { assignmentKeys } from '../../lib/queryKeys';
 
 /**********************************************************************************************************************/
 
@@ -30,51 +32,32 @@ interface IProps {
 }
 
 const RegradesDetailPanel = (props: IProps) => {
-  const [submissions, setSubmissions] = useState<AnonymousSubmissionInfoType[]>([]);
   const [showStudentEmails, setShowStudentEmails] = useState(!props.isAnonymous);
-  const [isLoading, setLoading] = useState(false);
   const [viewAll, setViewAll] = useState(false);
   const courseCaps = useCourseCapabilities(props.assignment.course);
   const canManageRegrades = !!courseCaps.manage_regrades;
+  const queryClient = useQueryClient();
 
-  const loadMySubmissions = async (currentAssignment: AssignmentType, user: string) => {
-    try {
-      const response = await assignmentsApi.submissionsListRaw({
-        id: currentAssignment.id,
-        compact: '1',
-        grader: user,
-      });
-      const data = await response.raw.json();
-      setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
-    } catch (error) {
-      console.error(error);
-    }
-    setLoading(false);
-    return;
-  };
+  const queryKey = assignmentKeys.regradeSubmissions(props.assignment.id, viewAll ? undefined : props.user.email!);
 
-  const loadAllSubmissions = async (currentAssignment: AssignmentType) => {
-    try {
-      const response = await assignmentsApi.submissionsListRaw({
-        id: currentAssignment.id,
+  const { data: submissions = [], isLoading } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const params: { id: number; compact: string; grader?: string } = {
+        id: props.assignment.id,
         compact: '1',
-      });
+      };
+      if (!viewAll) {
+        params.grader = props.user.email!;
+      }
+      const response = await assignmentsApi.submissionsListRaw(params);
       const data = await response.raw.json();
-      setSubmissions(Array.isArray(data) ? data : (data?.results ?? []));
-    } catch (error) {
-      console.error(error);
-    }
-    setLoading(false);
-    return;
-  };
+      return (Array.isArray(data) ? data : (data?.results ?? [])) as AnonymousSubmissionInfoType[];
+    },
+  });
 
   const refreshSubmissions = () => {
-    setLoading(true);
-    if (viewAll) {
-      loadAllSubmissions(props.assignment);
-    } else {
-      loadMySubmissions(props.assignment, props.user.email!);
-    }
+    queryClient.invalidateQueries({ queryKey });
   };
 
   const updateSubmission = (toUpdate: AnonymousSubmissionInfoType) => {
@@ -89,22 +72,11 @@ const RegradesDetailPanel = (props: IProps) => {
 
     return submissionsApi.partialUpdate({ id: toUpdate.id, patchedSubmission: toUpdate }).then((updated) => {
       /* use return value to replace existing submission */
-      const newSubmissions = [
-        ...submissions.filter((s) => {
-          return s.id !== updated.id;
-        }),
-        updated,
-      ];
-
-      setSubmissions(newSubmissions);
+      queryClient.setQueryData(queryKey, (old: AnonymousSubmissionInfoType[] | undefined) =>
+        (old ?? []).map((s) => (s.id === updated.id ? updated : s)),
+      );
     });
   };
-
-  // Update submission if assignment changes or viewAll is triggered
-  useEffect(() => {
-    refreshSubmissions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.assignment, viewAll]);
 
   // Filtering for relevant submissions to only show the 'reveal students` button if there are non-zero regrades
   const regradeSubmissions = submissions.filter((submission) => {

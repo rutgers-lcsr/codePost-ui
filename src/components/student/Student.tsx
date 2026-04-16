@@ -22,6 +22,7 @@ import {
 import { Button, Modal, Spin, message } from 'antd';
 
 /* other library imports */
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
@@ -62,6 +63,8 @@ import AssignmentSection from './AssignmentSection';
 import styles from './StudentConsole.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
 import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
+import { useStudentAssignmentsQuery, useStudentSubmissionsQuery, useSubmissionHistoriesQuery, fetchSubmissions, fetchHistory } from './hooks';
+import { studentKeys } from '../../lib/queryKeys';
 
 /**********************************************************************************************************************/
 
@@ -76,11 +79,6 @@ enum CURRENT_PANEL {
   TABLE,
   UPLOADFILES,
   ADDFILES,
-}
-
-interface SubmissionHistoryItem {
-  student: string;
-  hasViewed: boolean;
 }
 
 // Constants
@@ -102,31 +100,6 @@ const sortAssignments = <T extends { sortKey?: number; id: number }>(objs: T[]):
     }
     return a.sortKey - b.sortKey;
   });
-};
-
-const fetchSubmissions = async (assignmentId: number, student: string): Promise<Submission[]> => {
-  const res = await fetch(
-    `${process.env.REACT_APP_API_URL}/assignments/${assignmentId}/submissions/?student=${student}&compact=1`,
-    {
-      headers: getHeaders(),
-      method: 'GET',
-    },
-  );
-  if (res.ok) {
-    return res.json();
-  }
-  return [];
-};
-
-const fetchHistory = async (submissionId: number, student: string): Promise<SubmissionHistoryItem[]> => {
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionId}/history/?student=${student}`, {
-    headers: getHeaders(),
-    method: 'GET',
-  });
-  if (res.ok) {
-    return res.json();
-  }
-  return [];
 };
 
 const updateHistory = async (
@@ -193,16 +166,32 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Subscribe to the permissions cache so capability checks in renderAssignmentRow re-evaluate
   const permissionsCache = usePermissionsStore((s) => s.cache);
 
-  // State
-  const [assignments, setAssignments] = useState<Record<number, Assignment[]>>({});
-  const [submissions, setSubmissions] = useState<Record<number, Submission[]>>({});
-  const [viewsBySubmission, setViewsBySubmission] = useState<{ [submissionID: number]: boolean }>({});
-  const [isLoadingAssignments, setIsLoadingAssignments] = useState(true);
-  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(true);
+  /**** Query-based data fetching ****/
+  const assignmentsQuery = useStudentAssignmentsQuery(currentCourse, user.studentSections);
+  const currentCourseAssignments = assignmentsQuery.data ?? [];
+  const isLoadingAssignments = assignmentsQuery.isPending;
+
+  const submissionsQuery = useStudentSubmissionsQuery(
+    currentCourse?.id,
+    currentCourseAssignments.length > 0 ? currentCourseAssignments : undefined,
+    user.email!,
+  );
+  const submissions = submissionsQuery.data ?? {};
+  const isLoadingSubmissions = submissionsQuery.isPending;
+
+  const historiesQuery = useSubmissionHistoriesQuery(
+    currentCourse?.id,
+    submissionsQuery.data,
+    user.email!,
+  );
+  const viewsBySubmission = historiesQuery.data ?? {};
+
+  // UI State
   const [currentPanel, setCurrentPanel] = useState<CURRENT_PANEL>(CURRENT_PANEL.TABLE);
   const [detailAssignment, setDetailAssignment] = useState<Assignment | undefined>(undefined);
   const [detailSubmission, setDetailSubmission] = useState<Submission | undefined>(undefined);
@@ -213,139 +202,29 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     document.title = 'codePost - Student Console';
   }, []);
 
-  /***********************************************************************************
-   * Loading methods
-   **********************************************************************************/
-
-  const loadAssignments = useCallback(
-    async (courses: Course[]): Promise<Record<number, Assignment[]>> => {
-      const assignmentArrays = await Promise.all(
-        courses.map(async (course: Course) => Promise.all(course.assignments.map((id) => assignmentsApi.retrieve({ id })))),
-      );
-
-      const result: Record<number, Assignment[]> = {};
-      courses.forEach((course, i) => {
-        result[course.id] = (assignmentArrays[i] as unknown as Assignment[]).filter(
-          (a) =>
-            a.isVisible &&
-            !(a.hideFrom ?? []).some((shouldHide: number) => user.studentSections.indexOf(shouldHide) > -1),
-        );
-      });
-
-      return result;
-    },
-    [user.studentSections],
-  );
-
-  const loadSubmissions = useCallback(
-    async (assignmentList: Assignment[]): Promise<Record<number, Submission[]>> => {
-      const submissionsMap: Record<number, Submission[]> = {};
-
-      // Filter to eligible assignments and fetch in parallel batches
-      const eligible = assignmentList.filter((a) => a.isReleased || a.allowStudentUpload || a.liveFeedbackMode);
-      const batchSize = 6;
-      for (let i = 0; i < eligible.length; i += batchSize) {
-        const batch = eligible.slice(i, i + batchSize);
-        const results = await Promise.all(batch.map((a) => fetchSubmissions(a.id, user.email!)));
-        batch.forEach((a, idx) => {
-          submissionsMap[a.id] = results[idx];
-        });
-      }
-      return submissionsMap;
-    },
-    [user.email],
-  );
-
-  const loadHistories = useCallback(
-    async (
-      submissionsMap: Record<number, Submission[]>,
-      email: string,
-    ): Promise<{ [submissionID: number]: boolean }> => {
-      const viewMap: { [submissionID: number]: boolean } = {};
-      const entries = Object.values(submissionsMap).filter((subs) => subs.length > 0);
-      const batchSize = 6;
-      for (let i = 0; i < entries.length; i += batchSize) {
-        const batch = entries.slice(i, i + batchSize);
-        const results = await Promise.all(batch.map((subs) => fetchHistory(subs[0].id, email)));
-        batch.forEach((subs, idx) => {
-          for (const historyItem of results[idx]) {
-            if (historyItem.student === email) {
-              viewMap[subs[0].id] = historyItem.hasViewed;
-            }
-          }
-        });
-      }
-      return viewMap;
-    },
-    [],
-  );
-
-  /***********************************************************************************
-   * Main load function
-   **********************************************************************************/
-
-  const load = useCallback(async () => {
-    const loadedAssignments = await loadAssignments(initialCourses);
-    setAssignments(loadedAssignments);
-    setIsLoadingAssignments(false);
-
-    if (currentCourse) {
-      // Handle shortcutting to a specific assignment
-      if (uploadShortcut !== undefined && !currentCourse.assignments.includes(uploadShortcut.assignmentID)) {
-        const foundCourse = initialCourses.find((course: Course) => {
-          return course.assignments.includes(uploadShortcut.assignmentID);
-        });
-
-        if (foundCourse !== undefined) {
-          const link = encodedCourseLink('student', foundCourse);
-          navigate(link);
-        }
-      }
-
-      const loadedSubmissions = await loadSubmissions(loadedAssignments[currentCourse.id]);
-      const viewMap = await loadHistories(loadedSubmissions, user.email!);
-
-      // Open the upload panel for the specified assignment
-      if (uploadShortcut !== undefined) {
-        const assignment = loadedAssignments[currentCourse.id].find((a: Assignment) => {
-          return a.id === uploadShortcut.assignmentID;
-        });
-
-        if (assignment !== undefined) {
-          let submission;
-          if (
-            Object.prototype.hasOwnProperty.call(loadedSubmissions, assignment.id) &&
-            loadedSubmissions[assignment.id].length > 0
-          ) {
-            submission = loadedSubmissions[assignment.id][0];
-          }
-
-          // We'll call changePanel after it's defined
-          setCurrentPanel(CURRENT_PANEL.UPLOADFILES);
-          setDetailAssignment(assignment);
-          setDetailSubmission(submission as Submission); // Cast to submission
-        }
-      }
-
-      setSubmissions(loadedSubmissions);
-      setViewsBySubmission(viewMap);
-      setIsLoadingSubmissions(false);
-    }
-  }, [
-    loadAssignments,
-    loadSubmissions,
-    loadHistories,
-    initialCourses,
-    currentCourse,
-    uploadShortcut,
-    user.email,
-    navigate,
-  ]);
-
-  // Load data on mount and when uploadShortcut changes
+  // Handle upload shortcut
   useEffect(() => {
-    load();
-  }, [load]);
+    if (!currentCourse || !uploadShortcut || isLoadingAssignments) return;
+
+    // Redirect to correct course if assignment belongs to a different one
+    if (!currentCourse.assignments.includes(uploadShortcut.assignmentID)) {
+      const foundCourse = initialCourses.find((course: Course) =>
+        course.assignments.includes(uploadShortcut.assignmentID),
+      );
+      if (foundCourse) {
+        navigate(encodedCourseLink('student', foundCourse));
+      }
+      return;
+    }
+
+    const assignment = currentCourseAssignments.find((a) => a.id === uploadShortcut.assignmentID);
+    if (assignment) {
+      const sub = submissions[assignment.id]?.[0];
+      setCurrentPanel(CURRENT_PANEL.UPLOADFILES);
+      setDetailAssignment(assignment);
+      setDetailSubmission(sub);
+    }
+  }, [uploadShortcut, currentCourse, isLoadingAssignments, currentCourseAssignments, submissions, initialCourses, navigate]);
 
   /***********************************************************************************
    * Handler methods
@@ -411,10 +290,12 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         : updateStudentUpload(assignment.id, payload);
 
       return submission1.then((newSub) => {
-        setSubmissions((prevSubmissions) => ({
-          ...prevSubmissions,
-          [assignment.id]: [newSub],
-        }));
+        if (currentCourse) {
+          queryClient.setQueryData(studentKeys.submissions(currentCourse.id), (old: Record<number, Submission[]> | undefined) => ({
+            ...(old ?? {}),
+            [assignment.id]: [newSub],
+          }));
+        }
         return newSub;
       });
     },
@@ -515,9 +396,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   // Group assignments into temporal sections
   const groupedSections = useMemo(() => {
-    if (!currentCourse || !assignments[currentCourse.id]) return null;
+    if (!currentCourse || currentCourseAssignments.length === 0) return null;
 
-    const assignmentList = sortAssignments(assignments[currentCourse.id]);
+    const assignmentList = sortAssignments(currentCourseAssignments);
     const now = new Date();
     const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
     const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -563,7 +444,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     }
 
     return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
-  }, [currentCourse, assignments, submissions, getSubmissionStatus]);
+  }, [currentCourse, currentCourseAssignments, submissions, getSubmissionStatus]);
 
   // Progress calculation
   const progress = useMemo(() => {
@@ -681,7 +562,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         </div>
       </div>
     );
-  } else if (!assignments[currentCourse.id]) {
+  } else if (isLoadingAssignments) {
     studentContent = (
       <div className={styles.console}>
         <div className={styles.loadingState}>
@@ -691,7 +572,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     );
   } else {
     const lateDayCredits = getLateDayCreditsComponent();
-    const assignmentList = assignments[currentCourse.id];
+    const assignmentList = currentCourseAssignments;
 
     const defaultFiles =
       uploadShortcut !== undefined &&

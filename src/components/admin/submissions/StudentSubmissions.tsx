@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
@@ -62,36 +62,12 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
   const [showActive, setShowActive] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
 
-  /* Helper Functions */
-  const sortFunction = (a: string | number, b: string | number) => {
-    if (typeof a === 'number' && typeof b === 'number') {
-      return b - a;
-    } else if (typeof a === 'number') {
-      return -1;
-    } else if (typeof b === 'number') {
-      return 1;
-    } else if (a === 'Unfinalized' && b === '--') {
-      return -1;
-    } else if (a === '--' && b === 'Unfinalized') {
-      return 1;
-    }
-
-    return 0;
-  };
-
   const toggleValue = (value: 'showActive' | 'showInactive') => {
     if (value === 'showActive') {
       setShowActive(!showActive);
     } else {
       setShowInactive(!showInactive);
     }
-  };
-
-  const onSubmissionClick = (submissionID: number, event: React.MouseEvent<HTMLElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    openSubmission(submissionID);
   };
 
   /* Render Logic */
@@ -127,217 +103,271 @@ const StudentData: React.FC<IByStudentProps> = (props) => {
       ))}
       <Route
         index
-        element={React.createElement(() => {
-          let columns: ITableDetailColumn[] = [];
-          let data: Record<string, unknown>[] = [];
-          if (props.loadComplete) {
-            const aligner: 'left' | 'center' | 'right' = 'center';
-            columns = [
-              {
-                title: 'Student',
-                dataIndex: 'student',
-                key: 'primary',
-                defaultSortOrder: 'ascend' as const,
-                sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
-                  (a.key as string).localeCompare(b.key as string),
-                renderForSearch: (searchText: string) => {
-                  return (_text: string, record: Record<string, unknown>, _index: number) => {
-                    const student = record.student as string;
-                    const content =
-                      props.students.indexOf(student) > -1 ? (
-                        <Typography.Text strong>
-                          <Highlighter
-                            highlightStyle={{
-                              backgroundColor: '#5CBB8B',
-                              padding: 0,
-                            }}
-                            searchWords={[searchText]}
-                            autoEscape
-                            textToHighlight={student}
-                          />
-                        </Typography.Text>
-                      ) : (
-                        <span style={{ color: '#999' }}>
-                          <Highlighter
-                            highlightStyle={{
-                              backgroundColor: '#5CBB8B',
-                              padding: 0,
-                            }}
-                            searchWords={[searchText]}
-                            autoEscape
-                            textToHighlight={student}
-                          />
-                        </span>
-                      );
-                    return (
-                      <Link to={`${currentBaseURL}/${student}`} className="text-link">
-                        {content}
-                      </Link>
-                    );
-                  };
-                },
-              },
-              ...sortAssignments(props.assignments).map((assignment) => {
-                return {
-                  title: assignment.name,
-                  dataIndex: assignment.name,
-                  key: assignment.name,
-                  sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
-                    return sortFunction(
-                      a[`${assignment.name}_sort`] as string | number,
-                      b[`${assignment.name}_sort`] as string | number,
-                    );
-                  },
-                  align: aligner,
-                  className: 'student-table',
-                  renderForSearch: () => {
-                    return (_text: string, record: Record<string, unknown>, _index: number) => {
-                      const score = record[assignment.name] as string | number;
-                      if (score === '--') {
-                        return '--';
-                      } else {
-                        const studentSubmissions = props.submissionsByStudent[record.student as string];
-                        if (!studentSubmissions) {
-                          return null;
-                        }
-                        const submission = studentSubmissions[assignment.id];
-                        if (!submission) {
-                          return null;
-                        }
-                        const content: React.ReactNode = score;
-
-                        const dateTip = submission.dateUploaded
-                          ? `Submitted: ${dayjs(submission.dateUploaded).format('MMM D, h:mm A')}`
-                          : 'No submission date';
-
-                        return (
-                          <Tooltip title={dateTip}>
-                            <span
-                              onClick={(e) => onSubmissionClick(submission.id, e)}
-                              style={{
-                                cursor: 'pointer',
-                                display: 'block',
-                                textAlign: 'center',
-                                width: '100%',
-                                color: 'rgba(0, 0, 0, 0.85)', // Standard AntD text color
-                                fontSize: '14px', // Explicitly match standard table font size if needed, though inheritance should work
-                              }}
-                            >
-                              {content}
-                            </span>
-                          </Tooltip>
-                        );
-                      }
-                    };
-                  },
-                };
-              }),
-            ];
-
-            // Figure out which set of students to show in table rows
-            let rowValues: string[] = [];
-            if (showActive && showInactive) {
-              rowValues = Object.keys(props.submissionsByStudent);
-            } else if (showInactive) {
-              rowValues = props.inactiveStudents;
-            } else if (showActive) {
-              rowValues = props.students;
-            }
-
-            data = rowValues.map((studentEmail) => {
-              const toRet: Record<string, unknown> = {
-                student: studentEmail,
-                key: studentEmail,
-              };
-              for (const assignment of props.assignments) {
-                const studentSubmissions = props.submissionsByStudent[studentEmail];
-                const submission = studentSubmissions ? studentSubmissions[assignment.id] : undefined;
-
-                if (submission && submission.isFinalized) {
-                  const gradeText =
-                    submission.grade && assignment.points !== null
-                      ? submission.grade + '/' + assignment.points
-                      : submission.grade;
-                  toRet[assignment.name] = <Typography.Text strong>{gradeText}</Typography.Text>;
-                  toRet[`${assignment.name}_sort`] = submission.grade ?? 0;
-                } else if (submission) {
-                  toRet[assignment.name] = <Typography.Text strong>Unfinalized</Typography.Text>;
-                  toRet[`${assignment.name}_sort`] = 'Unfinalized';
-                } else {
-                  toRet[assignment.name] = '--';
-                  toRet[`${assignment.name}_sort`] = '--';
-                }
-              }
-              return toRet;
-            });
-          }
-
-          const numStudents = Object.keys(props.submissionsByStudent).length;
-
-          return (
-            <TableDetail
-              loadComplete={props.loadComplete}
-              title={
-                <Typography.Text strong style={{ fontSize: '16px' }}>
-                  Submissions by Student
-                </Typography.Text>
-              }
-              isEmpty={props.assignments.length === 0 || numStudents === 0}
-              emptyNode={
-                <Empty
-                  styles={{
-                    image: {
-                      height: 60,
-                    },
-                  }}
-                  description={
-                    props.assignments.length === 0 && numStudents === 0 ? (
-                      <span>No students or assignments yet</span>
-                    ) : numStudents === 0 ? (
-                      <span>Nice job creating an assignment! Now add some students.</span>
-                    ) : (
-                      <span>You added students! Now create an assignment</span>
-                    )
-                  }
-                >
-                  {numStudents === 0 ? (
-                    <Link to={`${props.courseURL}/roster/students`}>
-                      <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
-                        Add some students
-                      </CPButton>
-                    </Link>
-                  ) : null}
-
-                  {props.assignments.length === 0 ? (
-                    <span>
-                      {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
-                      <Link to={`${props.courseURL}/assignments/overview`}>
-                        <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
-                          Add an assignment
-                        </CPButton>
-                      </Link>
-                    </span>
-                  ) : null}
-                </Empty>
-              }
-              columns={columns}
-              data={data}
-              actions={[
-                <Tooltip key="showActive" title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
-                  <Button
-                    shape="circle"
-                    icon={showInactive ? <UserAddOutlined /> : <UserAddOutlined style={{ color: '#ccc' }} />}
-                    onClick={() => toggleValue('showInactive')}
-                  />
-                </Tooltip>,
-              ]}
-              breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
-              titleInfo={tooltips.admin.studentSubmissions.title}
-            />
-          );
-        })}
+        element={
+          <StudentIndexRoute
+            loadComplete={props.loadComplete}
+            assignments={props.assignments}
+            submissionsByStudent={props.submissionsByStudent}
+            students={props.students}
+            inactiveStudents={props.inactiveStudents}
+            showActive={showActive}
+            showInactive={showInactive}
+            toggleValue={toggleValue}
+            currentBaseURL={currentBaseURL}
+            courseURL={props.courseURL}
+          />
+        }
       />
     </Routes>
+  );
+};
+
+/** Extracted stable index route to avoid React.createElement remount */
+const StudentIndexRoute: React.FC<{
+  loadComplete: boolean;
+  assignments: Assignment[];
+  submissionsByStudent: IStudentSubmissionsDataTable;
+  students: string[];
+  inactiveStudents: string[];
+  showActive: boolean;
+  showInactive: boolean;
+  toggleValue: (value: 'showActive' | 'showInactive') => void;
+  currentBaseURL: string;
+  courseURL: string;
+}> = ({
+  loadComplete,
+  assignments,
+  submissionsByStudent,
+  students,
+  inactiveStudents,
+  showActive,
+  showInactive,
+  toggleValue,
+  currentBaseURL,
+  courseURL,
+}) => {
+  const onSubmissionClick = (submissionID: number, event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openSubmission(submissionID);
+  };
+
+  const { columns, data } = useMemo(() => {
+    let cols: ITableDetailColumn[] = [];
+    let rows: Record<string, unknown>[] = [];
+    if (!loadComplete) return { columns: cols, data: rows };
+
+    const aligner: 'left' | 'center' | 'right' = 'center';
+    cols = [
+      {
+        title: 'Student',
+        dataIndex: 'student',
+        key: 'primary',
+        defaultSortOrder: 'ascend' as const,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a.key as string).localeCompare(b.key as string),
+        renderForSearch: (searchText: string) => {
+          return (_text: string, record: Record<string, unknown>, _index: number) => {
+            const student = record.student as string;
+            const content =
+              students.indexOf(student) > -1 ? (
+                <Typography.Text strong>
+                  <Highlighter
+                    highlightStyle={{
+                      backgroundColor: '#5CBB8B',
+                      padding: 0,
+                    }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={student}
+                  />
+                </Typography.Text>
+              ) : (
+                <span style={{ color: '#999' }}>
+                  <Highlighter
+                    highlightStyle={{
+                      backgroundColor: '#5CBB8B',
+                      padding: 0,
+                    }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={student}
+                  />
+                </span>
+              );
+            return (
+              <Link to={`${currentBaseURL}/${student}`} className="text-link">
+                {content}
+              </Link>
+            );
+          };
+        },
+      },
+      ...sortAssignments(assignments).map((assignment) => {
+        return {
+          title: assignment.name,
+          dataIndex: assignment.name,
+          key: assignment.name,
+          sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
+            const aVal = a[`${assignment.name}_sort`] as string | number;
+            const bVal = b[`${assignment.name}_sort`] as string | number;
+            if (typeof aVal === 'number' && typeof bVal === 'number') return bVal - aVal;
+            if (typeof aVal === 'number') return -1;
+            if (typeof bVal === 'number') return 1;
+            if (aVal === 'Unfinalized' && bVal === '--') return -1;
+            if (aVal === '--' && bVal === 'Unfinalized') return 1;
+            return 0;
+          },
+          align: aligner,
+          className: 'student-table',
+          renderForSearch: () => {
+            return (_text: string, record: Record<string, unknown>, _index: number) => {
+              const score = record[assignment.name] as string | number;
+              if (score === '--') {
+                return '--';
+              } else {
+                const studentSubmissions = submissionsByStudent[record.student as string];
+                if (!studentSubmissions) return null;
+                const submission = studentSubmissions[assignment.id];
+                if (!submission) return null;
+                const content: React.ReactNode = score;
+                const dateTip = submission.dateUploaded
+                  ? `Submitted: ${dayjs(submission.dateUploaded).format('MMM D, h:mm A')}`
+                  : 'No submission date';
+                return (
+                  <Tooltip title={dateTip}>
+                    <span
+                      onClick={(e) => onSubmissionClick(submission.id, e)}
+                      style={{
+                        cursor: 'pointer',
+                        display: 'block',
+                        textAlign: 'center',
+                        width: '100%',
+                        color: 'rgba(0, 0, 0, 0.85)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {content}
+                    </span>
+                  </Tooltip>
+                );
+              }
+            };
+          },
+        };
+      }),
+    ];
+
+    let rowValues: string[] = [];
+    if (showActive && showInactive) {
+      rowValues = Object.keys(submissionsByStudent);
+    } else if (showInactive) {
+      rowValues = inactiveStudents;
+    } else if (showActive) {
+      rowValues = students;
+    }
+
+    rows = rowValues.map((studentEmail) => {
+      const toRet: Record<string, unknown> = {
+        student: studentEmail,
+        key: studentEmail,
+      };
+      for (const assignment of assignments) {
+        const studentSubs = submissionsByStudent[studentEmail];
+        const submission = studentSubs ? studentSubs[assignment.id] : undefined;
+
+        if (submission && submission.isFinalized) {
+          const gradeText =
+            submission.grade && assignment.points !== null
+              ? submission.grade + '/' + assignment.points
+              : submission.grade;
+          toRet[assignment.name] = <Typography.Text strong>{gradeText}</Typography.Text>;
+          toRet[`${assignment.name}_sort`] = submission.grade ?? 0;
+        } else if (submission) {
+          toRet[assignment.name] = <Typography.Text strong>Unfinalized</Typography.Text>;
+          toRet[`${assignment.name}_sort`] = 'Unfinalized';
+        } else {
+          toRet[assignment.name] = '--';
+          toRet[`${assignment.name}_sort`] = '--';
+        }
+      }
+      return toRet;
+    });
+
+    return { columns: cols, data: rows };
+  }, [
+    loadComplete,
+    assignments,
+    submissionsByStudent,
+    students,
+    inactiveStudents,
+    showActive,
+    showInactive,
+    currentBaseURL,
+  ]);
+
+  const numStudents = Object.keys(submissionsByStudent).length;
+
+  return (
+    <TableDetail
+      loadComplete={loadComplete}
+      title={
+        <Typography.Text strong style={{ fontSize: '16px' }}>
+          Submissions by Student
+        </Typography.Text>
+      }
+      isEmpty={assignments.length === 0 || numStudents === 0}
+      emptyNode={
+        <Empty
+          styles={{
+            image: {
+              height: 60,
+            },
+          }}
+          description={
+            assignments.length === 0 && numStudents === 0 ? (
+              <span>No students or assignments yet</span>
+            ) : numStudents === 0 ? (
+              <span>Nice job creating an assignment! Now add some students.</span>
+            ) : (
+              <span>You added students! Now create an assignment</span>
+            )
+          }
+        >
+          {numStudents === 0 ? (
+            <Link to={`${courseURL}/roster/students`}>
+              <CPButton cpType="primary" key={1} icon={<UserAddOutlined />}>
+                Add some students
+              </CPButton>
+            </Link>
+          ) : null}
+
+          {assignments.length === 0 ? (
+            <span>
+              {numStudents === 0 ? <span>&nbsp; &nbsp;</span> : null}
+              <Link to={`${courseURL}/assignments/overview`}>
+                <CPButton cpType="primary" key={2} icon={<PlusCircleOutlined />}>
+                  Add an assignment
+                </CPButton>
+              </Link>
+            </span>
+          ) : null}
+        </Empty>
+      }
+      columns={columns}
+      data={data}
+      actions={[
+        <Tooltip key="showActive" title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
+          <Button
+            shape="circle"
+            icon={showInactive ? <UserAddOutlined /> : <UserAddOutlined style={{ color: '#ccc' }} />}
+            onClick={() => toggleValue('showInactive')}
+          />
+        </Tooltip>,
+      ]}
+      breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
+      titleInfo={tooltips.admin.studentSubmissions.title}
+    />
   );
 };
 
