@@ -195,6 +195,13 @@ const REHYPE_PLUGINS = [rehypeRaw];
 const NOTEBOOK_CHANGE_DEBOUNCE_MS = 150;
 const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
 
+// Custom URL transform for ReactMarkdown v10+ (default strips data: URIs)
+const markdownUrlTransform = (url: string): string => {
+  if (url.startsWith('data:image/')) return url;
+  if (/^https?:\/\/|^mailto:|^tel:/.test(url)) return url;
+  return '';
+};
+
 /**********************************************************************************************************************/
 /* Main Component
 /**********************************************************************************************************************/
@@ -678,6 +685,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       <ReactMarkdown
         remarkPlugins={REMARK_PLUGINS}
         rehypePlugins={REHYPE_PLUGINS}
+        urlTransform={markdownUrlTransform}
         components={markdownComponents as Components}
       >
         {deferredMarkdown}

@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useEffect, useState, useContext } from 'react';
-import { Button, Card, Collapse, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
+import React, { useEffect, useState, useContext, useCallback, useMemo } from 'react';
+import { Button, Card, Collapse, Image, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
 import {
   CheckCircleFilled,
   CloseCircleFilled,
@@ -522,6 +522,40 @@ const TestsList: React.FC<TestsListProps> = ({
     };
   };
 
+  // Stable references for ReactMarkdown to prevent remounting child components (e.g. Image) on re-render
+  const mdUrlTransform = useCallback((url: string) => {
+    // Allow data:image/* URIs for inline test output images (e.g. matplotlib plots)
+    if (url.startsWith('data:image/')) return url;
+    // Default: allow http(s), mailto, tel — block everything else
+    if (/^https?:\/\/|^mailto:|^tel:/.test(url)) return url;
+    return '';
+  }, []);
+
+  const mdComponents = useMemo(
+    () => ({
+      p: ({ children }: { children?: React.ReactNode }) => <p style={{ margin: 0 }}>{children}</p>,
+      ul: ({ children }: { children?: React.ReactNode }) => (
+        <ul style={{ margin: '4px 0 0 16px' }}>{children}</ul>
+      ),
+      ol: ({ children }: { children?: React.ReactNode }) => (
+        <ol style={{ margin: '4px 0 0 16px' }}>{children}</ol>
+      ),
+      img: ({ src, alt }: { src?: string; alt?: string }) => (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+        <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+          <Image
+            src={src}
+            alt={alt}
+            style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 4, marginTop: 4, display: 'block', objectFit: 'contain' }}
+          />
+        </div>
+      ),
+    }),
+    [],
+  );
+
+  const mdRemarkPlugins = useMemo(() => [remarkGfm], []);
+
   const renderMarkdownMessage = (rawMessage: string) => {
     return (
       <div
@@ -533,12 +567,9 @@ const TestsList: React.FC<TestsListProps> = ({
         }}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            p: ({ children }) => <p style={{ margin: 0 }}>{children}</p>,
-            ul: ({ children }) => <ul style={{ margin: '4px 0 0 16px' }}>{children}</ul>,
-            ol: ({ children }) => <ol style={{ margin: '4px 0 0 16px' }}>{children}</ol>,
-          }}
+          remarkPlugins={mdRemarkPlugins}
+          urlTransform={mdUrlTransform}
+          components={mdComponents}
         >
           {rawMessage}
         </ReactMarkdown>
@@ -813,24 +844,6 @@ const TestsList: React.FC<TestsListProps> = ({
               </Collapse>
             )}
 
-            {/* Default Message / Feedback (Tuple Return) */}
-            {!suppressMessages && parsedResults.length === 1 && showTupleMessage && (
-              <div style={{ marginTop: 8 }}>
-                <Alert
-                  message={renderMarkdownMessage(primaryParsedResult?.message || '')}
-                  type="info"
-                  showIcon
-                  style={{
-                    padding: '4px 12px',
-                    borderRadius: 4,
-                    border: isDarkTheme ? '1px solid #153450' : '1px solid #91caff',
-                    backgroundColor: isDarkTheme ? 'rgba(24, 144, 255, 0.1)' : '#e6f7ff',
-                    color: consoleTheme.text,
-                  }}
-                />
-              </div>
-            )}
-
             {/* Error Message */}
             {!suppressMessages &&
               parsedResults.length === 1 &&
@@ -845,7 +858,7 @@ const TestsList: React.FC<TestsListProps> = ({
                     borderRadius: 4,
                     fontFamily: 'monospace',
                     fontSize: 11,
-                    color: statusColors.error.main, // Standard error red (usually accessible on light bg)
+                    color: statusColors.error.main,
                     whiteSpace: 'pre-wrap',
                   }}
                 >
@@ -881,6 +894,22 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
           </div>
         </div>
+
+        {/* Default Message / Feedback (Tuple Return) — full card width */}
+        {!suppressMessages && parsedResults.length === 1 && showTupleMessage && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: '12px 16px',
+              borderRadius: 6,
+              border: `1px solid ${isDarkTheme ? darkBorder : '#e8e8e8'}`,
+              borderLeft: `3px solid ${statusColor.main}`,
+              backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.04)' : '#f8fafc',
+            }}
+          >
+            {renderMarkdownMessage(primaryParsedResult?.message || '')}
+          </div>
+        )}
       </Card>
     );
   };
@@ -1126,19 +1155,18 @@ const TestsList: React.FC<TestsListProps> = ({
               {!hasScriptError && hasUniformContent && (
                 <div style={{ marginBottom: 12 }}>
                   {uniformMessage && (
-                    <Alert
-                      message={renderMarkdownMessage(uniformMessage)}
-                      type="info"
-                      showIcon
+                    <div
                       style={{
-                        padding: '4px 12px',
-                        borderRadius: 4,
-                        border: isDarkTheme ? '1px solid #153450' : '1px solid #91caff',
-                        backgroundColor: isDarkTheme ? 'rgba(24, 144, 255, 0.1)' : '#e6f7ff',
-                        color: consoleTheme.text,
+                        padding: '12px 16px',
+                        borderRadius: 6,
+                        border: `1px solid ${isDarkTheme ? darkBorder : '#e8e8e8'}`,
+                        borderLeft: `3px solid ${isDarkTheme ? '#9da7b3' : '#595959'}`,
+                        backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.04)' : '#f8fafc',
                         marginBottom: uniformLog ? 8 : 0,
                       }}
-                    />
+                    >
+                      {renderMarkdownMessage(uniformMessage)}
+                    </div>
                   )}
                   {uniformLog && (
                     <pre

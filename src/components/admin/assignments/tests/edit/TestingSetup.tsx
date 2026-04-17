@@ -56,12 +56,6 @@ export const TestingSetup = (props: IProps) => {
 
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!params.tabKey) {
-      navigate(`${location.pathname}/environment`, { replace: true });
-    }
-  }, [params.tabKey, location.pathname, navigate]);
-
   // Check permissions: Admin or Course Admin
   const courseCaps = useCourseCapabilities(props.currentAssignment.course);
   const isCourseAdmin =
@@ -198,8 +192,10 @@ export const TestingSetup = (props: IProps) => {
   };
 
   const onChange = (val: string) => {
-    const newUrl = `${location.pathname.split('/').slice(0, -1).join('/')}/${val}`;
-    navigate(newUrl);
+    // Anchor on the /edit segment so this works whether or not tabKey is in the URL yet
+    const editIndex = location.pathname.lastIndexOf('/edit');
+    const basePath = editIndex !== -1 ? location.pathname.substring(0, editIndex) : location.pathname;
+    navigate(`${basePath}/edit/${val}`);
   };
 
   // ************************** Return ***************************************

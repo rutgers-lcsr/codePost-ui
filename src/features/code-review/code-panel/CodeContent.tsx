@@ -289,7 +289,6 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
 
   // Render markdown/jupyter/image files (Read-Only View)
   if (['markdown', 'jupyter', 'image'].includes(codeType)) {
-    console.log(codeType);
     return (
       <div>
         <div id="code-container" className="code-container" style={containerStyle}>

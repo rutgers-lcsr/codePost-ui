@@ -74,18 +74,7 @@ export const AssignmentTests = (props: IProps) => {
           />
         }
       />
-      <Route
-        path="edit"
-        element={
-          <TestingSetup
-            breadcrumbs={breadcrumbs}
-            currentAssignment={assignment}
-            submissions={props.submissions}
-            updateAssignment={props.updateAssignment}
-            user={props.user}
-          />
-        }
-      />
+      <Route path="edit" element={<Navigate to="edit/environment" replace />} />
 
       <Route
         path="results"
