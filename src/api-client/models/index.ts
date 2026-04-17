@@ -596,6 +596,69 @@ export interface Assignment {
 /**
  *
  * @export
+ * @interface AssignmentAnalyticsAttemptDistribution
+ */
+export interface AssignmentAnalyticsAttemptDistribution {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsAttemptDistribution
+   */
+  attempts: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsAttemptDistribution
+   */
+  studentCount: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsFeedbackDepth
+ */
+export interface AssignmentAnalyticsFeedbackDepth {
+  /**
+   *
+   * @type {AssignmentAnalyticsFeedbackOverall}
+   * @memberof AssignmentAnalyticsFeedbackDepth
+   */
+  overall: AssignmentAnalyticsFeedbackOverall | null;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGraderFeedback>}
+   * @memberof AssignmentAnalyticsFeedbackDepth
+   */
+  byGrader: Array<AssignmentAnalyticsGraderFeedback>;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsFeedbackOverall
+ */
+export interface AssignmentAnalyticsFeedbackOverall {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsFeedbackOverall
+   */
+  meanCommentsPerSubmission: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsFeedbackOverall
+   */
+  medianCommentsPerSubmission: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsFeedbackOverall
+   */
+  totalSubmissionsWithComments: number;
+}
+/**
+ *
+ * @export
  * @interface AssignmentAnalyticsGradeDistribution
  */
 export interface AssignmentAnalyticsGradeDistribution {
@@ -617,6 +680,123 @@ export interface AssignmentAnalyticsGradeDistribution {
    * @memberof AssignmentAnalyticsGradeDistribution
    */
   count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGraderConsistency
+ */
+export interface AssignmentAnalyticsGraderConsistency {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsGraderConsistency
+   */
+  grader: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderConsistency
+   */
+  meanGrade: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderConsistency
+   */
+  stddevGrade: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderConsistency
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGraderFeedback
+ */
+export interface AssignmentAnalyticsGraderFeedback {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  grader: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  totalComments: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  rubricComments: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  freeformComments: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  submissionsGraded: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderFeedback
+   */
+  meanComments: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsGraderTurnaround
+ */
+export interface AssignmentAnalyticsGraderTurnaround {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  grader: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  count: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  meanHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  medianHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  minHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsGraderTurnaround
+   */
+  maxHours: number | null;
 }
 /**
  *
@@ -671,6 +851,56 @@ export interface AssignmentAnalyticsGradingTimeline {
 /**
  *
  * @export
+ * @interface AssignmentAnalyticsLateByDay
+ */
+export interface AssignmentAnalyticsLateByDay {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsLateByDay
+   */
+  day: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsLateByDay
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsLateSubmissions
+ */
+export interface AssignmentAnalyticsLateSubmissions {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsLateSubmissions
+   */
+  dueDate: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsLateSubmissions
+   */
+  onTime: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsLateSubmissions
+   */
+  late: number;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsLateByDay>}
+   * @memberof AssignmentAnalyticsLateSubmissions
+   */
+  lateByDay: Array<AssignmentAnalyticsLateByDay>;
+}
+/**
+ *
+ * @export
  * @interface AssignmentAnalyticsResponse
  */
 export interface AssignmentAnalyticsResponse {
@@ -698,6 +928,165 @@ export interface AssignmentAnalyticsResponse {
    * @memberof AssignmentAnalyticsResponse
    */
   testResults: Array<AssignmentAnalyticsTestResults>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsRubricUsage>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  rubricUsage: Array<AssignmentAnalyticsRubricUsage>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsScoreByCategory>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  scoreByCategory: Array<AssignmentAnalyticsScoreByCategory>;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGraderConsistency>}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  graderConsistency: Array<AssignmentAnalyticsGraderConsistency>;
+  /**
+   *
+   * @type {AssignmentAnalyticsSubmissionAttempts}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  submissionAttempts?: AssignmentAnalyticsSubmissionAttempts | null;
+  /**
+   *
+   * @type {AssignmentAnalyticsTimeToGrade}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  timeToGrade?: AssignmentAnalyticsTimeToGrade | null;
+  /**
+   *
+   * @type {AssignmentAnalyticsLateSubmissions}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  lateSubmissions?: AssignmentAnalyticsLateSubmissions | null;
+  /**
+   *
+   * @type {AssignmentAnalyticsFeedbackDepth}
+   * @memberof AssignmentAnalyticsResponse
+   */
+  feedbackDepth?: AssignmentAnalyticsFeedbackDepth | null;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsRubricUsage
+ */
+export interface AssignmentAnalyticsRubricUsage {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsRubricUsage
+   */
+  rubricCommentId: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsRubricUsage
+   */
+  text: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsRubricUsage
+   */
+  pointDelta: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsRubricUsage
+   */
+  categoryName: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsRubricUsage
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsScoreByCategory
+ */
+export interface AssignmentAnalyticsScoreByCategory {
+  /**
+   *
+   * @type {string}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  categoryName: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  pointLimit: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  meanDeduction: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  medianDeduction: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  minDeduction: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  maxDeduction: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsScoreByCategory
+   */
+  submissionCount: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsSubmissionAttempts
+ */
+export interface AssignmentAnalyticsSubmissionAttempts {
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsAttemptDistribution>}
+   * @memberof AssignmentAnalyticsSubmissionAttempts
+   */
+  attemptDistribution: Array<AssignmentAnalyticsAttemptDistribution>;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsSubmissionAttempts
+   */
+  avgGradeImprovement: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsSubmissionAttempts
+   */
+  studentsWithMultipleAttempts: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsSubmissionAttempts
+   */
+  totalStudents: number;
 }
 /**
  *
@@ -741,6 +1130,56 @@ export interface AssignmentAnalyticsTestResults {
    * @memberof AssignmentAnalyticsTestResults
    */
   total: number;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsTimeToGrade
+ */
+export interface AssignmentAnalyticsTimeToGrade {
+  /**
+   *
+   * @type {AssignmentAnalyticsTurnaroundStats}
+   * @memberof AssignmentAnalyticsTimeToGrade
+   */
+  overall: AssignmentAnalyticsTurnaroundStats | null;
+  /**
+   *
+   * @type {Array<AssignmentAnalyticsGraderTurnaround>}
+   * @memberof AssignmentAnalyticsTimeToGrade
+   */
+  byGrader: Array<AssignmentAnalyticsGraderTurnaround>;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentAnalyticsTurnaroundStats
+ */
+export interface AssignmentAnalyticsTurnaroundStats {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTurnaroundStats
+   */
+  meanHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTurnaroundStats
+   */
+  medianHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTurnaroundStats
+   */
+  minHours: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentAnalyticsTurnaroundStats
+   */
+  maxHours: number | null;
 }
 /**
  *
@@ -1666,6 +2105,12 @@ export interface BatchCapabilitiesResponseResultsValue {
    * @type {boolean}
    * @memberof BatchCapabilitiesResponseResultsValue
    */
+  viewTestResults?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
   runCode?: boolean;
   /**
    *
@@ -2124,6 +2569,12 @@ export interface CapabilitiesResponseCapabilitiesMap {
    * @memberof CapabilitiesResponseCapabilitiesMap
    */
   runAutograder?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  viewTestResults?: boolean;
   /**
    *
    * @type {boolean}

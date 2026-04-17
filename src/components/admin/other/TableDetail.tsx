@@ -41,6 +41,7 @@ interface IProps {
   titleInfo?: string | React.ReactNode;
   onRowClick?: (record: Record<string, unknown>) => void;
   detail?: React.ReactNode;
+  beforeTable?: React.ReactNode;
   components?: Record<string, unknown>;
   onRow?: (record: Record<string, unknown>, index?: number) => React.HTMLAttributes<HTMLElement>;
   expandAllRows?: boolean;
@@ -145,6 +146,7 @@ const TableDetail: React.FC<IProps> = ({
   onRow,
   expandAllRows = false,
   tableOnly = false,
+  beforeTable,
 }) => {
   const [searchText, setSearchText] = useState<string>('');
   const [pageSize, setPageSize] = useDefaultPageSize();
@@ -291,6 +293,7 @@ const TableDetail: React.FC<IProps> = ({
   // Render table with data
   const tableContent = (
     <div>
+      {beforeTable}
       {!hideSearch && (
         <div style={{ marginBottom: 20 }}>
           <Input.Search

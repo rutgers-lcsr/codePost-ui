@@ -43,6 +43,7 @@ Map of capability keys to boolean values.
 | `requestRegrade`           | boolean |
 | `manageRegrades`           | boolean |
 | `runAutograder`            | boolean |
+| `viewTestResults`          | boolean |
 | `runCode`                  | boolean |
 | `generateAiComments`       | boolean |
 | `managePartners`           | boolean |

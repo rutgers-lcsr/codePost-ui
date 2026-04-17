@@ -38,6 +38,13 @@ import GradeDistributionChart from './charts/GradeDistributionChart';
 import GraderWorkloadChart from './charts/GraderWorkloadChart';
 import GradingTimelineChart from './charts/GradingTimelineChart';
 import TestResultsChart from './charts/TestResultsChart';
+import RubricUsageChart from './charts/RubricUsageChart';
+import ScoreByCategoryChart from './charts/ScoreByCategoryChart';
+import GraderConsistencyChart from './charts/GraderConsistencyChart';
+import SubmissionAttemptsChart from './charts/SubmissionAttemptsChart';
+import TimeToGradeChart from './charts/TimeToGradeChart';
+import LateSubmissionsChart from './charts/LateSubmissionsChart';
+import FeedbackDepthChart from './charts/FeedbackDepthChart';
 import { assignmentKeys } from '../../../../../lib/queryKeys';
 
 const { Title } = Typography;
@@ -580,6 +587,240 @@ const AssignmentStats: FC<IProps> = (props) => {
               <TestResultsChart data={analytics.testResults} />
             </div>
           </Card>
+        </>
+      ) : null}
+
+      {/* ── Rubric Insights: Usage + Score by Category ── */}
+      {analyticsLoading ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Rubric Insights</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Most Applied Rubric Comments
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Score Breakdown by Category
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+          </Row>
+        </>
+      ) : analytics && (analytics.rubricUsage.length > 0 || analytics.scoreByCategory.length > 0) ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Rubric Insights</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            {analytics.rubricUsage.length > 0 && (
+              <Col xs={24} lg={12}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Most applied rubric comments"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Most Applied Rubric Comments
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <RubricUsageChart data={analytics.rubricUsage} />
+                  </div>
+                </Card>
+              </Col>
+            )}
+            {analytics.scoreByCategory.length > 0 && (
+              <Col xs={24} lg={12}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Score breakdown by rubric category"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Score Breakdown by Category
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <ScoreByCategoryChart data={analytics.scoreByCategory} />
+                  </div>
+                </Card>
+              </Col>
+            )}
+          </Row>
+        </>
+      ) : null}
+
+      {/* ── Grading Quality: Consistency + Time-to-Grade + Feedback Depth ── */}
+      {analyticsLoading ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Grading Quality</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Grader Consistency
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Time to Grade
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+          </Row>
+        </>
+      ) : analytics &&
+        (analytics.graderConsistency.length > 0 ||
+          analytics.timeToGrade?.byGrader?.length ||
+          analytics.feedbackDepth?.byGrader?.length) ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Grading Quality</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            {analytics.graderConsistency.length > 0 && (
+              <Col xs={24} lg={12}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Grader consistency comparison"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Grader Consistency
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <GraderConsistencyChart
+                      data={analytics.graderConsistency}
+                      assignmentPoints={Number(assignment.points)}
+                    />
+                  </div>
+                </Card>
+              </Col>
+            )}
+            {analytics.timeToGrade && analytics.timeToGrade.byGrader.length > 0 && (
+              <Col xs={24} lg={12}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Time to grade analysis"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Time to Grade
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <TimeToGradeChart data={analytics.timeToGrade} />
+                  </div>
+                </Card>
+              </Col>
+            )}
+          </Row>
+          {analytics.feedbackDepth && analytics.feedbackDepth.byGrader.length > 0 && (
+            <Card
+              style={{ ...cardStyle, marginBottom: 32 }}
+              styles={{ body: { padding: '20px 24px' } }}
+              role="region"
+              aria-label="Feedback depth analysis"
+            >
+              <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                Feedback Depth
+              </Title>
+              <div style={fadeInStyle(!analyticsLoading)}>
+                <FeedbackDepthChart data={analytics.feedbackDepth} />
+              </div>
+            </Card>
+          )}
+        </>
+      ) : null}
+
+      {/* ── Submission Patterns: Attempts + Late Submissions ── */}
+      {analyticsLoading ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Submission Patterns</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Submission Attempts
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card style={cardStyle} styles={{ body: { padding: '20px 24px' } }}>
+                <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                  Late Submissions
+                </Title>
+                {chartLoadingState}
+              </Card>
+            </Col>
+          </Row>
+        </>
+      ) : analytics && ((analytics.submissionAttempts?.totalStudents ?? 0) > 0 || analytics.lateSubmissions != null) ? (
+        <>
+          <div style={sectionTitleStyle}>
+            <span>Submission Patterns</span>
+            <div style={sectionLineStyle} />
+          </div>
+          <Row gutter={[20, 20]} style={{ marginBottom: 32 }}>
+            {analytics.submissionAttempts && analytics.submissionAttempts.totalStudents > 0 && (
+              <Col xs={24} lg={analytics.lateSubmissions ? 12 : 24}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Submission attempt analysis"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Submission Attempts
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <SubmissionAttemptsChart data={analytics.submissionAttempts} />
+                  </div>
+                </Card>
+              </Col>
+            )}
+            {analytics.lateSubmissions && (
+              <Col xs={24} lg={analytics.submissionAttempts?.totalStudents ? 12 : 24}>
+                <Card
+                  style={cardStyle}
+                  styles={{ body: { padding: '20px 24px' } }}
+                  role="region"
+                  aria-label="Late submission analysis"
+                >
+                  <Title level={4} style={{ color: colors.brandPrimary, marginBottom: 16 }}>
+                    Late Submissions
+                  </Title>
+                  <div style={fadeInStyle(!analyticsLoading)}>
+                    <LateSubmissionsChart data={analytics.lateSubmissions} />
+                  </div>
+                </Card>
+              </Col>
+            )}
+          </Row>
         </>
       ) : null}
 

@@ -82,6 +82,17 @@ import { Course, Section, User } from '../../../api-client';
 
 import { Assignment, IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
+import AssignmentsFilterBar, {
+  AssignmentFilters,
+  DEFAULT_FILTERS,
+  FeedbackFilter,
+  ProgressFilter,
+  StatusFilter,
+  VisibilityFilter,
+} from './AssignmentsFilterBar';
+
+import BulkActionBar from './BulkActionBar';
+
 import DeleteAssignmentDialog from './assignments/DeleteAssignmentDialog';
 
 import BulkUpload from './assignments/SubmissionUpload/BulkUpload/BulkUpload';
@@ -127,6 +138,13 @@ interface AssignmentRow extends Record<string, unknown> {
   status: React.ReactNode;
   progress: React.ReactNode;
   actions: React.ReactNode;
+  // Searchable plain-text shadow fields (not rendered as columns)
+  assignmentName: string;
+  statusValue: StatusFilter;
+  progressValue: ProgressFilter;
+  visibilityValue: VisibilityFilter;
+  feedbackValue: FeedbackFilter;
+  dueDateValue: string | null;
 }
 
 /**********************************************************************************************************************/
@@ -247,6 +265,9 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   });
   const [activeStudent, setActiveStudent] = useState<string | undefined>(undefined);
   const [sortedOrder, setSortedOrder] = useState<number[]>(() => sortAssignments(props.assignments).map((el) => el.id));
+  const [filters, setFilters] = useState<AssignmentFilters>(DEFAULT_FILTERS);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   // Update sortedOrder when assignments change
   useEffect(() => {
@@ -707,7 +728,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
                 />
               </span>
-              <Switch checked={assignment.isVisible} onChange={toggleVisible} size="small" disabled={!canEditAssignment} />
+              <Switch
+                checked={assignment.isVisible}
+                onChange={toggleVisible}
+                size="small"
+                disabled={!canEditAssignment}
+              />
             </Flex>
 
             <Flex justify="space-between" align="center">
@@ -758,8 +784,38 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       // Calculate percentage for progress bar
       const percent = totalSubmissions > 0 ? Math.round((graded / totalSubmissions) * 100) : 0;
 
+      // --- Compute shadow fields for filtering ---
+      let statusValue: StatusFilter = 'draft';
+      if (assignment.isReleased) {
+        statusValue = 'published';
+      } else if (assignment.isVisible) {
+        statusValue = 'visible';
+      }
+
+      const totalSubs = assignmentStats[assignment.id]?.numSubmissions ?? 0;
+      const gradedCount = assignmentStats[assignment.id]?.numGraded ?? 0;
+      let progressValue: ProgressFilter = 'not_started';
+      if (totalSubs > 0) {
+        if (gradedCount >= totalSubs) {
+          progressValue = 'complete';
+        } else if (gradedCount > 0) {
+          progressValue = 'in_progress';
+        }
+      }
+
+      const visibilityValue: VisibilityFilter = assignment.isVisible ? 'visible' : 'hidden';
+      const feedbackValue: FeedbackFilter = assignment.feedbackReleased ? 'released' : 'not_released';
+      const dueDateValue: string | null =
+        assignment.allowStudentUpload && assignment.uploadDueDate ? assignment.uploadDueDate : null;
+
       return {
         key: assignment.id,
+        assignmentName: assignment.name,
+        statusValue,
+        progressValue,
+        visibilityValue,
+        feedbackValue,
+        dueDateValue,
         assignment: (
           <Space orientation="vertical" size={0}>
             <Text strong style={{ fontSize: '15px', letterSpacing: '-0.2px' }}>
@@ -1048,6 +1104,90 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     })
     .filter((assignment): assignment is AssignmentRow => assignment !== null);
 
+  // Derived: whether any filter is currently active
+  const isFilterActive =
+    filters.searchText !== '' ||
+    filters.status !== 'all' ||
+    filters.progress !== 'all' ||
+    filters.visibility !== 'all' ||
+    filters.feedback !== 'all' ||
+    filters.dateRange !== null;
+
+  // Client-side filter pipeline applied on the fully-rendered data array
+  const filteredData = useMemo(() => {
+    if (!isFilterActive) return data;
+
+    return data.filter((row) => {
+      // Text search on assignment name
+      if (filters.searchText !== '' && !row.assignmentName.toLowerCase().includes(filters.searchText.toLowerCase())) {
+        return false;
+      }
+
+      // Status filter
+      if (filters.status !== 'all' && row.statusValue !== filters.status) {
+        return false;
+      }
+
+      // Progress filter
+      if (filters.progress !== 'all' && row.progressValue !== filters.progress) {
+        return false;
+      }
+
+      // Visibility filter
+      if (filters.visibility !== 'all' && row.visibilityValue !== filters.visibility) {
+        return false;
+      }
+
+      // Feedback filter
+      if (filters.feedback !== 'all' && row.feedbackValue !== filters.feedback) {
+        return false;
+      }
+
+      // Due date range filter
+      if (filters.dateRange !== null) {
+        const [from, to] = filters.dateRange;
+        if (row.dueDateValue === null) {
+          // No due date — exclude if a date range is specified
+          return false;
+        }
+        const dueDay = dayjs(row.dueDateValue);
+        if (from && dueDay.isBefore(from, 'day')) return false;
+        if (to && dueDay.isAfter(to, 'day')) return false;
+      }
+
+      return true;
+    });
+  }, [data, filters, isFilterActive]);
+
+  /******************************************************************************
+   * Bulk action handlers
+   ******************************************************************************/
+
+  const bulkUpdate = useCallback(
+    async (patch: Partial<Assignment>) => {
+      setBulkLoading(true);
+      try {
+        const promises = selectedRowKeys.map((key) => updateAssignmentProp({ id: key as number, ...patch }));
+        await Promise.all(promises);
+        message.success(`Updated ${selectedRowKeys.length} assignment${selectedRowKeys.length > 1 ? 's' : ''}.`);
+        setSelectedRowKeys([]);
+      } catch {
+        message.error('Some updates failed. Please try again.');
+      } finally {
+        setBulkLoading(false);
+      }
+    },
+    [selectedRowKeys, updateAssignmentProp],
+  );
+
+  const bulkPublish = useCallback(() => bulkUpdate({ isReleased: true }), [bulkUpdate]);
+  const bulkShow = useCallback(() => bulkUpdate({ isVisible: true }), [bulkUpdate]);
+  const bulkHide = useCallback(() => bulkUpdate({ isVisible: false }), [bulkUpdate]);
+  const bulkReleaseFeedback = useCallback(() => bulkUpdate({ feedbackReleased: true }), [bulkUpdate]);
+  const clearSelection = useCallback(() => setSelectedRowKeys([]), []);
+
+  const hasSelection = selectedRowKeys.length > 0;
+
   const tableActions: React.ReactNode[] = [
     canCreateAssignment ? (
       <NewAssignmentDialog
@@ -1209,6 +1349,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           <AssignmentSetupDialog
             course={currentCourse}
             hasStudents={students.length > 0}
+            hasSubmissions={(submissions[activeAssignment.id]?.length ?? 0) > 0}
             onClose={cancel}
             assignment={activeAssignment}
           />
@@ -1264,6 +1405,18 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [sortedOrder, assignments, updateAssignmentProp],
   );
 
+  // Only allow drag-and-drop when no filter or selection is active (reordering
+  // on a filtered/selected list produces ambiguous sortKey mappings).
+  const dndDisabled = isFilterActive || hasSelection;
+  const dndComponents = dndDisabled ? undefined : components;
+  const dndOnRow = dndDisabled
+    ? undefined
+    : (_record: Record<string, unknown>, index?: number) =>
+        ({
+          index: index ?? 0,
+          moveRow: moveRow,
+        }) as React.HTMLAttributes<HTMLElement>;
+
   return (
     <div className="manage-assignments">
       <StatsDrawer
@@ -1278,8 +1431,20 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
       {detailComponent}
       <TableDetail
-        data={data}
-        title={'Assignments'}
+        data={filteredData}
+        title={
+          <>
+            Assignments
+            {isFilterActive && (
+              <span
+                style={{ fontSize: 13, fontWeight: 400, color: colors.neutralSecondaryText, marginLeft: 10 }}
+                aria-live="polite"
+              >
+                ({filteredData.length} of {assignments.length})
+              </span>
+            )}
+          </>
+        }
         columns={columns}
         actions={tableActions}
         loadComplete={loadComplete}
@@ -1307,15 +1472,42 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
         titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
         hideSearch={true}
-        components={components}
-        tableProps={{ scroll: { x: 'max-content' } }}
-        onRow={(_record: Record<string, unknown>, index?: number) =>
-          ({
-            index: index ?? 0,
-            moveRow: moveRow,
-          }) as React.HTMLAttributes<HTMLElement>
+        components={dndComponents}
+        tableProps={{
+          scroll: { x: 'max-content' },
+          rowSelection: canEditAssignment
+            ? {
+                selectedRowKeys,
+                onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
+                type: 'checkbox' as const,
+              }
+            : undefined,
+        }}
+        onRow={dndOnRow}
+        pagination={filteredData.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
+        beforeTable={
+          loadComplete && assignments.length > 0 ? (
+            <>
+              <BulkActionBar
+                selectedCount={selectedRowKeys.length}
+                isLoading={bulkLoading}
+                canEditAssignment={canEditAssignment}
+                canReleaseGrades={canReleaseGrades}
+                onPublish={bulkPublish}
+                onShow={bulkShow}
+                onHide={bulkHide}
+                onReleaseFeedback={bulkReleaseFeedback}
+                onClearSelection={clearSelection}
+              />
+              <AssignmentsFilterBar
+                filters={filters}
+                onFiltersChange={setFilters}
+                totalCount={assignments.length}
+                filteredCount={filteredData.length}
+              />
+            </>
+          ) : undefined
         }
-        pagination={assignments.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
       />
     </div>
   );

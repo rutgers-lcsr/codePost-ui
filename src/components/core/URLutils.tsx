@@ -66,9 +66,9 @@ export const getRosterURL = (course: ICourseRef) => {
 };
 
 export const getTestsURL = (course: ICourseRef, assignment: IAssignmentNameRef) => {
-  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/tests/${encodeForLink(
+  return `admin/${encodeForLink(course.name)}/${encodeForLink(course.period)}/assignments/environment/${encodeForLink(
     assignment.name,
-  )}/edit/environment`;
+  )}/edit`;
 };
 
 export const getSettingsURL = (course: ICourseRef, assignment: IAssignmentNameRef) => {

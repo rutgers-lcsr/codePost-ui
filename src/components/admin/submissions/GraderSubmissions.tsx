@@ -9,9 +9,10 @@ import * as React from 'react';
 import { PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Checkbox, Empty, Space, Typography, Tag } from 'antd';
+import { Breadcrumb, Checkbox, Empty, Progress, Space, Typography, Tooltip } from 'antd';
 
 /* other library imports */
+import dayjs from 'dayjs';
 import Highlighter from 'react-highlight-words';
 
 import { Link, Route, Routes } from 'react-router-dom';
@@ -202,6 +203,8 @@ const GraderIndexRoute: React.FC<{
         title: 'Grader',
         dataIndex: 'grader',
         key: 'primary',
+        fixed: 'left' as const,
+        width: 220,
         defaultSortOrder: 'ascend' as const,
         sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
           (a.key as string).localeCompare(b.key as string),
@@ -234,6 +237,71 @@ const GraderIndexRoute: React.FC<{
               </Link>
             );
           };
+        },
+      },
+      {
+        title: 'Claimed',
+        dataIndex: '_totalClaimed',
+        key: '_totalClaimed',
+        align: aligner,
+        width: 80,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a._totalClaimed as number) - (b._totalClaimed as number),
+        render: (val: number) => <Typography.Text strong>{val}</Typography.Text>,
+      },
+      {
+        title: 'Finalized',
+        dataIndex: '_totalFinalized',
+        key: '_totalFinalized',
+        align: aligner,
+        width: 80,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a._totalFinalized as number) - (b._totalFinalized as number),
+        render: (val: number) => <Typography.Text strong>{val}</Typography.Text>,
+      },
+      {
+        title: '% Done',
+        dataIndex: '_pctDone',
+        key: '_pctDone',
+        align: aligner,
+        width: 90,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a._pctDone as number) - (b._pctDone as number),
+        render: (val: number) => {
+          let color = '#f5222d'; // red
+          if (val >= 80)
+            color = '#198665'; // brand green
+          else if (val >= 40) color = '#fa8c16'; // orange
+          return (
+            <Tooltip title={`${val}% of claimed submissions finalized`}>
+              <Typography.Text strong style={{ color }}>
+                {val}%
+              </Typography.Text>
+            </Tooltip>
+          );
+        },
+      },
+      {
+        title: 'Oldest Unfinished',
+        dataIndex: '_oldestUnfinished',
+        key: '_oldestUnfinished',
+        align: aligner,
+        width: 130,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          (a._oldestUnfinishedTs as number) - (b._oldestUnfinishedTs as number),
+        render: (_: unknown, record: Record<string, unknown>) => {
+          const ts = record._oldestUnfinishedTs as number;
+          if (ts === 0) return <span style={{ color: '#999' }}>—</span>;
+          const d = dayjs(ts);
+          const daysAgo = dayjs().diff(d, 'day');
+          const color = daysAgo >= 7 ? '#f5222d' : daysAgo >= 3 ? '#fa8c16' : undefined;
+          return (
+            <Tooltip title={d.format('MMM D, YYYY h:mm A')}>
+              <Typography.Text style={color ? { color } : undefined}>
+                {daysAgo === 0 ? 'Today' : `${daysAgo}d ago`}
+              </Typography.Text>
+            </Tooltip>
+          );
         },
       },
       ...sortAssignments(assignments).map((assignment) => ({
@@ -275,18 +343,49 @@ const GraderIndexRoute: React.FC<{
 
     rows = rowValues.map((graderEmail) => {
       const toRet: Record<string, unknown> = { key: graderEmail, grader: graderEmail };
+
+      // Aggregate accumulators
+      let totalClaimed = 0;
+      let totalFinalized = 0;
+      let oldestUnfinishedTs = 0; // 0 = none
+
       for (const assignment of assignments) {
         const graderSubs = submissionsByGrader[graderEmail];
         const graded = graderSubs ? graderSubs[assignment.id] : undefined;
         if (graded) {
           const uniqueGraded = Array.from(new Map(graded.map((s) => [s.id, s])).values());
+          const finalized = uniqueGraded.filter((s) => s.isFinalized).length;
+
+          totalClaimed += uniqueGraded.length;
+          totalFinalized += finalized;
+
+          // Track oldest unfinished submission
+          for (const sub of uniqueGraded) {
+            if (!sub.isFinalized && sub.dateEdited) {
+              const ts = dayjs(sub.dateEdited).valueOf();
+              if (oldestUnfinishedTs === 0 || ts < oldestUnfinishedTs) {
+                oldestUnfinishedTs = ts;
+              }
+            }
+          }
+
+          const pct = uniqueGraded.length > 0 ? Math.round((finalized / uniqueGraded.length) * 100) : 0;
           toRet[assignment.name] = (
             <Link to={`${currentBaseURL}/${graderEmail}/${encodeForLink(assignment.name)}`}>
-              <span style={{ cursor: 'pointer', display: 'block', width: '100%' }} title="Click to view details">
-                <Tag color="processing" style={{ margin: 0 }}>
-                  {uniqueGraded.length} Claimed
-                </Tag>
-              </span>
+              <Tooltip title={`${finalized} finalized / ${uniqueGraded.length} claimed`}>
+                <span style={{ cursor: 'pointer', display: 'block', width: '100%' }}>
+                  <span style={{ fontSize: 12 }}>
+                    {finalized}/{uniqueGraded.length}
+                  </span>
+                  <Progress
+                    percent={pct}
+                    showInfo={false}
+                    size="small"
+                    strokeColor={pct === 100 ? '#198665' : '#1890ff'}
+                    style={{ marginTop: 2, marginBottom: 0 }}
+                  />
+                </span>
+              </Tooltip>
             </Link>
           );
           toRet[`${assignment.name}_sort`] = uniqueGraded.length;
@@ -295,6 +394,13 @@ const GraderIndexRoute: React.FC<{
           toRet[`${assignment.name}_sort`] = -1;
         }
       }
+
+      const pctDone = totalClaimed > 0 ? Math.round((totalFinalized / totalClaimed) * 100) : 0;
+      toRet._totalClaimed = totalClaimed;
+      toRet._totalFinalized = totalFinalized;
+      toRet._pctDone = pctDone;
+      toRet._oldestUnfinishedTs = oldestUnfinishedTs;
+
       return toRet;
     });
 
@@ -358,6 +464,7 @@ const GraderIndexRoute: React.FC<{
       columns={columns}
       data={data}
       actions={[toggleInactiveGraders]}
+      tableProps={{ scroll: { x: 'max-content' } }}
       breadcrumbs={
         <Breadcrumb
           items={[

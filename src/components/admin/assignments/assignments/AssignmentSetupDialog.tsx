@@ -6,17 +6,21 @@
 /* react imports */
 
 /* antd imports */
-import { Button, Modal, Steps, Timeline } from 'antd';
+import { Button, Modal, Progress, Steps } from 'antd';
 import {
+  CheckCircleFilled,
+  CheckOutlined,
   FileDoneOutlined,
   OrderedListOutlined,
   PlusCircleOutlined,
   TeamOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import { Course } from '../../../../api-client';
+import { colors } from '../../../../theme/colors';
 import { Assignment } from '../../../../types/common';
 
 import {
@@ -86,7 +90,7 @@ const getSteps = (course: Course, assignment: Assignment, hasStudents: boolean, 
     title: 'Create tests',
     url: `/${getTestsURL(course, assignment)}`,
     isOptional: true,
-    description: 'Specify required files, allow late submissions, etc...',
+    description: 'Add automated test cases to give students instant feedback on their code.',
     hide: false,
     isComplete: (assignment.testCategories?.length ?? 0) > 0,
     icon: <FileDoneOutlined />,
@@ -103,49 +107,115 @@ const getSteps = (course: Course, assignment: Assignment, hasStudents: boolean, 
 ];
 
 export const AssignmentSetupDialog = (props: IProps) => {
-  const steps = getSteps(props.course, props.assignment, props.hasStudents);
+  const steps = getSteps(props.course, props.assignment, props.hasStudents, props.hasSubmissions);
+  const visibleSteps = steps.filter((step) => !step.hide);
+  const completedCount = visibleSteps.filter((s) => s.isComplete).length;
+  const totalCount = visibleSteps.length;
+  const allDone = completedCount === totalCount;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const timeline = (
-    <Timeline
-      items={steps
-        .filter((step) => !step.hide)
-        .map((step, index: number) => {
-          const title = step.isOptional ? `${step.title} (optional)` : step.title;
-          return {
-            key: index,
-            color: step.isComplete ? 'green' : 'grey',
-            children: step.isComplete ? (
-              title
-            ) : (
-              <div>
-                <a href={step.url ?? '#'}>
-                  <Button type={step.isOptional ? 'default' : 'primary'}>{title}</Button>
-                </a>
-                <p>
-                  <em>{step.description}</em>
-                </p>
-              </div>
-            ),
-          };
-        })}
-    />
-  );
+  if (allDone) {
+    return (
+      <Modal
+        open={true}
+        title={`Setup: ${props.assignment.name}`}
+        width={520}
+        onCancel={props.onClose}
+        footer={<Button onClick={props.onClose}>Close</Button>}
+      >
+        <div style={{ textAlign: 'center', padding: '32px 0 24px' }}>
+          <CheckCircleFilled style={{ fontSize: 52, color: colors.brandPrimary, marginBottom: 14 }} />
+          <div style={{ fontSize: 17, fontWeight: 600, color: colors.neutralTitle, marginBottom: 8 }}>
+            You're all set!
+          </div>
+          <div style={{ fontSize: 14, color: colors.neutralSecondaryText }}>
+            This assignment is fully configured and ready to go.
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
       open={true}
       title={`Setup: ${props.assignment.name}`}
-      width={550}
+      width={520}
       onCancel={props.onClose}
-      onOk={props.onClose}
+      footer={<Button onClick={props.onClose}>Close for now</Button>}
     >
-      <b>
-        Now that your assignment has been created, here are some next steps. You can access this list from this
-        assignment's "Actions" menu by selecting "Get started".
-      </b>
-      <br />
-      <br />
-      {timeline}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: colors.neutralSecondaryText }}>
+            {completedCount} of {totalCount} steps complete
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: colors.brandPrimary }}>{progressPercent}%</span>
+        </div>
+        <Progress percent={progressPercent} showInfo={false} strokeColor={colors.brandPrimary} size="small" />
+      </div>
+      <div>
+        {visibleSteps.map((step, index) => (
+          <div
+            key={index}
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              padding: '10px 0',
+              borderTop: index > 0 ? `1px solid ${colors.neutralDivider}` : undefined,
+            }}
+          >
+            <div
+              style={{
+                flexShrink: 0,
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 13,
+                fontWeight: 700,
+                background: step.isComplete ? colors.brandPrimary : colors.neutralBackground,
+                color: step.isComplete ? '#fff' : colors.neutralSecondaryText,
+                border: step.isComplete ? 'none' : `1.5px solid ${colors.neutralBorder}`,
+              }}
+            >
+              {step.isComplete ? <CheckOutlined style={{ fontSize: 12 }} /> : index + 1}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: 14,
+                  color: step.isComplete ? colors.neutralSecondaryText : colors.neutralTitle,
+                  textDecoration: step.isComplete ? 'line-through' : 'none',
+                  marginBottom: step.isComplete || !step.description ? 0 : 2,
+                }}
+              >
+                {step.title}
+                {step.isOptional && (
+                  <span style={{ fontWeight: 400, fontSize: 12, color: colors.neutralDisable, marginLeft: 6 }}>
+                    optional
+                  </span>
+                )}
+              </div>
+              {!step.isComplete && step.description && (
+                <div style={{ fontSize: 12, color: colors.neutralSecondaryText, lineHeight: 1.5 }}>
+                  {step.description}
+                </div>
+              )}
+            </div>
+            {!step.isComplete && step.url && (
+              <Link to={step.url} onClick={props.onClose} style={{ flexShrink: 0, alignSelf: 'center' }}>
+                <Button type={step.isOptional ? 'default' : 'primary'} size="small">
+                  Go →
+                </Button>
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
     </Modal>
   );
 };

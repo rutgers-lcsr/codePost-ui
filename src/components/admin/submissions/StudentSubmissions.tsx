@@ -163,6 +163,8 @@ const StudentIndexRoute: React.FC<{
         title: 'Student',
         dataIndex: 'student',
         key: 'primary',
+        fixed: 'left' as const,
+        width: 220,
         defaultSortOrder: 'ascend' as const,
         sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
           (a.key as string).localeCompare(b.key as string),
@@ -356,6 +358,7 @@ const StudentIndexRoute: React.FC<{
       }
       columns={columns}
       data={data}
+      tableProps={{ scroll: { x: 'max-content' } }}
       actions={[
         <Tooltip key="showActive" title={showInactive ? 'Hide inactive students' : 'Show inactive students'}>
           <Button

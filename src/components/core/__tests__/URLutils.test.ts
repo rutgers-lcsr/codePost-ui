@@ -98,7 +98,7 @@ describe('getTestsURL', () => {
   it('builds correct tests URL', () => {
     const course = { name: 'CS101', period: 'Fall 2025' };
     const assignment = { name: 'HW1' };
-    expect(getTestsURL(course, assignment)).toBe('admin/CS101/Fall 2025/assignments/tests/HW1/edit/environment');
+    expect(getTestsURL(course, assignment)).toBe('admin/CS101/Fall 2025/assignments/environment/HW1/edit');
   });
 });
 
