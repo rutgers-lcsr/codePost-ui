@@ -10,7 +10,7 @@ order: 20
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 (current)
 
 ---
 
@@ -34,9 +34,36 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 - Editing a submission current doesn't save anywhere, but we plan on adding a "Save" function to editing to allow graders/instructors to modify a students submission and run test on the modified code without affecting the student's original submission. We also plan on showing differences between the original and modified code to make it easier for graders to keep track of their changes. As well as allow students to view the changes made by graders to their code.
 
-## v3.3.0 - PDF Support for Commenting
+## v3.3.0 — AI Assistance, Dashboards & PDF Commenting
 
-> **Highlight**: Added commenting support for PDF files in codePost, allowing instructors and graders to annotate PDFs.
+> **Highlight**: AI-powered suggested comments and summaries, redesigned dashboards for admins and graders, PDF annotation support, and a new student console.
+
+### New: PDF Commenting
+
+Instructors and graders can now **annotate PDF files** directly in the code review panel. Select text or regions in uploaded PDFs and leave inline comments just like with code files.
+
+### New: AI Suggested Comments & Summaries
+
+The AI assistant can now generate **suggested comments**, **descriptions**, and **assignment summaries**. Graders see AI suggestions while reviewing, and instructors can generate summaries of assignment-level trends. A new behavioral feedback system supports AB testing and iterative prompt development.
+
+### New: Assignment Analytics Dashboards
+
+New **analytics dashboards** are available for admins and graders with assignment-level usage and grading insights. Dashboards show grading progress, time-on-task, and submission trends.
+
+### New: Student Console
+
+The student-facing code console has been **redesigned** for a cleaner, faster experience. Console sessions are now prefetched so output loads instantly.
+
+### New: Capabilities System
+
+Introduced a **capabilities framework** for feature gating and progressive rollout. This allows features to be enabled for specific courses or organizations before a full launch.
+
+### Bug Fixes
+
+- Fixed how messages are rendered in test case results.
+- Fixed image display for test cases and rendering of images inside Jupyter markdown cells.
+
+---
 
 ## v3.2.0 — AI Settings & Usage Analytics
 

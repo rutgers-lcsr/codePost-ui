@@ -12,6 +12,29 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 ---
 
+## [3.3.0] — AI Assistance, Dashboards & PDF Commenting
+
+### Added
+
+- **PDF commenting** — instructors and graders can now annotate PDF files directly in the code review panel.
+- **AI suggested comments & summaries** — AI-powered suggested comments, descriptions, and assignment summaries for graders and instructors.
+- **Assignment analytics dashboards** — new analytics views for admins and graders with assignment-level usage and grading insights.
+- **Capabilities system** — introduced a capabilities framework for feature gating and progressive rollout.
+- **Student console** — redesigned student-facing code console experience.
+- **Console prefetch** — console sessions are now prefetched for faster load times.
+
+### Changed
+
+- **Staff UI/UX improvements** — refined styles, layout, and interaction patterns for admin and grader dashboards.
+- **Behavioral prompt feedback** — added feedback mechanisms for AI prompts to support AB testing and prompt refinement.
+
+### Fixed
+
+- **Test case message rendering** — fixed how messages are rendered in test case results.
+- **Image rendering in test cases** — fixed image display for test cases and rendering of images inside Jupyter markdown cells.
+
+---
+
 ## [3.2.0] — AI Settings & Usage Analytics
 
 ### Added
