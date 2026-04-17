@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useEffect, useState, useContext, useCallback, useMemo } from 'react';
-import { Button, Card, Collapse, Image, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
+import { Button, Card, Collapse, Divider, Image, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
 import {
   CheckCircleFilled,
   CloseCircleFilled,
@@ -897,18 +897,12 @@ const TestsList: React.FC<TestsListProps> = ({
 
         {/* Default Message / Feedback (Tuple Return) — full card width */}
         {!suppressMessages && parsedResults.length === 1 && showTupleMessage && (
-          <div
-            style={{
-              marginTop: 8,
-              padding: '12px 16px',
-              borderRadius: 6,
-              border: `1px solid ${isDarkTheme ? darkBorder : '#e8e8e8'}`,
-              borderLeft: `3px solid ${statusColor.main}`,
-              backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.04)' : '#f8fafc',
-            }}
-          >
-            {renderMarkdownMessage(primaryParsedResult?.message || '')}
-          </div>
+          <>
+            <Divider style={{ margin: '8px 0 0' }} />
+            <div style={{ padding: '8px 16px 4px' }}>
+              {renderMarkdownMessage(primaryParsedResult?.message || '')}
+            </div>
+          </>
         )}
       </Card>
     );
@@ -1155,18 +1149,12 @@ const TestsList: React.FC<TestsListProps> = ({
               {!hasScriptError && hasUniformContent && (
                 <div style={{ marginBottom: 12 }}>
                   {uniformMessage && (
-                    <div
-                      style={{
-                        padding: '12px 16px',
-                        borderRadius: 6,
-                        border: `1px solid ${isDarkTheme ? darkBorder : '#e8e8e8'}`,
-                        borderLeft: `3px solid ${isDarkTheme ? '#9da7b3' : '#595959'}`,
-                        backgroundColor: isDarkTheme ? 'rgba(255,255,255,0.04)' : '#f8fafc',
-                        marginBottom: uniformLog ? 8 : 0,
-                      }}
-                    >
-                      {renderMarkdownMessage(uniformMessage)}
-                    </div>
+                    <>
+                      <Divider style={{ margin: '0 0 8px' }} />
+                      <div style={{ padding: '0 16px', marginBottom: uniformLog ? 8 : 0 }}>
+                        {renderMarkdownMessage(uniformMessage)}
+                      </div>
+                    </>
                   )}
                   {uniformLog && (
                     <pre
