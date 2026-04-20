@@ -5107,6 +5107,12 @@ export interface Organization {
   emailDomain?: string | null;
   /**
    *
+   * @type {Array<string>}
+   * @memberof Organization
+   */
+  allowedEmailDomains?: Array<string>;
+  /**
+   *
    * @type {boolean}
    * @memberof Organization
    */
@@ -6831,6 +6837,12 @@ export interface PatchedOrganization {
    * @memberof PatchedOrganization
    */
   emailDomain?: string | null;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof PatchedOrganization
+   */
+  allowedEmailDomains?: Array<string>;
   /**
    *
    * @type {boolean}

@@ -10,6 +10,7 @@ interface IProps {
 
 interface OrgSettingsFormValues {
   emailDomain?: string | null;
+  allowedEmailDomains?: string[];
   ssoEnabled?: boolean;
   ssoProvider?: string | null;
   sendWelcomeEmail?: boolean;
@@ -42,6 +43,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
 
           form.setFieldsValue({
             emailDomain: orgData.emailDomain,
+            allowedEmailDomains: orgData.allowedEmailDomains || [],
             ssoEnabled: orgData.ssoEnabled,
             ssoProvider: orgData.ssoProvider || 'CAS',
             sendWelcomeEmail: orgData.sendWelcomeEmail,
@@ -97,6 +99,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
         id: props.user.organization,
         patchedOrganization: {
           emailDomain: values.emailDomain,
+          allowedEmailDomains: values.allowedEmailDomains || [],
           ssoEnabled: values.ssoEnabled,
           ssoProvider: values.ssoProvider,
           sendWelcomeEmail: values.sendWelcomeEmail,
@@ -205,9 +208,23 @@ const OrgSettings: React.FC<IProps> = (props) => {
           <Form.Item
             name="emailDomain"
             label="Allowed Email Domain"
-            help="The email domain associated with this organization (e.g. valid-user@university.edu). Used for SSO user creation."
+            help="The primary email domain associated with this organization (e.g. valid-user@university.edu). Used for SSO user creation and NetID-to-email conversion."
           >
             <Input placeholder="university.edu" />
+          </Form.Item>
+
+          <Form.Item
+            name="allowedEmailDomains"
+            label="Additional Allowed Email Domains"
+            help="Additional email domains that should route to this organization's SSO (e.g. subdomains like scarletmail.rutgers.edu). Press Enter after each domain."
+          >
+            <Select
+              mode="tags"
+              placeholder="e.g. scarletmail.university.edu"
+              tokenSeparators={[',', ' ', '\n']}
+              style={{ width: '100%' }}
+              notFoundContent={null}
+            />
           </Form.Item>
 
           <Form.Item

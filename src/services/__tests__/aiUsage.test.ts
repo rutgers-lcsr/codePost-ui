@@ -18,6 +18,11 @@ vi.mock('../../api-client/clients', () => ({
     aiUsageRetrieve: vi.fn(),
     aiModelsRetrieve: vi.fn(),
   },
+  apiClientConfig: { basePath: 'https://api.example.com' },
+}));
+
+vi.mock('../../utils/auth', () => ({
+  getAuthToken: vi.fn(() => 'test-token'),
 }));
 
 import { AIUsageService } from '../aiUsage';
@@ -26,6 +31,36 @@ import { organizationsApi, coursesApi, systemApi } from '../../api-client/client
 describe('AIUsageService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('AI Feature Registry', () => {
+    beforeEach(() => {
+      vi.stubGlobal('fetch', vi.fn());
+    });
+
+    it('listAIFeatures fetches /aiFeatures/ with auth', async () => {
+      const features = [{ key: 'suggest_comments', label: 'Suggest Comments' }];
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(features),
+      } as Response);
+
+      const result = await AIUsageService.listAIFeatures();
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/aiFeatures/', expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+      }));
+      expect(result).toEqual(features);
+    });
+
+    it('listAIFeatures throws on non-ok response', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 500,
+      } as Response);
+
+      await expect(AIUsageService.listAIFeatures()).rejects.toThrow('Failed to fetch AI features');
+    });
   });
 
   describe('Organization AI Settings', () => {

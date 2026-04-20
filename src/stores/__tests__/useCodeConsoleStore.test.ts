@@ -152,6 +152,12 @@ describe('useCodeConsoleStore', () => {
       expect(useCodeConsoleStore.getState().comments[1][0].id).toBe(100);
     });
 
+    it('should handle removeComment for a file with no comments', () => {
+      useCodeConsoleStore.getState().setComments({});
+      useCodeConsoleStore.getState().removeComment(999, 1);
+      expect(useCodeConsoleStore.getState().comments[999]).toEqual([]);
+    });
+
     it('should set and clear activeCommentID', () => {
       useCodeConsoleStore.getState().setActiveCommentID(42);
       expect(useCodeConsoleStore.getState().activeCommentID).toBe(42);

@@ -16,6 +16,16 @@ function buildMockJwt(payload: Record<string, unknown>): string {
   return `${header}.${body}.fake-signature`;
 }
 
+// Helper: build a valid (non-expired) JWT
+function buildValidJwt(): string {
+  return buildMockJwt({ user_id: 1, exp: Math.floor(Date.now() / 1000) + 3600 });
+}
+
+// Helper: build an expired JWT
+function buildExpiredJwt(): string {
+  return buildMockJwt({ user_id: 1, exp: Math.floor(Date.now() / 1000) - 100 });
+}
+
 describe('getAuthToken', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -57,10 +67,182 @@ describe('getDecodedTokenPayload', () => {
   });
 });
 
+describe('isTokenExpired', () => {
+  it('returns true when no token is stored', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue(null);
+    const { isTokenExpired } = await import('../auth');
+    expect(isTokenExpired()).toBe(true);
+  });
+
+  it('returns true when token exp is not a number', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue(buildMockJwt({ user_id: 1, exp: 'not-a-number' }));
+    const { isTokenExpired } = await import('../auth');
+    expect(isTokenExpired()).toBe(true);
+  });
+
+  it('returns false when token is still valid', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue(buildValidJwt());
+    const { isTokenExpired } = await import('../auth');
+    expect(isTokenExpired()).toBe(false);
+  });
+
+  it('returns true when token is expired', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue(buildExpiredJwt());
+    const { isTokenExpired } = await import('../auth');
+    expect(isTokenExpired()).toBe(true);
+  });
+});
+
+describe('tryRefreshToken', () => {
+  it('returns false when no token is stored', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue(null);
+    const { tryRefreshToken } = await import('../auth');
+    const result = await tryRefreshToken();
+    expect(result).toBe(false);
+  });
+
+  it('returns true and stores new token on success', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    const { mock: lsMock, store } = createLocalStorageMock();
+    store['token'] = 'old-token';
+    installLocalStorageMock(lsMock);
+
+    const newToken = buildValidJwt();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ token: newToken }),
+      }),
+    );
+
+    const { tryRefreshToken } = await import('../auth');
+    const result = await tryRefreshToken();
+    expect(result).toBe(true);
+    expect(localStorage.setItem).toHaveBeenCalledWith('token', newToken);
+  });
+
+  it('returns false when refresh endpoint returns not ok', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue('old-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+
+    const { tryRefreshToken } = await import('../auth');
+    const result = await tryRefreshToken();
+    expect(result).toBe(false);
+  });
+
+  it('returns false when refresh response has no token', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue('old-token');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      }),
+    );
+
+    const { tryRefreshToken } = await import('../auth');
+    const result = await tryRefreshToken();
+    expect(result).toBe(false);
+  });
+
+  it('returns false on network error', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue('old-token');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network down')));
+
+    const { tryRefreshToken } = await import('../auth');
+    const result = await tryRefreshToken();
+    expect(result).toBe(false);
+  });
+
+  it('deduplicates concurrent refresh calls', async () => {
+    vi.resetModules();
+    vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
+
+    vi.mocked(localStorage.getItem).mockReturnValue('old-token');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ token: buildValidJwt() }),
+      }),
+    );
+
+    const { tryRefreshToken } = await import('../auth');
+    const [r1, r2] = await Promise.all([tryRefreshToken(), tryRefreshToken()]);
+    expect(r1).toBe(true);
+    expect(r2).toBe(true);
+    // Only one fetch call, second call reuses the in-flight promise
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('handleUnauthorized', () => {
   beforeEach(() => {
     // Mock fetch so tryRefreshToken fails gracefully (simulates refresh failure)
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 401 }));
+  });
+
+  it('skips logout when expired token is successfully refreshed', async () => {
+    vi.resetModules();
+
+    vi.mock('../../components/utils/LocalSettings', () => ({
+      clearLocalSettings: vi.fn(),
+    }));
+
+    const { mock: lsMock, store } = createLocalStorageMock();
+    store['token'] = buildExpiredJwt();
+    installLocalStorageMock(lsMock);
+
+    Object.defineProperty(window, 'location', {
+      value: { href: '/dashboard' },
+      writable: true,
+      configurable: true,
+    });
+
+    // Mock a successful refresh
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ token: buildValidJwt() }),
+      }),
+    );
+
+    const authModule = await import('../auth');
+    await authModule.handleUnauthorized();
+
+    // Should NOT redirect — token was refreshed
+    expect(window.location.href).toBe('/dashboard');
+    // The refreshed token should be stored
+    expect(localStorage.setItem).toHaveBeenCalledWith('token', expect.any(String));
   });
 
   it('clears auth storage when token exists', async () => {

@@ -14,6 +14,11 @@ vi.mock('../../api-client/clients', () => ({
     removeFromRosterPartialUpdate: vi.fn(),
     courseSettingsRetrieve: vi.fn(),
   },
+  apiClientConfig: { basePath: 'https://api.example.com' },
+}));
+
+vi.mock('../../utils/auth', () => ({
+  getAuthToken: vi.fn(() => 'test-token'),
 }));
 
 import { Course } from '../course';
@@ -126,6 +131,120 @@ describe('Course service', () => {
 
       expect(coursesApi.courseSettingsRetrieve).toHaveBeenCalledWith({ id: 11 });
       expect(result).toEqual(mockSettings);
+    });
+  });
+
+  describe('API Key methods (apiFetch)', () => {
+    beforeEach(() => {
+      vi.stubGlobal('fetch', vi.fn());
+    });
+
+    it('listAPIKeys fetches with GET and auth header', async () => {
+      const keys = [{ id: 1, name: 'key1' }];
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(keys),
+      } as Response);
+
+      const result = await Course.listAPIKeys(42);
+
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/42/apiKeys/', expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+      }));
+      expect(result).toEqual(keys);
+    });
+
+    it('createAPIKey sends POST with name', async () => {
+      const created = { id: 2, name: 'new-key', key: 'raw-key-value' };
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve(created),
+      } as Response);
+
+      const result = await Course.createAPIKey(42, 'new-key');
+
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/42/apiKeys/', expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ name: 'new-key' }),
+      }));
+      expect(result).toEqual(created);
+    });
+
+    it('updateAPIKey sends PATCH', async () => {
+      const updated = { id: 3, name: 'renamed', isActive: false };
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(updated),
+      } as Response);
+
+      const result = await Course.updateAPIKey(10, 3, { name: 'renamed', isActive: false });
+
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/10/apiKeys/3/', expect.objectContaining({
+        method: 'PATCH',
+      }));
+      expect(result).toEqual(updated);
+    });
+
+    it('deleteAPIKey sends DELETE and returns undefined for 204', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 204,
+        json: () => Promise.reject(new Error('no body')),
+      } as Response);
+
+      const result = await Course.deleteAPIKey(10, 3);
+
+      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/10/apiKeys/3/', expect.objectContaining({
+        method: 'DELETE',
+      }));
+      expect(result).toBeUndefined();
+    });
+
+    it('throws with detail from error response', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        json: () => Promise.resolve({ detail: 'Not authorized' }),
+      } as Response);
+
+      await expect(Course.listAPIKeys(1)).rejects.toThrow('Not authorized');
+    });
+
+    it('throws with error field when detail is absent', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: () => Promise.resolve({ error: 'Invalid params' }),
+      } as Response);
+
+      await expect(Course.createAPIKey(1, '')).rejects.toThrow('Invalid params');
+    });
+
+    it('throws with statusText when body has no detail or error', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: () => Promise.resolve({}),
+      } as Response);
+
+      await expect(Course.listAPIKeys(1)).rejects.toThrow('Internal Server Error');
+    });
+
+    it('throws with statusText when error body cannot be parsed', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        json: () => Promise.reject(new Error('not json')),
+      } as Response);
+
+      await expect(Course.listAPIKeys(1)).rejects.toThrow('Bad Gateway');
     });
   });
 });

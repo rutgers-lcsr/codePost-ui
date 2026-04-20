@@ -60,6 +60,11 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
               <Descriptions.Item label="Name">{organization.name}</Descriptions.Item>
               <Descriptions.Item label="Short Name">{organization.shortname}</Descriptions.Item>
               <Descriptions.Item label="Email Domain">{organization.emailDomain || 'N/A'}</Descriptions.Item>
+              <Descriptions.Item label="Additional Email Domains">
+                {organization.allowedEmailDomains && organization.allowedEmailDomains.length > 0
+                  ? organization.allowedEmailDomains.join(', ')
+                  : 'None'}
+              </Descriptions.Item>
               <Descriptions.Item label="SSO Enabled">{organization.ssoEnabled ? 'Yes' : 'No'}</Descriptions.Item>
               {organization.ssoEnabled && (
                 <>

@@ -202,6 +202,17 @@ describe('useRubricStore', () => {
 
       expect(useRubricStore.getState().deletedCategories).toHaveLength(0);
     });
+
+    it('should handle deleting category with no rubricComments entry', () => {
+      // Initialize with a category but no comments for that category
+      const cat = { id: 5, name: 'Empty', sortOrder: 0, pointLimit: null, assignment: 1 } as any;
+      useRubricStore.getState().initialize([cat], {});
+
+      // Add an unsaved comment on a different category to verify filter works
+      useRubricStore.getState().deleteCategory(cat);
+
+      expect(useRubricStore.getState().rubricCategories).toHaveLength(0);
+    });
   });
 
   describe('moveCategory', () => {
@@ -251,6 +262,26 @@ describe('useRubricStore', () => {
 
       expect(useRubricStore.getState().rubricComments[1]).toHaveLength(1);
       expect(useRubricStore.getState().deletedComments).toHaveLength(1);
+    });
+
+    it('should NOT track new comments (id <= 0) in deletedComments', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      // Add a new comment (will get a negative id from the counter)
+      useRubricStore.getState().addComment(1, { text: 'new', pointDelta: 0 } as any);
+      const newComment = useRubricStore.getState().rubricComments[1].at(-1)!;
+      expect(newComment.id).toBeLessThan(0);
+
+      useRubricStore.getState().deleteComment(newComment);
+
+      expect(useRubricStore.getState().deletedComments).toHaveLength(0);
+    });
+
+    it('should handle deleting from a non-existent category gracefully', () => {
+      useRubricStore.getState().initialize(createMockCategories(), createMockComments());
+      // Attempt to delete a comment whose category doesn't exist
+      useRubricStore.getState().deleteComment({ id: 999, category: 9999 } as any);
+      // State should remain unchanged
+      expect(useRubricStore.getState().deletedComments).toHaveLength(0);
     });
   });
 
