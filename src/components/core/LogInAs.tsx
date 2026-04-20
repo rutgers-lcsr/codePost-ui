@@ -78,7 +78,7 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
 
       {errorMessage && (
         <div>
-          <Alert message="Login Failed" description={errorMessage} type="error" showIcon style={{ marginBottom: 20 }} />
+          <Alert title="Login Failed" description={errorMessage} type="error" showIcon style={{ marginBottom: 20 }} />
           <Button type="primary" size="large" onClick={issueRequest}>
             Try Again
           </Button>

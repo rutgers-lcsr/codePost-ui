@@ -54,7 +54,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                 Organization Details
               </Typography.Title>
             }
-            bordered={false}
+            variant="borderless"
           >
             <Descriptions column={2}>
               <Descriptions.Item label="Name">{organization.name}</Descriptions.Item>
@@ -84,7 +84,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                 Analytics
               </Typography.Title>
             }
-            bordered={false}
+            variant="borderless"
           >
             {loading ? (
               <div style={{ textAlign: 'center', padding: 24 }}>
@@ -99,7 +99,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                   <Statistic
                     title="Active Users (30d)"
                     value={analytics.active_users}
-                    valueStyle={{ color: '#3f8600' }}
+                    styles={{ content: { color: '#3f8600' } }}
                   />
                 </Col>
                 <Col xs={12} sm={6}>
@@ -109,7 +109,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                   <Statistic
                     title="Active Courses"
                     value={analytics.active_courses}
-                    valueStyle={{ color: '#3f8600' }}
+                    styles={{ content: { color: '#3f8600' } }}
                   />
                 </Col>
                 <Col xs={12} sm={6}>
@@ -127,7 +127,7 @@ const OrgOverview: React.FC<IProps> = ({ organization }) => {
                     title="Submissions (30d)"
                     value={analytics.submissions_this_month}
                     prefix={<CheckCircleOutlined />}
-                    valueStyle={{ color: '#1890ff' }}
+                    styles={{ content: { color: '#1890ff' } }}
                   />
                 </Col>
               </Row>

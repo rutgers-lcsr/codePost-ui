@@ -18,7 +18,7 @@ const SimpleGradeHeader = (props: { grade: string | Interpolation<number, string
         >
           {props.grade}
         </animated.div>
-        <Divider type="vertical" />
+        <Divider orientation="vertical" />
         <span className="cp-label">student@myschool.edu</span>
       </div>
     </div>

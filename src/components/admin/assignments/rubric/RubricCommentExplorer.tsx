@@ -247,7 +247,7 @@ const RubricCommentExplorer: React.FC<IProps> = ({ rubricComment, closeCommentEx
       ]}
     >
       <div style={headerStyle}>
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="small" style={{ width: '100%' }}>
           <span style={{ color: '#8c8c8c', fontSize: '13px' }}>Rubric Comment Text:</span>
           <Typography.Text code style={{ fontSize: '14px', padding: '4px 8px', background: '#f5f5f5' }}>
             {rubricComment.text}

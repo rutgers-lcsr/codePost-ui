@@ -284,7 +284,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
           <strong>{emails.length}</strong> {title.toLowerCase()}
         </Descriptions.Item>
       </Descriptions>
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space orientation="vertical" style={{ width: '100%' }}>
         {emails.map((email) => (
           <Tag key={email} color={color} style={{ marginBottom: '4px' }}>
             <Link to={`/loginAs?email=${encodeURIComponent(email)}`} style={{ color: 'inherit' }}>
@@ -456,7 +456,7 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
                     {currentRoster.notActivated.length} users
                   </Descriptions.Item>
                 </Descriptions>
-                <Space direction="vertical" style={{ width: '100%', marginTop: '8px' }}>
+                <Space orientation="vertical" style={{ width: '100%', marginTop: '8px' }}>
                   {currentRoster.notActivated.map((email) => (
                     <Tag key={email} color="orange">
                       {email}

@@ -449,7 +449,7 @@ export const EnvironmentSpecs = (props: IProps) => {
         label: depConfig.dependencyFile, // e.g. "Project Dependencies (pom.xml)"? User said "Manifest" defaults.
         children: (
           <>
-            <Alert message={depConfig.dependencyHelp} type="info" showIcon style={{ marginBottom: 10 }} />
+            <Alert title={depConfig.dependencyHelp} type="info" showIcon style={{ marginBottom: 10 }} />
             <Editor
               height="250px"
               defaultLanguage={depConfig.dependencyMode || 'text'}
@@ -469,7 +469,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     children: (
       <>
         <Alert
-          message="Install system-level packages (e.g. via apt-get or apk)."
+          title="Install system-level packages (e.g. via apt-get or apk)."
           type="info"
           showIcon
           style={{ marginBottom: 10 }}
@@ -726,7 +726,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       </div>
 
       <Alert
-        message={`You are in Custom Mode. The detected overrides will be appended to the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
+        title={`You are in Custom Mode. The detected overrides will be appended to the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
         type="info"
         showIcon
         style={{ marginBottom: 15 }}
@@ -840,7 +840,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       </div>
 
       {/* Main Configuration Card */}
-      <Card bordered={false} style={{ marginBottom: 20 }}>
+      <Card variant="borderless" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 20, borderBottom: '1px solid #f0f0f0' }}>
           <span style={{ marginRight: 15, fontWeight: 600, fontSize: 16 }}>Mode:</span>
           <Radio.Group
@@ -895,7 +895,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       >
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           <Alert
-            message="This is a preview of the Dockerfile that will be generated based on your current settings."
+            title="This is a preview of the Dockerfile that will be generated based on your current settings."
             type="info"
             showIcon
             style={{ marginBottom: 16 }}

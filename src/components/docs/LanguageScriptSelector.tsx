@@ -219,7 +219,7 @@ const LanguageScriptSelector: React.FC<LanguageScriptSelectorProps> = ({ title =
         margin: '20px 0 28px',
       }}
     >
-      <Space direction="vertical" size={12} style={{ width: '100%' }}>
+      <Space orientation="vertical" size={12} style={{ width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', rowGap: '12px' }}>
           <Text strong style={{ color: colors.neutralTitle }}>
             {title}

@@ -185,7 +185,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       Modal.confirm({
         title: 'Edit File Path',
         content: (
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <div>
               <Text>Directory (leave empty for root):</Text>
               <Input id="edit-path-input" placeholder="e.g., src or /srv/share" defaultValue={file.path || ''} />
@@ -457,7 +457,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
           borderBottom: '1px solid #d9d9d9',
         }}
       >
-        <Space direction="vertical" size={8} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={8} style={{ width: '100%' }}>
           <Space size={12}>
             <FileOutlined style={{ fontSize: 18, color: colors.actionBlue }} />
             <Text strong style={{ fontSize: 16 }}>

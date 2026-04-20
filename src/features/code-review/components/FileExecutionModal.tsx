@@ -163,7 +163,7 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
 
   const renderStatusHeader = () => {
     if (isExecuting) return null;
-    if (error) return <Alert type="error" message="Execution Failed" description={error} showIcon />;
+    if (error) return <Alert type="error" title="Execution Failed" description={error} showIcon />;
     if (!result) return null;
 
     const items = [
@@ -375,8 +375,8 @@ export const FileExecutionModal: React.FC<FileExecutionModalProps> = ({
       }
       width={900}
       centered
-      destroyOnClose
-      maskClosable={!isExecuting}
+      destroyOnHidden
+      mask={{ closable: !isExecuting }}
     >
       {renderStatusHeader()}
       {renderContent()}

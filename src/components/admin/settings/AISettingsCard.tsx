@@ -217,7 +217,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
               type="info"
               showIcon
               icon={<BankOutlined />}
-              message={
+              title={
                 usingOrgSettings
                   ? 'Using organization AI key — AI is available via your organization settings.'
                   : 'Organization AI key is available. Toggle "Use org key" below to inherit it instead of your own.'
@@ -462,7 +462,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
             <Alert
               type="warning"
               showIcon
-              message="No AI configured"
+              title="No AI configured"
               description="Configure an AI provider and API key above, or ask your organization admin to set up a shared org key."
             />
           )}

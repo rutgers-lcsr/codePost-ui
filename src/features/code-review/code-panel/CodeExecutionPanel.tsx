@@ -153,7 +153,7 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
       }}
       bodyStyle={{ padding: '16px' }}
     >
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
         {/* Execution Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Space>
@@ -307,14 +307,14 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
                   }
                   key="error"
                 >
-                  <Alert message={result.error} type="error" showIcon />
+                  <Alert title={result.error} type="error" showIcon />
                 </Panel>
               )}
 
               {/* Notebook Cells - Jupyter-style layout */}
               {result.output_data && result.output_data.cells && (
                 <Panel header={<Text strong>Notebook Cells</Text>} key="notebook">
-                  <Space direction="vertical" style={{ width: '100%', gap: '12px' }}>
+                  <Space orientation="vertical" style={{ width: '100%', gap: '12px' }}>
                     {result.output_data.cells.map((cell, index) => {
                       // Check if this is a markdown cell
                       const isMarkdown = cell.cell_type === 'markdown';

@@ -9,7 +9,7 @@ import * as React from 'react';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Checkbox, Input, Spin, Tooltip, Typography } from 'antd';
+import { Alert, Checkbox, Input, Space, Spin, Tooltip, Typography } from 'antd';
 
 /* other library imports */
 import { Link, useLocation } from 'react-router-dom';
@@ -89,7 +89,7 @@ const JoinSignup = (props: { email?: string }) => {
   if (hasSubmitted) {
     content = confirmEmailSent ? (
       <Alert
-        message={'Success!'}
+        title={'Success!'}
         description={
           props.email ? (
             <span>
@@ -119,17 +119,17 @@ const JoinSignup = (props: { email?: string }) => {
     content = (
       <div>
         <label htmlFor="invite-code">Invite code:</label>{' '}
-        <Input
-          id="invite-code"
-          placeholder="abc123"
-          value={inviteCode}
-          onChange={(e) => setInviteCode(e.target.value)}
-          addonAfter={
-            <Tooltip title="If you don't have one of these, ask your instructor.">
-              <QuestionCircleOutlined style={{ cursor: 'pointer' }} />
-            </Tooltip>
-          }
-        />
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            id="invite-code"
+            placeholder="abc123"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value)}
+          />
+          <Tooltip title="If you don't have one of these, ask your instructor.">
+            <QuestionCircleOutlined style={{ cursor: 'pointer', padding: '0 11px', display: 'flex', alignItems: 'center' }} />
+          </Tooltip>
+        </Space.Compact>
         {invalidCode && <span style={{ color: 'red' }}>Your invite code is invalid.</span>}
         <br />
         <br />

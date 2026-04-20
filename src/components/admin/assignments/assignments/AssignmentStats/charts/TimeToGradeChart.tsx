@@ -30,16 +30,16 @@ const TimeToGradeChart: React.FC<TimeToGradeChartProps> = ({ data }) => {
       {overall && (
         <Row gutter={16} style={{ marginBottom: 16, textAlign: 'center' }}>
           <Col span={6}>
-            <Statistic title="Mean" value={formatHours(overall.meanHours)} valueStyle={{ fontSize: 18 }} />
+            <Statistic title="Mean" value={formatHours(overall.meanHours)} styles={{ content: { fontSize: 18 } }} />
           </Col>
           <Col span={6}>
-            <Statistic title="Median" value={formatHours(overall.medianHours)} valueStyle={{ fontSize: 18 }} />
+            <Statistic title="Median" value={formatHours(overall.medianHours)} styles={{ content: { fontSize: 18 } }} />
           </Col>
           <Col span={6}>
-            <Statistic title="Fastest" value={formatHours(overall.minHours)} valueStyle={{ fontSize: 18 }} />
+            <Statistic title="Fastest" value={formatHours(overall.minHours)} styles={{ content: { fontSize: 18 } }} />
           </Col>
           <Col span={6}>
-            <Statistic title="Slowest" value={formatHours(overall.maxHours)} valueStyle={{ fontSize: 18 }} />
+            <Statistic title="Slowest" value={formatHours(overall.maxHours)} styles={{ content: { fontSize: 18 } }} />
           </Col>
         </Row>
       )}

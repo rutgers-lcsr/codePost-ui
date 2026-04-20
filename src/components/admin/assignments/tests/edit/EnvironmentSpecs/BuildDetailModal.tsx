@@ -211,7 +211,7 @@ export const BuildDetailModal = (props: IProps) => {
       <div style={{ marginTop: 16 }}>
         {!props.inProgress && props.isSuccess && (
           <Alert
-            message="Build Completed Successfully"
+            title="Build Completed Successfully"
             description="Your environment is ready to use. You can now close this window."
             type="success"
             showIcon
@@ -220,7 +220,7 @@ export const BuildDetailModal = (props: IProps) => {
         )}
         {!props.inProgress && props.isSuccess === false && (
           <Alert
-            message="Build Failed"
+            title="Build Failed"
             description="Please check the logs below for error details."
             type="error"
             showIcon

@@ -8,7 +8,7 @@ import * as React from 'react';
 
 /* ant imports */
 import { TeamOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Input, message, Modal, notification, Popover, Select, Switch } from 'antd';
+import { Button, Checkbox, Input, message, Modal, notification, Popover, Select, Space, Switch } from 'antd';
 
 import { colors } from '../../theme/colors';
 
@@ -159,12 +159,13 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           First, to use codePost independently of Code in Place, you'll need to set a codePost password.
           <br />
           <br />
-          <Input
-            style={{ width: 500 }}
-            addonBefore="Your email"
-            value={props.user.email!}
-            disabled={true}
-          /> &nbsp;{' '}
+          <Space.Compact style={{ width: 500 }}>
+            <Button disabled style={{ cursor: 'default' }}>Your email</Button>
+            <Input
+              value={props.user.email!}
+              disabled={true}
+            />
+          </Space.Compact> &nbsp;{' '}
           <Popover
             title="Use a different email"
             content={
@@ -186,10 +187,16 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           </Popover>
           <br />
           <br />
-          <Input.Password style={{ width: 500 }} addonBefore="Password" onChange={(e) => setp1(e.target.value)} />
+          <Space.Compact style={{ width: 500 }}>
+            <Button disabled style={{ cursor: 'default' }}>Password</Button>
+            <Input.Password onChange={(e) => setp1(e.target.value)} />
+          </Space.Compact>
           &nbsp; You'll use this password to login into codePost directly. &nbsp; <br />
           <br />
-          <Input.Password style={{ width: 500 }} addonBefore="Confirm" onChange={(e) => setp2(e.target.value)} /> &nbsp;
+          <Space.Compact style={{ width: 500 }}>
+            <Button disabled style={{ cursor: 'default' }}>Confirm</Button>
+            <Input.Password onChange={(e) => setp2(e.target.value)} />
+          </Space.Compact> &nbsp;
           {p2.length > 0 && p1 !== p2 && <span style={{ color: 'red' }}>Passwords don't match</span>}
           {
             <ul>

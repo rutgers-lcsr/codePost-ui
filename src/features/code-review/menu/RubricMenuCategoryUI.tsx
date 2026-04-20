@@ -579,7 +579,7 @@ const RubricMenuCommentElement = (props: IRubricMenuCommentElementProps) => {
           className={`rubric-row rubric-row--editing${props.cursored ? ' rubric-row-cursored' : ''}`}
           style={{ padding: '8px 12px' }}
         >
-          <Space direction="vertical" style={{ width: '100%' }} size={8}>
+          <Space orientation="vertical" style={{ width: '100%' }} size={8}>
             {/* Text input */}
             {props.textInput}
 

@@ -240,7 +240,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false }) => {
         </Space>
       }
     >
-      <Space direction="vertical" style={{ width: '100%' }} size={8}>
+      <Space orientation="vertical" style={{ width: '100%' }} size={8}>
         <CheckRow icon={<DatabaseOutlined />} name="Database" check={health?.database ?? null} />
         <CheckRow icon={<ClusterOutlined />} name="Task Queue" check={health?.celery ?? null} />
         <CheckRow icon={<ThunderboltOutlined />} name="Cache" check={health?.cache ?? null} />

@@ -274,7 +274,7 @@ export const TestCreateModal = (props: IProps) => {
             type="info"
             showIcon
             style={{ marginTop: 10 }}
-            message="AI will analyze this file to generate appropriate test cases."
+            title="AI will analyze this file to generate appropriate test cases."
           />
         </div>
       )}
@@ -282,7 +282,7 @@ export const TestCreateModal = (props: IProps) => {
       {creationMethod === 'manual' && (
         <div style={{ marginTop: 20 }}>
           <Alert
-            message="Empty Script"
+            title="Empty Script"
             description="A new empty test script will be created. You can edit the code after creation."
             type="info"
             showIcon
@@ -300,7 +300,7 @@ export const TestCreateModal = (props: IProps) => {
       <Alert
         type="info"
         showIcon
-        message="Linking a rubric item allows the autograder to automatically deduct points from that specific category if the test fails."
+        title="Linking a rubric item allows the autograder to automatically deduct points from that specific category if the test fails."
         style={{ marginBottom: 20 }}
       />
 

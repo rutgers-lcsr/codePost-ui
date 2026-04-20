@@ -90,7 +90,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({ courses, rosters, organizat
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: CourseWithRoster) => (
-        <Space direction="vertical" size="small">
+        <Space orientation="vertical" size="small">
           <Space>
             <BookOutlined style={{ color: record.archived ? colors.neutralDisable : colors.actionGreen }} />
             <strong>{name}</strong>

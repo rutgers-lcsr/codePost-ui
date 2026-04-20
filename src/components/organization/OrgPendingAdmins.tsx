@@ -174,7 +174,7 @@ const OrgPendingAdmins: React.FC<IProps> = ({ orgId }) => {
 
       {pendingUsers.length > 0 && (
         <Alert
-          message={`You have ${pendingUsers.length} pending request${pendingUsers.length !== 1 ? 's' : ''}`}
+          title={`You have ${pendingUsers.length} pending request${pendingUsers.length !== 1 ? 's' : ''}`}
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
@@ -183,7 +183,7 @@ const OrgPendingAdmins: React.FC<IProps> = ({ orgId }) => {
 
       <Card
         title="Pending Requests"
-        bordered={false}
+        variant="borderless"
         extra={
           <Button icon={<ReloadOutlined />} onClick={fetchPendingAdmins} loading={loading}>
             Refresh

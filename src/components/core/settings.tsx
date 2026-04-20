@@ -8,7 +8,7 @@
 import { CopyOutlined, RedoOutlined } from '@ant-design/icons';
 
 /* antd imports */
-import { Input, message, Modal, Switch, Table, Typography, theme } from 'antd';
+import { Button, Input, message, Modal, Space, Switch, Table, Typography, theme } from 'antd';
 
 /* codePost imports */
 import type { CourseType, UserType } from '../../types/models';
@@ -207,24 +207,24 @@ class Settings extends Component<IProps, IState> {
             <label htmlFor="api-key" className="sr-only">
               Your API key
             </label>
-            <Input.Password
-              aria-label="Your API key"
-              addonBefore="Your API key"
-              className="input--disabled-normal"
-              id="api-key"
-              value={user.apiToken}
-              prefix={
-                <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
-                  <CopyTokenIcon onClick={this.copyKeyToClipboard} />
-                </CPTooltip>
-              }
-              disabled={true}
-              addonAfter={
-                <CPTooltip title={tooltips.settings.token.reset}>
-                  <RedoOutlined aria-label="Reset API key" onClick={this.toggleResetStatus} />
-                </CPTooltip>
-              }
-            />
+            <Space.Compact style={{ width: '100%' }}>
+              <Button disabled style={{ cursor: 'default' }}>Your API key</Button>
+              <Input.Password
+                aria-label="Your API key"
+                className="input--disabled-normal"
+                id="api-key"
+                value={user.apiToken}
+                prefix={
+                  <CPTooltip title={tooltips.settings.token.copy} hideThisOnHideTips={true}>
+                    <CopyTokenIcon onClick={this.copyKeyToClipboard} />
+                  </CPTooltip>
+                }
+                disabled={true}
+              />
+              <CPTooltip title={tooltips.settings.token.reset}>
+                <Button aria-label="Reset API key" icon={<RedoOutlined />} onClick={this.toggleResetStatus} />
+              </CPTooltip>
+            </Space.Compact>
             <br />
             <br />
             {this.buildCourseTable(user.courseadminCourses)}
@@ -245,14 +245,16 @@ class Settings extends Component<IProps, IState> {
         <label htmlFor="user-email" className="sr-only">
           Email
         </label>
-        <Input
-          id="user-email"
-          aria-label="Email"
-          addonBefore="Email"
-          className="input--disabled-normal"
-          disabled={true}
-          value={user.email}
-        />
+        <Space.Compact style={{ width: '100%' }}>
+          <Button disabled style={{ cursor: 'default' }}>Email</Button>
+          <Input
+            id="user-email"
+            aria-label="Email"
+            className="input--disabled-normal"
+            disabled={true}
+            value={user.email}
+          />
+        </Space.Compact>
         <br />
         <br />
         <CPButton cpType="secondary" onClick={this.sendPasswordResetEmail}>

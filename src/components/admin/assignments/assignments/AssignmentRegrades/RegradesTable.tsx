@@ -270,7 +270,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
       ),
       dateSort: submission.questionDate ?? '',
       request: (
-        <Space direction="vertical" size={2} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={2} style={{ width: '100%' }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             {submission.questionIsRegrade && (
               <Tag color="geekblue" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>

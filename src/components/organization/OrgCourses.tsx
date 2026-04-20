@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Table, Card, Input, Button, Modal, Form, Switch, message, Select, InputNumber, Tooltip, Tabs } from 'antd';
+import { Table, Card, Input, Button, Modal, Form, Switch, message, Select, InputNumber, Space, Tooltip, Tabs } from 'antd';
 import { Course } from '../../api-client';
 import { coursesApi } from '../../api-client/clients';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
@@ -188,7 +188,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
           </Form.Item>
           {editingCourse?.inviteCode && (
             <Form.Item label="Invite Code">
-              <Input.Group compact>
+              <Space.Compact>
                 <Input value={editingCourse.inviteCode} readOnly style={{ width: 'calc(100% - 80px)' }} />
                 <Tooltip title="Copy">
                   <Button aria-label="Copy invite code" icon={<CopyOutlined />} onClick={copyInviteCode} />
@@ -196,7 +196,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
                 <Tooltip title="Reset Code">
                   <Button aria-label="Reset invite code" icon={<RedoOutlined />} onClick={resetInviteCode} />
                 </Tooltip>
-              </Input.Group>
+              </Space.Compact>
             </Form.Item>
           )}
           <Form.Item name="studentsCanSeeGraders" label="Students Can See Graders" valuePropName="checked">
@@ -227,7 +227,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
   return (
     <Card
       title="Courses"
-      bordered={false}
+      variant="borderless"
       extra={
         <Input
           placeholder="Search courses..."

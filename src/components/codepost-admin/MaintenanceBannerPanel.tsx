@@ -153,7 +153,7 @@ const MaintenanceBannerPanel: React.FC<{ compact?: boolean }> = ({ compact = fal
           </Tooltip>
         }
       >
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           {/* Active toggle */}
           <Space style={{ justifyContent: 'space-between', width: '100%' }}>
             <Text>Banner Active</Text>
@@ -219,7 +219,7 @@ const MaintenanceBannerPanel: React.FC<{ compact?: boolean }> = ({ compact = fal
               <CalendarOutlined style={{ marginRight: 4 }} />
               Schedule (optional — leave blank for immediate activation)
             </Text>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Space style={{ justifyContent: 'space-between', width: '100%' }}>
                 <Text style={{ fontSize: '13px', width: '70px' }}>Starts at</Text>
                 <DatePicker

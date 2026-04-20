@@ -425,7 +425,6 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                 <Input
                   id="course-name"
                   aria-label="Course Name"
-                  defaultValue={thisCourse.name}
                   maxLength={36}
                   minLength={4}
                   count={{ show: true }}
@@ -449,7 +448,6 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                 <Input
                   id="course-period"
                   aria-label="Course Period"
-                  defaultValue={thisCourse.period}
                   maxLength={32}
                   minLength={1}
                   count={{ show: true }}
@@ -594,13 +592,15 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
           <Descriptions
             column={1}
             size="small"
-            labelStyle={{
-              color: 'rgba(0, 0, 0, 0.45)',
-              fontWeight: 500,
-              fontSize: 13,
-              padding: '12px 24px',
+            styles={{
+              label: {
+                color: 'rgba(0, 0, 0, 0.45)',
+                fontWeight: 500,
+                fontSize: 13,
+                padding: '12px 24px',
+              },
+              content: { fontSize: 13, padding: '12px 24px' },
             }}
-            contentStyle={{ fontSize: 13, padding: '12px 24px' }}
             style={{ background: 'transparent' }}
           >
             <Descriptions.Item label="Course ID">

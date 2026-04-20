@@ -460,30 +460,29 @@ const Moss = (props: IMossProps) => {
           ))}
         </Select>
         <div style={{ padding: '10px 0px' }}>
-          <Input
-            addonBefore="Moss ID Number"
-            value={mossID}
-            onChange={onChangeMossID}
-            style={{ width: '350px' }}
-            addonAfter={
-              <CPTooltip
-                title={
-                  <span>
-                    You can obtain a Moss ID by clicking{' '}
-                    <a
-                      href={`mailto: ${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody} `}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      here
-                    </a>{' '}
-                    and sending the email as it appears.
-                  </span>
-                }
-              >
-                <QuestionCircleOutlined />
-              </CPTooltip>
-            }
-          />
+          <Space.Compact style={{ width: '350px' }}>
+            <Button disabled style={{ cursor: 'default' }}>Moss ID Number</Button>
+            <Input
+              value={mossID}
+              onChange={onChangeMossID}
+            />
+            <CPTooltip
+              title={
+                <span>
+                  You can obtain a Moss ID by clicking{' '}
+                  <a
+                    href={`mailto: ${requestEmail}?subject=${requestEmailSubject}&body=${requestEmailBody} `}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    here
+                  </a>{' '}
+                  and sending the email as it appears.
+                </span>
+              }
+            >
+              <QuestionCircleOutlined />
+            </CPTooltip>
+          </Space.Compact>
         </div>
         <TextArea
           placeholder={excludedFilesPlaceholder}
@@ -527,15 +526,17 @@ const Moss = (props: IMossProps) => {
     </div>
   ) : (
     <div style={{ padding: '80px 100px 40px 100px' }}>
-      <Input
-        key="parse-input"
-        addonBefore="http://moss.stanford.edu/results/"
-        addonAfter={parseButton}
-        value={urlID}
-        placeholder="Moss results ID"
-        onChange={onChangeUrlID}
-        size="large"
-      />
+      <Space.Compact style={{ width: '100%' }}>
+        <Button disabled style={{ cursor: 'default' }} size="large">http://moss.stanford.edu/results/</Button>
+        <Input
+          key="parse-input"
+          value={urlID}
+          placeholder="Moss results ID"
+          onChange={onChangeUrlID}
+          size="large"
+        />
+        {parseButton}
+      </Space.Compact>
       {loading ? (
         <div style={{ padding: '40px 0px 0px 0px' }}>
           <ProgressBar time={1000} />

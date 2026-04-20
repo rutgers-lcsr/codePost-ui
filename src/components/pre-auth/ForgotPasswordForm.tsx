@@ -78,7 +78,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
         content = (
           <Alert
             onClose={this.resetState}
-            message="Success!"
+            title="Success!"
             description={
               <span>
                 Check your email for a link. Follow that to reset your password. If you don't see an email within a
@@ -96,7 +96,7 @@ class ForgotPasswordForm extends React.Component<IProps, State> {
       case 'failure':
         content = (
           <Alert
-            message="Error"
+            title="Error"
             description="An unknown error occurred. Please contact us if this message persists."
             type="error"
           />

@@ -114,7 +114,7 @@ const ReportIssueButton = () => {
   const renderModalContent = () => {
     if (submitState === 'sent') {
       return (
-        <Space direction="vertical" size="small">
+        <Space orientation="vertical" size="small">
           <Space>
             <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 18 }} />
             <Text strong>Report sent. Thank you!</Text>
@@ -126,7 +126,7 @@ const ReportIssueButton = () => {
 
     if (submitState === 'consent') {
       return (
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="small" style={{ width: '100%' }}>
           <Space>
             <BugOutlined style={{ color: '#1677ff' }} />
             <Text strong>Share diagnostics?</Text>
@@ -283,7 +283,7 @@ const ReportIssueButton = () => {
         ]}
         width={720}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Text type="secondary">This is what will be included with your report.</Text>
           {capturedScreenshot && (
             <img

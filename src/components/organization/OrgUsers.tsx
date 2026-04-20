@@ -175,7 +175,7 @@ const OrgUsers: React.FC<IProps> = ({ orgId, users, loading, onRefresh, ssoEnabl
   return (
     <Card
       title="Users"
-      bordered={false}
+      variant="borderless"
       extra={
         <Space>
           <Input

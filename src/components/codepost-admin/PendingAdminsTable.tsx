@@ -181,7 +181,7 @@ const PendingAdminsTable: React.FC = () => {
       )}
 
       <Card
-        bordered={false}
+        variant="borderless"
         extra={
           <Button icon={<ReloadOutlined />} onClick={fetchPendingAdmins} loading={loading}>
             Refresh

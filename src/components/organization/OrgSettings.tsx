@@ -184,7 +184,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
           </>
         );
       default:
-        return <Alert message="Select a provider to configure" type="info" />;
+        return <Alert title="Select a provider to configure" type="info" />;
     }
   };
 
@@ -207,8 +207,8 @@ const OrgSettings: React.FC<IProps> = (props) => {
           <Typography.Title level={2}>Email Settings</Typography.Title>
           <Form.Item
             name="emailDomain"
-            label="Allowed Email Domain"
-            help="The primary email domain associated with this organization (e.g. valid-user@university.edu). Used for SSO user creation and NetID-to-email conversion."
+            label="Allowed Email Domain (Primary)"
+            help="The primary email domain for this organization. Used to convert bare usernames to emails during SSO login (e.g. a CAS NetID 'jsmith' becomes 'jsmith@university.edu'). Also used for SSO organization lookup."
           >
             <Input placeholder="university.edu" />
           </Form.Item>
@@ -252,7 +252,7 @@ const OrgSettings: React.FC<IProps> = (props) => {
             </Form.Item>
           </div>
 
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Space orientation="vertical" size="large" style={{ width: '100%' }}>
             <Form.Item name="ssoProvider" label="SSO Provider">
               <Select onChange={onProviderChange}>
                 <Select.Option value="CAS">CAS</Select.Option>

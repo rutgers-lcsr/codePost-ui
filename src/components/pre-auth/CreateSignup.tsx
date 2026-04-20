@@ -333,7 +333,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             ) : null}
             <div style={{ paddingTop: 80 }} />
             <Checkbox
-              value={this.state.check2}
+              checked={this.state.check2}
               onChange={this.toggleCheck.bind(this, 'check2')}
               style={{ marginRight: 10 }}
             >
@@ -405,7 +405,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <br />
             <Alert
-              message="Request Submitted Successfully"
+              title="Request Submitted Successfully"
               description={
                 this.state.isNewOrg ? (
                   <div>
@@ -452,7 +452,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <br />
             <Alert
-              message="You're all set!"
+              title="You're all set!"
               description={
                 <div>
                   Check your email to finish setting up your account. If you don't see an email within a couple of
@@ -475,7 +475,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <br />
             <Alert
-              message="Whoops!"
+              title="Whoops!"
               description={`We need a little more time to validate your account.
                 Please contact us at team@codepost.io to continue setting up your account.`}
               type="error"
@@ -490,7 +490,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <br />
             <br />
             <Alert
-              message="Whoops!"
+              title="Whoops!"
               description={`Something went wrong.
                 Please contact the codePost team at team@codepost.io to continue signing up.`}
               type="error"
@@ -528,7 +528,7 @@ class CreateSignup extends React.Component<IProps, IState> {
           <div style={{ marginRight: this.props.windowwidth < 750 ? 0 : 25 }}>
             <Typography.Title level={1}>Sign up as an instructor</Typography.Title>
             <Alert
-              message={
+              title={
                 <div style={{ color: 'rgba(0,0,0,0.6)' }}>
                   <InfoCircleTwoTone twoToneColor="#bbbbbb" style={{ marginRight: 5 }} />{' '}
                   <b style={{ fontWeight: 500 }}>Not an instructor?</b> If you're a student, sign up by{' '}

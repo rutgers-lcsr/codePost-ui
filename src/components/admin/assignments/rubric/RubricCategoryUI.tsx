@@ -402,7 +402,7 @@ const RubricCategoryUI: React.FC<{
               border: '1px solid #f0f0f0',
             }}
           >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
               {/* Top Row: Constraints */}
               {(props.showPointLimits || props.showAtMostOnce) && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '48px' }}>

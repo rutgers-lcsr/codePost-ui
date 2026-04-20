@@ -164,7 +164,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
     <div style={{ padding: '0px 15px', maxWidth: '1400px', margin: '0 auto' }}>
       {/* 1. Control Bar (Top) */}
       <Card
-        bordered={false}
+        variant="borderless"
         bodyStyle={{ padding: '12px 24px' }}
         style={{ marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', borderRadius: 8 }}
       >
@@ -234,7 +234,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
           <Col span={12}>
             <Card
               title="Execution Environment"
-              bordered={false}
+              variant="borderless"
               style={{ height: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
               headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
             >
@@ -304,7 +304,7 @@ const TestFormItem: React.FC<ITestFormItemProps> = (props) => {
           <Col span={12}>
             <Card
               title="Success Criteria & Grading"
-              bordered={false}
+              variant="borderless"
               style={{ height: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
               headStyle={{ borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}
               extra={

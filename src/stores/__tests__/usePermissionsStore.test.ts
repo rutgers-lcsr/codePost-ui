@@ -18,6 +18,7 @@ vi.mock('../../api-client/clients', () => ({
     platformRetrieve: vi.fn(),
     batchCreate: vi.fn(),
   },
+  apiClientConfig: {},
 }));
 
 describe('usePermissionsStore', () => {

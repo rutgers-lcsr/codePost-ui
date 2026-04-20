@@ -19,13 +19,13 @@ const SubmissionAttemptsChart: React.FC<SubmissionAttemptsChartProps> = ({ data 
     <div role="img" aria-label="Submission attempt distribution">
       <Row gutter={16} style={{ marginBottom: 16, textAlign: 'center' }}>
         <Col span={8}>
-          <Statistic title="Total Students" value={data.totalStudents} valueStyle={{ fontSize: 18 }} />
+          <Statistic title="Total Students" value={data.totalStudents} styles={{ content: { fontSize: 18 } }} />
         </Col>
         <Col span={8}>
           <Statistic
             title="Multiple Attempts"
             value={data.studentsWithMultipleAttempts}
-            valueStyle={{ fontSize: 18 }}
+            styles={{ content: { fontSize: 18 } }}
           />
         </Col>
         <Col span={8}>
@@ -34,14 +34,16 @@ const SubmissionAttemptsChart: React.FC<SubmissionAttemptsChartProps> = ({ data 
             value={data.avgGradeImprovement != null ? data.avgGradeImprovement : '--'}
             precision={1}
             prefix={data.avgGradeImprovement != null && data.avgGradeImprovement > 0 ? '+' : ''}
-            valueStyle={{
-              fontSize: 18,
-              color:
-                data.avgGradeImprovement != null && data.avgGradeImprovement > 0
-                  ? colors.actionGreen
-                  : data.avgGradeImprovement != null && data.avgGradeImprovement < 0
-                    ? colors.actionRed
-                    : undefined,
+            styles={{
+              content: {
+                fontSize: 18,
+                color:
+                  data.avgGradeImprovement != null && data.avgGradeImprovement > 0
+                    ? colors.actionGreen
+                    : data.avgGradeImprovement != null && data.avgGradeImprovement < 0
+                      ? colors.actionRed
+                      : undefined,
+              },
             }}
           />
         </Col>

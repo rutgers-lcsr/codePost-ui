@@ -26,7 +26,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
   const windowSize = useWindowSize();
   const breakpoint = 850;
   const flexDirection = windowSize.width < breakpoint ? 'column' : 'row';
-  const stepDirection = windowSize.width < breakpoint ? 'vertical' : 'horizontal';
+  const stepOrientation = windowSize.width < breakpoint ? 'vertical' : 'horizontal';
   const paddingTopSteps = windowSize.width < breakpoint ? 40 : 0;
   return (
     <div
@@ -61,7 +61,7 @@ const SignupHeader = (props: { step: SignupStep }) => {
         <div style={{ paddingTop: paddingTopSteps }}>
           <Steps
             current={props.step}
-            direction={stepDirection}
+            orientation={stepOrientation}
             items={[{ title: 'Choose role' }, { title: 'Create Account' }, { title: 'Start using codePost!' }]}
           />
         </div>

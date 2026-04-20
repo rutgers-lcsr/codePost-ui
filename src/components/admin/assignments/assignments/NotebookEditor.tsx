@@ -154,7 +154,7 @@ const NotebookEditor: React.FC<NotebookEditorProps> = ({ content, onChange, heig
         </Empty>
       )}
 
-      <Space direction="vertical" style={{ width: '100%' }} size={16}>
+      <Space orientation="vertical" style={{ width: '100%' }} size={16}>
         {notebook.cells.map((cell, index) => (
           <Card
             key={index}

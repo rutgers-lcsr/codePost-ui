@@ -35,7 +35,7 @@ const RemoteAuthFailed = () => {
           }}
         >
           <Alert
-            message="Still trying to connect to codePost..."
+            title="Still trying to connect to codePost..."
             description={
               <div>
                 If you've been waiting more than 15 seconds, please try refreshing or{' '}

@@ -142,7 +142,7 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
       )}
 
       {!loading && error && (
-        <Alert type="warning" message={error} description={syntaxHint} showIcon style={{ marginBottom: 16 }} />
+        <Alert type="warning" title={error} description={syntaxHint} showIcon style={{ marginBottom: 16 }} />
       )}
 
       {!loading && !error && items.length === 0 && (
@@ -196,7 +196,7 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
                 )}
               </div>
 
-              <Space direction="vertical" align="end" size={0}>
+              <Space orientation="vertical" align="end" size={0}>
                 <Tag color="blue" style={{ margin: 0, fontWeight: 600 }}>
                   {item.points} pts
                 </Tag>

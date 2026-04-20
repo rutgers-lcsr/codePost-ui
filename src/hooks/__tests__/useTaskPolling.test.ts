@@ -20,11 +20,12 @@ import { autograderApi } from '../../api-client/clients';
 describe('useTaskPolling', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // Reset mock between tests — critical with isolate: false
+    vi.mocked(autograderApi.tasksRetrieve).mockReset();
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    vi.restoreAllMocks();
   });
 
   it('returns result when task succeeds', async () => {
@@ -50,11 +51,16 @@ describe('useTaskPolling', () => {
 
     const { result } = renderHook(() => useTaskPolling());
 
-    await expect(
-      act(async () => {
+    let error: Error | undefined;
+    await act(async () => {
+      try {
         await result.current.pollTask('task-fail');
-      }),
-    ).rejects.toThrow('Task failed or was revoked');
+      } catch (e) {
+        error = e as Error;
+      }
+    });
+    expect(error).toBeDefined();
+    expect(error!.message).toBe('Task failed or was revoked.');
   });
 
   it('throws when task is revoked', async () => {
@@ -64,11 +70,16 @@ describe('useTaskPolling', () => {
 
     const { result } = renderHook(() => useTaskPolling());
 
-    await expect(
-      act(async () => {
+    let error: Error | undefined;
+    await act(async () => {
+      try {
         await result.current.pollTask('task-revoked');
-      }),
-    ).rejects.toThrow('Task failed or was revoked');
+      } catch (e) {
+        error = e as Error;
+      }
+    });
+    expect(error).toBeDefined();
+    expect(error!.message).toBe('Task failed or was revoked.');
   });
 
   it('rethrows on network error', async () => {
@@ -76,11 +87,16 @@ describe('useTaskPolling', () => {
 
     const { result } = renderHook(() => useTaskPolling());
 
-    await expect(
-      act(async () => {
+    let error: Error | undefined;
+    await act(async () => {
+      try {
         await result.current.pollTask('task-err');
-      }),
-    ).rejects.toThrow('Network down');
+      } catch (e) {
+        error = e as Error;
+      }
+    });
+    expect(error).toBeDefined();
+    expect(error!.message).toBe('Network down');
   });
 
   it('polls until success after pending status', async () => {

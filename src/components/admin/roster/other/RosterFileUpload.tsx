@@ -719,7 +719,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
         content = (
           <div>
             <Alert
-              message="Your roster contains some errors. Check out the area below to get them fixed."
+              title="Your roster contains some errors. Check out the area below to get them fixed."
               type="error"
             />
             <br />

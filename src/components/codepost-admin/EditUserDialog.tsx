@@ -57,7 +57,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({ open, user, onClose, on
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>

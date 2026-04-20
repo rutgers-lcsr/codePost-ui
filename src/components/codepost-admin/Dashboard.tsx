@@ -305,7 +305,7 @@ const Dashboard = () => {
                 title="Unique Users"
                 value={stats.totalUniqueUsers}
                 prefix={<UserOutlined />}
-                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.brandPrimary }}
+                styles={{ content: { fontSize: 36, fontWeight: 600, color: colors.brandPrimary } }}
               />
               <Text type="secondary" style={{ fontSize: 13 }}>
                 {stats.avgStudentsPerCourse} avg students / course
@@ -323,7 +323,7 @@ const Dashboard = () => {
                   </Text>
                 }
                 prefix={<BookOutlined />}
-                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.actionGreen }}
+                styles={{ content: { fontSize: 36, fontWeight: 600, color: colors.actionGreen } }}
               />
               <Tag color="default" style={{ marginTop: 4 }}>
                 {stats.archivedCourses} archived
@@ -336,7 +336,7 @@ const Dashboard = () => {
                 title="Organizations"
                 value={stats.totalOrganizations}
                 prefix={<GlobalOutlined />}
-                valueStyle={{ fontSize: 36, fontWeight: 600, color: colors.actionBlue }}
+                styles={{ content: { fontSize: 36, fontWeight: 600, color: colors.actionBlue } }}
               />
               <Text type="secondary" style={{ fontSize: 13 }}>
                 {stats.avgCoursesPerOrg} avg courses / org
@@ -353,7 +353,7 @@ const Dashboard = () => {
                 title="Platform Admins"
                 value={stats.totalCodePostAdmins}
                 prefix={<CrownOutlined style={{ color: colors.actionRed }} />}
-                valueStyle={{ color: colors.actionRed }}
+                styles={{ content: { color: colors.actionRed } }}
               />
             </Col>
             <Col xs={12} sm={6}>
@@ -361,7 +361,7 @@ const Dashboard = () => {
                 title="Course Admins"
                 value={stats.totalCourseAdmins}
                 prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
-                valueStyle={{ color: colors.brandVibrant }}
+                styles={{ content: { color: colors.brandVibrant } }}
               />
             </Col>
             <Col xs={12} sm={6}>
@@ -369,7 +369,7 @@ const Dashboard = () => {
                 title="Graders"
                 value={stats.totalGraders}
                 prefix={<TeamOutlined style={{ color: colors.actionBlue }} />}
-                valueStyle={{ color: colors.actionBlue }}
+                styles={{ content: { color: colors.actionBlue } }}
               />
             </Col>
             <Col xs={12} sm={6}>
@@ -377,7 +377,7 @@ const Dashboard = () => {
                 title="Students"
                 value={stats.totalStudents}
                 prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
-                valueStyle={{ color: colors.brandPrimary }}
+                styles={{ content: { color: colors.brandPrimary } }}
               />
             </Col>
           </Row>
@@ -412,7 +412,7 @@ const Dashboard = () => {
         {/* ── Charts and Tables Row ──────────────────────────────── */}
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
-            <Card title="Top Organizations by Courses" bordered={false}>
+            <Card title="Top Organizations by Courses" variant="borderless">
               <Table
                 dataSource={topOrganizations}
                 pagination={false}
@@ -456,7 +456,7 @@ const Dashboard = () => {
             </Card>
           </Col>
           <Col xs={24} lg={12}>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
               <SystemHealth compact />
               <MaintenanceBannerPanel compact />
             </Space>

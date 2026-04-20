@@ -197,7 +197,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         <Alert
           type="warning"
           icon={<SyncOutlined spin />}
-          message="Convergence Pending"
+          title="Convergence Pending"
           description="Environment was auto-updated. Validating with new submissions..."
           style={{ marginBottom: 12 }}
         />
@@ -207,7 +207,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       {pendingModules.length > 0 && (
         <Alert
           type="info"
-          message="Tracking Missing Modules"
+          title="Tracking Missing Modules"
           description={
             <Space wrap>
               {pendingModules.map((mod) => {
@@ -235,7 +235,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
             <Statistic
               title="Language"
               value={environment.language || 'Pending Detection...'}
-              valueStyle={{ fontSize: 16 }}
+              styles={{ content: { fontSize: 16 } }}
             />
           </Col>
           <Col span={12}>
@@ -243,7 +243,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
               <Statistic
                 title="Requirements"
                 value={environment.requirements ? 'Present' : 'None'}
-                valueStyle={{ fontSize: 16 }}
+                styles={{ content: { fontSize: 16 } }}
               />
               {environment.requirements && (
                 <Button
@@ -258,7 +258,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
                           <pre>{environment.requirements}</pre>
                         </div>
                       ),
-                      maskClosable: true,
+                      mask: { closable: true },
                     })
                   }
                 >
@@ -326,7 +326,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         width={600}
       >
         {history.length === 0 ? (
-          <Alert message="No version history available" type="info" />
+          <Alert title="No version history available" type="info" />
         ) : (
           <Timeline
             items={history

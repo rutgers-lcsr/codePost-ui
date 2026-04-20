@@ -1134,7 +1134,7 @@ const PromptLab: React.FC = () => {
         }
       >
         {editingVariant && (
-          <Space direction="vertical" size={16} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={16} style={{ width: '100%' }}>
             <div>
               <Text strong style={{ display: 'block', marginBottom: 4 }}>
                 Prompt Type
@@ -1201,7 +1201,7 @@ const PromptLab: React.FC = () => {
         okText="Create"
         width={560}
       >
-        <Space direction="vertical" size={16} style={{ width: '100%', marginTop: 16 }}>
+        <Space orientation="vertical" size={16} style={{ width: '100%', marginTop: 16 }}>
           <div>
             <Text strong style={{ display: 'block', marginBottom: 4 }}>
               Experiment Name
@@ -1332,7 +1332,7 @@ const PromptLab: React.FC = () => {
         }
       >
         {labSettings && (
-          <Space direction="vertical" size={24} style={{ width: '100%' }}>
+          <Space orientation="vertical" size={24} style={{ width: '100%' }}>
             {/* Master switch */}
             <Card size="small">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1360,7 +1360,7 @@ const PromptLab: React.FC = () => {
                 Provider and model used for auto-improvement and prompt generation. Use a larger model (e.g. Gemini 2.5
                 Pro, GPT-4o) for higher-quality system prompt generation.
               </Text>
-              <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              <Space orientation="vertical" size={12} style={{ width: '100%' }}>
                 <div>
                   <Text style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Provider</Text>
                   <Select
@@ -1705,7 +1705,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, experiment, pool, 
     results.variantAWins > results.variantBWins ? 'A' : results.variantBWins > results.variantAWins ? 'B' : 'Tie';
 
   return (
-    <Space direction="vertical" size={20} style={{ width: '100%' }}>
+    <Space orientation="vertical" size={20} style={{ width: '100%' }}>
       {/* Pool selector */}
       <div>
         <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 6 }}>
@@ -1732,12 +1732,12 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ results, experiment, pool, 
         </Col>
         <Col span={8}>
           <Card size="small">
-            <Statistic title="Thumbs Up" value={results.thumbsUp} valueStyle={{ color: '#52c41a' }} />
+            <Statistic title="Thumbs Up" value={results.thumbsUp} styles={{ content: { color: '#52c41a' } }} />
           </Card>
         </Col>
         <Col span={8}>
           <Card size="small">
-            <Statistic title="Thumbs Down" value={results.thumbsDown} valueStyle={{ color: '#f5222d' }} />
+            <Statistic title="Thumbs Down" value={results.thumbsDown} styles={{ content: { color: '#f5222d' } }} />
           </Card>
         </Col>
       </Row>

@@ -73,7 +73,7 @@ const NewCourseDialog: React.FC<NewCourseDialogProps> = ({ open, onClose, onSucc
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>

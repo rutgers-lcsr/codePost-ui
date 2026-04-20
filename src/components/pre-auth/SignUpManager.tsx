@@ -30,7 +30,7 @@ const SignUpManager = () => {
   const breakpoint = 750;
   const flexDirection = 'column';
   const flexDirectionButtons = windowSize.width < 950 ? 'column' : 'row';
-  const dividerType = 'horizontal';
+  const dividerOrientation = 'horizontal';
   const titleFontLevel = windowSize.width < breakpoint ? 2 : 1;
   return (
     <PreAuthSignupLayout step={0}>
@@ -77,7 +77,7 @@ const SignUpManager = () => {
               />
             </div>
           </div>
-          <Divider type={dividerType} style={{ fontSize: 250, marginTop: 35, marginBottom: 35 }} />
+          <Divider orientation={dividerOrientation} style={{ fontSize: 250, marginTop: 35, marginBottom: 35 }} />
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div
               style={{

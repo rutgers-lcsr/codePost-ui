@@ -427,7 +427,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
               <Alert
                 type="info"
                 showIcon
-                message="All courses can use the organization AI key unless they configure their own settings."
+                title="All courses can use the organization AI key unless they configure their own settings."
               />
             )}
 

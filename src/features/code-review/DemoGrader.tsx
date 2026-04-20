@@ -734,7 +734,7 @@ const DemoGrader: React.FC = () => {
             <span>Reveal students:</span>
             <Switch checked={showClaimedStudents} onChange={setShowClaimedStudents} />
           </Space>
-          <Divider type="vertical" />
+          <Divider orientation="vertical" />
           {claimControls}
           {claimFilterControl}
         </Space>,
@@ -821,7 +821,7 @@ const DemoGrader: React.FC = () => {
               style={{ display: 'inline-block' }}
             />
           </div>
-          <Divider type="vertical" style={{ height: 25 }} />
+          <Divider orientation="vertical" style={{ height: 25 }} />
         </div>,
         <Select
           key="section-select"

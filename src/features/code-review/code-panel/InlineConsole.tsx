@@ -146,7 +146,7 @@ const InlineConsole: React.FC<InlineConsoleProps> = ({ file, readOnly = false })
           {/* Error Message */}
           {error && (
             <div style={{ padding: '16px' }}>
-              <Alert message="Execution Error" description={error} type="error" showIcon />
+              <Alert title="Execution Error" description={error} type="error" showIcon />
             </div>
           )}
 

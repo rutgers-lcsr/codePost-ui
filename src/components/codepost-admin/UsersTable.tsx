@@ -366,7 +366,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Total"
               value={stats.totalUsers}
-              valueStyle={{ color: colors.actionBlue }}
+              styles={{ content: { color: colors.actionBlue } }}
               prefix={<UserOutlined />}
             />
           </Col>
@@ -374,7 +374,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Active"
               value={stats.activeUsers}
-              valueStyle={{ color: colors.actionGreen }}
+              styles={{ content: { color: colors.actionGreen } }}
               prefix={<CheckCircleOutlined />}
             />
           </Col>
@@ -382,7 +382,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Inactive"
               value={stats.inactiveUsers}
-              valueStyle={{ color: colors.actionYellow }}
+              styles={{ content: { color: colors.actionYellow } }}
               prefix={<CloseCircleOutlined />}
             />
           </Col>
@@ -390,7 +390,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Students"
               value={stats.students}
-              valueStyle={{ color: colors.brandPrimary }}
+              styles={{ content: { color: colors.brandPrimary } }}
               prefix={<UserOutlined />}
             />
           </Col>
@@ -398,7 +398,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Graders"
               value={stats.graders}
-              valueStyle={{ color: colors.actionBlue }}
+              styles={{ content: { color: colors.actionBlue } }}
               prefix={<TeamOutlined />}
             />
           </Col>
@@ -406,7 +406,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Course Admins"
               value={stats.courseAdmins}
-              valueStyle={{ color: colors.brandVibrant }}
+              styles={{ content: { color: colors.brandVibrant } }}
               prefix={<TeamOutlined />}
             />
           </Col>
@@ -414,7 +414,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ rosters, organizations, users, 
             <Statistic
               title="Platform Admins"
               value={stats.codePostAdmins}
-              valueStyle={{ color: colors.actionRed }}
+              styles={{ content: { color: colors.actionRed } }}
               prefix={<CrownOutlined />}
             />
           </Col>

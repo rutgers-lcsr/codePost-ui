@@ -297,7 +297,7 @@ const DeployCalendar = () => {
   if (error) {
     return (
       <div style={{ padding: '24px' }}>
-        <Alert message="Error" description={error} type="error" showIcon />
+        <Alert title="Error" description={error} type="error" showIcon />
       </div>
     );
   }

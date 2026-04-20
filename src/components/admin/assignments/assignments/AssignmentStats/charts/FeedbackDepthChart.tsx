@@ -26,7 +26,7 @@ const FeedbackDepthChart: React.FC<FeedbackDepthChartProps> = ({ data }) => {
               title="Mean Comments / Submission"
               value={overall.meanCommentsPerSubmission}
               precision={1}
-              valueStyle={{ fontSize: 18 }}
+              styles={{ content: { fontSize: 18 } }}
             />
           </Col>
           <Col span={8}>
@@ -34,14 +34,14 @@ const FeedbackDepthChart: React.FC<FeedbackDepthChartProps> = ({ data }) => {
               title="Median Comments / Submission"
               value={overall.medianCommentsPerSubmission}
               precision={1}
-              valueStyle={{ fontSize: 18 }}
+              styles={{ content: { fontSize: 18 } }}
             />
           </Col>
           <Col span={8}>
             <Statistic
               title="Submissions with Comments"
               value={overall.totalSubmissionsWithComments}
-              valueStyle={{ fontSize: 18 }}
+              styles={{ content: { fontSize: 18 } }}
             />
           </Col>
         </Row>

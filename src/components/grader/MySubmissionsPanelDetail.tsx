@@ -582,7 +582,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
             <Switch checked={showStudentEmails} onChange={toggleShowStudentEmails} />
           </Space>
         )}
-        <Divider type="vertical" />
+        <Divider orientation="vertical" />
         {renderClaimControls}
         {renderFilterComponent}
       </Space>
@@ -618,7 +618,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         }}
         description={emptyMessage}
       >
-        <Space direction="vertical" size="middle" align="center">
+        <Space orientation="vertical" size="middle" align="center">
           {renderClaimControls}
           {renderFilterComponent}
         </Space>

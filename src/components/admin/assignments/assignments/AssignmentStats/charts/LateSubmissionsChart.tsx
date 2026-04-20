@@ -40,13 +40,13 @@ const LateSubmissionsChart: React.FC<LateSubmissionsChartProps> = ({ data }) => 
     <div role="img" aria-label="Late submission analysis">
       <Row gutter={16} style={{ marginBottom: 16, textAlign: 'center' }}>
         <Col span={8}>
-          <Statistic title="On Time" value={data.onTime} valueStyle={{ color: colors.actionGreen, fontSize: 18 }} />
+          <Statistic title="On Time" value={data.onTime} styles={{ content: { color: colors.actionGreen, fontSize: 18 } }} />
         </Col>
         <Col span={8}>
-          <Statistic title="Late" value={data.late} valueStyle={{ color: colors.actionRed, fontSize: 18 }} />
+          <Statistic title="Late" value={data.late} styles={{ content: { color: colors.actionRed, fontSize: 18 } }} />
         </Col>
         <Col span={8}>
-          <Statistic title="On-Time Rate" value={`${onTimePct}%`} valueStyle={{ fontSize: 18 }} />
+          <Statistic title="On-Time Rate" value={`${onTimePct}%`} styles={{ content: { fontSize: 18 } }} />
         </Col>
       </Row>
       <Row gutter={16}>

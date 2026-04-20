@@ -124,7 +124,7 @@ const TestScriptCardView = (props: IProps) => {
           </Empty>
         )}
 
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           {items.map((item) => (
             <div key={item.id}>
               {item.type === 'code' ? (
@@ -171,7 +171,7 @@ const TestScriptCardView = (props: IProps) => {
                         onChange={(e) => updateItem(item.id, { name: e.target.value })}
                         style={{ width: 300, fontWeight: 600 }}
                         placeholder="Test Name"
-                        bordered={false}
+                        variant="borderless"
                       />
                     </Space>
                   }
@@ -185,7 +185,7 @@ const TestScriptCardView = (props: IProps) => {
                           min={0}
                           size="small"
                           style={{ width: 60 }}
-                          bordered={false}
+                          variant="borderless"
                         />
                       </div>
                       <div style={{ background: '#f5f5f5', borderRadius: 4, padding: '2px 8px' }}>
@@ -197,7 +197,7 @@ const TestScriptCardView = (props: IProps) => {
                           placeholder="30"
                           size="small"
                           style={{ width: 50 }}
-                          bordered={false}
+                          variant="borderless"
                         />
                       </div>
                       <Button type="text" danger icon={<DeleteOutlined />} onClick={() => deleteItem(item.id)} />

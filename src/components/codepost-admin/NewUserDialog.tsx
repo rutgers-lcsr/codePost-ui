@@ -55,7 +55,7 @@ const NewUserDialog: React.FC<NewUserDialogProps> = ({ open, onClose, onSuccess,
       onCancel={onClose}
       onOk={() => form.submit()}
       confirmLoading={isSubmitting}
-      destroyOnClose
+      destroyOnHidden
       width={560}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>

@@ -43,7 +43,7 @@ const OnboardingSelector = (props: IOnboardingSelectorProps) => {
       footer={props.footerButtons}
       width={600}
       closable={props.closable === undefined ? true : props.closable}
-      maskClosable={false}
+      mask={{ closable: false }}
     >
       {props.message}
       <br />

@@ -270,7 +270,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
         </Space>
       </Flex>
 
-      {error && <Alert message="Error" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
+      {error && <Alert title="Error" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
 
       {loading ? (
         <Flex justify="center" align="center" style={{ height: 400 }}>

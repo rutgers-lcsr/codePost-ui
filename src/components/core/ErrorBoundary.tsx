@@ -166,8 +166,8 @@ const DebugInfoPanel: React.FC<{
         minWidth: '500px',
       }}
     >
-      <Space direction="vertical" style={{ width: '100%' }} size="small">
-        <Space split={<Divider type="vertical" />}>
+      <Space orientation="vertical" style={{ width: '100%' }} size="small">
+        <Space split={<Divider orientation="vertical" />}>
           <Text type="secondary">
             <GlobalOutlined /> {url}
           </Text>
@@ -358,7 +358,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
             background: '#e6f4ff',
           }}
         >
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+          <Space orientation="vertical" size="small" style={{ width: '100%' }}>
             <Space>
               <BugOutlined style={{ color: '#1677ff' }} />
               <Text strong>Help us fix this</Text>
@@ -395,7 +395,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
           cancelText="Back"
           width={720}
         >
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
             <Text type="secondary">
               This is the screenshot that will be included with the diagnostic report. It shows what was on screen
               shortly before the error occurred.

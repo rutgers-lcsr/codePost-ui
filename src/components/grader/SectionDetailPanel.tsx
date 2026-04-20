@@ -254,7 +254,7 @@ class SectionDetailPanel extends Component<IProps, IState> {
             <span>Reveal students:</span>
             <Switch defaultChecked={showingEmails} onChange={this.toggleShowStudentEmails} key="toggleShowStudents" />
           </div>
-          <Divider type="vertical" style={{ height: 25 }} />
+          <Divider orientation="vertical" style={{ height: 25 }} />
         </div>
       );
     }

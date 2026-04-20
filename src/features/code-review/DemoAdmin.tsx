@@ -965,7 +965,7 @@ const RubricEditorPanel: React.FC<{
               border: '1px solid #f0f0f0',
             }}
           >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="large" style={{ width: '100%' }}>
               {showPointLimits && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 48 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1347,7 +1347,7 @@ const EnvironmentEditorPanel: React.FC<{
       </div>
 
       {/* Main Configuration Card */}
-      <Card bordered={false} style={{ marginBottom: 20 }}>
+      <Card variant="borderless" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 20, borderBottom: '1px solid #f0f0f0' }}>
           <span style={{ marginRight: 15, fontWeight: 600, fontSize: 16 }}>Mode:</span>
           <Radio.Group value={configMode} onChange={(e) => setConfigMode(e.target.value)} buttonStyle="solid">
@@ -1705,7 +1705,7 @@ const EnvironmentEditorPanel: React.FC<{
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <Space>
                 <div>
-                  <Space direction="vertical" size={0}>
+                  <Space orientation="vertical" size={0}>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       Category Name
                     </Typography.Text>
@@ -1717,7 +1717,7 @@ const EnvironmentEditorPanel: React.FC<{
                   </Space>
                 </div>
                 <div>
-                  <Space direction="vertical" size={0}>
+                  <Space orientation="vertical" size={0}>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       Target File
                     </Typography.Text>
@@ -1734,7 +1734,7 @@ const EnvironmentEditorPanel: React.FC<{
                   </Space>
                 </div>
                 <div>
-                  <Space direction="vertical" size={0}>
+                  <Space orientation="vertical" size={0}>
                     <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       Max Points
                     </Typography.Text>

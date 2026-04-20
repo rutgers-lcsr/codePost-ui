@@ -206,7 +206,7 @@ const DocsSidebar: React.FC = () => {
             placeholder="Search docs..."
             aria-label="Search documentation"
             prefix={<SearchOutlined style={{ color: colors.neutralSecondaryText }} />}
-            bordered={false}
+            variant="borderless"
             value={searchText}
             style={{
               background: 'white',

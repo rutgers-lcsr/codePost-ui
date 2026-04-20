@@ -504,7 +504,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         body: { overflow: 'auto', maxHeight: 'calc(95vh - 110px)' },
         header: { borderBottom: '1px solid rgba(0, 0, 0, 0.06)', paddingBottom: 16, marginBottom: 0 },
       }}
-      maskClosable={false}
+      mask={{ closable: false }}
       destroyOnHidden
     >
       <Form form={form} layout="horizontal" requiredMark={false} colon={false} scrollToFirstError>

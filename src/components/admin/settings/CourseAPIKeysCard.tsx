@@ -309,7 +309,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
           <Alert
             type="warning"
             showIcon
-            message="Save this key now — you won't be able to see it again."
+            title="Save this key now — you won't be able to see it again."
             style={{ borderRadius: 6 }}
           />
           <div>

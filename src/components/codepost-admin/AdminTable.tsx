@@ -48,7 +48,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         dataIndex: 'organizations',
         key: 'organization',
         render: (orgs: Organization[]) => (
-          <Space direction="vertical" size="small">
+          <Space orientation="vertical" size="small">
             {orgs.map((org) => (
               <Space key={org.id}>
                 <Space>
@@ -69,7 +69,7 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
         key: 'courses',
         render: (courses: { name: string; period: string }[]) => (
           <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-            <Space direction="vertical" size={1}>
+            <Space orientation="vertical" size={1}>
               {courses.map((c, i) => (
                 <Space key={i} style={{ fontSize: '12px' }}>
                   <BookOutlined style={{ color: colors.actionGreen, fontSize: '10px' }} />

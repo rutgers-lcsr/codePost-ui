@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC } from 'react';
 
-import { Input, InputNumber, Select } from 'antd';
+import { InputNumber, Select, Space } from 'antd';
 
 interface IInputNumberOrNullProps {
   value: number | null;
@@ -25,7 +25,7 @@ const InputNumberOrNull: FC<IInputNumberOrNullProps> = ({ value, onChange }) => 
 
   return (
     <span>
-      <Input.Group compact>
+      <Space.Compact>
         <label htmlFor="late-days-select" className="sr-only">
           Enable Late Days
         </label>
@@ -44,7 +44,7 @@ const InputNumberOrNull: FC<IInputNumberOrNullProps> = ({ value, onChange }) => 
           disabled={value === null}
           value={value === null ? undefined : value}
         />
-      </Input.Group>
+      </Space.Compact>
     </span>
   );
 };

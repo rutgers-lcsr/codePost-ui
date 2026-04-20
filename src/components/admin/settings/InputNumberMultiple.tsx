@@ -109,8 +109,8 @@ const InputNumberMultiple: React.FC<IInputNumberMultipleProps> = ({
                     style={{ width: '100px' }}
                     placeholder={placeholder}
                     disabled={disabled}
-                    addonAfter="pts"
                   />
+                  <Button disabled style={{ cursor: 'default' }}>pts</Button>
                 </Space.Compact>
                 {isLast && (
                   <Tooltip title="Remove this deduction">

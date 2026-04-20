@@ -157,7 +157,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
           useLateDayCredits = (
             <div className="submission-info__late-day-credits" style={{ marginTop: 12 }}>
-              <Alert message={content} type="warning" showIcon />
+              <Alert title={content} type="warning" showIcon />
             </div>
           );
         }
@@ -273,7 +273,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
 
   return (
     <div id="submission-info" style={{ padding: '10px 15px 15px' }}>
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+      <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
         {submittedInfo}
 
         <div>
@@ -568,7 +568,7 @@ export const Students = (props: {
 
   if (showStudents) {
     return (
-      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+      <Space orientation="vertical" size={4} style={{ width: '100%' }}>
         {props.submission.students!.map((student) => {
           return (
             <div key={student} style={{ display: 'flex', alignItems: 'center' }}>
@@ -716,7 +716,7 @@ const GraderRegrade = (props: IGraderRegradeProps) => {
         style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
         styles={{ body: { padding: 12 } }}
       >
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="small" style={{ width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Tag color={isClosed ? 'green' : isClaimed ? 'blue' : 'orange'} style={{ margin: 0 }}>
               {isClosed ? 'Closed' : isClaimed ? `Claimed by ${props.submission.questionResponder}` : 'Open'}
@@ -987,7 +987,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
           variant="borderless"
           style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}
         >
-          <Space direction="vertical" style={{ width: '100%' }} align="center">
+          <Space orientation="vertical" style={{ width: '100%' }} align="center">
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               Need clarification or a regrade?
             </Typography.Text>
@@ -1007,7 +1007,7 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
             title="Submit a question or regrade request"
             footer={[cancelButton, submitButton]}
           >
-            <Alert message={instructions} type="info" />
+            <Alert title={instructions} type="info" />
             <br />
             <Tabs
               defaultActiveKey="1"

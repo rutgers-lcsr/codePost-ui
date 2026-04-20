@@ -16,6 +16,7 @@ vi.mock('../../api-client/clients', () => ({
   assignmentsApi: { capabilitiesRetrieve: vi.fn() },
   submissionsApi: { checkPermissionRetrieve: vi.fn() },
   capabilitiesApi: { platformRetrieve: vi.fn(), batchCreate: vi.fn() },
+  apiClientConfig: {},
 }));
 
 describe('permissions convenience hooks', () => {

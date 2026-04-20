@@ -664,8 +664,10 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
             title={props.assignment.additiveGrading ? 'Total Points' : 'Net Change'}
             value={Math.abs(totalDeductions)}
             prefix={totalDeductions > 0 ? '-' : totalDeductions < 0 ? '+' : ''}
-            valueStyle={{
-              color: totalDeductions > 0 ? '#ff4d4f' : totalDeductions < 0 ? '#52c41a' : undefined,
+            styles={{
+              content: {
+                color: totalDeductions > 0 ? '#ff4d4f' : totalDeductions < 0 ? '#52c41a' : undefined,
+              },
             }}
           />
         </Col>
@@ -674,7 +676,7 @@ export const GradeBreakdown = (props: IGradeBreakdownProps) => {
             title="Final Grade"
             value={finalGrade}
             suffix={`/ ${props.assignment.points}`}
-            valueStyle={{ color: '#1890ff', fontWeight: 'bold' }}
+            styles={{ content: { color: '#1890ff', fontWeight: 'bold' } }}
           />
         </Col>
       </Row>

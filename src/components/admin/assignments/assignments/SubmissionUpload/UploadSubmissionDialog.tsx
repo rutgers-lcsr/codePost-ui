@@ -997,7 +997,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             <br />
             <Alert
               type="warning"
-              message={
+              title={
                 <>
                   You haven't uploaded any of the specified files. Make sure this is your intention before submitting.
                   {shouldRunTests() && ' File names must match the specified files exactly to pass tests. '}
@@ -1219,7 +1219,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
         const testMessage = selectedAssignment?.maxStudentTestRuns ? (
           <Alert
-            message={
+            title={
               <>
                 You have used <strong>{runsSoFar}</strong> test runs so far. You have{' '}
                 <strong>{numRemaining === Infinity ? 'unlimited' : numRemaining}</strong> test{' '}
@@ -1233,7 +1233,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
 
         content = (
           <div>
-            {infoMessage && <Alert message={infoMessage} type="info" style={{ marginBottom: 16 }} />}
+            {infoMessage && <Alert title={infoMessage} type="info" style={{ marginBottom: 16 }} />}
 
             <div style={{ marginBottom: 16 }}>
               <div style={{ marginBottom: 8 }}>Assignment:</div>
@@ -1362,7 +1362,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             <Tabs.TabPane tab="Most recent submission" key="4">
               <Alert
                 type="info"
-                message={
+                title={
                   <div>
                     Showing results from most recent submission at:{' '}
                     <CodePostDate datetime={submission.dateUploaded || ''} />

@@ -252,7 +252,7 @@ const BillingPanel = (props: IProps) => {
       <Alert
         style={{ width: 'fit-content', cursor: 'pointer' }}
         onClick={info}
-        message="Read more about codePost's new pricing"
+        title="Read more about codePost's new pricing"
         type="info"
         showIcon
       />

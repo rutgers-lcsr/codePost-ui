@@ -266,7 +266,7 @@ const DemoCard: React.FC<DemoCardProps> = ({
       <Text type="secondary">{subtitle}</Text>
     </div>
 
-    <Space direction="vertical" size={10} style={{ width: '100%', marginBottom: 24 }}>
+    <Space orientation="vertical" size={10} style={{ width: '100%', marginBottom: 24 }}>
       {features.map((f, i) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ color: brandColors.primary, fontSize: 15, flexShrink: 0 }}>{f.icon}</span>

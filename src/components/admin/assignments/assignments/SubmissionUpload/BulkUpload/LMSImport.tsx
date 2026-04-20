@@ -717,13 +717,13 @@ const StepThreeMapStudent = (props: IStepThreeProps) => {
           <Statistic
             title="Mapped submissions"
             value={mappedStudents.length}
-            valueStyle={{ color: colors.brandPrimary }}
+            styles={{ content: { color: colors.brandPrimary } }}
             style={{ marginRight: 20 }}
           />
           <Statistic
             title="Unmapped submissions"
             value={Object.keys(props.folderMap).length - mappedStudents.length}
-            valueStyle={{ color: '#fab1a0' }}
+            styles={{ content: { color: '#fab1a0' } }}
           />
         </div>
       </div>
