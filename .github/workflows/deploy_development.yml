@@ -1,8 +1,19 @@
+# Deploy Development with Docker (UI)
+#
+# Triggers automatically on every push to main. Deploys the latest commit
+# to the development environment. Runs tests first via test_codepost_ui.yml.
+#
+# Related workflows:
+#   - test_codepost_ui.yml runs CI on the same branches
+#   - deploy_production.yml is triggered manually for production releases
+#
+# Runner: development-ui
+
 name: Deploy Development with Docker
 
 on:
   push:
-    branches: [development]
+    branches: [main]
 
 concurrency:
   group: deploy-development

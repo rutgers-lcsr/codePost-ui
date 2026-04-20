@@ -1,4 +1,20 @@
 # Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
+#
+# Update API Client (UI)
+#
+# Regenerates the TypeScript API client (src/api-client/) from the API's
+# OpenAPI schema. Triggered in two ways:
+#
+#   1. Automatically via repository_dispatch from the API's deploy_production
+#      workflow after a successful production deploy and version tag.
+#   2. Manually via workflow_dispatch with a custom schema URL.
+#
+# The workflow downloads the schema, runs openapi-generator-cli, formats the
+# output with Prettier, and opens a PR to main if there are changes.
+#
+# After merging the PR, the updated client will be included in the next
+# UI release branch cut from main.
+
 name: Update API Client
 
 on:
@@ -21,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: development
+          ref: main
 
       - name: Determine schema URL and version
         id: schema
@@ -73,7 +89,7 @@ jobs:
           git commit -m "chore: update API client to ${{ steps.schema.outputs.version }}"
           git push origin "$BRANCH"
           gh pr create \
-            --base development \
+            --base main \
             --head "$BRANCH" \
             --title "chore: update API client to ${{ steps.schema.outputs.version }}" \
             --body "Auto-generated from API release ${{ steps.schema.outputs.version }}.

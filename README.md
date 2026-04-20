@@ -10,24 +10,20 @@ This is the frontend for codePost, built with React.
 
 ### Branches
 
-| Branch        | Purpose                                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `development` | Default branch. All feature work and PRs target here. Pushes auto-deploy to the dev server.                         |
-| `master`      | Production branch. Only receives merges from `release/*` and `hotfix/*` branches. Pushes auto-deploy to production. |
-| `release/*`   | Cut from `development` when ready to release. Merged into `master` then backmerged to `development`.                |
-| `hotfix/*`    | Cut from `master` for urgent production fixes. Merged into `master` then backmerged to `development`.               |
+| Branch      | Purpose                                                                                                                |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `main`      | Default branch. All feature work and PRs target here. Pushes auto-deploy to the dev server.                            |
+| `release/*` | Cut from `main` via the "Create Release Branch" workflow. Deployed to production manually via `deploy_production.yml`. |
 
 ### Versioning
 
-Versioning is fully automated via [semantic-release](https://semantic-release.gitbook.io/) and [Conventional Commits](https://www.conventionalcommits.org/).
+Versioning uses [Conventional Commits](https://www.conventionalcommits.org/) and explicit version tags created during production deploys.
 
-- **You never manually edit the version** in `package.json` — semantic-release handles it.
-- When a `feat:` or `fix:` commit merges into `master`, the release workflow automatically:
-  1. Determines the next semver version from commit messages
-  2. Bumps the version in `package.json`
-  3. Updates `CHANGELOG.md`
-  4. Creates a git tag (`v3.2.1`, `v3.3.0`, etc.)
-  5. Creates a GitHub Release
+- When you deploy to production, you provide a version (e.g., `3.4.0`). The deploy workflow:
+  1. Runs tests against the release branch
+  2. Deploys the release branch to the production server
+  3. Creates a git tag (`v3.4.0`) on the release branch
+  4. Creates a GitHub Release with auto-generated notes
 
 ### Commit Message Format
 
@@ -43,30 +39,33 @@ docs: update component docs                 → no release
 
 ### Workflows
 
-| Workflow                 | Trigger                                                     | What it does                                 |
-| ------------------------ | ----------------------------------------------------------- | -------------------------------------------- |
-| `test_codepost_ui.yml`   | Push/PR to `development`, `master`, `release/*`, `hotfix/*` | Lint, typecheck, tests                       |
-| `release.yml`            | Push to `master`                                            | Auto-tag, changelog, GitHub Release          |
-| `deploy_production.yml`  | Push to `master`                                            | Deploy to production server                  |
-| `deploy_development.yml` | Push to `development`                                       | Deploy to dev server                         |
-| `release-branch.yml`     | Manual trigger                                              | Create `release/*` branch from `development` |
-| `hotfix-open.yml`        | Manual trigger                                              | Create `hotfix/*` branch from `master`       |
-| `hotfix-backmerge.yml`   | Hotfix/release PR merged to `master`                        | Auto-create backmerge PR to `development`    |
-| `update-api-client.yml`  | API release (auto) or manual trigger                        | Regenerate TypeScript API client             |
+| Workflow                 | Trigger                                   | What it does                              |
+| ------------------------ | ----------------------------------------- | ----------------------------------------- |
+| `test_codepost_ui.yml`   | Push/PR to `main`, `release/*`            | Lint, typecheck, tests, build             |
+| `deploy_development.yml` | Push to `main`                            | Deploy to dev server                      |
+| `deploy_production.yml`  | Manual trigger (specify branch + version) | Deploy to production, tag, GitHub Release |
+| `release-branch.yml`     | Manual trigger                            | Create `release/*` branch from `main`     |
+| `update-api-client.yml`  | API production deploy (auto) or manual    | Regenerate TypeScript API client, open PR |
 
 ### Releasing
 
 1. Go to **Actions → Create Release Branch** → Run workflow (optionally specify version)
-2. A `release/X.Y.Z` branch is created and a PR opened targeting `master`
-3. Do final testing on the release branch
-4. Merge the PR — everything else is automatic
+2. A `release/X.Y.Z` branch is created from `main`
+3. Do final testing on the release branch (CI runs automatically)
+4. Go to **Actions → Deploy Production with Docker** → Run workflow with `ref: release/X.Y.Z` and `version: X.Y.Z`
+5. The workflow runs tests, deploys, and creates a version tag + GitHub Release
 
 ### Hotfixing Production
 
-1. Go to **Actions → Open Hotfix Branch** → Run workflow with a description
-2. A `hotfix/X.Y.Z` branch is created and a draft PR opened targeting `master`
-3. Push your fix to the hotfix branch
-4. Merge the PR — deployment, tagging, and backmerge to `development` are automatic
+1. Fix the bug on `main` first (via a normal PR)
+2. Cherry-pick the fix onto the active `release/*` branch
+3. Go to **Actions → Deploy Production with Docker** → Run workflow with the same release branch and an incremented patch version (e.g., `3.4.1`)
+
+### API Client Updates
+
+When the API deploys to production, it automatically triggers `update-api-client.yml` which
+regenerates `src/api-client/` from the new schema and opens a PR to `main`. You can also
+trigger it manually with a custom schema URL.
 
 ## Development Setup
 

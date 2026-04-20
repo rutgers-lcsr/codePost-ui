@@ -1,14 +1,49 @@
+# Deploy Production with Docker (UI)
+#
+# Branching model:
+#   main              — day-to-day development, auto-deploys to dev server
+#   release/<version> — cut from main via "Create Release Branch" workflow
+#
+# Release flow:
+#   1. Run "Create Release Branch" workflow to cut release/<version> from main
+#   2. Test on the release branch (CI runs automatically)
+#   3. Run THIS workflow with ref=release/<version> and version=<version>
+#   4. Tests run against the release branch, then deploys to production,
+#      creates a git tag v<version>, and creates a GitHub Release
+#
+# Hotfix flow:
+#   1. Fix the bug on main first
+#   2. Cherry-pick the fix onto the active release branch
+#   3. Re-run THIS workflow with the same ref and an incremented patch version
+#
+# Note: Deploy the API first, then the UI. The API deploy_production workflow
+# triggers update-api-client.yml to regenerate the TypeScript client if the
+# API schema changed.
+#
+# Runners: production-ui, testing-codepost
+
 name: Deploy Production with Docker
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy (e.g., release/3.4.0)'
+        required: true
+      version:
+        description: 'Version tag to create after deploy (e.g., 3.4.0)'
+        required: true
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
 jobs:
+  tests:
+    uses: ./.github/workflows/test_codepost_ui.yml
+    with:
+      ref: ${{ inputs.ref }}
+
   deploy:
     needs: [tests]
     environment: production
@@ -18,6 +53,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Set up Certs
         run: |
@@ -45,5 +82,28 @@ jobs:
       - name: Notify deployment success
         run: echo "Deployment to production UI server successful!"
 
-  tests:
-    uses: ./.github/workflows/test_codepost_ui.yml
+  tag:
+    needs: [deploy]
+    runs-on: testing-codepost
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Create and push version tag
+        run: |
+          git tag "v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ inputs.version }}" \
+            --target "${{ inputs.ref }}" \
+            --title "v${{ inputs.version }}" \
+            --generate-notes
