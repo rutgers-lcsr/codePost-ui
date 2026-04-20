@@ -931,21 +931,24 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
                 staleTime: 60_000,
               })
               .then((res) => {
-              const rubric = res as unknown as { rubricCategories: RubricCategory[]; rubricComments: RubricComment[] };
-              const rCats = (rubric.rubricCategories || [])
-                .map((cat) => ({
-                  ...cat,
-                  pointLimit: cat.pointLimit === undefined ? null : cat.pointLimit,
-                }))
-                .sort(compareRubricCategories);
-              const rComms: IRubricCategoryToRubricCommentsMap = {};
-              rCats.forEach((cat) => {
-                rComms[cat.id] = (rubric.rubricComments || [])
-                  .filter((c) => c.category === cat.id)
-                  .sort(compareRubricComments);
-              });
-              return { rubricCategories: rCats, rubricComments: rComms };
-            }),
+                const rubric = res as unknown as {
+                  rubricCategories: RubricCategory[];
+                  rubricComments: RubricComment[];
+                };
+                const rCats = (rubric.rubricCategories || [])
+                  .map((cat) => ({
+                    ...cat,
+                    pointLimit: cat.pointLimit === undefined ? null : cat.pointLimit,
+                  }))
+                  .sort(compareRubricCategories);
+                const rComms: IRubricCategoryToRubricCommentsMap = {};
+                rCats.forEach((cat) => {
+                  rComms[cat.id] = (rubric.rubricComments || [])
+                    .filter((c) => c.category === cat.id)
+                    .sort(compareRubricComments);
+                });
+                return { rubricCategories: rCats, rubricComments: rComms };
+              }),
           ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
@@ -1067,21 +1070,24 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
                 staleTime: 60_000,
               })
               .then((res) => {
-              const rubric = res as unknown as { rubricCategories: RubricCategory[]; rubricComments: RubricComment[] };
-              const rCats = (rubric.rubricCategories || [])
-                .map((cat) => ({
-                  ...cat,
-                  pointLimit: cat.pointLimit ?? null,
-                }))
-                .sort(compareRubricCategories);
-              const rComms: IRubricCategoryToRubricCommentsMap = {};
-              rCats.forEach((cat) => {
-                rComms[cat.id] = (rubric.rubricComments || [])
-                  .filter((c) => c.category === cat.id)
-                  .sort(compareRubricComments);
-              });
-              return { rubricCategories: rCats, rubricComments: rComms };
-            }),
+                const rubric = res as unknown as {
+                  rubricCategories: RubricCategory[];
+                  rubricComments: RubricComment[];
+                };
+                const rCats = (rubric.rubricCategories || [])
+                  .map((cat) => ({
+                    ...cat,
+                    pointLimit: cat.pointLimit ?? null,
+                  }))
+                  .sort(compareRubricCategories);
+                const rComms: IRubricCategoryToRubricCommentsMap = {};
+                rCats.forEach((cat) => {
+                  rComms[cat.id] = (rubric.rubricComments || [])
+                    .filter((c) => c.category === cat.id)
+                    .sort(compareRubricComments);
+                });
+                return { rubricCategories: rCats, rubricComments: rComms };
+              }),
           ]);
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
@@ -2464,7 +2470,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   const capViewFeedback = submissionCaps.view_feedback !== false;
   const capViewRubric = submissionCaps.view_rubric !== false;
   const capCommentOnSubmission = submissionCaps.comment_on_submission !== false;
-  const capRunAutograder = submissionCaps.run_autograder;
   const capViewTestResults = submissionCaps.view_test_results !== false;
   const capGenerateAiComments = submissionCaps.generate_ai_comments;
 
