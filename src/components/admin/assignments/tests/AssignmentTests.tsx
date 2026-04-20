@@ -74,7 +74,7 @@ export const AssignmentTests = (props: IProps) => {
           />
         }
       />
-      <Route path="edit" element={<Navigate to="edit/environment" replace />} />
+      <Route path="edit" element={<Navigate to="environment" replace />} />
 
       <Route
         path="results"
