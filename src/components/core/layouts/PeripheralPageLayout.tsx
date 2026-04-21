@@ -24,17 +24,20 @@ interface IProps {
   user: UserType;
   handleLogout: () => void;
   subtitle?: string;
+  /** Override the layout + content background (e.g. 'var(--sc-warm-bg)'). */
+  background?: string;
 }
 
 const PeripheralPageLayout = (props: IProps) => {
   const { token } = theme.useToken();
+  const bg = props.background;
   return (
-    <Layout id="PreAuth" style={{ backgroundColor: token.colorBgLayout, minHeight: '100vh' }}>
+    <Layout id="PreAuth" style={{ backgroundColor: bg ?? token.colorBgLayout, minHeight: '100vh' }}>
       <PeripheralPageHeader user={props.user} handleLogout={props.handleLogout} subtitle={props.subtitle} />
       <Content>
         <div
           style={{
-            background: token.colorBgContainer,
+            background: bg ? 'transparent' : token.colorBgContainer,
             padding: '25px 50px',
             maxWidth: 1200,
             margin: '0 auto',

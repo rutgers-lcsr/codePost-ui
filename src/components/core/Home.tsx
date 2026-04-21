@@ -7,17 +7,18 @@
 import * as React from 'react';
 
 /* antd imports */
-
 import { AuditOutlined, TeamOutlined } from '@ant-design/icons';
-import { Typography, theme, Card, Row, Col } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 import { GrUserAdmin } from 'react-icons/gr';
+
 /* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
+import styles from './Home.module.scss';
 
 import type { UserType } from '../../types/models';
 
@@ -31,106 +32,128 @@ interface IProps {
   handleLogout: () => void;
 }
 
-interface IRoleProps {
+interface ConsoleItem {
+  key: string;
   title: string;
+  description: string;
   icon: React.ReactNode;
   linkTo: string;
+  cardClass: string;
+  iconClass: string;
 }
 
-const RoleItem = (props: IRoleProps) => {
-  const { token } = theme.useToken();
-  const [hovered, setHovered] = React.useState(false);
+/* ── Helpers ────────────────────────────────────────────────────────────── */
 
-  return (
-    <Link to={props.linkTo} style={{ textDecoration: 'none' }}>
-      <Card
-        hoverable
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          height: '100%',
-          textAlign: 'center',
-          borderColor: hovered ? token.colorPrimary : token.colorBorderSecondary,
-          transition: 'all 0.3s ease',
-          transform: hovered ? 'translateY(-5px)' : 'none',
-        }}
-        bodyStyle={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '32px 24px',
-          gap: '24px',
-        }}
-      >
-        <div
-          style={{
-            fontSize: '64px',
-            color: hovered ? token.colorPrimary : token.colorTextSecondary,
-            transition: 'color 0.3s ease',
-            lineHeight: 1,
-          }}
-        >
-          {props.icon}
-        </div>
-        <Typography.Text
-          strong
-          style={{
-            fontSize: '18px',
-            color: hovered ? token.colorPrimary : token.colorText,
-          }}
-        >
-          {props.title}
-        </Typography.Text>
-      </Card>
-    </Link>
-  );
-};
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getDisplayName(user: UserType): string {
+  const local = (user.email ?? '').split('@')[0].split('.')[0];
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+/* ── Component ──────────────────────────────────────────────────────────── */
 
 const Home = (props: IProps) => {
   const platformCaps = usePlatformCapabilities();
 
-  const items = [
-    props.isStudent ? (
-      <Col xs={24} sm={12} md={8} lg={6} key="student">
-        <RoleItem title="Student Console" icon={<PiStudentFill />} linkTo="/student" />
-      </Col>
-    ) : null,
-    props.isGrader ? (
-      <Col xs={24} sm={12} md={8} lg={6} key="grader">
-        <RoleItem title="Grader Console" icon={<AuditOutlined />} linkTo="/grader" />
-      </Col>
-    ) : null,
-    props.isAdmin ? (
-      <Col xs={24} sm={12} md={8} lg={6} key="admin">
-        <RoleItem title="Admin Console" icon={<PiChalkboardTeacherFill />} linkTo="/admin" />
-      </Col>
-    ) : null,
-    platformCaps.access_admin_dashboard ? (
-      <Col xs={24} sm={12} md={8} lg={6} key="dashboard">
-        <RoleItem title="Staff Console" icon={<GrUserAdmin />} linkTo="/dashboard" />
-      </Col>
-    ) : null,
-    platformCaps.manage_organization ? (
-      <Col xs={24} sm={12} md={8} lg={6} key="org">
-        <RoleItem title="Organization Console" icon={<TeamOutlined />} linkTo="/organization" />
-      </Col>
-    ) : null,
-  ];
+  const consoles: ConsoleItem[] = [
+    props.isStudent
+      ? {
+          key: 'student',
+          title: 'Student Console',
+          description: 'View assignments, submissions, and feedback',
+          icon: <PiStudentFill />,
+          linkTo: '/student',
+          cardClass: styles.consoleCardBrand,
+          iconClass: styles.consoleCardIconBrand,
+        }
+      : null,
+    props.isGrader
+      ? {
+          key: 'grader',
+          title: 'Grader Console',
+          description: 'Review submissions and provide feedback',
+          icon: <AuditOutlined />,
+          linkTo: '/grader',
+          cardClass: styles.consoleCardAccent,
+          iconClass: styles.consoleCardIconAccent,
+        }
+      : null,
+    props.isAdmin
+      ? {
+          key: 'admin',
+          title: 'Admin Console',
+          description: 'Manage courses, assignments, and rosters',
+          icon: <PiChalkboardTeacherFill />,
+          linkTo: '/admin',
+          cardClass: styles.consoleCardFocus,
+          iconClass: styles.consoleCardIconFocus,
+        }
+      : null,
+    platformCaps.access_admin_dashboard
+      ? {
+          key: 'dashboard',
+          title: 'Staff Console',
+          description: 'Platform analytics and administration',
+          icon: <GrUserAdmin />,
+          linkTo: '/dashboard',
+          cardClass: styles.consoleCardWarning,
+          iconClass: styles.consoleCardIconWarning,
+        }
+      : null,
+    platformCaps.manage_organization
+      ? {
+          key: 'org',
+          title: 'Organization Console',
+          description: 'Organization settings and member management',
+          icon: <TeamOutlined />,
+          linkTo: '/organization',
+          cardClass: styles.consoleCardNeutral,
+          iconClass: styles.consoleCardIconNeutral,
+        }
+      : null,
+  ].filter((item): item is ConsoleItem => item !== null);
 
   return (
-    <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <Typography.Title level={2} style={{ margin: 0 }}>
-            Welcome Back!
-          </Typography.Title>
-          <Typography.Text style={{ fontSize: '16px' }}>Select a console to continue</Typography.Text>
+    <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout} background="var(--sc-warm-bg)">
+      <div className={styles.home}>
+        {/* ── Greeting ──────────────────────────────────────────────────── */}
+        <div className={styles.greeting} role="heading" aria-level={1}>
+          <p className={styles.roleLabel}>codePost</p>
+          <h1 className={styles.greetingTitle}>
+            {getGreeting()}, {getDisplayName(props.user)}
+          </h1>
+          <p className={styles.greetingSubtitle}>Select a console to continue</p>
         </div>
 
-        <Row gutter={[24, 24]} justify="center">
-          {items}
-        </Row>
+        {/* ── Section header ────────────────────────────────────────────── */}
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Your Consoles</h2>
+          <span className={styles.sectionCount}>{consoles.length}</span>
+        </div>
+
+        {/* ── Console cards ─────────────────────────────────────────────── */}
+        <div className={styles.consoleGrid}>
+          {consoles.map((item, i) => (
+            <motion.div
+              key={item.key}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.08 + i * 0.06, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Link to={item.linkTo} className={item.cardClass} aria-label={`Open ${item.title}`}>
+                <div className={item.iconClass}>{item.icon}</div>
+                <h3 className={styles.consoleCardName}>{item.title}</h3>
+                <p className={styles.consoleCardDescription}>{item.description}</p>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </PeripheralPageLayout>
   );
