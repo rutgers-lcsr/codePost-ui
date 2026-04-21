@@ -1,25 +1,12 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../api-client/clients', () => ({
-  organizationsApi: {
-    aiSettingsRetrieve: vi.fn(),
-    aiSettingsPartialUpdate: vi.fn(),
-    aiUsageRetrieve: vi.fn(),
-    aiModelsRetrieve: vi.fn(),
-  },
-  coursesApi: {
-    aiSettingsRetrieve: vi.fn(),
-    aiSettingsPartialUpdate: vi.fn(),
-    aiUsageRetrieve: vi.fn(),
-    aiModelsRetrieve: vi.fn(),
-  },
-  systemApi: {
-    aiUsageRetrieve: vi.fn(),
-    aiModelsRetrieve: vi.fn(),
-  },
-  apiClientConfig: { basePath: 'https://api.example.com' },
-}));
+vi.mock('../../api-client/clients', () =>
+  createApiClientsMock({
+    apiClientConfig: { basePath: 'https://api.example.com' },
+  }),
+);
 
 vi.mock('../../utils/auth', () => ({
   getAuthToken: vi.fn(() => 'test-token'),
@@ -47,9 +34,12 @@ describe('AIUsageService', () => {
       } as Response);
 
       const result = await AIUsageService.listAIFeatures();
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/aiFeatures/', expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
-      }));
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/aiFeatures/',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+        }),
+      );
       expect(result).toEqual(features);
     });
 

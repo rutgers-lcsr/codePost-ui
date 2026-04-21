@@ -1,21 +1,13 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../api-client/clients', () => ({
-  coursesApi: {
-    list: vi.fn(),
-    retrieve: vi.fn(),
-    create: vi.fn(),
-    partialUpdate: vi.fn(),
-    rosterRetrieve: vi.fn(),
-    rosterPartialUpdate: vi.fn(),
-    addToRosterPartialUpdate: vi.fn(),
-    removeFromRosterPartialUpdate: vi.fn(),
-    courseSettingsRetrieve: vi.fn(),
-  },
-  apiClientConfig: { basePath: 'https://api.example.com' },
-}));
+vi.mock('../../api-client/clients', () =>
+  createApiClientsMock({
+    apiClientConfig: { basePath: 'https://api.example.com' },
+  }),
+);
 
 vi.mock('../../utils/auth', () => ({
   getAuthToken: vi.fn(() => 'test-token'),
@@ -149,9 +141,12 @@ describe('Course service', () => {
 
       const result = await Course.listAPIKeys(42);
 
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/42/apiKeys/', expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
-      }));
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/courses/42/apiKeys/',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+        }),
+      );
       expect(result).toEqual(keys);
     });
 
@@ -165,10 +160,13 @@ describe('Course service', () => {
 
       const result = await Course.createAPIKey(42, 'new-key');
 
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/42/apiKeys/', expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ name: 'new-key' }),
-      }));
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/courses/42/apiKeys/',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ name: 'new-key' }),
+        }),
+      );
       expect(result).toEqual(created);
     });
 
@@ -182,9 +180,12 @@ describe('Course service', () => {
 
       const result = await Course.updateAPIKey(10, 3, { name: 'renamed', isActive: false });
 
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/10/apiKeys/3/', expect.objectContaining({
-        method: 'PATCH',
-      }));
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/courses/10/apiKeys/3/',
+        expect.objectContaining({
+          method: 'PATCH',
+        }),
+      );
       expect(result).toEqual(updated);
     });
 
@@ -197,9 +198,12 @@ describe('Course service', () => {
 
       const result = await Course.deleteAPIKey(10, 3);
 
-      expect(fetch).toHaveBeenCalledWith('https://api.example.com/courses/10/apiKeys/3/', expect.objectContaining({
-        method: 'DELETE',
-      }));
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/courses/10/apiKeys/3/',
+        expect.objectContaining({
+          method: 'DELETE',
+        }),
+      );
       expect(result).toBeUndefined();
     });
 

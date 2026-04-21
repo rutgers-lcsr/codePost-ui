@@ -5,6 +5,7 @@ import { axe } from 'vitest-axe';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createApiClientsMock } from '@test-utils/mocks';
 const { act } = React;
 
 // Component Imports
@@ -22,69 +23,71 @@ const mockAssignment = makeAssignment();
 const mockUser = { ...mockUserBase, apiToken: 'api-token-123' };
 
 // Mocks
-vi.mock('./api-client/clients', () => ({
-  organizationsApi: {
-    retrieve: vi.fn(() => Promise.resolve(mockOrganization)),
-    list: vi.fn(() => Promise.resolve([mockOrganization])),
-    usersRetrieve: vi.fn(() => Promise.resolve([])),
-  },
-  coursesApi: {
-    list: vi.fn(() => Promise.resolve([mockCourse])),
-    retrieve: vi.fn(() => Promise.resolve(mockCourse)),
-    aiSettingsRetrieve: vi.fn(() =>
-      Promise.resolve({
-        id: 1,
-        aiEnabled: false,
-        aiDisabled: false,
-        aiCommentsEnabled: false,
-        aiCommentsDisabled: false,
-        orgAiAvailable: false,
-        aiUseOwnSettings: false,
-        aiProvider: null,
-        aiBaseUrl: '',
-        aiModel: '',
-        hasApiKey: false,
-        apiKeyHint: null,
-        aiTokenRates: {},
-        defaultTokenRates: {},
-      }),
-    ),
-    aiSettingsPartialUpdate: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
-    aiUsageRetrieve: vi.fn(() =>
-      Promise.resolve({
-        totalRequests: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        totalCost: 0,
-        timeSeries: [],
-        breakdown: [],
-      }),
-    ),
-    rosterRetrieve: vi.fn(() =>
-      Promise.resolve({
-        id: 1,
-        organization: 1,
-        name: mockCourse.name,
-        period: mockCourse.period,
-        courseAdmins: [],
-        students: [],
-        graders: [],
-      }),
-    ),
-    rosterPartialUpdate: vi.fn(() => Promise.resolve({})),
-  },
-  usersApi: {
-    requestAPITokenCreate: vi.fn(() => Promise.resolve({ ...mockUser, apiToken: 'token' })),
-    mePartialUpdate: vi.fn(() => Promise.resolve(mockUser)),
-    list: vi.fn(() => Promise.resolve([])),
-  },
-  registrationApi: {
-    emailPasswordResetCreate: vi.fn(() => Promise.resolve({ success: true })),
-  },
-  systemApi: {
-    healthRetrieve: vi.fn(() => Promise.resolve({ database: 'Connected', celery: 'Running' })),
-  },
-}));
+vi.mock('./api-client/clients', () =>
+  createApiClientsMock({
+    organizationsApi: {
+      retrieve: vi.fn(() => Promise.resolve(mockOrganization)),
+      list: vi.fn(() => Promise.resolve([mockOrganization])),
+      usersRetrieve: vi.fn(() => Promise.resolve([])),
+    },
+    coursesApi: {
+      list: vi.fn(() => Promise.resolve([mockCourse])),
+      retrieve: vi.fn(() => Promise.resolve(mockCourse)),
+      aiSettingsRetrieve: vi.fn(() =>
+        Promise.resolve({
+          id: 1,
+          aiEnabled: false,
+          aiDisabled: false,
+          aiCommentsEnabled: false,
+          aiCommentsDisabled: false,
+          orgAiAvailable: false,
+          aiUseOwnSettings: false,
+          aiProvider: null,
+          aiBaseUrl: '',
+          aiModel: '',
+          hasApiKey: false,
+          apiKeyHint: null,
+          aiTokenRates: {},
+          defaultTokenRates: {},
+        }),
+      ),
+      aiSettingsPartialUpdate: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
+      aiUsageRetrieve: vi.fn(() =>
+        Promise.resolve({
+          totalRequests: 0,
+          totalInputTokens: 0,
+          totalOutputTokens: 0,
+          totalCost: 0,
+          timeSeries: [],
+          breakdown: [],
+        }),
+      ),
+      rosterRetrieve: vi.fn(() =>
+        Promise.resolve({
+          id: 1,
+          organization: 1,
+          name: mockCourse.name,
+          period: mockCourse.period,
+          courseAdmins: [],
+          students: [],
+          graders: [],
+        }),
+      ),
+      rosterPartialUpdate: vi.fn(() => Promise.resolve({})),
+    },
+    usersApi: {
+      requestAPITokenCreate: vi.fn(() => Promise.resolve({ ...mockUser, apiToken: 'token' })),
+      mePartialUpdate: vi.fn(() => Promise.resolve(mockUser)),
+      list: vi.fn(() => Promise.resolve([])),
+    },
+    registrationApi: {
+      emailPasswordResetCreate: vi.fn(() => Promise.resolve({ success: true })),
+    },
+    systemApi: {
+      healthRetrieve: vi.fn(() => Promise.resolve({ database: 'Connected', celery: 'Running' })),
+    },
+  }),
+);
 
 vi.mock('./services/user', () => ({
   UserIO: {
@@ -212,8 +215,7 @@ const axeConfig = {
   },
 };
 
-const createTestQueryClient = () =>
-  new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+const createTestQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
 
 const renderWithRouter = async (ui: React.ReactElement, routerProps?: React.ComponentProps<typeof MemoryRouter>) => {
   let result: ReturnType<typeof render>;

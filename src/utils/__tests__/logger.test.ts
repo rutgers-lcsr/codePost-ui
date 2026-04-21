@@ -1,13 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
 // Mock the API client and colors before importing Logger
-vi.mock('../../api-client/clients', () => ({
-  logsApi: {
-    logErrorCreate: vi.fn().mockResolvedValue({}),
-    logCreate: vi.fn().mockResolvedValue({}),
-  },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 vi.mock('../../theme/colors', () => ({
   colors: { brandPrimary: '#4a90d9' },
 }));

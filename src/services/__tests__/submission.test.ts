@@ -7,29 +7,10 @@
  * newest file in `new` and moving older versions to `old[path]`.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
 // Mock external dependencies before importing
-vi.mock('../../api-client/clients', () => ({
-  submissionsApi: {
-    create: vi.fn(),
-    retrieve: vi.fn(),
-    partialUpdate: vi.fn(),
-    destroy: vi.fn(),
-    historyList: vi.fn(),
-    historyPartialUpdate: vi.fn(),
-    testResultsRetrieve: vi.fn(),
-    checkPermissionRetrieve: vi.fn(),
-    submitRegradePartialUpdate: vi.fn(),
-    deleteRegradePartialUpdate: vi.fn(),
-    generatePartnerLinkRetrieve: vi.fn(),
-    validatePartnerLinkAndReturnRetrieve: vi.fn(),
-    validatePartnerLinkRetrieve: vi.fn(),
-    removePartnerRetrieve: vi.fn(),
-  },
-  commentsApi: { retrieve: vi.fn() },
-  filesApi: { retrieve: vi.fn() },
-  rubricCommentsApi: { retrieve: vi.fn() },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 vi.mock('antd', () => ({
   message: { error: vi.fn() },

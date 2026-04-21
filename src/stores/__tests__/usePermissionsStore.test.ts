@@ -1,25 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 import { usePermissionsStore, selectCaps, EMPTY_CAPS, type CacheEntry } from '../usePermissionsStore';
 import type { Capabilities } from '../../api-client/capabilities.generated';
 
 // Mock API clients
-vi.mock('../../api-client/clients', () => ({
-  coursesApi: {
-    capabilitiesRetrieve: vi.fn(),
-  },
-  assignmentsApi: {
-    capabilitiesRetrieve: vi.fn(),
-  },
-  submissionsApi: {
-    checkPermissionRetrieve: vi.fn(),
-  },
-  capabilitiesApi: {
-    platformRetrieve: vi.fn(),
-    batchCreate: vi.fn(),
-  },
-  apiClientConfig: {},
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 describe('usePermissionsStore', () => {
   beforeEach(() => {

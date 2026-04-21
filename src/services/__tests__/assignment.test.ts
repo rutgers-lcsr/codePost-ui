@@ -8,27 +8,10 @@
  * methods that use it: readSubmissions, readSubmissionHistories, readSubmissionTests.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
 // Mock the API client before importing the service
-vi.mock('../../api-client/clients', () => ({
-  assignmentsApi: {
-    retrieve: vi.fn(),
-    create: vi.fn(),
-    cloneCreate: vi.fn(),
-    rubricRetrieve: vi.fn(),
-    commentsList: vi.fn(),
-    submissionsList: vi.fn(),
-    submissionHistoriesList: vi.fn(),
-    submissionTestsList: vi.fn(),
-    generateTestCreate: vi.fn(),
-    studentTestsRetrieve: vi.fn(),
-    studentUploadCreate: vi.fn(),
-    studentUploadPartialUpdate: vi.fn(),
-    studentUploadRetrieve: vi.fn(),
-    beforeStudentUploadRetrieve: vi.fn(),
-    downloadRetrieve: vi.fn(),
-  },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 import { Assignment, AssignmentStudent } from '../assignment';
 import { assignmentsApi } from '../../api-client/clients';

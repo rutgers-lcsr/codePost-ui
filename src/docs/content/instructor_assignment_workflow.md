@@ -162,6 +162,24 @@ Once configured, graders see a **Generate** button (robot icon) on every comment
 
 The AI uses the selected code, linked rubric item, grader draft, and your system prompt to produce the comment. Graders always have the final say — generated text is a draft, not auto-posted.
 
+#### AI context description
+
+The **AI Context Description** is a plain-text summary of what the assignment asks students to do. The AI uses this context when generating suggested comments and submission summaries — giving it enough background to produce accurate, assignment-aware feedback.
+
+**Writing a description manually:**
+Type a brief overview (1–3 paragraphs) covering the assignment goals, key requirements, and any constraints graders should enforce. For example:
+
+> Implement a binary search tree with insert, search, and delete methods. Code must handle edge cases (empty tree, duplicate keys). Style: methods should be under 20 lines each.
+
+**Auto-generating a description:**
+Click the **Generate from Assignment Materials** button (robot icon) next to the field. codePost reads your assignment files, test categories, and rubric to draft a description automatically. Review and edit it before saving.
+
+**Locking the description:**
+Enable the **Lock** toggle to prevent future auto-generations from overwriting a description you have finalized. Unlock it if you want to regenerate after updating assignment materials.
+
+> [!TIP]
+> A good AI Context Description improves the relevance of both suggested comments and submission summaries. Even a short paragraph is better than leaving it blank.
+
 #### AI test generation
 
 AI can also generate autograder test scripts. From an assignment's **Tests** configuration, click **Generate Tests** to create test code automatically. The generator:

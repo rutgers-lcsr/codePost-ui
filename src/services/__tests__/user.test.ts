@@ -1,19 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../api-client/clients', () => ({
-  usersApi: {
-    retrieve: vi.fn(),
-    list: vi.fn(),
-    create: vi.fn(),
-    partialUpdate: vi.fn(),
-    destroy: vi.fn(),
-  },
-  dashboardApi: {
-    statsRetrieve: vi.fn(),
-  },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 import { UserIO } from '../user';
 import { usersApi, dashboardApi } from '../../api-client/clients';

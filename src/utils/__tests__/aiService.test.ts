@@ -1,16 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
 // Mock the API clients
-vi.mock('../../api-client/clients', () => ({
-  coursesApi: {
-    aiSettingsRetrieve: vi.fn(),
-    aiSettingsPartialUpdate: vi.fn(),
-  },
-  commentsApi: {
-    generateCreateRaw: vi.fn(),
-  },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 import { getCourseAISettings, updateCourseAISettings, generateComment } from '../aiService';
 import { coursesApi, commentsApi } from '../../api-client/clients';

@@ -14,9 +14,11 @@ This guide covers how to configure AI features at the **organization** and **cou
 
 ## Overview
 
-codePost integrates with multiple AI providers to power two key features:
+codePost integrates with multiple AI providers to power these features:
 
 - **AI Comment Generation** — graders can draft a comment and use AI to refine it for clarity, tone, and helpfulness.
+- **AI Suggested Comments** — the AI proactively surfaces comment suggestions while a grader reviews a submission. Graders can accept or dismiss each suggestion.
+- **AI Submission Summaries** — the AI generates an on-demand Markdown overview of a submission, giving graders a quick understanding of what the student did before diving in.
 - **AI Test Script Generation** — instructors can generate test scripts from assignment specifications and example code.
 
 AI settings can be configured at two levels:
@@ -91,6 +93,64 @@ Regardless of where the key comes from, each course has two independent toggles:
 
 ---
 
+## AI Suggested Comments
+
+AI Suggested Comments are proactive feedback cards surfaced by the AI while a grader is reviewing a submission. Unlike the **Generate** button (which refines a comment the grader is already writing), suggested comments appear automatically as a list in the Code Console sidebar — no prompt from the grader required.
+
+### How suggestions appear
+
+When a grader opens a submission, the AI analyzes the code and surfaces zero or more comment suggestions. Each suggestion card shows:
+
+- The suggested comment text.
+- The file and line range it applies to.
+- The rubric item it is linked to (if any).
+
+Hovering over a suggestion highlights the corresponding code lines in the editor. Clicking the card scrolls the highlight into view.
+
+### Accepting and dismissing
+
+| Action      | What happens                                                                                                   |
+| ----------- | -------------------------------------------------------------------------------------------------------------- |
+| **Accept**  | The suggestion is converted into a real comment on the submission. The grader can edit the text before saving. |
+| **Dismiss** | The suggestion is marked as rejected and removed from the list. It does not become a comment.                  |
+
+Graders always have final control — accepted text is a draft that can be edited before saving, not an auto-posted comment.
+
+### Grader feedback
+
+Each suggestion card has a **thumbs up / thumbs down** widget. Thumbs down opens a short text box ("What could be better?") for optional elaboration. This feedback is used to improve the AI prompts over time.
+
+> [!NOTE]
+> Suggested comments are generated when the submission is opened. If the assignment's AI features are disabled at the course level, or if the course has no AI configured, the suggestions panel will be empty.
+
+---
+
+## AI Submission Summaries
+
+The AI Submission Summary gives graders a concise, AI-generated overview of a student's submission before they start reviewing. It appears as a collapsible panel in the Code Console sidebar.
+
+### Generating a summary
+
+1. Open a submission in the Code Console.
+2. In the sidebar, locate the **Submission Summary** panel.
+3. Click **Generate Summary**.
+4. The AI analyzes all files in the submission and returns a Markdown summary.
+
+The summary typically includes a brief description of what the student's code does, notable patterns or issues, and areas that may need closer attention.
+
+### Regenerating
+
+If you want a fresh summary (e.g., after editing or re-running a submission), click **Regenerate** in the panel header. The previous summary is replaced.
+
+### Feedback
+
+Like suggested comments, the summary panel includes a **thumbs up / thumbs down** widget. Providing feedback helps refine the underlying prompts.
+
+> [!NOTE]
+> Generating a summary counts as an AI call and is reflected in usage tracking. The **Request type** recorded is `submission_summary`.
+
+---
+
 ## Usage Tracking & Analytics
 
 Every AI API call is recorded with token counts, cost estimates, and metadata. Usage data is available at three levels.
@@ -126,16 +186,16 @@ Platform staff can view usage across the entire platform:
 
 Each AI call records:
 
-| Field              | Description                                       |
-| ------------------ | ------------------------------------------------- |
-| **Provider**       | Which AI provider was used (Gemini, OpenAI, etc.) |
-| **Model**          | The specific model (e.g., `gpt-4o-mini`)          |
-| **Request type**   | `comment_generation` or `test_generation`         |
-| **Input tokens**   | Tokens sent to the model                          |
-| **Output tokens**  | Tokens returned by the model                      |
-| **Estimated cost** | USD cost estimate based on published pricing      |
-| **Status**         | `success` or `error`                              |
-| **User**           | The grader or instructor who triggered it         |
+| Field              | Description                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Provider**       | Which AI provider was used (Gemini, OpenAI, etc.)                                                                                                |
+| **Model**          | The specific model (e.g., `gpt-4o-mini`)                                                                                                         |
+| **Request type**   | One of: `comment_generation`, `suggested_comments`, `submission_summary`, `assignment_description`, `test_generation`, `code_review`, `feedback` |
+| **Input tokens**   | Tokens sent to the model                                                                                                                         |
+| **Output tokens**  | Tokens returned by the model                                                                                                                     |
+| **Estimated cost** | USD cost estimate based on published pricing                                                                                                     |
+| **Status**         | `success` or `error`                                                                                                                             |
+| **User**           | The grader or instructor who triggered it                                                                                                        |
 
 ---
 

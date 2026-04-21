@@ -114,11 +114,17 @@ If your course requires specific libraries or language versions not covered by t
 
 ## AI-Assisted Grading
 
-codePost integrates with AI providers to help graders write better feedback faster and to generate test cases for assignments. Graders can draft comments and use AI to refine them for clarity, tone, and helpfulness. Instructors can also use AI to generate test scripts based on assignment specifications.
+codePost integrates with AI providers to power several grading and course-setup features:
+
+- **AI Suggested Comments** — the AI proactively surfaces comment suggestions in the Code Console sidebar while a grader reviews a submission. Graders can accept or dismiss each suggestion.
+- **AI Submission Summaries** — on-demand AI overview of a student's submission, giving graders a quick understanding of what the student did before reviewing code.
+- **AI Comment Generation** — graders can draft a comment and use AI to refine it for clarity, tone, and helpfulness.
+- **AI Test Script Generation** — instructors can generate test scripts from assignment specifications and example code.
 
 Instructors retain full control over the AI environment:
 
 - **System Prompts**: customizing how the AI behaves.
+- **AI Context Description**: per-assignment context that tells the AI what the assignment requires (can be auto-generated from your files, tests, and rubric).
 - **Context**: deciding what information (code, rubric, etc.) is shared with the AI.
 - **Model Choice**: configuring your preferred provider and model.
 
@@ -129,14 +135,26 @@ Instructors retain full control over the AI environment:
 > 2. Scroll to **AI Features**.
 > 3. Enter your **AI Provider**, **API Key**, and **Model Name**.
 > 4. Click **Save**.
-> 5. Enable **AI Comment Generation**
+> 5. Enable **AI Comment Generation**.
 > 6. Click **Save**.
 >
-> Once enabled, you can use AI features in the grader interface when writing comments or generate test cases in the Test Script editor.
+> Once enabled, AI features are available in the grader interface. For suggested comments and submission summaries, also configure an **AI Context Description** in the assignment's **AI tab** (Assignment Settings > AI).
 >
 > ![AI Features configuration in Course Settings](/assets/docs/instructor_ai_settings.png)
 
 For organization-level AI configuration, per-course inheritance, and usage analytics, see the [AI Settings & Usage Guide](/docs/ai-guide).
+
+### AI Suggested Comments
+
+When a grader opens a submission, the AI analyzes the code and surfaces comment suggestions as cards in the sidebar. Graders can **Accept** a suggestion (it becomes a draft comment on the relevant code) or **Dismiss** it. Both actions include a thumbs up/down feedback widget to help improve suggestions over time.
+
+### AI Submission Summaries
+
+The Submission Summary panel in the grading sidebar lets graders generate an AI overview of the full submission on demand. Click **Generate Summary** to produce a Markdown summary covering what the code does, notable patterns, and areas that may need close review. Summaries can be regenerated at any time.
+
+### AI Context Description
+
+Each assignment has an **AI Context Description** — a plain-text summary of what the assignment requires. The AI uses this when generating suggested comments and summaries. You can write it manually in Assignment Settings > AI, or auto-generate it from your assignment files, tests, and rubric by clicking the **Generate from Assignment Materials** button. Use the **Lock** toggle to prevent future auto-generations from overwriting a finalized description.
 
 ### Autograding and Tests Generation
 
@@ -153,10 +171,10 @@ To enable AI-generated tests:
 
 Graders can use AI to refine their feedback.
 
-1. Highlght code to leave a comment.
+1. Highlight code to leave a comment.
 2. Draft your thought (e.g., "function is too long").
-3. Click **Refine with AI** or use the magic wand icon.
-4. The AI will suggest a more constructive phrasing (e.g., "Consider refactoring this function into smaller helpers to improve readability.").
+3. Click **Generate** (robot icon) or press `Ctrl+G`.
+4. The AI suggests a more constructive phrasing (e.g., "Consider refactoring this function into smaller helpers to improve readability.").
 
 > [!NOTE]
 > AI-generated tests are a starting point. You can always edit the script or use the builder to refine cases.

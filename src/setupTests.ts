@@ -112,6 +112,8 @@ Object.defineProperty(globalThis, 'fetch', {
         payload = mockCourse;
       } else if (url.includes('/roster')) {
         payload = { courseAdmins: [], students: [], graders: [] };
+      } else if (url.includes('/apiKeys')) {
+        payload = [];
       } else {
         payload = mockCourse;
       }

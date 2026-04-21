@@ -126,6 +126,53 @@ When viewing a submission that has a regrade request:
 - Verify you are assigned to the student/section.
 - Ask an instructor/admin to confirm roster role and permissions.
 
+---
+
+## AI tools
+
+When the course instructor has enabled AI features, you have three AI tools available in the Code Console.
+
+### AI comment generation (Generate button)
+
+Every comment text area has a **Generate** button (robot icon, or press `Ctrl+G`).
+
+1. Select one or more code lines and open a comment.
+2. Optionally link a rubric item — the AI uses it as context.
+3. Optionally type a draft — the AI will refine it.
+4. Click **Generate**. The AI fills in the comment text based on the selected code, rubric item, and any draft you wrote.
+5. Review and edit before saving.
+
+Generated text is always a draft — nothing is auto-posted.
+
+### AI suggested comments
+
+When you open a submission, the AI may surface **Suggested Comments** in the sidebar — proactive feedback ideas based on the code, without requiring you to start a comment first.
+
+Each suggestion card shows the proposed text and the code range it targets. Hover over a card to highlight the relevant lines in the editor.
+
+- Click **Accept** to convert the suggestion into a real comment on that code range. You can edit it before saving.
+- Click **Dismiss** to remove the suggestion from the list permanently.
+
+You can leave a **thumbs up / thumbs down** on each suggestion. Thumbs down opens a short text box for optional feedback, which helps improve suggestions over time.
+
+### AI submission summary
+
+The **Submission Summary** panel in the sidebar gives you a quick AI-generated overview of the student's work before you start reviewing.
+
+1. Open the **Submission Summary** panel in the sidebar.
+2. Click **Generate Summary** if no summary exists yet.
+3. The AI returns a Markdown summary covering what the code does, notable patterns, and areas to look at closely.
+4. Click **Regenerate** at any time if you want a fresh summary (e.g., after a re-run).
+
+Like suggested comments, the summary has a thumbs up / thumbs down widget for quality feedback.
+
+> [!NOTE]
+> AI features are configured by your course instructor. If you don't see the Generate button, suggested comments, or the summary panel, AI may not be enabled for this course. Contact your course admin.
+
+For full details on AI configuration, see the [AI Settings & Usage Guide](/docs/ai-guide).
+
+---
+
 ## Related docs
 
 - [Instructor Overview](/docs/instructor)

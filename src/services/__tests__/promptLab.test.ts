@@ -1,10 +1,13 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../api-client/clients', () => ({
-  apiClientConfig: { basePath: 'https://api.example.com' },
-}));
+vi.mock('../../api-client/clients', () =>
+  createApiClientsMock({
+    apiClientConfig: { basePath: 'https://api.example.com' },
+  }),
+);
 
 vi.mock('../../utils/auth', () => ({
   getAuthToken: vi.fn(() => 'test-token'),
@@ -32,9 +35,12 @@ describe('PromptLabService', () => {
     const types = [{ type: 'rubric_description' }];
     mockFetchOk(types);
     const result = await PromptLabService.listPromptTypes();
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptTypes/', expect.objectContaining({
-      headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptTypes/',
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+      }),
+    );
     expect(result).toEqual(types);
   });
 
@@ -50,10 +56,7 @@ describe('PromptLabService', () => {
   it('listVariants with only promptType', async () => {
     mockFetchOk({ results: [] });
     await PromptLabService.listVariants({ promptType: 'rubric' });
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('promptType=rubric'),
-      expect.any(Object),
-    );
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('promptType=rubric'), expect.any(Object));
     const url = vi.mocked(fetch).mock.calls[0][0] as string;
     expect(url).not.toContain('status=');
   });
@@ -69,10 +72,7 @@ describe('PromptLabService', () => {
   it('listVariants with filters', async () => {
     mockFetchOk({ results: [] });
     await PromptLabService.listVariants({ promptType: 'rubric', status: 'active' });
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('promptType=rubric'),
-      expect.any(Object),
-    );
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('promptType=rubric'), expect.any(Object));
   });
 
   it('getVariant fetches by id', async () => {
@@ -87,18 +87,24 @@ describe('PromptLabService', () => {
     const data = { name: 'new', promptType: 'rubric' };
     mockFetchOk({ id: 10, ...data });
     await PromptLabService.createVariant(data);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptVariants/', expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(data),
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptVariants/',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    );
   });
 
   it('updateVariant sends PATCH', async () => {
     mockFetchOk({ id: 5, name: 'updated' });
     await PromptLabService.updateVariant(5, { name: 'updated' });
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptVariants/5/', expect.objectContaining({
-      method: 'PATCH',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptVariants/5/',
+      expect.objectContaining({
+        method: 'PATCH',
+      }),
+    );
   });
 
   it('deleteVariant sends DELETE and handles 204', async () => {
@@ -110,17 +116,23 @@ describe('PromptLabService', () => {
   it('activateVariant sends POST to activate endpoint', async () => {
     mockFetchOk({ id: 5, status: 'active' });
     await PromptLabService.activateVariant(5);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptVariants/5/activate/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptVariants/5/activate/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   it('cloneVariant sends POST to clone endpoint', async () => {
     mockFetchOk({ id: 6 });
     await PromptLabService.cloneVariant(5);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptVariants/5/clone/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptVariants/5/clone/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   it('autoImprove sends POST with promptType', async () => {
@@ -167,10 +179,7 @@ describe('PromptLabService', () => {
   it('listExperiments with filters', async () => {
     mockFetchOk({ results: [] });
     await PromptLabService.listExperiments({ promptType: 'rubric', status: 'running' });
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('promptType=rubric'),
-      expect.any(Object),
-    );
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('promptType=rubric'), expect.any(Object));
   });
 
   it('getExperiment fetches by id', async () => {
@@ -183,25 +192,34 @@ describe('PromptLabService', () => {
     const data = { name: 'exp1', promptType: 'rubric', variantA: 1, variantB: 2 };
     mockFetchOk({ id: 1, ...data });
     await PromptLabService.createExperiment(data);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptExperiments/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptExperiments/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   it('resumeExperiment sends POST', async () => {
     mockFetchOk({ id: 1 });
     await PromptLabService.resumeExperiment(1);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptExperiments/1/resume/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptExperiments/1/resume/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   it('pauseExperiment sends POST', async () => {
     mockFetchOk({ id: 1 });
     await PromptLabService.pauseExperiment(1);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptExperiments/1/pause/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptExperiments/1/pause/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   it('completeExperiment without promoteWinner', async () => {
@@ -222,10 +240,7 @@ describe('PromptLabService', () => {
   it('getExperimentResults with defaults', async () => {
     mockFetchOk({ variantAStats: {}, variantBStats: {} });
     await PromptLabService.getExperimentResults(1);
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('pool=all'),
-      expect.any(Object),
-    );
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('pool=all'), expect.any(Object));
   });
 
   it('getExperimentResults with only minAssignments', async () => {
@@ -250,9 +265,12 @@ describe('PromptLabService', () => {
   it('submitFeedback sends POST', async () => {
     mockFetchOk({});
     await PromptLabService.submitFeedback({ submissionId: 1, rating: 'positive' } as any);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptFeedback/', expect.objectContaining({
-      method: 'POST',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptFeedback/',
+      expect.objectContaining({
+        method: 'POST',
+      }),
+    );
   });
 
   // ── Settings ──
@@ -266,9 +284,12 @@ describe('PromptLabService', () => {
   it('updateSettings sends PUT', async () => {
     mockFetchOk({ aiProvider: 'anthropic' });
     await PromptLabService.updateSettings({ aiProvider: 'anthropic' } as any);
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/promptVariants/settings/update/', expect.objectContaining({
-      method: 'PUT',
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.example.com/promptVariants/settings/update/',
+      expect.objectContaining({
+        method: 'PUT',
+      }),
+    );
   });
 
   // ── Error handling ──

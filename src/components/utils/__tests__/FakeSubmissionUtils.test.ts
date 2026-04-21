@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
 vi.mock('antd', () => ({
   message: {
@@ -23,10 +24,7 @@ vi.mock('../../../services/submission', () => ({
   Submission: { create: vi.fn(), read: vi.fn() },
 }));
 
-vi.mock('../../../api-client/clients', () => ({
-  submissionFilesApi: { create: vi.fn() },
-  filesApi: { retrieve: vi.fn() },
-}));
+vi.mock('../../../api-client/clients', () => createApiClientsMock());
 
 vi.mock('../../../utils/file', () => ({
   getFileContent: vi.fn(),

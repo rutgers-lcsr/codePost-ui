@@ -95,7 +95,7 @@ export function restoreLocalStorage(): void {
  * );
  * ```
  */
-export function createApiClientsMock(overrides: Record<string, Record<string, unknown>> = {}): Record<string, unknown> {
+export function createApiClientsMock(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   // All exported API singletons from src/api-client/clients.ts
   const apiNames = [
     'aiFeaturesApi',
@@ -140,22 +140,33 @@ export function createApiClientsMock(overrides: Record<string, Record<string, un
     'webhooksApi',
   ];
 
-  const mock: Record<string, unknown> = { apiClientConfig: {} };
+  // Always include apiClientConfig so destructured imports resolve.
+  // Default basePath points to a non-routable address so accidental fetches fail fast.
+  const mock: Record<string, unknown> = {
+    apiClientConfig: 'apiClientConfig' in overrides
+      ? overrides.apiClientConfig
+      : { basePath: 'http://test-mock-not-configured' },
+  };
 
   for (const name of apiNames) {
-    const explicit = overrides[name];
-    // Proxy returns vi.fn() for any property access not explicitly provided
-    mock[name] = new Proxy(explicit ?? {}, {
-      get(target, prop) {
-        if (prop in (target as Record<string | symbol, unknown>)) {
-          return (target as Record<string | symbol, unknown>)[prop];
-        }
-        // Lazily create a vi.fn() stub and cache it so the same ref is returned
-        const stub = vi.fn();
-        (target as Record<string | symbol, unknown>)[prop] = stub;
-        return stub;
-      },
-    });
+    const explicit = overrides[name] as Record<string, unknown> | undefined;
+    if (explicit) {
+      // Use explicitly provided mock as-is — no Proxy auto-stubbing.
+      // Tests that pass overrides are declaring the exact shape they need.
+      mock[name] = explicit;
+    } else {
+      // No override: Proxy returns vi.fn() for any property access,
+      // so the mock is compatible with any consumer.
+      const target: Record<string | symbol, unknown> = {};
+      mock[name] = new Proxy(target, {
+        get(t, prop) {
+          if (prop in t) return t[prop];
+          const stub = vi.fn();
+          t[prop] = stub;
+          return stub;
+        },
+      });
+    }
   }
 
   return mock;

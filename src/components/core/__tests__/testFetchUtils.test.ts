@@ -1,14 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi } from 'vitest';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../../api-client/clients', () => ({
-  assignmentsApi: { retrieve: vi.fn() },
-  autograderApi: { environmentsRetrieve: vi.fn() },
-  testCategoriesApi: { retrieve: vi.fn() },
-  testCasesApi: { retrieve: vi.fn() },
-  submissionsApi: { submissionTestsList: vi.fn() },
-}));
+vi.mock('../../../api-client/clients', () => createApiClientsMock());
 
 vi.mock('../../../utils/submissionTests', () => ({
   getLatestSubmissionTests: vi.fn((tests: any[]) => tests),

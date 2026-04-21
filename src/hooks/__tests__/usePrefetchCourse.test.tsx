@@ -4,11 +4,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createApiClientsMock } from '@test-utils/mocks';
 
-vi.mock('../../api-client/clients', () => ({
-  assignmentsApi: { retrieve: vi.fn() },
-  coursesApi: { rosterRetrieve: vi.fn(), sectionsList: vi.fn() },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 vi.mock('../../components/admin/hooks/useAssignmentsQuery', () => ({
   sanitizeAssignment: vi.fn((a: any) => a),
