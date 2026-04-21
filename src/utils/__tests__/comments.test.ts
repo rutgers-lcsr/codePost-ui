@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect } from 'vitest';
-import { CommentIO, UiComment } from '../comments';
+import { CommentIO, UiComment, getCommentKind, getCommentLabel, setPdfVerticalMap } from '../comments';
 import { RubricComment } from '../../api-client';
 import { makeComment } from '../../test-utils';
 import { encodeRegion } from '../../features/code-review/code-panel/pdfRegionComment';
@@ -265,14 +265,123 @@ describe('CommentIO.sortComments with region comments', () => {
     expect(sorted.map((c) => c.id)).toEqual([2, 1, 3]);
   });
 
-  it('mixes region comments with page-level comments (page-level first since topPct=0)', () => {
+  it('mixes region comments with page-level comments (page-level first)', () => {
     const region = encodeRegion(10, 50, 50, 60);
     const comments = [
       makeComment({ id: 1, startLine: 1, endLine: 1, ...region }),
       makeComment({ id: 2, startLine: 1, endLine: 1, startChar: 0, endChar: 0 }), // page-level
     ];
     const sorted = CommentIO.sortComments(comments);
-    // Page-level has sortKey=0, region has sortKey=50 → page-level first
+    // Page-level has sortKey=0, region has sortKey > 0 → page-level first
     expect(sorted.map((c) => c.id)).toEqual([2, 1]);
+  });
+
+  it('interleaves region and text comments using vertical position mapping', () => {
+    // Simulate a page where char offsets map to vertical positions:
+    // chars 0–1000 → 0–30% (dense header), chars 1000–2000 → 30–50% (body), chars 2000–3000 → 65–90% (after image gap)
+    setPdfVerticalMap(99, 1, [
+      { charOffset: 0, verticalPct: 0 },
+      { charOffset: 1000, verticalPct: 30 },
+      { charOffset: 2000, verticalPct: 50 },
+      { charOffset: 2500, verticalPct: 65 },
+      { charOffset: 3000, verticalPct: 90 },
+    ]);
+    // Region at topPct=60 (between the text gap at 50% and 65%)
+    const region = encodeRegion(10, 60, 80, 80);
+    const comments = [
+      makeComment({ id: 1, startLine: 1, endLine: 1, file: 99, ...region }), // sort key: 60
+      makeComment({ id: 2, startLine: 1, endLine: 1, file: 99, startChar: 2000, endChar: 2100 }), // sort key: 50
+      makeComment({ id: 3, startLine: 1, endLine: 1, file: 99, startChar: 2500, endChar: 2600 }), // sort key: 65
+    ];
+    const sorted = CommentIO.sortComments(comments);
+    // Text at 50%, region at 60%, text at 65%
+    expect(sorted.map((c) => c.id)).toEqual([2, 1, 3]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getCommentKind
+// ---------------------------------------------------------------------------
+describe('getCommentKind', () => {
+  it('returns "code" for code files', () => {
+    expect(getCommentKind(makeComment({ startChar: 5, endChar: 10 }), 'code')).toBe('code');
+  });
+
+  it('returns "markdown" for markdown files', () => {
+    expect(getCommentKind(makeComment({ startChar: 0, endChar: 0 }), 'markdown')).toBe('markdown');
+  });
+
+  it('returns "jupyter" for jupyter files', () => {
+    expect(getCommentKind(makeComment({ startChar: 0, endChar: 0 }), 'jupyter')).toBe('jupyter');
+  });
+
+  it('returns "image" for image files', () => {
+    expect(getCommentKind(makeComment({ startChar: 0, endChar: 0 }), 'image')).toBe('image');
+  });
+
+  it('returns "pdf-page" for page-level PDF comments', () => {
+    expect(getCommentKind(makeComment({ startChar: 0, endChar: 0, startLine: 1, endLine: 1 }), 'pdf')).toBe('pdf-page');
+  });
+
+  it('returns "pdf-text" for text-offset PDF comments', () => {
+    expect(getCommentKind(makeComment({ startChar: 50, endChar: 200, startLine: 1, endLine: 1 }), 'pdf')).toBe(
+      'pdf-text',
+    );
+  });
+
+  it('returns "pdf-region" for region PDF comments', () => {
+    const region = encodeRegion(10, 20, 80, 90);
+    expect(getCommentKind(makeComment({ ...region, startLine: 1, endLine: 1 }), 'pdf')).toBe('pdf-region');
+  });
+
+  it('returns "pdf-page" when startChar and endChar are null', () => {
+    expect(
+      getCommentKind(
+        makeComment({
+          startChar: null as unknown as number,
+          endChar: null as unknown as number,
+          startLine: 2,
+          endLine: 2,
+        }),
+        'pdf',
+      ),
+    ).toBe('pdf-page');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getCommentLabel
+// ---------------------------------------------------------------------------
+describe('getCommentLabel', () => {
+  it('returns "Line N" for code comments', () => {
+    expect(getCommentLabel('code', 0)).toBe('Line 1');
+  });
+
+  it('returns "Lines N–M" for multi-line code comments', () => {
+    expect(getCommentLabel('code', 0, 4)).toBe('Lines 1\u20135');
+  });
+
+  it('returns "Cell N" for markdown comments', () => {
+    expect(getCommentLabel('markdown', 2)).toBe('Cell 3');
+  });
+
+  it('returns "Cell N" for jupyter comments', () => {
+    expect(getCommentLabel('jupyter', 0)).toBe('Cell 1');
+  });
+
+  it('returns "Cell N" for image comments', () => {
+    expect(getCommentLabel('image', 0)).toBe('Cell 1');
+  });
+
+  it('returns "Page N" for pdf-page comments', () => {
+    expect(getCommentLabel('pdf-page', 2)).toBe('Page 2');
+  });
+
+  it('returns "Page N" for pdf-text comments', () => {
+    expect(getCommentLabel('pdf-text', 1)).toBe('Page 1');
+  });
+
+  it('returns "Page N" for pdf-region comments', () => {
+    expect(getCommentLabel('pdf-region', 3)).toBe('Page 3');
   });
 });

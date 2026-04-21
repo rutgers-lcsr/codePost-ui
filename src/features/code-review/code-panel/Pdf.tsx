@@ -24,6 +24,7 @@ import { Divider } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import { encodeRegion } from './pdfRegionComment';
+import { setPdfVerticalMap } from '../../../utils/comments';
 
 /**********************************************************************************************************************/
 
@@ -435,11 +436,35 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
       if (pageEl) {
         const textLayer = pageEl.querySelector('.textLayer');
-        const hasText = textLayer ? (textLayer.textContent?.trim().length ?? 0) > 0 : false;
+        const textLength = textLayer?.textContent?.trim().length ?? 0;
+        const hasText = textLength > 0;
         if (!hasText) {
           scannedPages.current.add(pageNumber);
         } else {
           scannedPages.current.delete(pageNumber);
+        }
+        // Build char-offset → vertical-position mapping so region and text
+        // comments on the same page sort by their true visual position.
+        if (file.id && textLayer) {
+          const pageRect = pageEl.getBoundingClientRect();
+          const pageHeight = pageRect.height;
+          const checkpoints: { charOffset: number; verticalPct: number }[] = [];
+          const walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+          let charsSoFar = 0;
+          let node = walker.nextNode() as Text | null;
+          while (node) {
+            const parent = node.parentElement;
+            if (parent && pageHeight > 0) {
+              const rect = parent.getBoundingClientRect();
+              checkpoints.push({
+                charOffset: charsSoFar,
+                verticalPct: ((rect.top - pageRect.top) / pageHeight) * 100,
+              });
+            }
+            charsSoFar += node.textContent?.length ?? 0;
+            node = walker.nextNode() as Text | null;
+          }
+          setPdfVerticalMap(file.id, pageNumber, checkpoints);
         }
       }
       setRenderedPages((prev) => {

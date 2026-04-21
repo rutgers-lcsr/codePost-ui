@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { CommentType } from '../../../types/models';
 import { useHoveredCommentId } from './CommentHighlightContext';
-import { isRegionComment, decodeRegion } from './pdfRegionComment';
+import { decodeRegion } from './pdfRegionComment';
+import { getCommentKind } from '../../../utils/comments';
 
 interface HighlightRect {
   commentId: number;
@@ -21,18 +22,6 @@ interface PdfHighlightLayerProps {
   /** Incremented on each page render to trigger highlight recomputation after resize. */
   renderVersion?: number;
 }
-
-/**
- * Checks whether a comment is a legacy page-level comment (no text selection).
- * Page-level comments have startChar=0, endChar=0, and startLine=endLine.
- */
-const isPageLevelComment = (comment: CommentType): boolean => {
-  return (
-    (comment.startChar === 0 || comment.startChar == null) &&
-    (comment.endChar === 0 || comment.endChar == null) &&
-    comment.startLine === comment.endLine
-  );
-};
 
 /**
  * Given a text layer element and a flat character offset, find the corresponding
@@ -198,7 +187,8 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
     const regions: { id: number; leftPct: number; topPct: number; widthPct: number; heightPct: number }[] = [];
 
     for (const comment of comments) {
-      if (isRegionComment(comment)) {
+      const kind = getCommentKind(comment, 'pdf');
+      if (kind === 'pdf-region') {
         const { leftPct, topPct, rightPct, bottomPct } = decodeRegion(comment.startChar!, comment.endChar!);
         regions.push({
           id: comment.id,
@@ -207,7 +197,7 @@ export const PdfHighlightLayer: React.FC<PdfHighlightLayerProps> = ({
           widthPct: rightPct - leftPct,
           heightPct: bottomPct - topPct,
         });
-      } else if (isPageLevelComment(comment)) {
+      } else if (kind === 'pdf-page') {
         pageLevel.push(comment.id);
       } else {
         const commentRects = computeRectsForComment(comment, pageNumber, pageEl);

@@ -9,7 +9,8 @@ import AIFeedbackWidget from '../../../components/core/AIFeedbackWidget';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import type { RubricCategoryType, SuggestedCommentType } from '../../../types/models';
 import type { RubricComment } from '../../../api-client';
-import { File, type FileType } from '../../../utils/file';
+import type { FileType } from '../../../utils/file';
+import { getCommentKind, getCommentLabel } from '../../../utils/comments';
 import {
   scrollHighlightIntoView,
   SUGGESTION_ID_OFFSET,
@@ -128,18 +129,16 @@ const SuggestedComment: React.FC<SuggestedCommentProps> = ({
     }
   };
 
-  const codeType = File.codeType(file);
-  let lineLabel: string;
-  if (['markdown', 'jupyter'].includes(codeType)) {
-    lineLabel = `Cell ${(suggestion.startLine ?? 0) + 1}`;
-  } else if (codeType === 'pdf') {
-    lineLabel = `Page ${suggestion.startLine ?? 0}`;
-  } else {
-    lineLabel =
-      suggestion.startLine === suggestion.endLine
-        ? `Line ${(suggestion.startLine ?? 0) + 1}`
-        : `Lines ${(suggestion.startLine ?? 0) + 1}–${(suggestion.endLine ?? 0) + 1}`;
-  }
+  const kind = getCommentKind(
+    {
+      startChar: suggestion.startChar ?? 0,
+      endChar: suggestion.endChar ?? 0,
+      startLine: suggestion.startLine ?? 0,
+      endLine: suggestion.endLine ?? 0,
+    },
+    file,
+  );
+  const lineLabel = getCommentLabel(kind, suggestion.startLine ?? 0, suggestion.endLine ?? 0);
 
   const busy = isAccepting || isRejecting;
 

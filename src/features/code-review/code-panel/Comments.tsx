@@ -10,6 +10,7 @@ import { BulbOutlined, LoadingOutlined } from '@ant-design/icons';
 import { message } from 'antd';
 import type { CommentType, RubricCategoryType, RubricCommentType, SuggestedCommentType } from '../../../types/models';
 import type { RubricComment } from '../../../api-client';
+import { CommentIO } from '../../../utils/comments';
 
 import type { FileType } from '../../../utils/file';
 
@@ -103,6 +104,14 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
   onScrolledToCommentRef.current = props.onScrolledToComment;
 
   const hoveredCommentId = useHoveredCommentId();
+
+  // Re-render when PDF pages finish rendering so the vertical sort map is picked up
+  const [pdfSortVersion, setPdfSortVersion] = useState(0);
+  useEffect(() => {
+    const handler = () => setPdfSortVersion((v) => v + 1);
+    document.addEventListener('pdf-loaded', handler);
+    return () => document.removeEventListener('pdf-loaded', handler);
+  }, []);
 
   // No longer using absolute positioning - just provide stub functions
   const placeCommentsOnNextFrame = useCallback(() => {
@@ -347,13 +356,19 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     });
   }
 
-  // Sort by startLine so suggestions appear inline next to the code they reference
+  // Sort by startLine so suggestions appear inline next to the code they reference.
+  // Use CommentIO.compare for comments so same-page PDF comments sort by visual
+  // position (region vs text-offset interleaving). pdfSortVersion ensures this
+  // re-runs after the PDF text layer renders and the vertical map is populated.
+  void pdfSortVersion; // dependency used by React's render cycle
   renderItems.sort((a, b) => {
     const lineA = a.type === 'comment' ? (a.comment.startLine ?? 0) : (a.suggestion.startLine ?? 0);
     const lineB = b.type === 'comment' ? (b.comment.startLine ?? 0) : (b.suggestion.startLine ?? 0);
     if (lineA !== lineB) return lineA - lineB;
     // Comments before suggestions on the same line
     if (a.type !== b.type) return a.type === 'comment' ? -1 : 1;
+    // Both are comments on the same line — use full comparator (vertical position)
+    if (a.type === 'comment' && b.type === 'comment') return CommentIO.compare(a.comment, b.comment);
     return 0;
   });
 

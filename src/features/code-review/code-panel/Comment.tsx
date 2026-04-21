@@ -37,7 +37,7 @@ import BlockMarkdown from '../../../components/core/BlockMarkdown';
 
 import Badge from '../../../components/core/Badge';
 
-import { UiComment, type CommentType } from '../../../utils/comments';
+import { UiComment, getCommentKind, getCommentLabel, type CommentType } from '../../../utils/comments';
 import { File, type FileType } from '../../../utils/file';
 import type { RubricCategoryType, RubricCommentType } from '../../../types/models';
 
@@ -933,34 +933,12 @@ const Comment: React.FC<ICommentProps> = (props) => {
   // -------------------------- codeType ['code', 'markdown'] --------------------------- //
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  if (['markdown', 'jupyter'].includes(File.codeType(props.file))) {
-    commentElements.line = (
-      <span
-        className="cp-label--mid-bold cp-label--italic"
-        style={{ color: consoleTheme.consoleTheme.commentTitleText }}
-      >
-        Cell {props.comment.startLine + 1}
-      </span>
-    );
-  } else if (File.codeType(props.file) === 'pdf') {
-    commentElements.line = (
-      <span
-        className="cp-label--mid-bold cp-label--italic"
-        style={{ color: consoleTheme.consoleTheme.commentTitleText }}
-      >
-        Page {props.comment.startLine}
-      </span>
-    );
-  } else {
-    commentElements.line = (
-      <span
-        className="cp-label--mid-bold cp-label--italic"
-        style={{ color: consoleTheme.consoleTheme.commentTitleText }}
-      >
-        Line {props.comment.startLine + 1}
-      </span>
-    );
-  }
+  const commentKind = getCommentKind(props.comment, props.file);
+  commentElements.line = (
+    <span className="cp-label--mid-bold cp-label--italic" style={{ color: consoleTheme.consoleTheme.commentTitleText }}>
+      {getCommentLabel(commentKind, props.comment.startLine)}
+    </span>
+  );
 
   const badge = <Badge count={points * -1} />;
 
