@@ -1,10 +1,4 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-declare module 'react-window' {
-  import type { ComponentType } from 'react';
-  export const FixedSizeList: ComponentType<Record<string, unknown>>;
-  export type FixedSizeListProps = Record<string, unknown>;
-}
-
 declare module 'turndown-plugin-gfm' {
   const plugin: unknown;
   export = plugin;

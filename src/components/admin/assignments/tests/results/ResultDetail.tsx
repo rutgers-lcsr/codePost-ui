@@ -44,9 +44,7 @@ import {
 import { getLatestSubmissionTests } from '../../../../../utils/submissionTests';
 import { awaitTestResult } from '../autograderPollingUtils';
 
-// react-window v2 exports List at runtime but the .d.ts uses a format TypeScript can't resolve as named export
-// @ts-expect-error: react-window v2 type declaration compat issue
-import { List } from 'react-window';
+import { List, type RowComponentProps } from 'react-window';
 import useWindowSize from '../../../../core/useWindowSize';
 
 // ───────────────────────────────────────────────────────────────
@@ -689,7 +687,7 @@ export const ResultDetail = (props: IProps) => {
 
   // ─── Render ───────────────────────────────────────────────
 
-  const SubmissionRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const SubmissionRow = ({ index, style }: RowComponentProps) => {
     const sub = props.submissions[index];
     const isSelected = filterSubmission && filterSubmission.id === sub.id;
     const inactive = isInactive(sub);
