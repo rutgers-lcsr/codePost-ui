@@ -36,7 +36,7 @@ interface ConsoleItem {
   key: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: React.JSX.Element;
   linkTo: string;
   cardClass: string;
   iconClass: string;
@@ -61,63 +61,65 @@ function getDisplayName(user: UserType): string {
 const Home = (props: IProps) => {
   const platformCaps = usePlatformCapabilities();
 
-  const consoles: ConsoleItem[] = [
-    props.isStudent
-      ? {
-          key: 'student',
-          title: 'Student Console',
-          description: 'View assignments, submissions, and feedback',
-          icon: <PiStudentFill />,
-          linkTo: '/student',
-          cardClass: styles.consoleCardBrand,
-          iconClass: styles.consoleCardIconBrand,
-        }
-      : null,
-    props.isGrader
-      ? {
-          key: 'grader',
-          title: 'Grader Console',
-          description: 'Review submissions and provide feedback',
-          icon: <AuditOutlined />,
-          linkTo: '/grader',
-          cardClass: styles.consoleCardAccent,
-          iconClass: styles.consoleCardIconAccent,
-        }
-      : null,
-    props.isAdmin
-      ? {
-          key: 'admin',
-          title: 'Admin Console',
-          description: 'Manage courses, assignments, and rosters',
-          icon: <PiChalkboardTeacherFill />,
-          linkTo: '/admin',
-          cardClass: styles.consoleCardFocus,
-          iconClass: styles.consoleCardIconFocus,
-        }
-      : null,
-    platformCaps.access_admin_dashboard
-      ? {
-          key: 'dashboard',
-          title: 'Staff Console',
-          description: 'Platform analytics and administration',
-          icon: <GrUserAdmin />,
-          linkTo: '/dashboard',
-          cardClass: styles.consoleCardWarning,
-          iconClass: styles.consoleCardIconWarning,
-        }
-      : null,
-    platformCaps.manage_organization
-      ? {
-          key: 'org',
-          title: 'Organization Console',
-          description: 'Organization settings and member management',
-          icon: <TeamOutlined />,
-          linkTo: '/organization',
-          cardClass: styles.consoleCardNeutral,
-          iconClass: styles.consoleCardIconNeutral,
-        }
-      : null,
-  ].filter((item): item is ConsoleItem => item !== null);
+  const consoles = (
+    [
+      props.isStudent
+        ? {
+            key: 'student',
+            title: 'Student Console',
+            description: 'View assignments, submissions, and feedback',
+            icon: <PiStudentFill />,
+            linkTo: '/student',
+            cardClass: styles.consoleCardBrand,
+            iconClass: styles.consoleCardIconBrand,
+          }
+        : null,
+      props.isGrader
+        ? {
+            key: 'grader',
+            title: 'Grader Console',
+            description: 'Review submissions and provide feedback',
+            icon: <AuditOutlined />,
+            linkTo: '/grader',
+            cardClass: styles.consoleCardAccent,
+            iconClass: styles.consoleCardIconAccent,
+          }
+        : null,
+      props.isAdmin
+        ? {
+            key: 'admin',
+            title: 'Admin Console',
+            description: 'Manage courses, assignments, and rosters',
+            icon: <PiChalkboardTeacherFill />,
+            linkTo: '/admin',
+            cardClass: styles.consoleCardFocus,
+            iconClass: styles.consoleCardIconFocus,
+          }
+        : null,
+      platformCaps.access_admin_dashboard
+        ? {
+            key: 'dashboard',
+            title: 'Staff Console',
+            description: 'Platform analytics and administration',
+            icon: <GrUserAdmin />,
+            linkTo: '/dashboard',
+            cardClass: styles.consoleCardWarning,
+            iconClass: styles.consoleCardIconWarning,
+          }
+        : null,
+      platformCaps.manage_organization
+        ? {
+            key: 'org',
+            title: 'Organization Console',
+            description: 'Organization settings and member management',
+            icon: <TeamOutlined />,
+            linkTo: '/organization',
+            cardClass: styles.consoleCardNeutral,
+            iconClass: styles.consoleCardIconNeutral,
+          }
+        : null,
+    ] satisfies (ConsoleItem | null)[]
+  ).filter((item): item is ConsoleItem => item !== null);
 
   return (
     <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout} background="var(--sc-warm-bg)">
