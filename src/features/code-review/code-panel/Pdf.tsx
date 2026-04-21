@@ -27,7 +27,11 @@ import { encodeRegion } from './pdfRegionComment';
 
 /**********************************************************************************************************************/
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+try {
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+} catch {
+  // import.meta.url may not be a valid base URL in test environments (jsdom)
+}
 
 type PdfDocumentProxyLike = {
   numPages: number;
