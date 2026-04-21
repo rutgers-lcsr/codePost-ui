@@ -23,6 +23,7 @@ export default defineConfig({
     maxConcurrency: 10,
     isolate: false,
     maxWorkers: '75%',
+    poolMatchGlobs: [['**/hooks/__tests__/useTaskPolling.test.ts', 'forks']],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
