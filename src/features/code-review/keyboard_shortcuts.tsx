@@ -50,6 +50,10 @@ const shortcuts: IShortcutCategory[] = [
         name: 'Change File',
         keys: ['COMMAND', 'file-#'],
       },
+      {
+        name: 'PDF Region Select',
+        keys: ['ALT', '+', 'Drag'],
+      },
     ],
   },
   {

@@ -41,6 +41,10 @@ const KeyIcon = (props: IKeyIconProps) => {
       keyString = osControlKey();
       tooltip = getOperatingSystem() === OS.WINDOWS ? 'Control' : 'Command';
       break;
+    case 'ALT':
+      keyString = getOperatingSystem() === OS.WINDOWS ? 'Alt' : '⌥';
+      tooltip = 'Alt';
+      break;
     case 'SHIFT':
       keyString = '⇧';
       tooltip = 'Shift';

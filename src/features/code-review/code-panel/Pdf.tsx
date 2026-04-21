@@ -190,8 +190,8 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       // Activate on scanned pages (no text layer) or when Alt key is held
       if (!scannedPages.current.has(info.pageNumber) && !event.altKey) return;
 
-      // Prevent text selection when Alt-dragging on text pages
-      if (event.altKey) event.preventDefault();
+      // Prevent text selection while region-dragging
+      event.preventDefault();
 
       const rect = info.pageEl.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 100;
@@ -232,6 +232,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       // Ignore tiny drags (less than ~2% in both dimensions) — treat as a click
       if (right - left < 2 && bottom - top < 2) {
         setDragRect(null);
+        suppressNextClickRef.current = false;
         return;
       }
 
@@ -329,6 +330,9 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const handleTextSelection = useCallback(
     (event: React.MouseEvent) => {
       if (readOnly) return;
+
+      // Skip if a region drag was in progress — region mouseup handles that interaction
+      if (isDraggingRef.current) return;
 
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
@@ -503,6 +507,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
     <div
       ref={containerRef}
       className={altHeld || isDraggingRef.current || isAllScanned ? 'pdf-region-cursor' : undefined}
+      style={altHeld || isDraggingRef.current || isAllScanned ? { userSelect: 'none' } : undefined}
       onMouseUp={handleTextSelection}
       onMouseDown={handleRegionMouseDown}
       onMouseMove={handleRegionMouseMove}
@@ -519,7 +524,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
                 {pageNumber}
               </Divider>
             )}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} onMouseUp={handleRegionMouseUp}>
               <Page
                 className={getPageClassName(pageNumber)}
                 data-has-comment={pageHasComments ? 'true' : undefined}
@@ -529,7 +534,6 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
                 renderAnnotationLayer={false}
                 onRenderSuccess={onRenderSuccess}
                 onClick={onClick}
-                onMouseUp={handleRegionMouseUp}
               />
               {renderedPages.has(pageNumber) && (
                 <PdfHighlightLayer
