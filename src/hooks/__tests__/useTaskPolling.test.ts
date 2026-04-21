@@ -2,14 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { createApiClientsMock } from '@test-utils/mocks';
 import { useTaskPolling } from '../useTaskPolling';
 
-vi.mock('../../api-client/clients', () => ({
-  autograderApi: {
-    tasksRetrieve: vi.fn(),
-    executeFileAsyncCreate: vi.fn(),
-  },
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 vi.mock('antd', () => ({
   message: { error: vi.fn(), loading: vi.fn(), destroy: vi.fn(), success: vi.fn() },

@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { createApiClientsMock } from '@test-utils/mocks';
 import {
   usePermissionsStore,
   useCourseCapabilities,
@@ -11,13 +12,7 @@ import {
 } from '../usePermissionsStore';
 import type { Capabilities } from '../../api-client/capabilities.generated';
 
-vi.mock('../../api-client/clients', () => ({
-  coursesApi: { capabilitiesRetrieve: vi.fn() },
-  assignmentsApi: { capabilitiesRetrieve: vi.fn() },
-  submissionsApi: { checkPermissionRetrieve: vi.fn() },
-  capabilitiesApi: { platformRetrieve: vi.fn(), batchCreate: vi.fn() },
-  apiClientConfig: {},
-}));
+vi.mock('../../api-client/clients', () => createApiClientsMock());
 
 describe('permissions convenience hooks', () => {
   beforeEach(() => {

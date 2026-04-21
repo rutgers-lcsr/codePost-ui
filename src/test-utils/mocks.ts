@@ -72,3 +72,91 @@ export function restoreLocalStorage(): void {
     _savedLocalStorage = undefined;
   }
 }
+
+/**
+ * Creates a mock factory for `api-client/clients` that stubs **every** exported
+ * API singleton as a Proxy returning `vi.fn()` for any accessed method.
+ *
+ * This avoids the `isolate: false` problem where multiple test files each mock
+ * `api-client/clients` with only the subset of keys they need — if two such files
+ * land in the same thread, the second factory wins and the first loses its stubs.
+ *
+ * Usage:
+ * ```ts
+ * vi.mock('../../api-client/clients', () => createApiClientsMock());
+ * ```
+ *
+ * To pre-configure specific methods, spread overrides:
+ * ```ts
+ * vi.mock('../../api-client/clients', () =>
+ *   createApiClientsMock({
+ *     autograderApi: { tasksRetrieve: vi.fn() },
+ *   }),
+ * );
+ * ```
+ */
+export function createApiClientsMock(overrides: Record<string, Record<string, unknown>> = {}): Record<string, unknown> {
+  // All exported API singletons from src/api-client/clients.ts
+  const apiNames = [
+    'aiFeaturesApi',
+    'assignmentDataSetsApi',
+    'assignmentFilesApi',
+    'assignmentsApi',
+    'authApi',
+    'autograderApi',
+    'capabilitiesApi',
+    'commentsApi',
+    'commentTemplatesApi',
+    'courseFilesApi',
+    'coursesApi',
+    'dashboardApi',
+    'filesApi',
+    'impersonateApi',
+    'logsApi',
+    'organizationsApi',
+    'ottApi',
+    'promptExperimentsApi',
+    'promptFeedbackApi',
+    'promptTypesApi',
+    'promptVariantsApi',
+    'registrationApi',
+    'rubricCategoriesApi',
+    'rubricCommentsApi',
+    'sectionsApi',
+    'submissionFilesApi',
+    'submissionsApi',
+    'submissionTestsApi',
+    'subscribeApi',
+    'suggestedCommentsApi',
+    'systemApi',
+    'testCasesApi',
+    'testCategoriesApi',
+    'testCategoryResourcesApi',
+    'tmpScriptApi',
+    'tokenAuthApi',
+    'tokenRefreshApi',
+    'tokenVerifyApi',
+    'usersApi',
+    'webhooksApi',
+  ];
+
+  const mock: Record<string, unknown> = { apiClientConfig: {} };
+
+  for (const name of apiNames) {
+    const explicit = overrides[name];
+    // Proxy returns vi.fn() for any property access not explicitly provided
+    mock[name] = new Proxy(explicit ?? {}, {
+      get(target, prop) {
+        if (prop in (target as Record<string | symbol, unknown>)) {
+          return (target as Record<string | symbol, unknown>)[prop];
+        }
+        // Lazily create a vi.fn() stub and cache it so the same ref is returned
+        const stub = vi.fn();
+        (target as Record<string | symbol, unknown>)[prop] = stub;
+        return stub;
+      },
+    });
+  }
+
+  return mock;
+}
