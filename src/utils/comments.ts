@@ -8,7 +8,10 @@ export type CommentType = Comment;
 const verticalSortKey = (c: CommentType): number => {
   if (isRegionComment(c)) {
     const { topPct } = decodeRegion(c.startChar!, c.endChar!);
-    return topPct;
+    // Place region comments in a separate range above text-offset values so they
+    // sort after text-offset comments on the same page while preserving their
+    // relative vertical order among themselves.
+    return 100_000 + topPct;
   }
   return c.startChar ?? 0;
 };
