@@ -511,7 +511,12 @@ class CreateSignup extends React.Component<IProps, IState> {
         to how we grade computer science at Princeton.
       </span>
     );
-    const bobImg = new URL('./../../img/landing/compressed/bob_sedgewick.jpg', import.meta.url).href;
+    let bobImg: string;
+    try {
+      bobImg = new URL('./../../img/landing/compressed/bob_sedgewick.jpg', import.meta.url).href;
+    } catch {
+      bobImg = './../../img/landing/compressed/bob_sedgewick.jpg';
+    }
     const flexDirection = this.props.windowwidth < 750 ? 'column' : 'row';
 
     return (
