@@ -29,9 +29,28 @@ export interface FileLike {
 
 export const MarkdownExtensions = ['md', '.md'];
 export const JupyterExtensions = ['ipynb', '.ipynb'];
-export const ImageExtensions = ['png', '.png', '.jpeg', 'jpeg', '.jpg', 'jpg', 'gif', '.gif'];
+export const ImageExtensions = [
+  'png',
+  '.png',
+  '.jpeg',
+  'jpeg',
+  '.jpg',
+  'jpg',
+  'gif',
+  '.gif',
+  'svg',
+  '.svg',
+  'webp',
+  '.webp',
+  'bmp',
+  '.bmp',
+  'ico',
+  '.ico',
+];
 export const PDFExtensions = ['pdf', '.pdf'];
 // https://github.com/bevry/binaryextensions/blob/master/source/index.json
+export const ExecutableExtensions = ['py', 'ipynb', 'js', 'java', 'cpp', 'c', 'rb', 'go', 'rs', 'sh', 'r'];
+
 export const BinaryExtensions = [
   'class',
   '.class',
@@ -134,6 +153,13 @@ export class File {
     }
 
     return LangMap.languages(ext)[0] || ext;
+  };
+
+  public static isExecutable = (
+    fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
+  ): boolean => {
+    const ext = File.normalizedExtension(fileOrName);
+    return ExecutableExtensions.includes(ext);
   };
 
   public static codeType = (file: FileType): CodeType => {

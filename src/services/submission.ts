@@ -6,11 +6,13 @@ import type {
   SubmissionTestResultsResponse,
   SubmissionCheckPermissionResponse,
   StudentSubmission,
+  SubmissionConsoleData,
 } from '../api-client';
 import type { FileType } from '../utils/file';
 import { getFileContent } from '../utils/file';
 import { CommentIO, CommentType } from '../utils/comments';
 import type { ICommentToRubricCommentMap, IFileToCommentsMap } from '../types/common';
+import type { RubricComment } from '../api-client';
 import { message } from 'antd';
 import { commentsApi, filesApi, rubricCommentsApi } from '../api-client/clients';
 
@@ -124,6 +126,39 @@ export class Submission {
       message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
       return [[], {}, {}];
     }
+  };
+
+  /**
+   * Bulk-load all submission data in a single API call using the console-data endpoint.
+   * Returns the same tuple shape as loadData but with ~1 roundtrip instead of ~110.
+   */
+  public static loadConsoleData = async (
+    submissionId: number,
+  ): Promise<[SubmissionConsoleData, FileType[], IFileToCommentsMap, ICommentToRubricCommentMap]> => {
+    const data = await submissionsApi.consoleDataRetrieve({ id: submissionId });
+
+    const files: FileType[] = data.files as unknown as FileType[];
+
+    const comments: IFileToCommentsMap = {};
+    const commentRubricComments: ICommentToRubricCommentMap = {};
+
+    for (const file of data.files) {
+      const fileComments = (file.comments ?? []) as unknown as CommentType[];
+      // Extract nested rubricComment objects before sorting, since the frontend
+      // expects rubricComment on Comment to be an ID (number), not a nested object.
+      for (const comment of fileComments) {
+        if (comment.rubricComment && typeof comment.rubricComment === 'object') {
+          const rc = comment.rubricComment as unknown as RubricComment;
+          commentRubricComments[comment.id] = rc;
+          // Replace nested object with its ID so the rest of the frontend
+          // can treat rubricComment as a number (matching the standard CommentType shape).
+          (comment as unknown as Record<string, unknown>).rubricComment = rc.id;
+        }
+      }
+      comments[file.id] = fileComments.sort(CommentIO.compare);
+    }
+
+    return [data, files, comments, commentRubricComments];
   };
 }
 

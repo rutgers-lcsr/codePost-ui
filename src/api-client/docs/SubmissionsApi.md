@@ -5,6 +5,7 @@ All URIs are relative to _http://localhost_
 | Method                                                                                             | HTTP request                                            | Description |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------- |
 | [**checkPermissionRetrieve**](SubmissionsApi.md#checkpermissionretrieve)                           | **GET** /submissions/{id}/checkPermission/              |             |
+| [**consoleDataRetrieve**](SubmissionsApi.md#consoledataretrieve)                                   | **GET** /submissions/{id}/consoleData/                  |             |
 | [**create**](SubmissionsApi.md#create)                                                             | **POST** /submissions/                                  |             |
 | [**deleteRegradePartialUpdate**](SubmissionsApi.md#deleteregradepartialupdate)                     | **PATCH** /submissions/{id}/deleteRegrade/              |             |
 | [**destroy**](SubmissionsApi.md#destroy)                                                           | **DELETE** /submissions/{id}/                           |             |
@@ -81,6 +82,77 @@ example().catch(console.error);
 ### Return type
 
 [**SubmissionCheckPermissionResponse**](SubmissionCheckPermissionResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## consoleDataRetrieve
+
+> SubmissionConsoleData consoleDataRetrieve(id)
+
+Return the full nested submission data for the code console in a single request. Includes files with nested comments (and rubricComment data). Eliminates the N+1 fetch waterfall.
+
+### Example
+
+```ts
+import { Configuration, SubmissionsApi } from '';
+import type { ConsoleDataRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+  } satisfies ConsoleDataRetrieveRequest;
+
+  try {
+    const data = await api.consoleDataRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+
+### Return type
+
+[**SubmissionConsoleData**](SubmissionConsoleData.md)
 
 ### Authorization
 

@@ -397,7 +397,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     }
 
     if (codeType === 'image') {
-      return '![](' + fileContent + ')';
+      // Image files bypass the markdown pipeline and are rendered directly.
+      return '';
     }
 
     return fileContent;
@@ -694,10 +695,61 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     [deferredMarkdown],
   );
 
+  // For standalone image files, render directly with comment support.
+  // Bypasses ReactMarkdown (and rehypeRaw) which mangles long data URIs in attributes.
+  const imageElement = React.useMemo(() => {
+    if (codeType !== 'image') return null;
+    const ext = File.normalizedExtension(props.file);
+    let src: string;
+    if (ext === 'svg') {
+      // SVG files store raw XML in file.data — encode as a data URI for the <img> tag.
+      src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fileContent)}`;
+    } else {
+      // Non-SVG images (PNG, JPG, etc.) arrive as base64 data URIs from the API.
+      src = fileContent;
+    }
+    // Wrap in a commentable div (line 1) so users can add comments on the image.
+    const lineNumber = 1;
+    const commentsForLine = getCommentsForLine(lineNumber);
+    const hasComments = hasCommentsForLine(lineNumber);
+    const shouldBeFocusable = !isReadOnly || hasComments;
+    const commentCount = commentsForLine.length;
+    return (
+      <div
+        className={getClassName(lineNumber)}
+        index-number={lineNumber}
+        onMouseUp={handleBlockMouseUp}
+        onKeyDown={shouldBeFocusable ? handleBlockKeyDown : undefined}
+        tabIndex={shouldBeFocusable ? 0 : undefined}
+        role={shouldBeFocusable ? 'button' : undefined}
+        aria-label={
+          hasComments ? `Image with ${commentCount} comment${commentCount === 1 ? '' : 's'}` : 'Add comment on image'
+        }
+        data-has-comment={hasComments ? 'true' : undefined}
+      >
+        <img
+          src={src}
+          alt={props.file.name}
+          style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '10px 0' }}
+        />
+      </div>
+    );
+  }, [
+    codeType,
+    fileContent,
+    props.file,
+    getClassName,
+    getCommentsForLine,
+    hasCommentsForLine,
+    isReadOnly,
+    handleBlockMouseUp,
+    handleBlockKeyDown,
+  ]);
+
   return (
     <MarkdownContext.Provider value={contextValue}>
       <div id="code-markdown" className="markdown" style={rootStyle}>
-        {markdownElement}
+        {imageElement ?? markdownElement}
       </div>
     </MarkdownContext.Provider>
   );

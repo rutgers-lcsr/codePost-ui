@@ -88,11 +88,7 @@ export const usePrefetchNextSubmission = (
     queryClient.prefetchQuery({
       queryKey: submissionKeys.files(nextSub.id),
       queryFn: async () => {
-        const sub = await queryClient.ensureQueryData({
-          queryKey: submissionKeys.detail(nextSub.id),
-          queryFn: () => submissionsApi.retrieve({ id: nextSub.id }),
-        });
-        return SubmissionService.loadData(sub);
+        return SubmissionService.loadConsoleData(nextSub.id).then(([_data, f, c, rc]) => [f, c, rc]);
       },
       staleTime: 30_000,
     });

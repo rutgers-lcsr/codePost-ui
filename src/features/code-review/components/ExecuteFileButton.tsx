@@ -9,15 +9,40 @@ import {
 } from '@ant-design/icons';
 import { Button, message, Tag, Tooltip } from 'antd';
 import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFileExecutionAsync } from '../../../hooks/useFileExecutionAsync';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
-import type { FileType } from '../../../utils/file';
+import { File as FileUtil, type FileType } from '../../../utils/file';
 import { colors } from '../../../theme/colors';
 import { ExecutionResult } from '../../../utils/fileExecution';
 import { FileExecutionModal } from './FileExecutionModal';
 
 // Force refresh
 type FileWithId = FileType & { id: number };
+
+const executionCacheKeys = {
+  check: (fileId: number) => ['execution', 'cache', fileId] as const,
+};
+
+type CacheCheckResponse = {
+  has_cache: boolean;
+  execution_time?: number;
+  executed_at?: string;
+  executed_by?: string;
+};
+
+const fetchCacheStatus = async (fileId: number): Promise<CacheCheckResponse> => {
+  const API_URL = process.env.REACT_APP_API_URL;
+  const token = localStorage.getItem('token');
+  if (!token) return { has_cache: false };
+
+  const response = await fetch(`${API_URL}/autograder/execute/file/cache/check/?file_id=${fileId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) return { has_cache: false };
+  return response.json();
+};
 
 interface ExecuteFileButtonProps {
   file: FileWithId | undefined;
@@ -38,13 +63,29 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
   const isDarkTheme = consoleThemes.dark === consoleTheme;
 
   const { execute, isExecuting, result, error } = useFileExecutionAsync();
+  const queryClient = useQueryClient();
   const [showSuccess, setShowSuccess] = React.useState(false);
-  const [isCached, setIsCached] = React.useState(false);
-  const [cachedInfo, setCachedInfo] = React.useState<{
-    executedAt?: string;
-    executedBy?: string;
-    executionTime?: number;
-  } | null>(null);
+
+  const isExecutable = FileUtil.isExecutable(file);
+
+  // Use React Query for cache check — deduplicates requests and caches across file switches.
+  // staleTime of 5 minutes means switching back to a previously checked file won't re-fetch.
+  const { data: cacheData } = useQuery({
+    queryKey: executionCacheKeys.check(file?.id ?? -1),
+    queryFn: () => fetchCacheStatus(file!.id),
+    enabled: !!file && isExecutable,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const isCached = cacheData?.has_cache ?? false;
+  const cachedInfo = isCached
+    ? {
+        executedAt: cacheData?.executed_at,
+        executedBy: cacheData?.executed_by,
+        executionTime: cacheData?.execution_time,
+      }
+    : null;
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -67,45 +108,6 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
     [file, execute, codeOverride],
   );
 
-  // Check for cached result on mount
-  React.useEffect(() => {
-    if (!file) return;
-
-    const checkCache = async () => {
-      try {
-        const API_URL = process.env.REACT_APP_API_URL;
-        const token = localStorage.getItem('token');
-
-        if (!token) return;
-
-        const response = await fetch(`${API_URL}/autograder/execute/file/cache/check/?file_id=${file.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.has_cache) {
-            setIsCached(true);
-            setCachedInfo({
-              executedAt: data.executed_at,
-              executedBy: data.executed_by,
-              executionTime: data.execution_time,
-            });
-          } else {
-            setIsCached(false);
-            setCachedInfo(null);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to check cache:', err);
-      }
-    };
-
-    checkCache();
-  }, [file]);
-
   // Call onExecutionComplete when result is available
   React.useEffect(() => {
     if (result && !isExecuting && result !== lastProcessedResult) {
@@ -113,14 +115,10 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
 
-        // Update cache info regarding of whether it was cached or fresh
-        // Since we just ran it successfully, it is now effectively cached for future
-        setIsCached(true);
-        setCachedInfo({
-          executedAt: result.cached ? result.executed_at : result.timestamp || new Date().toISOString(),
-          executedBy: result.cached ? result.executed_by : 'You',
-          executionTime: result.execution_time,
-        });
+        // Invalidate the cache check so it re-fetches with the new cached result
+        if (file) {
+          queryClient.invalidateQueries({ queryKey: executionCacheKeys.check(file.id) });
+        }
       }
 
       if (file && onExecutionComplete) {
@@ -128,17 +126,7 @@ export const ExecuteFileButton: React.FC<ExecuteFileButtonProps> = ({
       }
       setLastProcessedResult(result);
     }
-  }, [result, isExecuting, file, onExecutionComplete, lastProcessedResult]);
-
-  // Determine if file is executable
-  const isExecutable =
-    file &&
-    (() => {
-      const ext = file.extension.toLowerCase().replace(/^\./, '');
-      const executableExtensions = ['py', 'ipynb', 'js', 'java', 'cpp', 'c', 'rb', 'go', 'rs', 'sh', 'r'];
-
-      return executableExtensions.includes(ext);
-    })();
+  }, [result, isExecuting, file, onExecutionComplete, lastProcessedResult, queryClient]);
 
   const tooltipTitle = !isExecutable ? 'This file type cannot be executed.' : 'Run this file';
 

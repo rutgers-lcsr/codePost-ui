@@ -25,14 +25,11 @@ import { Divider } from 'antd';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import { encodeRegion } from './pdfRegionComment';
 import { setPdfVerticalMap } from '../../../utils/comments';
+import { pdfWorkerUrl } from './pdfWorkerUrl';
 
 /**********************************************************************************************************************/
 
-try {
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
-} catch {
-  // import.meta.url may not be a valid base URL in test environments (jsdom)
-}
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 type PdfDocumentProxyLike = {
   numPages: number;

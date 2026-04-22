@@ -107,6 +107,7 @@ docs/CodeExecutionRequest.md
 docs/Comment.md
 docs/CommentTemplate.md
 docs/CommentTemplatesApi.md
+docs/CommentWithRubric.md
 docs/CommentsApi.md
 docs/Course.md
 docs/CourseAISettings.md
@@ -252,8 +253,10 @@ docs/StatusDfeEnum.md
 docs/StudentSubmission.md
 docs/Submission.md
 docs/SubmissionCheckPermissionResponse.md
+docs/SubmissionConsoleData.md
 docs/SubmissionFile.md
 docs/SubmissionFileStudentUpload.md
+docs/SubmissionFileWithNestedComments.md
 docs/SubmissionFilesApi.md
 docs/SubmissionHistory.md
 docs/SubmissionPartnerLinkResponse.md

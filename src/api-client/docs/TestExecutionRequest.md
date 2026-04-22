@@ -1,7 +1,5 @@
 # TestExecutionRequest
 
-Request serializer for running tests
-
 ## Properties
 
 | Name            | Type                    |

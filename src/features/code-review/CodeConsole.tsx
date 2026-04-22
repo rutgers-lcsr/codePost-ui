@@ -47,6 +47,7 @@ import {
 } from '../../api-client/clients';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePrefetchNextSubmission } from './hooks/usePrefetchNextSubmission';
+import { usePrefetchFileRenderers } from './hooks/usePrefetchFileRenderers';
 import { assignmentKeys, submissionKeys } from '../../lib/queryKeys';
 import {
   Comment as ApiComment,
@@ -265,6 +266,9 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
 
   // Prefetch next submission for faster grading flow
   usePrefetchNextSubmission(submissionId, assignment, course, props.user.email, isLoading);
+
+  // Prefetch vendor chunks for file-type renderers (PDF, Markdown, etc.) based on actual files
+  usePrefetchFileRenderers(files);
 
   // AI grading assistance state (local — not in Zustand)
   const [suggestedComments, setSuggestedComments] = React.useState<SuggestedCommentType[]>([]);
@@ -919,7 +923,7 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
                 const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
                 return [assnTyped, c] as const;
               }),
-            SubmissionService.loadData(readSubmission) as unknown as [
+            SubmissionService.loadConsoleData(readSubmission.id).then(([_data, f, c, rc]) => [f, c, rc]) as unknown as [
               FileWithId[],
               IFileToCommentsMap,
               ICommentToRubricCommentMap,
@@ -1058,11 +1062,11 @@ const CodeConsole: React.FC<ICodeConsoleProps> = (props) => {
                   IFileToCommentsMap,
                   ICommentToRubricCommentMap,
                 ])
-              : (SubmissionService.loadData(writableSubmission) as unknown as [
-                  FileWithId[],
-                  IFileToCommentsMap,
-                  ICommentToRubricCommentMap,
-                ]),
+              : (SubmissionService.loadConsoleData(writableSubmission.id).then(([_data, f, c, rc]) => [
+                  f,
+                  c,
+                  rc,
+                ]) as unknown as [FileWithId[], IFileToCommentsMap, ICommentToRubricCommentMap]),
             queryClient
               .ensureQueryData({
                 queryKey: assignmentKeys.rubric(writableSubmission.assignment),
@@ -2722,7 +2726,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         if (state.panelType === PANEL_TYPE.FILE && selectedFile) {
           const code = (onHighlightClick: (e: React.MouseEvent) => void) => (
             <StudentCode
-              key={selectedFile!.id}
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
               readOnly={true}
@@ -2820,7 +2823,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
             <ConnectedGradeCode
               onCursorChange={handleCursorChange}
               onUpdateCommentLocation={handleUpdateCommentLocation}
-              key={selectedFile!.id}
               fileId={selectedFile!.id}
               file={selectedFile!}
               comments={comments[selectedFile!.id]}
@@ -3053,7 +3055,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       if (selectedFile) {
         const code = (onHighlightClick: (e: React.MouseEvent) => void) => (
           <StudentCode
-            key={selectedFile!.id}
             file={selectedFile!}
             comments={comments[selectedFile!.id]}
             readOnly={true}
@@ -3171,7 +3172,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
       if (selectedFile) {
         const code = (_onHighlightClick: (e: React.MouseEvent) => void) => (
           <StudentCode
-            key={selectedFile!.id}
             file={selectedFile!}
             comments={[]} // No comments in files-only mode
             readOnly={true}
@@ -3287,7 +3287,6 @@ Days Late (After Credit):  ${daysLateAfterCredit}
           <ConnectedGradeCode
             onCursorChange={handleCursorChange}
             onUpdateCommentLocation={handleUpdateCommentLocation}
-            key={selectedFile!.id}
             fileId={selectedFile!.id}
             file={selectedFile!}
             comments={comments[selectedFile!.id]}

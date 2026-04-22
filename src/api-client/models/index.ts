@@ -2926,6 +2926,93 @@ export interface CommentTemplate {
   cellId?: string | null;
 }
 /**
+ * Read-only comment serializer that nests the full RubricComment object
+ * instead of just returning its ID. Used by the console-data bulk endpoint
+ * to eliminate the N+1 rubricComment fetch waterfall.
+ * @export
+ * @interface CommentWithRubric
+ */
+export interface CommentWithRubric {
+  /**
+   *
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly id: number;
+  /**
+   * The text on the comment
+   * @type {string}
+   * @memberof CommentWithRubric
+   */
+  readonly text: string;
+  /**
+   * The points deducted. A negative number represents a bonus.
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly pointDelta: number | null;
+  /**
+   * The starting character offset of the comment. For code/markdown files: 0-indexed character position within the start line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + leftPct*101 + topPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly startChar: number;
+  /**
+   * The ending character offset of the comment. For code/markdown files: 0-indexed character position within the end line. For PDF text-selection comments: character offset in the page's text layer. For PDF region comments: values >= 1,000,000 encode a bounding box as MARKER + rightPct*101 + bottomPct (percentages 0-100 of page dimensions). For Jupyter notebooks (.ipynb): always 0 (comments target entire cells).
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly endChar: number;
+  /**
+   * The line or position where the comment begins. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number. For Jupyter notebooks (.ipynb): 0-based cell index.
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly startLine: number;
+  /**
+   * The line or position where the comment ends. For code/markdown files: 0-indexed line number. For PDF files: 1-based page number (usually same as startLine). For Jupyter notebooks (.ipynb): 0-based cell index (usually same as startLine).
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly endLine: number;
+  /**
+   * The related file_id.
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly file: number;
+  /**
+   *
+   * @type {RubricComment}
+   * @memberof CommentWithRubric
+   */
+  readonly rubricComment: RubricComment | null;
+  /**
+   *
+   * @type {string}
+   * @memberof CommentWithRubric
+   */
+  readonly author: string;
+  /**
+   * Student feedback on this comment. Valid values: -1 (negative), 0 (none), 1 (positive). Only applicable when rubricComment is set.
+   * @type {number}
+   * @memberof CommentWithRubric
+   */
+  readonly feedback: number;
+  /**
+   *
+   * @type {string}
+   * @memberof CommentWithRubric
+   */
+  readonly color: string | null;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof CommentWithRubric
+   */
+  readonly tags: Array<string>;
+}
+/**
  *
  * @export
  * @interface Course
@@ -9149,6 +9236,123 @@ export interface SubmissionCheckPermissionResponse {
   capabilities?: BatchCapabilitiesResponseResultsValue;
 }
 /**
+ * Bulk serializer for the code console. Returns the full nested tree:
+ * submission → files → comments (with rubricComment data).
+ * Eliminates the N+1 fetch waterfall on the frontend.
+ * @export
+ * @interface SubmissionConsoleData
+ */
+export interface SubmissionConsoleData {
+  /**
+   *
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly id: number;
+  /**
+   * The related assignment_id.
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly assignment: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof SubmissionConsoleData
+   */
+  students: Array<string>;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  grader?: string | null;
+  /**
+   * A boolean field. 'True' if the submission is finalized. 'False' otherwise.
+   * @type {boolean}
+   * @memberof SubmissionConsoleData
+   */
+  readonly isFinalized: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  readonly dateEdited: string;
+  /**
+   * The grade for the submission. Null if not graded yet.
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly grade: number | null;
+  /**
+   * Index used to order the queue from which graders draw submissions. Will sort low to high.
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly queueOrderKey: number;
+  /**
+   * The date this submission was created. None if just created, and files haven't been uploaded yet. Used for Celery tasks.
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  readonly dateUploaded: string | null;
+  /**
+   *
+   * @type {Array<SubmissionFileWithNestedComments>}
+   * @memberof SubmissionConsoleData
+   */
+  readonly files: Array<SubmissionFileWithNestedComments>;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof SubmissionConsoleData
+   */
+  readonly tests: Array<number>;
+  /**
+   * A boolean field. If true the submission has an open question.
+   * @type {boolean}
+   * @memberof SubmissionConsoleData
+   */
+  readonly questionIsOpen: boolean;
+  /**
+   * A boolean field. If 'True', the submission's question is a regrade request.
+   * @type {boolean}
+   * @memberof SubmissionConsoleData
+   */
+  readonly questionIsRegrade: boolean;
+  /**
+   * The text of the question.
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  readonly questionText: string;
+  /**
+   * The date the request / question was submitted.
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  readonly questionDate: string | null;
+  /**
+   * The date the response was submitted.
+   * @type {string}
+   * @memberof SubmissionConsoleData
+   */
+  readonly responseDate: string | null;
+  /**
+   * Number of times exposed tests have been run for a submission. It only increments if the maxStudentTestRuns Environment setting is on.
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly testRunsCompleted: number;
+  /**
+   * The number of Late Day Credits used by the Submission.
+   * @type {number}
+   * @memberof SubmissionConsoleData
+   */
+  readonly lateDayCreditsUsed: number;
+}
+/**
  * Serializer for SubmissionFile objects.
  * These are files that belong to student submissions.
  * @export
@@ -9258,6 +9462,75 @@ export interface SubmissionFileStudentUpload {
    * @memberof SubmissionFileStudentUpload
    */
   path?: string | null;
+}
+/**
+ * Read-only serializer for SubmissionFile that nests full Comment objects
+ * (including rubricComment data) instead of returning comment IDs.
+ * Used by the console-data bulk endpoint to eliminate N+1 fetches.
+ * @export
+ * @interface SubmissionFileWithNestedComments
+ */
+export interface SubmissionFileWithNestedComments {
+  /**
+   * The name of the file.
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly name: string;
+  /**
+   * The data in a file. should be utf-8 encoded text.
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly data: string;
+  /**
+   * The extension for the file (e.g. '.java' or '.py'
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly extension: string;
+  /**
+   * The related submission_id.
+   * @type {number}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly submission: number;
+  /**
+   *
+   * @type {number}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {Array<CommentWithRubric>}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly comments: Array<CommentWithRubric>;
+  /**
+   * Optional file path, delimited by slashes, to indicate a directory structure.
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly path: string | null;
+  /**
+   * Whether this file should hidden to students before their feedback has been published. This is for autogenerated test files that shouldn't be exposed to students on upload.
+   * @type {boolean}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly hiddenBeforePublish: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly modified: string;
 }
 /**
  *
@@ -10221,7 +10494,7 @@ export interface TestCategoryResource {
   readonly datasetDetails: AssignmentDataSet;
 }
 /**
- * Request serializer for running tests
+ *
  * @export
  * @interface TestExecutionRequest
  */
@@ -10246,7 +10519,7 @@ export interface TestExecutionRequest {
   fileOverrides?: { [key: string]: string | undefined };
 }
 /**
- * Response for test execution
+ *
  * @export
  * @interface TestExecutionResult
  */

@@ -14,7 +14,7 @@ import { CommentIO, type CommentType } from '../../../utils/comments';
 
 import { scrollHighlightIntoView, useCommentHighlightStore } from './CommentHighlightContext';
 
-import { getFileContent } from '../../../utils/file';
+import { getFileContent, type FileType } from '../../../utils/file';
 
 import { POSITION } from '../../../types/common';
 
@@ -77,6 +77,12 @@ const Code = (props: CodePropsWithoutComments) => {
     endLine: 0,
     lead: 'front',
   });
+
+  // Reset cursor when file changes (previously handled by key-based remounting)
+  const fileId = (props.file as FileType & { id?: number }).id;
+  React.useEffect(() => {
+    setCursor({ startChar: 0, endChar: 1, startLine: 0, endLine: 0, lead: 'front' });
+  }, [fileId]);
 
   const handleCursorChange = (newCursor: ICursorType) => {
     setCursor(newCursor);

@@ -21,6 +21,7 @@ import type {
   StudentSubmission,
   Submission,
   SubmissionCheckPermissionResponse,
+  SubmissionConsoleData,
   SubmissionHistory,
   SubmissionPartnerLinkResponse,
   SubmissionSummary,
@@ -30,6 +31,10 @@ import type {
 } from '../models/index';
 
 export interface CheckPermissionRetrieveRequest {
+  id: number;
+}
+
+export interface ConsoleDataRetrieveRequest {
   id: number;
 }
 
@@ -276,6 +281,66 @@ export class SubmissionsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<SubmissionCheckPermissionResponse> {
     const response = await this.checkPermissionRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Return the full nested submission data for the code console in a single request. Includes files with nested comments (and rubricComment data). Eliminates the N+1 fetch waterfall.
+   */
+  async consoleDataRetrieveRaw(
+    requestParameters: ConsoleDataRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SubmissionConsoleData>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling consoleDataRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/submissions/{id}/consoleData/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Return the full nested submission data for the code console in a single request. Includes files with nested comments (and rubricComment data). Eliminates the N+1 fetch waterfall.
+   */
+  async consoleDataRetrieve(
+    requestParameters: ConsoleDataRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SubmissionConsoleData> {
+    const response = await this.consoleDataRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

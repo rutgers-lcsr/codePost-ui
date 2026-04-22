@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import Comment from './Comment';
 import SuggestedComment from './SuggestedComment';
@@ -344,33 +344,37 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     | { type: 'comment'; comment: CommentType; index: number }
     | { type: 'suggestion'; suggestion: SuggestedCommentType };
 
-  const renderItems: RenderItem[] = [];
+  const renderItems: RenderItem[] = useMemo(() => {
+    const items: RenderItem[] = [];
 
-  props.comments.forEach((comment, index) => {
-    renderItems.push({ type: 'comment', comment, index });
-  });
-
-  if (props.suggestedComments && props.onAcceptSuggestion && props.onRejectSuggestion) {
-    props.suggestedComments.forEach((suggestion) => {
-      renderItems.push({ type: 'suggestion', suggestion });
+    props.comments.forEach((comment, index) => {
+      items.push({ type: 'comment', comment, index });
     });
-  }
 
-  // Sort by startLine so suggestions appear inline next to the code they reference.
-  // Use CommentIO.compare for comments so same-page PDF comments sort by visual
-  // position (region vs text-offset interleaving). pdfSortVersion ensures this
-  // re-runs after the PDF text layer renders and the vertical map is populated.
-  void pdfSortVersion; // dependency used by React's render cycle
-  renderItems.sort((a, b) => {
-    const lineA = a.type === 'comment' ? (a.comment.startLine ?? 0) : (a.suggestion.startLine ?? 0);
-    const lineB = b.type === 'comment' ? (b.comment.startLine ?? 0) : (b.suggestion.startLine ?? 0);
-    if (lineA !== lineB) return lineA - lineB;
-    // Comments before suggestions on the same line
-    if (a.type !== b.type) return a.type === 'comment' ? -1 : 1;
-    // Both are comments on the same line — use full comparator (vertical position)
-    if (a.type === 'comment' && b.type === 'comment') return CommentIO.compare(a.comment, b.comment);
-    return 0;
-  });
+    if (props.suggestedComments && props.onAcceptSuggestion && props.onRejectSuggestion) {
+      props.suggestedComments.forEach((suggestion) => {
+        items.push({ type: 'suggestion', suggestion });
+      });
+    }
+
+    // Sort by startLine so suggestions appear inline next to the code they reference.
+    // Use CommentIO.compare for comments so same-page PDF comments sort by visual
+    // position (region vs text-offset interleaving). pdfSortVersion ensures this
+    // re-runs after the PDF text layer renders and the vertical map is populated.
+    void pdfSortVersion; // dependency used by React's render cycle
+    items.sort((a, b) => {
+      const lineA = a.type === 'comment' ? (a.comment.startLine ?? 0) : (a.suggestion.startLine ?? 0);
+      const lineB = b.type === 'comment' ? (b.comment.startLine ?? 0) : (b.suggestion.startLine ?? 0);
+      if (lineA !== lineB) return lineA - lineB;
+      // Comments before suggestions on the same line
+      if (a.type !== b.type) return a.type === 'comment' ? -1 : 1;
+      // Both are comments on the same line — use full comparator (vertical position)
+      if (a.type === 'comment' && b.type === 'comment') return CommentIO.compare(a.comment, b.comment);
+      return 0;
+    });
+
+    return items;
+  }, [props.comments, props.suggestedComments, props.onAcceptSuggestion, props.onRejectSuggestion, pdfSortVersion]);
 
   const allNodes = renderItems.map((item) => {
     if (item.type === 'suggestion') {

@@ -13,11 +13,20 @@ import themeVars from '../../../styles/abstracts/_theme.js';
 
 import Code from './Code';
 import CodeExecutionOutput from './CodeExecutionOutput';
-import Markdown from './Markdown';
-import { Pdf } from './Pdf';
 
 import TemplateCode from './TemplateCode';
-import { CodeWindow } from '../../../components/admin/assignments/tests/edit/utils/CodeWindow';
+
+import { Spin } from 'antd';
+
+// Lazy-load specialized renderers so their vendor chunks (pdf-vendor, markdown-vendor,
+// monaco-vendor) are only fetched when the submission actually contains those file types.
+const Markdown = React.lazy(() => import('./Markdown'));
+const Pdf = React.lazy(() => import('./Pdf').then((m) => ({ default: m.Pdf })));
+const CodeWindow = React.lazy(() =>
+  import('../../../components/admin/assignments/tests/edit/utils/CodeWindow').then((m) => ({ default: m.CodeWindow })),
+);
+
+const LazyFallback = () => <Spin style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }} />;
 
 import CodePanelSizing from './CodePanelSizing';
 
@@ -136,10 +145,37 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   );
 
   const codeType = File.codeType(props.file);
-
   const fileContent = getFileContent(props.file);
-  // Defer file content for SyntaxHighlighter so file-switching doesn't block rendering
-  const deferredFileContent = React.useDeferredValue(fileContent);
+
+  // Announce file switches to screen readers via an aria-live region
+  const [a11yMessage, setA11yMessage] = React.useState('');
+  const prevFileKeyRef = React.useRef(fileKey);
+  React.useEffect(() => {
+    if (prevFileKeyRef.current !== fileKey) {
+      setA11yMessage(`Switched to file ${props.file.name}`);
+      prevFileKeyRef.current = fileKey;
+    }
+  }, [fileKey, props.file.name]);
+
+  // Visually-hidden live region for screen reader announcements
+  const a11yLiveRegion = (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style={{
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        overflow: 'hidden',
+        clip: 'rect(0 0 0 0)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {a11yMessage}
+    </div>
+  );
+
   const lineNumberPadding = React.useCallback(() => {
     return CodePanelSizing.lineNumberPadding(fileContent) + 20;
   }, [fileContent]);
@@ -202,7 +238,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     return lang;
   }, [props.file]);
 
-  // Memoize SyntaxHighlighter; uses deferredFileContent so switching files doesn't block the UI.
+  // Memoize SyntaxHighlighter so it only re-renders when inputs actually change.
   const syntaxHighlighterLayer = React.useMemo(
     () => (
       <SyntaxHighlighter
@@ -234,7 +270,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
           backgroundColor: consoleTheme.codeBg,
         }}
       >
-        {deferredFileContent}
+        {fileContent}
       </SyntaxHighlighter>
     ),
     [
@@ -243,7 +279,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
       consoleTheme.codeBg,
       codeTagStyle,
       commonCodeStyle,
-      deferredFileContent,
+      fileContent,
       wordWrap,
       gutterWidthEm,
     ],
@@ -267,13 +303,16 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     if (codeType !== 'pdf' && codeType !== 'image' && codeType !== 'jupyter') {
       return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {a11yLiveRegion}
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <CodeWindow
-              code={props.temporaryContent ?? fileContent}
-              name={props.file.name}
-              onChange={props.onContentChange}
-              height="100%"
-            />
+            <React.Suspense fallback={<LazyFallback />}>
+              <CodeWindow
+                code={props.temporaryContent ?? fileContent}
+                name={props.file.name}
+                onChange={props.onContentChange}
+                height="100%"
+              />
+            </React.Suspense>
           </div>
           {props.executionResult && (
             <CodeExecutionOutput
@@ -291,6 +330,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   if (['markdown', 'jupyter', 'image'].includes(codeType)) {
     return (
       <div>
+        {a11yLiveRegion}
         <div id="code-container" className="code-container" style={containerStyle}>
           <div
             id="code-main"
@@ -303,25 +343,27 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
               paddingBottom: '0px',
             }}
           >
-            <Markdown
-              key={fileKey}
-              file={props.file}
-              comments={props.comments}
-              readOnly={props.readOnly}
-              user={props.user}
-              onHighlightClick={props.onHighlightClick}
-              commentCounter={props.commentCounter}
-              addComment={addCommentAndIncrement}
-              assignmentFile={props.assignmentFile}
-              cursorMode={props.cursorMode}
-              showCursor={props.showCursor}
-              updateCursorDomain={props.updateCursorDomain}
-              executionResult={props.executionResult}
-              onClearOutputs={props.onClearOutputs}
-              isEditMode={props.isEditMode}
-              onContentChange={props.onContentChange}
-              temporaryContent={props.temporaryContent}
-            />
+            <React.Suspense fallback={<LazyFallback />}>
+              <Markdown
+                key={fileKey}
+                file={props.file}
+                comments={props.comments}
+                readOnly={props.readOnly}
+                user={props.user}
+                onHighlightClick={props.onHighlightClick}
+                commentCounter={props.commentCounter}
+                addComment={addCommentAndIncrement}
+                assignmentFile={props.assignmentFile}
+                cursorMode={props.cursorMode}
+                showCursor={props.showCursor}
+                updateCursorDomain={props.updateCursorDomain}
+                executionResult={props.executionResult}
+                onClearOutputs={props.onClearOutputs}
+                isEditMode={props.isEditMode}
+                onContentChange={props.onContentChange}
+                temporaryContent={props.temporaryContent}
+              />
+            </React.Suspense>
           </div>
         </div>
       </div>
@@ -334,6 +376,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   if (codeType === 'pdf') {
     return (
       <div id="code-container" className="code-container" style={containerStyle}>
+        {a11yLiveRegion}
         <div
           id="code-main"
           className="code code--markdown"
@@ -345,23 +388,25 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
             paddingBottom: '0px',
           }}
         >
-          <Pdf
-            key={fileKey}
-            file={props.file}
-            comments={props.comments}
-            readOnly={props.readOnly}
-            user={props.user}
-            onHighlightClick={props.onHighlightClick}
-            commentCounter={props.commentCounter}
-            addComment={addCommentAndIncrement}
-            assignmentFile={props.assignmentFile}
-            cursorMode={props.cursorMode}
-            showCursor={props.showCursor}
-            updateCursorDomain={props.updateCursorDomain}
-            isEditMode={props.isEditMode}
-            onContentChange={props.onContentChange}
-            temporaryContent={props.temporaryContent}
-          />
+          <React.Suspense fallback={<LazyFallback />}>
+            <Pdf
+              key={fileKey}
+              file={props.file}
+              comments={props.comments}
+              readOnly={props.readOnly}
+              user={props.user}
+              onHighlightClick={props.onHighlightClick}
+              commentCounter={props.commentCounter}
+              addComment={addCommentAndIncrement}
+              assignmentFile={props.assignmentFile}
+              cursorMode={props.cursorMode}
+              showCursor={props.showCursor}
+              updateCursorDomain={props.updateCursorDomain}
+              isEditMode={props.isEditMode}
+              onContentChange={props.onContentChange}
+              temporaryContent={props.temporaryContent}
+            />
+          </React.Suspense>
         </div>
       </div>
     );
@@ -370,6 +415,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   // Render code files with syntax highlighting
   return (
     <div>
+      {a11yLiveRegion}
       <div
         id="code-container"
         className="code-container"

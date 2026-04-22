@@ -1,7 +1,5 @@
 # TestExecutionResult
 
-Response for test execution
-
 ## Properties
 
 | Name      | Type    |
