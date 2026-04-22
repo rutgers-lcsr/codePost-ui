@@ -189,8 +189,21 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       if (readOnly) return;
       const info = getPageElementAndNumber(event.target as EventTarget);
       if (!info) return;
-      // Activate on scanned pages (no text layer) or when Alt key is held
-      if (!scannedPages.current.has(info.pageNumber) && !event.altKey) return;
+
+      // Activate on scanned pages (no text layer) or when Alt key is held.
+      // Double-check the text layer at interaction time in case the deferred
+      // detection hasn't run yet (the text layer populates asynchronously).
+      let isScanned = scannedPages.current.has(info.pageNumber);
+      if (isScanned) {
+        const textLayer = info.pageEl.querySelector('.textLayer');
+        const textLength = textLayer?.textContent?.trim().length ?? 0;
+        if (textLength > 0) {
+          // Text layer has populated since the initial check — this is NOT a scanned page
+          scannedPages.current.delete(info.pageNumber);
+          isScanned = false;
+        }
+      }
+      if (!isScanned && !event.altKey) return;
 
       // Prevent text selection while region-dragging
       event.preventDefault();
@@ -429,9 +442,14 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const handlePageRenderSuccess = useCallback(
     (pageNumber: number) => {
       dispatch();
-      // Detect whether this page has an actual text layer (empty = scanned/image PDF)
-      const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
-      if (pageEl) {
+
+      // Detect whether this page has an actual text layer (empty = scanned/image PDF).
+      // The text layer is populated asynchronously by pdfjs after the canvas renders,
+      // so we defer the check to give the text spans time to appear.
+      const detectTextLayer = () => {
+        const pageEl = document.querySelector(`[data-page-number="${pageNumber}"]`);
+        if (!pageEl) return;
+
         const textLayer = pageEl.querySelector('.textLayer');
         const textLength = textLayer?.textContent?.trim().length ?? 0;
         const hasText = textLength > 0;
@@ -463,21 +481,27 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
           }
           setPdfVerticalMap(file.id, pageNumber, checkpoints);
         }
-      }
+
+        // Update scanned-default cursor: if every rendered page is scanned, show crosshair
+        setIsAllScanned((prev) => {
+          const allScanned = scannedPages.current.size > 0 && scannedPages.current.size >= (numPages ?? 0);
+          return prev !== allScanned ? allScanned : prev;
+        });
+        setRenderVersion((v) => v + 1);
+      };
+
+      // Defer: pdfjs populates the text layer asynchronously after the canvas render
+      // callback fires. Wait two frames to ensure the spans are in the DOM.
+      requestAnimationFrame(() => requestAnimationFrame(detectTextLayer));
+
       setRenderedPages((prev) => {
         if (prev.has(pageNumber)) return prev;
         const next = new Set(prev);
         next.add(pageNumber);
         return next;
       });
-      // Update scanned-default cursor: if every rendered page is scanned, show crosshair
-      setIsAllScanned((prev) => {
-        const allScanned = scannedPages.current.size > 0 && scannedPages.current.size >= (numPages ?? 0);
-        return prev !== allScanned ? allScanned : prev;
-      });
-      setRenderVersion((v) => v + 1);
     },
-    [numPages],
+    [numPages, file.id],
   );
 
   // PDF pages don't use markdown-block classes — all highlight rendering
