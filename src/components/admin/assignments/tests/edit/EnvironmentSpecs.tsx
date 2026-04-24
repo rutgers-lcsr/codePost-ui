@@ -566,6 +566,8 @@ export const EnvironmentSpecs = (props: IProps) => {
   // Logic: Use Manifest tab as default if available.
   const DEFAULT_TAB = manifestTab ? '1' : '2';
 
+  const compileTextPlaceholder = '#!/bin/bash\n# This script runs before each test execution inside the Docker container.\n# Assignment files are read-only. Write new files to /work or /tmp.\n';
+
   const showAfterCreation = (
     <Card
       title={
@@ -584,7 +586,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     >
       <CodeWindow
         language={'shell'}
-        code={(props.env && props.env.compileText) || ''}
+        code={(props.env && props.env.compileText) || compileTextPlaceholder}
         name={'bash.sh'}
         onSave={saveCompileText}
         height={'200px'}

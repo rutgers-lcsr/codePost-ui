@@ -38,7 +38,8 @@ import BlockMarkdown from '../../../components/core/BlockMarkdown';
 import Badge from '../../../components/core/Badge';
 
 import { UiComment, getCommentKind, getCommentLabel, type CommentType } from '../../../utils/comments';
-import { File, type FileType } from '../../../utils/file';
+import { type FileType } from '../../../utils/file';
+import { fileTypeRegistry } from '../formats';
 import type { RubricCategoryType, RubricCommentType } from '../../../types/models';
 
 import { wait } from '../../../utils/animation';
@@ -321,56 +322,40 @@ const Comment: React.FC<ICommentProps> = (props) => {
         scrollHighlightIntoView(props.comment.id, { lineNumber: props.comment.startLine ?? undefined });
       }
 
-      const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
+      const mode = props.commentType === 'readonly' ? 'readonly' : 'active';
+      const blockElement = fileTypeRegistry.focusBlock(props.file, props.comment.startLine ?? 0, mode);
 
-      if (blockElement) {
-        // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
-        if (!blockElement.hasAttribute('data-page-number')) {
-          const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
-          blockElement.classList.add('markdown-block');
-          blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
-          blockElement.classList.remove('markdown-block--empty');
-          blockElement.classList.remove('markdown-block--commented');
-          blockElement.classList.add('markdown-block--focused');
-          blockElement.classList.add(stateClass);
-        }
-
-        if (!alreadyVisible && !blockElement.hasAttribute('data-page-number')) {
+      if (blockElement && !alreadyVisible) {
+        // Only scroll for rich block types (markdown/jupyter/image).
+        // PDF handles its own scroll via PdfHighlightLayer; line-based types don't have blocks.
+        const ft = fileTypeRegistry.detect(props.file);
+        if (ft.capabilities.comments === 'block') {
           blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+      }
 
+      if (blockElement) {
+        // Save original aria attributes for restoration in unhighlight
         if (blockElement.dataset.originalRole === undefined) {
           const existingRole = blockElement.getAttribute('role');
-          if (existingRole !== null) {
-            blockElement.dataset.originalRole = existingRole;
-          } else {
-            blockElement.dataset.originalRole = '';
-          }
+          blockElement.dataset.originalRole = existingRole ?? '';
         }
 
         if (blockElement.dataset.originalTabIndex === undefined) {
           const existingTabIndex = blockElement.getAttribute('tabindex');
-          if (existingTabIndex !== null) {
-            blockElement.dataset.originalTabIndex = existingTabIndex;
-          } else {
-            blockElement.dataset.originalTabIndex = '';
-          }
+          blockElement.dataset.originalTabIndex = existingTabIndex ?? '';
         }
 
         if (blockElement.dataset.originalAriaHidden === undefined) {
           const existingAriaHidden = blockElement.getAttribute('aria-hidden');
-          if (existingAriaHidden !== null) {
-            blockElement.dataset.originalAriaHidden = existingAriaHidden;
-          } else {
-            blockElement.dataset.originalAriaHidden = '';
-          }
+          blockElement.dataset.originalAriaHidden = existingAriaHidden ?? '';
         }
-      }
 
-      // Tell aria screen readers that the comment is highlighted, and focus on it and read it out loud
-      blockElement?.setAttribute('aria-hidden', 'false');
-      blockElement?.setAttribute('role', 'alert');
-      blockElement?.setAttribute('tabindex', '0');
+        // Tell aria screen readers that the comment is highlighted
+        blockElement.setAttribute('aria-hidden', 'false');
+        blockElement.setAttribute('role', 'alert');
+        blockElement.setAttribute('tabindex', '0');
+      }
     }, 150);
   }, [props.comment.id, props.comment.startLine, props.file, props.commentType, setHoveredCommentId]);
 
@@ -379,22 +364,10 @@ const Comment: React.FC<ICommentProps> = (props) => {
       setHoveredCommentId(null);
     }
 
-    const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
+    const mode = props.commentType === 'readonly' ? 'readonly' : 'active';
+    fileTypeRegistry.blurBlock(props.file, props.comment.startLine ?? 0, mode);
 
-    if (blockElement) {
-      // Skip DOM class manipulation for PDF pages — PdfHighlightLayer handles hover styling
-      if (!blockElement.hasAttribute('data-page-number')) {
-        const stateClass = props.commentType === 'readonly' ? 'readonly' : 'active';
-        blockElement.classList.remove('markdown-block--focused');
-        blockElement.classList.remove('markdown-block--empty');
-        if (!blockElement.classList.contains('markdown-block--commented')) {
-          blockElement.classList.add('markdown-block--commented');
-        }
-        blockElement.classList.add('markdown-block');
-        blockElement.classList.remove(stateClass === 'readonly' ? 'active' : 'readonly');
-        blockElement.classList.add(stateClass);
-      }
-    }
+    const blockElement = findBlockElement(props.file, props.comment.startLine) as HTMLElement | null;
 
     if (blockElement) {
       const { originalRole, originalTabIndex, originalAriaHidden } = blockElement.dataset;
@@ -439,8 +412,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
       return;
     }
 
-    const fileCodeType = File.codeType(props.file);
-    if (fileCodeType !== 'markdown' && fileCodeType !== 'jupyter') {
+    const fileCodeType = fileTypeRegistry.detect(props.file);
+    if (!fileCodeType.capabilities.blockFocus) {
       return;
     }
 
@@ -1386,7 +1359,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
 
   let titleLeft = [commentElements.line, commentElements.share, commentElements.status];
   // FIXME: Implement comment deep-linking and scrolling for block rendered files
-  if (['markdown', 'jupyter', 'pdf'].includes(File.codeType(props.file))) {
+  if (!fileTypeRegistry.detect(props.file).capabilities.deepLinking) {
     titleLeft = [commentElements.line, commentElements.status];
   }
 

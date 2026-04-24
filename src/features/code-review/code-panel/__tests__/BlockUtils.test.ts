@@ -46,11 +46,19 @@ describe('BlockUtils', () => {
       expect(spy).toHaveBeenCalledWith('[data-page-number="3"]');
     });
 
-    it('queries by index-number for non-PDF files', () => {
+    it('queries by index-number for block-based files', () => {
       const spy = vi.spyOn(document, 'querySelector').mockReturnValue(null);
-      const file = { name: 'test.py', extension: 'py' } as any;
+      const file = { name: 'test.md', extension: 'md' } as any;
       findBlockElement(file, 7);
       expect(spy).toHaveBeenCalledWith('[index-number="7"]');
+    });
+
+    it('returns null for line-based code files', () => {
+      const spy = vi.spyOn(document, 'querySelector').mockReturnValue(null);
+      const file = { name: 'test.py', extension: 'py' } as any;
+      const result = findBlockElement(file, 7);
+      expect(result).toBeNull();
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 

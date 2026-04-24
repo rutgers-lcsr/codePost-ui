@@ -6,11 +6,14 @@
 
 import type { AssignmentType, CommentType, SubmissionTestType, TestCaseType } from '../../types/models';
 import { CommentIO, UiComment } from '../../utils/comments';
-import { BinaryExtensions, type FileWithId, type FileType, getFileContent } from '../../utils/file';
+import { type FileWithId, type FileType, getFileContent } from '../../utils/file';
 import * as Immutable from '../../utils/immutable';
 import { getLatestSubmissionTests } from '../../utils/submissionTests';
 import { Comment, RubricCategory, RubricComment } from '../../api-client';
-import { ICommentToRubricCommentMap, IFileToCommentsMap } from '../../types/common';
+import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubricCommentsMap } from '../../types/common';
+import { fileTypeRegistry } from './formats';
+import { compareRubricCategories, compareRubricComments } from '../../components/admin/assignments/rubric/RubricUtils';
+import { LOCAL_SETTINGS } from '../../components/utils/LocalSettings';
 
 /**********************************************************************************************************************/
 /* Comment State Management
@@ -372,22 +375,18 @@ export const fileBouncer = (files: FileType[]) => {
   const max_size_bytes = 500000;
 
   return files.map((file: FileType) => {
+    const ft = fileTypeRegistry.detect(file);
+
     const size_bytes = new Blob([getFileContent(file)]).size;
 
-    const bounce =
-      !['.pdf', 'pdf', 'jpg', '.jpg', 'jpeg', '.jpeg', 'png', '.png', 'ipynb', '.ipynb'].includes(
-        file.extension.toLowerCase(),
-      ) && size_bytes > max_size_bytes;
-    if (bounce) {
+    if (!ft.capabilities.expectsLargePayload && size_bytes > max_size_bytes) {
       return {
         ...file,
         code: `This file is over the codePost allowable size (${max_size_bytes / 1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
       };
     }
 
-    const binary = BinaryExtensions.includes(file.extension.toLowerCase());
-
-    if (binary) {
+    if (ft.capabilities.binary) {
       return {
         ...file,
         code: 'Preview Not Available',
@@ -396,4 +395,69 @@ export const fileBouncer = (files: FileType[]) => {
 
     return file;
   });
+};
+
+/**********************************************************************************************************************/
+/* Rubric Processing
+/**********************************************************************************************************************/
+
+/**
+ * Transforms a raw rubric API response into sorted categories and grouped comments map.
+ * Used by both READ and WRITE mount branches to avoid duplication.
+ */
+export const processRubricResponse = (
+  res: unknown,
+): { rubricCategories: RubricCategory[]; rubricComments: IRubricCategoryToRubricCommentsMap } => {
+  const rubric = res as { rubricCategories: RubricCategory[]; rubricComments: RubricComment[] };
+  const rCats = (rubric.rubricCategories || [])
+    .map((cat) => ({
+      ...cat,
+      pointLimit: cat.pointLimit ?? null,
+    }))
+    .sort(compareRubricCategories);
+  const rComms: IRubricCategoryToRubricCommentsMap = {};
+  rCats.forEach((cat) => {
+    rComms[cat.id] = (rubric.rubricComments || [])
+      .filter((c) => c.category === cat.id)
+      .sort(compareRubricComments);
+  });
+  return { rubricCategories: rCats, rubricComments: rComms };
+};
+
+/**********************************************************************************************************************/
+/* File Selection
+/**********************************************************************************************************************/
+
+/**
+ * Sorts files, runs fileBouncer, and selects the initial file based on query params.
+ * Returns the processed file array and the selected file (if any).
+ */
+export const selectInitialFile = (
+  rawFiles: FileWithId[],
+  queryValues: { file?: string; comment?: string },
+  opts?: { skipSelection?: boolean },
+): { files: FileWithId[]; selectedFile: FileWithId | undefined } => {
+  const files = fileBouncer(rawFiles.sort((a, b) => a.name.localeCompare(b.name))) as FileWithId[];
+
+  if (opts?.skipSelection || files.length === 0) {
+    return { files, selectedFile: undefined };
+  }
+
+  let selectedFile: FileWithId | undefined;
+
+  if (typeof queryValues.file === 'string') {
+    selectedFile = files.find((f) => f.name === queryValues.file);
+  }
+
+  if (selectedFile === undefined && typeof queryValues.comment === 'string') {
+    const matchingFile = files.find((el) =>
+      el.comments?.some((c) => typeof c === 'number' && c === parseInt(queryValues.comment as string, 10)),
+    );
+    selectedFile = matchingFile || files[0];
+  } else if (selectedFile === undefined) {
+    selectedFile =
+      files.find((f) => f.id === LOCAL_SETTINGS.mostRecentFile.getter()) || files[0];
+  }
+
+  return { files, selectedFile };
 };

@@ -12,6 +12,7 @@ import React, { useMemo } from 'react';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 import { File as CodePostFile, type FileType } from '../../../utils/file';
 import type { OutputData } from '../../../utils/fileExecution';
+import { fileTypeRegistry } from '../formats';
 
 const { Text } = Typography;
 
@@ -110,9 +111,11 @@ const CodeExecutionOutput: React.FC<CodeExecutionOutputProps> = ({
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const isDarkTheme = consoleThemes.dark === consoleTheme;
 
-  // Determine if notebook
+  // Determine if notebook via registry
   const ext = file?.extension || CodePostFile.extension(fileName || '');
-  const isNotebook = ext?.toLowerCase() === 'ipynb';
+  const isNotebook = ext
+    ? fileTypeRegistry.detect({ extension: ext, name: fileName || '' } as FileType).id === 'jupyter'
+    : false;
 
   // Extract output data
   const stdout = executionResult.stdout || executionResult.output_data?.stdout || '';

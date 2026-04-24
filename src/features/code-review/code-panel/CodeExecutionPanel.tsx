@@ -17,6 +17,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { executeFile } from '../execution/execution';
 import type { FileType } from '../../../utils/file';
+import { fileTypeRegistry } from '../formats';
 import { colors } from '../../../theme/colors';
 
 const { Text } = Typography;
@@ -87,15 +88,13 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
   // Determine if file is executable
   const isExecutable = useMemo(() => {
     if (!file.extension) return false;
-    const executableExtensions = ['py', 'js', 'java', 'c', 'cpp', 'rb', 'go', 'rs', 'sh', 'ipynb', 'r'];
-
-    return executableExtensions.includes(file.extension.toLowerCase());
+    return fileTypeRegistry.isExecutableExtension(file.extension);
   }, [file.extension]);
 
-  // Check if file is a notebook
-  const isNotebook = useMemo(() => {
-    return file.extension?.toLowerCase() === 'ipynb';
-  }, [file.extension]);
+  // Check if file type supports force re-execution
+  const supportsForceReExecution = useMemo(() => {
+    return fileTypeRegistry.detect(file).capabilities.forceReExecution;
+  }, [file]);
 
   // Handle execution
   const handleExecute = useCallback(async () => {
@@ -165,7 +164,7 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
           </Space>
 
           <Space>
-            {isNotebook && (
+            {supportsForceReExecution && (
               <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                 <input
                   type="checkbox"

@@ -1,7 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import LangMap from 'lang-map';
 import type { AssignmentFile, CourseFile, SubmissionFile } from '../api-client';
 import { CommentType } from 'types/models';
+import { fileTypeRegistry } from '../features/code-review/formats';
+import { normalizedExtension, fileExtension } from './fileExtensions';
 
 type FileMetadata = {
   id?: number;
@@ -27,58 +28,43 @@ export interface FileLike {
   created?: string;
 }
 
-export const MarkdownExtensions = ['md', '.md'];
-export const JupyterExtensions = ['ipynb', '.ipynb'];
-export const ImageExtensions = [
-  'png',
-  '.png',
-  '.jpeg',
-  'jpeg',
-  '.jpg',
-  'jpg',
-  'gif',
-  '.gif',
-  'svg',
-  '.svg',
-  'webp',
-  '.webp',
-  'bmp',
-  '.bmp',
-  'ico',
-  '.ico',
-];
-export const PDFExtensions = ['pdf', '.pdf'];
-// https://github.com/bevry/binaryextensions/blob/master/source/index.json
-export const ExecutableExtensions = ['py', 'ipynb', 'js', 'java', 'cpp', 'c', 'rb', 'go', 'rs', 'sh', 'r'];
+// Extension arrays derived from the file type registry. The registry definitions
+// in `src/features/code-review/formats/definitions/` are the single source of truth;
+// these re-exports exist for backward compatibility with existing consumers.
+//
+// IMPORTANT: These must be lazily evaluated because `file.ts` and `formats/index.ts`
+// have a circular import relationship. At the time `file.ts` runs its top-level code,
+// the file type definitions have not been registered yet. We use memoized getter functions
+// that resolve on first access (which always happens after all modules are initialized).
+function lazyExtensions(resolve: () => string[]): string[] {
+  let cache: string[] | null = null;
+  // Return a Proxy that behaves like a real array but defers evaluation.
+  return new Proxy([] as string[], {
+    get(_target, prop, receiver) {
+      cache ??= resolve();
+      return Reflect.get(cache, prop, receiver);
+    },
+    has(_target, prop) {
+      cache ??= resolve();
+      return Reflect.has(cache, prop);
+    },
+    ownKeys() {
+      cache ??= resolve();
+      return Reflect.ownKeys(cache);
+    },
+    getOwnPropertyDescriptor(_target, prop) {
+      cache ??= resolve();
+      return Object.getOwnPropertyDescriptor(cache, prop);
+    },
+  });
+}
 
-export const BinaryExtensions = [
-  'class',
-  '.class',
-  'jar',
-  '.jar',
-  'gar',
-  '.gar',
-  'dds',
-  '.dds',
-  'eot',
-  '.eot',
-  'ico',
-  '.ico',
-  'jar',
-  '.jar',
-  'swf',
-  '.swf',
-  'tga',
-  '.tga',
-  'ttf',
-  '.ttf',
-  'docx',
-  '.docx',
-  'exe',
-  '.exe',
-  'xlsx',
-  '.xlsx',
-];
+export const MarkdownExtensions = lazyExtensions(() => fileTypeRegistry.getExtensionsWithDots('markdown'));
+export const JupyterExtensions = lazyExtensions(() => fileTypeRegistry.getExtensionsWithDots('jupyter'));
+export const ImageExtensions = lazyExtensions(() => fileTypeRegistry.getExtensionsWithDots('image'));
+export const PDFExtensions = lazyExtensions(() => fileTypeRegistry.getExtensionsWithDots('pdf'));
+export const BinaryExtensions = lazyExtensions(() => fileTypeRegistry.getExtensionsByCapability((cap) => cap.binary));
+export const ExecutableExtensions = lazyExtensions(() => fileTypeRegistry.getExecutableExtensions());
 
 export interface NotebookCell {
   cell_type: 'code' | 'markdown' | 'raw';
@@ -106,79 +92,33 @@ export class File {
   public static normalizedExtension = (
     fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
   ): string => {
-    if (!fileOrName) return '';
-
-    if (typeof fileOrName === 'string') {
-      const fromName = File.extension(fileOrName);
-      if (fromName) return fromName;
-      return fileOrName.trim().toLowerCase().replace(/^\./, '');
-    }
-
-    const fromName = File.extension(fileOrName.name || '');
-    if (fromName) return fromName;
-
-    return String(fileOrName.extension || '')
-      .trim()
-      .toLowerCase()
-      .replace(/^\./, '');
+    return normalizedExtension(fileOrName);
   };
 
   public static isNotebookFile = (
     fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
   ): boolean => {
-    return File.normalizedExtension(fileOrName) === 'ipynb';
+    const ext = File.normalizedExtension(fileOrName);
+    return fileTypeRegistry.detectByExtension(ext).id === 'jupyter';
   };
 
   public static language = (file: FileType) => {
-    const ext = File.extension(file.name);
-
-    if (ext === 'ipynb') {
-      const content = getFileContent(file);
-      if (content) {
-        try {
-          const json = JSON.parse(content);
-
-          if (json?.metadata?.language_info?.name) {
-            return String(json.metadata.language_info.name).toLowerCase();
-          }
-
-          if (json?.metadata?.kernelspec?.language) {
-            return String(json.metadata.kernelspec.language).toLowerCase();
-          }
-        } catch (e) {
-          console.warn(`Failed to parse ipynb content for language detection: [${file.name}]`, e);
-        }
-      }
-      return 'python';
-    }
-
-    return LangMap.languages(ext)[0] || ext;
+    return fileTypeRegistry.resolveLanguage(file);
   };
 
   public static isExecutable = (
     fileOrName: Pick<FileLike, 'name' | 'extension'> | string | null | undefined,
   ): boolean => {
     const ext = File.normalizedExtension(fileOrName);
-    return ExecutableExtensions.includes(ext);
+    return fileTypeRegistry.isExecutableExtension(ext);
   };
 
   public static codeType = (file: FileType): CodeType => {
-    const ext = File.normalizedExtension(file);
-    return JupyterExtensions.includes(ext) || JupyterExtensions.includes('.' + ext)
-      ? 'jupyter'
-      : MarkdownExtensions.includes(ext) || MarkdownExtensions.includes('.' + ext)
-        ? 'markdown'
-        : ImageExtensions.includes(ext) || ImageExtensions.includes('.' + ext)
-          ? 'image'
-          : PDFExtensions.includes(ext) || PDFExtensions.includes('.' + ext)
-            ? 'pdf'
-            : 'code';
+    return fileTypeRegistry.detect(file).id as CodeType;
   };
 
   public static extension = (filename: string): string => {
-    if (!filename) return '';
-    const parts = filename.split('.');
-    return parts.length > 1 ? parts.pop()!.toLowerCase() : '';
+    return fileExtension(filename);
   };
 
   public static parseNotebook = (content: string): NotebookStructure => {

@@ -1,7 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 // Set of utils for rendering blocks (Markdown, PDF, Image)
 import { CommentType } from '../../../types/models';
-import { File, FileType } from '../../../utils/file';
+import { FileType } from '../../../utils/file';
+import { fileTypeRegistry } from '../formats';
 
 import themeVars from '../../../styles/abstracts/_theme.js';
 
@@ -24,11 +25,7 @@ export const getBlockClassName = (comments: CommentType[], readOnly: boolean, in
 
 // Function to find a block element, given a comment start line
 export const findBlockElement = (file: FileType, startLine: number) => {
-  if (File.codeType(file) === 'pdf') {
-    return document.querySelector(`[data-page-number="${startLine}"]`);
-  } else {
-    return document.querySelector(`[index-number="${startLine}"]`);
-  }
+  return fileTypeRegistry.findBlockElement(file, startLine);
 };
 
 export const getPDFStartPlacement = (comment: CommentType) => {

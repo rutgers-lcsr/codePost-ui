@@ -2,7 +2,8 @@
 import * as React from 'react';
 
 import type { CommentType } from '../../../types/models';
-import { File, getFileContent, type AssignmentFileType, type FileType } from '../../../utils/file';
+import { getFileContent, type AssignmentFileType, type FileType } from '../../../utils/file';
+import { fileTypeRegistry } from '../formats';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import lowlight from 'lowlight';
@@ -144,7 +145,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     [props],
   );
 
-  const codeType = File.codeType(props.file);
+  const fileType = fileTypeRegistry.detect(props.file);
   const fileContent = getFileContent(props.file);
 
   // Announce file switches to screen readers via an aria-live region
@@ -220,22 +221,12 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   const lineDigits = React.useMemo(() => fileContent.split('\n').length.toString().length, [fileContent]);
   const gutterWidthEm = `${lineDigits * 0.7 + 1}em`; // matches RSH's min-width formula
 
-  // Resolve syntax highlighting language. When hljs doesn't recognise the language
-  // (e.g. data files) it falls back to `highlightAuto` which tries every registered
-  // grammar — extremely expensive for large files. Map known data formats to our
-  // custom grammars and truly plain files to 'text'.
+  // Resolve syntax highlighting language via the file type registry.
+  // Each file type definition provides its own language() resolver, centralising
+  // the extension-to-language mapping (including custom hljs grammars like csv/tsv
+  // and plain-text overrides) so CodeContent doesn't need to know the details.
   const resolvedLanguage = React.useMemo(() => {
-    const lang = File.language(props.file);
-    const ext = File.normalizedExtension(props.file);
-    // Data formats with custom grammars registered above
-    if (ext === 'csv' || lang === 'csv') return 'csv';
-    if (ext === 'tsv' || lang === 'tsv') return 'tsv';
-    // Truly plain text — no highlighting
-    const plainTextExtensions = new Set(['dat', 'log', 'txt', 'text', 'raw', 'out', 'ans', 'expected', 'actual']);
-    if (plainTextExtensions.has(ext) || plainTextExtensions.has(lang)) {
-      return 'text';
-    }
-    return lang;
+    return fileTypeRegistry.resolveLanguage(props.file);
   }, [props.file]);
 
   // Memoize SyntaxHighlighter so it only re-renders when inputs actually change.
@@ -294,13 +285,12 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     return `${lineNumberPadding()}px`;
   }, [wordWrap, gutterWidthEm, lineNumberPadding]);
 
-  // Render logic for Edit Mode (non-notebook files only)
-  // Jupyter notebooks are handled inline by the Markdown component (MarkdownCode renders Monaco editors)
+  // Render logic for Edit Mode
+  // File types with editMode 'monaco' use a standalone CodeWindow (Monaco editor).
+  // File types with editMode 'inline' handle editing within their own renderer
+  // (e.g. Jupyter embeds Monaco editors per-cell inside the Markdown component).
   if (props.isEditMode) {
-    // For code/text files use CodeWindow (Monaco)
-    // PDF and Image editing not supported
-    // Jupyter files fall through to the Markdown renderer below
-    if (codeType !== 'pdf' && codeType !== 'image' && codeType !== 'jupyter') {
+    if (fileType.editMode === 'monaco') {
       return (
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {a11yLiveRegion}
@@ -326,15 +316,16 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
     }
   }
 
-  // Render markdown/jupyter/image files (Read-Only View)
-  if (['markdown', 'jupyter', 'image'].includes(codeType)) {
+  // Render rich-content file types (markdown, jupyter, image) — formats with a custom
+  // renderer that use block-level commenting and a shared Suspense boundary.
+  if (fileType.renderStrategy === 'rich') {
     return (
       <div>
         {a11yLiveRegion}
         <div id="code-container" className="code-container" style={containerStyle}>
           <div
             id="code-main"
-            className={`code code--markdown${codeType === 'jupyter' ? ' code--jupyter' : ''}`}
+            className={`code ${fileType.panelClassName}`.trim()}
             style={{
               ...commonCodeStyle,
               paddingLeft: '20px',
@@ -373,13 +364,13 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   // Render PDF files
   // NOTE: No inner CommentHighlightProvider here — PDFs use the outer provider
   // from CodeConsole.tsx so that hover/click state is shared with the Comments panel.
-  if (codeType === 'pdf') {
+  if (fileType.renderStrategy === 'pdf') {
     return (
       <div id="code-container" className="code-container" style={containerStyle}>
         {a11yLiveRegion}
         <div
           id="code-main"
-          className="code code--markdown"
+          className={`code ${fileType.panelClassName}`.trim()}
           style={{
             ...commonCodeStyle,
             paddingLeft: '20px',

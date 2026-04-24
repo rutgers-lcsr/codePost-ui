@@ -24,7 +24,7 @@ import { Divider } from 'antd';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 import { encodeRegion } from './pdfRegionComment';
-import { setPdfVerticalMap } from '../../../utils/comments';
+import { setPdfVerticalMap } from '../formats/pdfSorting';
 import { pdfWorkerUrl } from './pdfWorkerUrl';
 
 /**********************************************************************************************************************/

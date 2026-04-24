@@ -394,20 +394,20 @@ describe('fileBouncer', () => {
 
   it('does not bounce oversized PDF files', () => {
     const bigData = 'x'.repeat(600000);
-    const files = [makeFile({ extension: 'pdf', data: bigData })] as FileType[];
+    const files = [makeFile({ name: 'doc.pdf', extension: 'pdf', data: bigData })] as FileType[];
     const result = fileBouncer(files);
     expect((result[0] as { code?: string }).code).toBeUndefined();
   });
 
   it('does not bounce oversized ipynb files', () => {
     const bigData = 'x'.repeat(600000);
-    const files = [makeFile({ extension: 'ipynb', data: bigData })] as FileType[];
+    const files = [makeFile({ name: 'nb.ipynb', extension: 'ipynb', data: bigData })] as FileType[];
     const result = fileBouncer(files);
     expect((result[0] as { code?: string }).code).toBeUndefined();
   });
 
   it('marks binary extension files', () => {
-    const files = [makeFile({ extension: 'class', data: 'binary' })] as FileType[];
+    const files = [makeFile({ name: 'Main.class', extension: 'class', data: 'binary' })] as FileType[];
     const result = fileBouncer(files);
     expect((result[0] as { code?: string }).code).toBe('Preview Not Available');
   });

@@ -41,6 +41,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
   const [stopping, setStopping] = React.useState(false);
   const [includeDatasets, setIncludeDatasets] = React.useState(true);
   const [includeAssignmentFiles, setIncludeAssignmentFiles] = React.useState(true);
+  const [runPreScript, setRunPreScript] = React.useState(false);
 
   const canUseShell = Boolean(environmentId) && (!includeAssignmentFiles || hasAssignmentFiles);
 
@@ -122,6 +123,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
         token,
         includeDatasets: includeDatasets ? 'true' : 'false',
         includeAssignmentFiles: includeAssignmentFiles ? 'true' : 'false',
+        runPreScript: runPreScript ? 'true' : 'false',
       });
       const wsUrl = `${wsBase}/ws/autograder/environments/${environmentId}/shell/?${qs.toString()}`;
 
@@ -306,6 +308,9 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
               disabled={!!socket}
             >
               Include assignment files
+            </Checkbox>
+            <Checkbox checked={runPreScript} onChange={(e) => setRunPreScript(e.target.checked)} disabled={!!socket}>
+              Run pre-script
             </Checkbox>
             <Typography.Text type="secondary">Short-lived sandbox for verifying mounts</Typography.Text>
           </Space>

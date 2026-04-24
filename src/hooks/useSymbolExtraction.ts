@@ -190,7 +190,7 @@ export const useSymbolExtraction = (
     const targetFile = contextFiles?.find((f) => f.name === targetFileName);
     if (targetFile && targetFile.data) {
       let code = targetFile.data;
-      if (targetFileName.endsWith('.ipynb')) {
+      if (CodePostFile.isNotebookFile(targetFileName)) {
         code = CodePostFile.extractNotebookCode(code);
       }
       extractFromCode(code, targetFileName);

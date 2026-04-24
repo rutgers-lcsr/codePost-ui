@@ -19,7 +19,9 @@
     font-weight: 500 !important;
 
     &::after {
-      border-right: 5px solid var(--file-menu-selected-color, $brandPrimary) !important;
+      border-right: 0 !important;
+      background-color: transparent !important;
+      width: 0 !important;
     }
   }
 
@@ -28,6 +30,8 @@
     .ant-menu-item-selected {
       background-color: var(--file-menu-selected-bg, #f0fff7) !important;
       color: var(--file-menu-selected-color, $brandPrimary);
+      box-shadow: inset -5px 0 0 0 var(--file-menu-selected-color, $brandPrimary) !important;
+      border-radius: 0 !important;
     }
   }
 }

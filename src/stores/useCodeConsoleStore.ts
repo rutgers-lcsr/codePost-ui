@@ -125,6 +125,28 @@ interface CodeConsoleStoreActions {
 
 type CodeConsoleStore = ICodeConsoleState & CodeConsoleStoreActions;
 
+/** Keys belonging to ICodeConsoleState (not actions). Used to extract a pure-state snapshot. */
+const STATE_KEYS = new Set<string>([
+  'permissionLevel', 'activeCommentID', 'assignment', 'commentRubricComments', 'comments',
+  'assignmentFiles', 'showKeyboardShortcuts', 'files', 'graders', 'students', 'isLoading',
+  'rubricCategories', 'rubricComments', 'submission', 'readOnlySubmission', 'tests', 'testCases',
+  'testCategories', 'showInlineTestsModal', 'selectedFile', 'oldCommentIDs', 'codeZoom',
+  'codeVerticalOffset', 'demoCommentCounter', 'isStudent', 'editRubricMode', 'commentCounter',
+  'commentRefreshCounter', 'rubricReload', 'cursorMode', 'showCursor', 'showCustomCommentExplorer',
+  'showHelpModal', 'panelType', 'activeSiderKey', 'hideGrades', 'executionResults', 'aiEnabled',
+  'aiFeatureStatus', 'course', 'noSave', 'wordWrap', 'isEditMode', 'temporaryFileContent',
+]);
+
+/** Returns a plain ICodeConsoleState snapshot from the Zustand store (no action methods). */
+export function getStoreSnapshot(): ICodeConsoleState {
+  const store = useCodeConsoleStore.getState();
+  const snapshot = {} as Record<string, unknown>;
+  for (const key of STATE_KEYS) {
+    snapshot[key] = (store as unknown as Record<string, unknown>)[key];
+  }
+  return snapshot as unknown as ICodeConsoleState;
+}
+
 const getInitialState = (): ICodeConsoleState => ({
   permissionLevel: PERMISSION_LEVEL.READ,
   activeCommentID: undefined,
