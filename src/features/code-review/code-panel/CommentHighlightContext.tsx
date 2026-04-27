@@ -135,51 +135,55 @@ export const useHoveredCommentId = (): number | null => {
 
 /**
  * Scroll an element into view within its nearest scrollable ancestor only.
- * Unlike `element.scrollIntoView()`, this does NOT propagate scroll to
- * parent containers — preventing layout shifts (e.g. sidebar moving off-screen).
- *
- * Works by saving ancestor scroll positions, calling native scrollIntoView,
- * then restoring the ancestors — so the native scroll algorithm handles all
- * the geometry correctly in both directions.
+ * Unlike `element.scrollIntoView()`, this uses `container.scrollTo()` which
+ * ONLY scrolls the target container — it never propagates to parent containers,
+ * preventing layout shifts (e.g. sidebar moving off-screen).
  */
 export function scrollWithinContainer(
   element: HTMLElement,
   behavior: ScrollBehavior = 'smooth',
   block: ScrollLogicalPosition = 'center',
 ) {
-  // Find the nearest scrollable ancestor
-  let scrollParent = element.parentElement;
-  while (scrollParent) {
-    const style = getComputedStyle(scrollParent);
+  // Walk up to find the nearest scrollable ancestor
+  let container = element.parentElement;
+  while (container) {
+    const style = getComputedStyle(container);
     const overflowY = style.overflowY;
     if (overflowY === 'auto' || overflowY === 'scroll') {
       break;
     }
-    scrollParent = scrollParent.parentElement;
+    container = container.parentElement;
+  }
+  if (!container) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+
+  // Convert viewport-relative position to absolute position in scroll space
+  const elementScrollTop = container.scrollTop + (elementRect.top - containerRect.top);
+
+  let scrollTarget: number;
+  if (block === 'center') {
+    scrollTarget = elementScrollTop - container.clientHeight / 2 + element.clientHeight / 2;
+  } else if (block === 'nearest') {
+    // Already fully visible — do nothing
+    if (elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom) {
+      return;
+    }
+    // Scroll the minimum amount to bring the element into view
+    if (elementRect.top < containerRect.top) {
+      scrollTarget = container.scrollTop + (elementRect.top - containerRect.top);
+    } else {
+      scrollTarget = container.scrollTop + (elementRect.bottom - containerRect.bottom);
+    }
+  } else if (block === 'start') {
+    scrollTarget = elementScrollTop;
+  } else {
+    // 'end'
+    scrollTarget = elementScrollTop - container.clientHeight + element.clientHeight;
   }
 
-  if (!scrollParent) {
-    element.scrollIntoView({ behavior, block });
-    return;
-  }
-
-  // Save scroll positions of all ancestors ABOVE the scroll parent
-  // so we can restore them after scrollIntoView propagates
-  const saved: Array<{ el: HTMLElement; top: number; left: number }> = [];
-  let ancestor = scrollParent.parentElement;
-  while (ancestor) {
-    saved.push({ el: ancestor, top: ancestor.scrollTop, left: ancestor.scrollLeft });
-    ancestor = ancestor.parentElement;
-  }
-
-  // Use native scrollIntoView — it handles all geometry correctly
-  element.scrollIntoView({ behavior, block });
-
-  // Immediately restore ancestor scroll positions to undo propagation
-  for (const { el, top, left } of saved) {
-    el.scrollTop = top;
-    el.scrollLeft = left;
-  }
+  container.scrollTo({ top: Math.max(0, scrollTarget), behavior });
 }
 
 /**

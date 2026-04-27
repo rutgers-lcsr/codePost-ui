@@ -32,29 +32,16 @@ export function useConsoleCallbacks({ setState, submissionCaps, changeActiveComm
         const commentElement = document.getElementById(`comment-${commentId}`);
         if (!commentElement) return;
 
-        // Find the scrollable comments container
+        // Scroll within the comments container only — scrollTo on a specific
+        // element never propagates to ancestors (unlike scrollIntoView).
         const container = document.getElementById('code-panel--comments');
-        if (!container) {
-          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
+        if (!container) return;
 
-        // Save scroll positions of all ancestors above the container
-        // so native scrollIntoView doesn't shift the sidebar off-screen
-        const saved: Array<{ el: HTMLElement; top: number; left: number }> = [];
-        let ancestor = container.parentElement;
-        while (ancestor) {
-          saved.push({ el: ancestor, top: ancestor.scrollTop, left: ancestor.scrollLeft });
-          ancestor = ancestor.parentElement;
-        }
-
-        commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        // Restore ancestor scroll positions to undo propagation
-        for (const { el, top, left } of saved) {
-          el.scrollTop = top;
-          el.scrollLeft = left;
-        }
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = commentElement.getBoundingClientRect();
+        const elementScrollTop = container.scrollTop + (elementRect.top - containerRect.top);
+        const scrollTarget = elementScrollTop - container.clientHeight / 2 + commentElement.clientHeight / 2;
+        container.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' });
       });
     },
     [changeActiveComment, submissionCaps.comment_on_submission],
