@@ -137,48 +137,49 @@ export const useHoveredCommentId = (): number | null => {
  * Scroll an element into view within its nearest scrollable ancestor only.
  * Unlike `element.scrollIntoView()`, this does NOT propagate scroll to
  * parent containers — preventing layout shifts (e.g. sidebar moving off-screen).
+ *
+ * Works by saving ancestor scroll positions, calling native scrollIntoView,
+ * then restoring the ancestors — so the native scroll algorithm handles all
+ * the geometry correctly in both directions.
  */
 export function scrollWithinContainer(
   element: HTMLElement,
   behavior: ScrollBehavior = 'smooth',
   block: ScrollLogicalPosition = 'center',
 ) {
-  // Walk up to find the nearest scrollable ancestor
-  let container = element.parentElement;
-  while (container) {
-    const style = getComputedStyle(container);
+  // Find the nearest scrollable ancestor
+  let scrollParent = element.parentElement;
+  while (scrollParent) {
+    const style = getComputedStyle(scrollParent);
     const overflowY = style.overflowY;
     if (overflowY === 'auto' || overflowY === 'scroll') {
       break;
     }
-    container = container.parentElement;
+    scrollParent = scrollParent.parentElement;
   }
-  if (!container) {
-    // No scrollable ancestor found — fall back to native (shouldn't happen)
+
+  if (!scrollParent) {
     element.scrollIntoView({ behavior, block });
     return;
   }
 
-  const containerRect = container.getBoundingClientRect();
-  const elementRect = element.getBoundingClientRect();
-
-  let offset: number;
-  if (block === 'center') {
-    offset = elementRect.top - containerRect.top - containerRect.height / 2 + elementRect.height / 2;
-  } else if (block === 'nearest') {
-    if (elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom) {
-      return; // already visible
-    }
-    offset =
-      elementRect.top < containerRect.top
-        ? elementRect.top - containerRect.top
-        : elementRect.bottom - containerRect.bottom;
-  } else {
-    // 'start' or 'end'
-    offset = block === 'start' ? elementRect.top - containerRect.top : elementRect.bottom - containerRect.bottom;
+  // Save scroll positions of all ancestors ABOVE the scroll parent
+  // so we can restore them after scrollIntoView propagates
+  const saved: Array<{ el: HTMLElement; top: number; left: number }> = [];
+  let ancestor = scrollParent.parentElement;
+  while (ancestor) {
+    saved.push({ el: ancestor, top: ancestor.scrollTop, left: ancestor.scrollLeft });
+    ancestor = ancestor.parentElement;
   }
 
-  container.scrollBy({ top: offset, behavior });
+  // Use native scrollIntoView — it handles all geometry correctly
+  element.scrollIntoView({ behavior, block });
+
+  // Immediately restore ancestor scroll positions to undo propagation
+  for (const { el, top, left } of saved) {
+    el.scrollTop = top;
+    el.scrollLeft = left;
+  }
 }
 
 /**
