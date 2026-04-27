@@ -8,12 +8,6 @@ import * as React from 'react';
 
 import {
   ArrowLeftOutlined,
-  BookOutlined,
-  ExperimentOutlined,
-  FileOutlined,
-  InfoCircleOutlined,
-  MessageOutlined,
-  PushpinOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
@@ -40,6 +34,7 @@ interface IStandardConsoleLayoutProps {
   consoleTypes?: ConsoleType[];
   header: React.ReactNode;
   sider: React.ReactElement[];
+  siderIcons: Array<React.ComponentType<{ style?: React.CSSProperties }>>;
   content: React.ReactNode;
   children?: React.ReactNode;
   siderTitles: Array<string | React.ReactNode>;
@@ -82,27 +77,6 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
 
   const [resizerHover, setResizerHover] = React.useState(false);
   const [isResizing, setIsResizing] = React.useState(false);
-
-  // Get icon for each menu based on its key
-  const getMenuIcon = (key: string | null | undefined) => {
-    const iconStyle = { fontSize: '20px', color: consoleTheme.siderTitle };
-    switch (key) {
-      case 'submission-info':
-        return <InfoCircleOutlined style={iconStyle} />;
-      case 'file-menu':
-        return <FileOutlined style={iconStyle} />;
-      case 'tests-menu':
-        return <ExperimentOutlined style={iconStyle} />;
-      case 'rubric-menu':
-        return <BookOutlined style={iconStyle} />;
-      case 'template-menu':
-        return <PushpinOutlined style={iconStyle} />;
-      case 'chat-menu':
-        return <MessageOutlined style={iconStyle} />;
-      default:
-        return <FileOutlined style={iconStyle} />;
-    }
-  };
 
   /* Removed legacy persistence logic for now */
   /*
@@ -220,26 +194,29 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
                 zIndex: 102,
               }}
             >
-              {props.sider.map((siderNode, index) => (
-                <SidebarIconButton
-                  key={index}
-                  title={
-                    props.siderTooltips && props.siderTooltips[index]
-                      ? props.siderTooltips[index]
-                      : props.siderTitles[index]
-                  }
-                  icon={getMenuIcon(siderNode.key)}
-                  active={activePanel === index}
-                  onClick={() => {
-                    if (activePanel === index) {
-                      setActivePanel(null);
-                    } else {
-                      setActivePanel(index);
+              {props.siderIcons.map((IconComponent, index) => {
+                const iconStyle = { fontSize: '20px', color: consoleTheme.siderTitle };
+                return (
+                  <SidebarIconButton
+                    key={index}
+                    title={
+                      props.siderTooltips && props.siderTooltips[index]
+                        ? props.siderTooltips[index]
+                        : props.siderTitles[index]
                     }
-                  }}
-                  theme={consoleTheme}
-                />
-              ))}
+                    icon={<IconComponent style={iconStyle} />}
+                    active={activePanel === index}
+                    onClick={() => {
+                      if (activePanel === index) {
+                        setActivePanel(null);
+                      } else {
+                        setActivePanel(index);
+                      }
+                    }}
+                    theme={consoleTheme}
+                  />
+                );
+              })}
               {/* Drag Handle to Open when Closed */}
               {activePanel === null && (
                 <div

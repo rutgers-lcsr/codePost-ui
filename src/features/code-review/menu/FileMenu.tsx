@@ -53,8 +53,6 @@ import type { CommentType } from '../../../types/models';
 import { File as CodePostFile } from '../../../utils/file';
 import { Submission } from '../../../services/submission';
 
-import { IFileToCommentsMap } from '../../../types/common';
-
 import CPTooltip from '../../../components/core/CPTooltip';
 import { tooltips } from '../../../components/core/tooltips';
 
@@ -74,6 +72,8 @@ import { LOCAL_SETTINGS } from '../../../components/utils/LocalSettings';
 
 import { IDirectoryStructure, IFolder, buildFolderMenu, createDirectoryStructure, sortFiles } from './fileMenuUtils';
 import { FileWithId } from '../../../utils/file';
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import { useConsoleActions } from '../ConsoleActionsContext';
 
 /*************************************** Helper Interfaces for Directory rendering ******************************/
 
@@ -92,17 +92,21 @@ const visuallyHiddenStyle: React.CSSProperties = {
 /*************************************** State and Props Interfaces **********************************/
 
 interface IFileMenuProps extends IWithWindowWatcherProps {
-  title?: string;
-  files: FileWithId[];
-  comments?: IFileToCommentsMap;
-  selectedFile?: FileWithId;
-  changeSelectedFile: (fileID: number) => void;
-  getPointsInFile: (file: FileWithId) => number[];
-  hidePoints?: boolean;
+  isFilesOnly?: boolean;
 }
 
-const FileMenu: React.FC<IFileMenuProps> = (props) => {
-  const { title, files, comments, selectedFile, changeSelectedFile, getPointsInFile, hidePoints } = props;
+const FileMenu: React.FC<IFileMenuProps> = ({ isFilesOnly }) => {
+  // Read from store
+  const files = useCodeConsoleStore((s) => s.files) as FileWithId[];
+  const selectedFile = useCodeConsoleStore((s) => s.selectedFile) as FileWithId | undefined;
+  const storeComments = useCodeConsoleStore((s) => s.comments);
+  const { submission: submissionActions, ui } = useConsoleActions();
+
+  const comments = isFilesOnly ? undefined : storeComments;
+  const changeSelectedFile = ui.changeSelectedFile;
+  const getPointsInFile = submissionActions.getPointsInFile;
+  const hidePoints = isFilesOnly;
+
   const filesWithId = files;
   const consoleTheme = useContext(ConsoleThemeContext);
   const isDarkTheme = consoleThemes.dark === consoleTheme.consoleTheme;
@@ -637,7 +641,7 @@ const FileMenu: React.FC<IFileMenuProps> = (props) => {
           backgroundColor: consoleTheme.consoleTheme.siderBg,
           color: consoleTheme.consoleTheme.siderMenuItemColor,
         }}
-        aria-label={title ? `${title} file list` : 'Submission files'}
+        aria-label="Files file list"
         onSelect={(e) => onFileSelect(false, e)}
         items={menuItems}
       />

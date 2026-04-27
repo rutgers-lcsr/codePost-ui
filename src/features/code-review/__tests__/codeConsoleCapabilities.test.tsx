@@ -8,7 +8,9 @@ import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
 import { usePermissionsStore, selectCaps, type Capabilities } from '../../../stores/usePermissionsStore';
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
+import { ConsoleActionsProvider } from '../ConsoleActionsContext';
 import { FinalizeButton, HeaderMenu, DownloadCode, ViewAsStudent } from '../Header';
 import type { AnonymousSubmissionType, AssignmentType } from '../../../types/models';
 import type { Course } from '../../../api-client';
@@ -408,49 +410,41 @@ describe('Code Console capability-based rendering', () => {
   describe('SubmissionInfoMenu', () => {
     // Lazy import to avoid pulling in all SubmissionInfoMenu dependencies at module level
     let SubmissionInfo: any;
-    let ReadOnlySubmissionInfo: any;
+
+    const mockActions = {
+      comment: { addComment: vi.fn(), saveComment: vi.fn(), deleteComment: vi.fn(), updateFeedback: vi.fn(), removeRubricComment: vi.fn(), onRubricCommentClick: vi.fn(), changeActiveComment: vi.fn() },
+      submission: { calculateGradeFromState: vi.fn(), getPointsInFile: vi.fn(), addLateDayCreditComment: vi.fn(), toggleFinalized: vi.fn(), updateGrader: vi.fn(), claimSubmission: vi.fn(), setRubric: vi.fn(), submitStudentQuestion: vi.fn().mockResolvedValue({}), deleteStudentQuestion: vi.fn().mockResolvedValue({}), updateRegrade: vi.fn(), turnOnReload: vi.fn(), turnOffReload: vi.fn() },
+      template: { handlePinComment: vi.fn(), handleUpdateCommentLocation: vi.fn(), handleApplyTemplate: vi.fn() },
+      ai: { handleAcceptSuggestion: vi.fn(), handleRejectSuggestion: vi.fn(), handleGenerateFileSuggestions: vi.fn(), handleGenerateSummary: vi.fn() },
+      ui: { handleHighlightSelect: vi.fn(), changeSelectedFile: vi.fn(), showInlineTestsModal: vi.fn(), hideInlineTestsModal: vi.fn(), toggleCustomCommentExplorer: vi.fn(), toggleEditRubricMode: vi.fn(), setZoom: vi.fn(), setVerticalOffset: vi.fn(), toggleCursorMode: vi.fn(), updateCursorDomain: vi.fn() },
+      execution: { handleExecutionComplete: vi.fn(), handleClearOutputs: vi.fn(), handleContentChange: vi.fn(), handleCursorChange: vi.fn(), handleScrolledToComment: vi.fn() },
+      session: { userEmail: 'grader@test.edu', inDemoMode: false, suggestedComments: [], isGeneratingFileSuggestions: false, suggestionsMeta: { promptVariantId: undefined, experimentId: undefined, isCustomContext: false }, submissionSummary: null, isGeneratingSummary: false, summaryMeta: { promptVariantId: undefined, experimentId: undefined, isCustomContext: false }, templateRefresh: 0, templateForceUpdates: {} },
+    } as any;
 
     beforeEach(async () => {
       const mod = await import('../menu/SubmissionInfoMenu');
-      // SubmissionInfo is the default export; ReadOnlySubmissionInfo is named
       SubmissionInfo = (mod as any).default ?? (mod as any).SubmissionInfo;
-      ReadOnlySubmissionInfo = (mod as any).ReadOnlySubmissionInfo;
     });
 
     const renderSubmissionInfo = (caps: Capabilities, submission?: AnonymousSubmissionType) => {
       seedCaps(SUBMISSION_KEY, caps);
       seedCaps(COURSE_KEY, caps);
 
-      if (ReadOnlySubmissionInfo) {
-        return render(
-          <Providers>
-            <ReadOnlySubmissionInfo
-              title="Submission Info"
-              assignment={mockAssignment}
-              readOnlySubmission={{ ...(submission ?? mockSubmission), questionText: undefined } as any}
-              submitStudentQuestion={vi.fn()}
-              deleteStudentQuestion={vi.fn()}
-              isStudentMode={!!caps.request_regrade}
-              courseStudentsCanSeeGraders={false}
-            />
-          </Providers>,
-        );
-      }
+      // Seed the code console store with mock data
+      useCodeConsoleStore.setState({
+        assignment: mockAssignment as any,
+        readOnlySubmission: { ...(submission ?? mockSubmission), questionText: undefined } as any,
+        submission: undefined,
+        graders: [],
+        course: mockCourse as any,
+        isStudent: !!caps.request_regrade,
+      });
 
-      // Fallback if named export not available
       return render(
         <Providers>
-          <SubmissionInfo
-            title="Submission Info"
-            assignment={mockAssignment}
-            submission={submission ?? mockSubmission}
-            graders={['grader@test.edu']}
-            isCourseAdmin={!!caps.edit_course_settings}
-            courseLateDayCreditsAllowable={null}
-            updateGrader={vi.fn().mockResolvedValue(mockSubmission)}
-            addLateDayCreditComment={vi.fn()}
-            isStudentMode={false}
-          />
+          <ConsoleActionsProvider value={mockActions}>
+            <SubmissionInfo mode="readOnly" />
+          </ConsoleActionsProvider>
         </Providers>,
       );
     };

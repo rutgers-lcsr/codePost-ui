@@ -63,81 +63,82 @@ import {
   EMPTY_CAPS,
 } from '../../../stores/usePermissionsStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import { useConsoleActions } from '../ConsoleActionsContext';
 
 const { confirm } = Modal;
 const { Text } = Typography;
 
 /**********************************************************************************************************************/
 
-interface ISubmissionReadProps {
-  title?: string;
-  assignment: AssignmentType;
-  submission?: AnonymousSubmissionType;
-  readOnlySubmission?: StudentSubmissionType;
-  submitStudentQuestion?: (
-    submission: StudentSubmissionType,
-    text: string,
-    isRegrade: boolean,
-  ) => Promise<StudentSubmissionType>;
-  deleteStudentQuestion?: (submission: StudentSubmissionType) => Promise<StudentSubmissionType>;
-  isStudentMode: boolean;
-  courseStudentsCanSeeGraders?: boolean;
-}
+type SubmissionInfoMode = 'write' | 'readOnly' | 'filesOnly';
 
-interface ISubmissionInfoWriteProps {
-  graders: string[];
-  isCourseAdmin: boolean;
-  courseLateDayCreditsAllowable: number | null;
-  updateGrader: (
-    submission: AnonymousSubmissionType,
-    graderUsername: string | undefined,
-  ) => Promise<AnonymousSubmissionType>;
-  addLateDayCreditComment: (val: number) => Promise<boolean> | void;
-  graderEmail?: string;
-  onUpdateRegrade?: (
-    submission: AnonymousSubmissionType,
-    fields: Partial<AnonymousSubmissionType>,
-  ) => Promise<AnonymousSubmissionType>;
-}
+const noopUpdateGrader = (submission: AnonymousSubmissionType) => Promise.resolve(submission);
+const noopAddLateDayCredit = () => {};
 
-const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps) => {
+const SubmissionInfo = ({ mode }: { mode: SubmissionInfoMode }) => {
+  // Read from store
+  const assignment = useCodeConsoleStore((s) => s.assignment)!;
+  const storeSubmission = useCodeConsoleStore((s) => s.submission);
+  const storeReadOnlySubmission = useCodeConsoleStore((s) => s.readOnlySubmission);
+  const graders = useCodeConsoleStore((s) => s.graders);
+  const course = useCodeConsoleStore((s) => s.course);
+  const storeIsStudent = useCodeConsoleStore((s) => s.isStudent);
+
+  // Read from actions context
+  const { submission: submissionActions, session } = useConsoleActions();
+
+  // Mode-dependent values
+  const isWriteMode = mode === 'write';
+  const isFilesOnly = mode === 'filesOnly';
+  const submission = isWriteMode ? storeSubmission : undefined;
+  const readOnlySubmission = !isWriteMode ? storeReadOnlySubmission : undefined;
+  const isStudentMode = isFilesOnly ? true : storeIsStudent;
+  const courseLateDayCreditsAllowable = isWriteMode ? (course?.lateDayCreditsAllowable ?? null) : null;
+  const courseStudentsCanSeeGraders = course?.studentsCanSeeGraders;
+  const updateGrader = isWriteMode ? submissionActions.updateGrader : noopUpdateGrader;
+  const addLateDayCreditComment = isWriteMode ? submissionActions.addLateDayCreditComment : noopAddLateDayCredit;
+  const graderEmail = isWriteMode ? session.userEmail : undefined;
+  const onUpdateRegrade = isWriteMode ? submissionActions.updateRegrade : undefined;
+  const submitStudentQuestion = !isFilesOnly ? submissionActions.submitStudentQuestion : undefined;
+  const deleteStudentQuestion = !isFilesOnly ? submissionActions.deleteStudentQuestion : undefined;
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
-  const courseCaps = useCourseCapabilities(props.assignment.course);
+  const courseCaps = useCourseCapabilities(assignment.course);
   const capIsCourseAdmin = !!courseCaps.edit_course_settings;
   const capManageRegrades = !!courseCaps.manage_regrades;
 
-  const subId = props.readOnlySubmission?.id ?? props.submission?.id;
+  const subId = readOnlySubmission?.id ?? submission?.id;
   const subCaps = usePermissionsStore(useShallow((s) => (subId ? selectCaps(s, `submission:${subId}`) : EMPTY_CAPS)));
   const capRequestRegrade = subCaps.request_regrade === true;
   const capViewStudentIdentity = subCaps.view_student_identity;
 
   const [lateDaySelectValue, setLateDaySelectValue] = React.useState(
-    props.submission !== undefined ? props.submission.lateDayCreditsUsed : 0,
+    submission !== undefined ? submission.lateDayCreditsUsed : 0,
   );
 
   let submittedInfo;
   let useLateDayCredits;
 
-  if (props.submission !== undefined) {
-    if (props.submission) {
-      if (props.assignment.allowStudentUpload && props.assignment.uploadDueDate) {
+  if (submission !== undefined) {
+    if (submission) {
+      if (assignment.allowStudentUpload && assignment.uploadDueDate) {
         const two_hours = 3.6e6 * 2; // ms grace period
         const isLate =
-          props.submission.dateUploaded !== null &&
-          Date.parse(props.submission.dateUploaded!) > Date.parse(props.assignment.uploadDueDate) + two_hours;
+          submission.dateUploaded !== null &&
+          Date.parse(submission.dateUploaded!) > Date.parse(assignment.uploadDueDate) + two_hours;
 
-        const due = dayjs(props.assignment.uploadDueDate);
-        const daysLate = props.submission.dateUploaded ? dayjs(props.submission.dateUploaded).diff(due, 'days') + 1 : 0;
+        const due = dayjs(assignment.uploadDueDate);
+        const daysLate = submission.dateUploaded ? dayjs(submission.dateUploaded).diff(due, 'days') + 1 : 0;
 
-        if (props.courseLateDayCreditsAllowable !== null && isLate) {
+        if (courseLateDayCreditsAllowable !== null && isLate) {
           const onChange = async (val: number) => {
-            const success = await props.addLateDayCreditComment(val);
+            const success = await addLateDayCreditComment(val);
             if (success) {
               setLateDaySelectValue(val);
             }
           };
 
-          const arr = [...Array(props.courseLateDayCreditsAllowable).keys(), props.courseLateDayCreditsAllowable];
+          const arr = [...Array(courseLateDayCreditsAllowable).keys(), courseLateDayCreditsAllowable];
           const content = (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span>Use</span>
@@ -147,7 +148,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                   value={lateDaySelectValue}
                   size="small"
                   style={{ width: 60 }}
-                  disabled={props.submission.isFinalized}
+                  disabled={submission.isFinalized}
                   options={arr.map((index: number) => ({ label: index.toString(), value: index.toString() }))}
                 ></Select>
               </span>
@@ -189,8 +190,8 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                       Uploaded
                     </Text>
                     <Text style={{ color: consoleTheme.text }}>
-                      {props.submission.dateUploaded ? (
-                        <CodePostDate datetime={props.submission.dateUploaded} />
+                      {submission.dateUploaded ? (
+                        <CodePostDate datetime={submission.dateUploaded} />
                       ) : (
                         'Not uploaded'
                       )}
@@ -216,7 +217,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
                     </Text>
                     <Space>
                       <Text style={{ color: consoleTheme.text }}>
-                        <CodePostDate datetime={props.assignment.uploadDueDate} />
+                        <CodePostDate datetime={assignment.uploadDueDate} />
                       </Text>
                       {isLate && (
                         <Tag color="volcano" style={{ margin: 0, fontSize: 10, lineHeight: '16px' }}>
@@ -236,16 +237,16 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   }
 
   let studentList;
-  if (props.submission !== undefined) {
-    const isAnonymous = capViewStudentIdentity === false || !!props.assignment.anonymousGrading;
-    studentList = <Students submission={props.submission} isAnonymous={isAnonymous} />;
+  if (submission !== undefined) {
+    const isAnonymous = capViewStudentIdentity === false || !!assignment.anonymousGrading;
+    studentList = <Students submission={submission} isAnonymous={isAnonymous} />;
   } else {
-    studentList = <Students submission={props.readOnlySubmission!} isAnonymous={false} />;
+    studentList = <Students submission={readOnlySubmission!} isAnonymous={false} />;
   }
 
   const canSeeGrader =
-    props.assignment.studentsCanSeeGraders === true ||
-    (props.assignment.studentsCanSeeGraders === null && props.courseStudentsCanSeeGraders === true);
+    assignment.studentsCanSeeGraders === true ||
+    (assignment.studentsCanSeeGraders === null && courseStudentsCanSeeGraders === true);
 
   const hasGraderField = (sub: unknown): sub is { grader?: string | null } => {
     return !!sub && typeof sub === 'object' && 'grader' in sub;
@@ -256,20 +257,20 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
   };
 
   const readOnlyGrader =
-    props.readOnlySubmission && hasGraderField(props.readOnlySubmission) ? props.readOnlySubmission.grader : undefined;
+    readOnlySubmission && hasGraderField(readOnlySubmission) ? readOnlySubmission.grader : undefined;
   const readOnlyHasGrader =
-    props.readOnlySubmission && hasHasGraderField(props.readOnlySubmission)
-      ? !!props.readOnlySubmission.hasGrader
+    readOnlySubmission && hasHasGraderField(readOnlySubmission)
+      ? !!readOnlySubmission.hasGrader
       : false;
 
-  const graderEmail = props.submission?.grader ?? readOnlyGrader;
+  const submissionGraderEmail = submission?.grader ?? readOnlyGrader;
   const graderLabel =
-    typeof graderEmail === 'string' && graderEmail.length > 0
-      ? graderEmail
+    typeof submissionGraderEmail === 'string' && submissionGraderEmail.length > 0
+      ? submissionGraderEmail
       : readOnlyHasGrader
         ? 'Assigned'
         : 'Unassigned';
-  const showGraderToStudent = props.isStudentMode && (graderEmail || readOnlyHasGrader) && canSeeGrader;
+  const showGraderToStudent = isStudentMode && (submissionGraderEmail || readOnlyHasGrader) && canSeeGrader;
 
   return (
     <div id="submission-info" style={{ padding: '10px 15px 15px' }}>
@@ -291,7 +292,7 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
           {studentList}
         </div>
 
-        {props.submission !== undefined && (
+        {submission !== undefined && (
           <div>
             <div
               style={{
@@ -306,10 +307,10 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
               Grader
             </div>
             <GraderInfo
-              submission={props.submission}
+              submission={submission}
               isCourseAdmin={capIsCourseAdmin}
-              graders={props.graders}
-              updateGrader={props.updateGrader}
+              graders={graders}
+              updateGrader={updateGrader}
             />
           </div>
         )}
@@ -352,56 +353,30 @@ const SubmissionInfo = (props: ISubmissionReadProps & ISubmissionInfoWriteProps)
           </div>
         )}
 
-        {props.submission !== undefined && props.submission.questionText ? (
+        {submission !== undefined && submission.questionText ? (
           <GraderRegrade
-            submission={props.submission}
-            graderEmail={props.graderEmail}
+            submission={submission}
+            graderEmail={graderEmail}
             isCourseAdmin={capManageRegrades}
-            onUpdateRegrade={props.onUpdateRegrade}
+            onUpdateRegrade={onUpdateRegrade}
           />
         ) : null}
 
-        {props.readOnlySubmission !== undefined &&
-        props.submitStudentQuestion &&
-        props.assignment.allowRegradeRequests &&
+        {readOnlySubmission !== undefined &&
+        submitStudentQuestion &&
+        assignment.allowRegradeRequests &&
         capRequestRegrade ? (
           <StudentRegrade
-            submission={props.readOnlySubmission}
-            assignment={props.assignment}
-            submitStudentQuestion={props.submitStudentQuestion}
-            deleteStudentQuestion={props.deleteStudentQuestion}
+            submission={readOnlySubmission}
+            assignment={assignment}
+            submitStudentQuestion={submitStudentQuestion}
+            deleteStudentQuestion={deleteStudentQuestion}
           />
         ) : null}
       </Space>
     </div>
   );
 };
-
-const makeReadOnly = (Component: React.ComponentType<ISubmissionReadProps & ISubmissionInfoWriteProps>) => {
-  return (props: ISubmissionReadProps) => {
-    const updateGrader = (submission: AnonymousSubmissionType) => {
-      return Promise.resolve(submission);
-    };
-
-    const addLateDayCreditComment = () => {
-      return;
-    };
-
-    return (
-      <Component
-        {...props}
-        updateGrader={updateGrader}
-        courseLateDayCreditsAllowable={null}
-        isCourseAdmin={false}
-        graders={[]}
-        addLateDayCreditComment={addLateDayCreditComment}
-        courseStudentsCanSeeGraders={props.courseStudentsCanSeeGraders}
-      />
-    );
-  };
-};
-
-const ReadOnlySubmissionInfo = makeReadOnly(SubmissionInfo);
 
 /**********************************************************************************************************************/
 
@@ -1155,4 +1130,5 @@ const SubmissionInfoTooltip: React.FC<{
   );
 };
 
-export { ReadOnlySubmissionInfo, SubmissionInfo, SubmissionInfoTooltip };
+export { SubmissionInfo, SubmissionInfoTooltip };
+export type { SubmissionInfoMode };

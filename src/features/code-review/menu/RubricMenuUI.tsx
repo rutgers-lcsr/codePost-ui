@@ -12,7 +12,7 @@ import { Button, Empty, Flex, Input, Popconfirm, Space, Tag, theme, Typography }
 
 /* codePost imports */
 import { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
-import { Course, RubricCategory, RubricComment } from '../../../api-client';
+import { RubricCategory, RubricComment } from '../../../api-client';
 import {
   compareRubricCategories,
   compareRubricComments,
@@ -51,6 +51,8 @@ import { tooltips } from '../../../components/core/tooltips';
 import { CURSOR_DOMAIN } from '../CodeConsoleEnums';
 
 import { getRubricURL } from '../../../components/core/URLutils';
+import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
+import { useConsoleActions } from '../ConsoleActionsContext';
 
 /**********************************************************************************************************************/
 
@@ -65,33 +67,15 @@ type DragResultLike = {
 };
 
 interface IRubricMenuUIProps extends IRubricManagerProps {
-  /* is the user allowed to edit the rubric? */
-  canUserEdit: boolean;
+  /* is the console in demo mode? */
+  isDemoMode: boolean;
 
-  /* should we show the frequent comments synthetic category? */
-  showFrequent: boolean;
-
-  /* if true, simulate rubric save */
-  demoMode: boolean;
-
-  handleRubricCommentClick: (rubricComment: RubricComment) => void;
-  hasActiveComment: boolean;
-  toggleEditRubricMode: () => void;
-  editRubricMode: boolean;
-  setRubric: (rubric: {
-    rubricCategories: RubricCategory[];
-    rubricComments: IRubricCategoryToRubricCommentsMap;
-  }) => void;
-  turnOnReload: () => void;
-  turnOffReload: () => void;
-
-  showCursor: CURSOR_DOMAIN;
-  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
-  course: Course;
+  /* is the current user a course admin? */
+  isAdmin: boolean;
 }
 
 const RubricMenuUI = ({
-  props,
+  props: rubricManagerProps,
   state,
   helpers,
 }: {
@@ -99,6 +83,34 @@ const RubricMenuUI = ({
   state: IRubricManagerState;
   helpers: IRubricManagerHelpers;
 }) => {
+  // Read from store + context to avoid prop drilling
+  const assignment = useCodeConsoleStore((s) => s.assignment);
+  const course = useCodeConsoleStore((s) => s.course)!;
+  const activeCommentID = useCodeConsoleStore((s) => s.activeCommentID);
+  const editRubricMode = useCodeConsoleStore((s) => s.editRubricMode);
+  const showCursor = useCodeConsoleStore((s) => s.showCursor);
+  const noSave = useCodeConsoleStore((s) => s.noSave);
+  const { comment, submission, ui } = useConsoleActions();
+
+  // Merge RubricManager render-prop data with store/context data
+  const props = {
+    ...rubricManagerProps,
+    handleRubricCommentClick: comment.onRubricCommentClick,
+    hasActiveComment: activeCommentID !== undefined,
+    toggleEditRubricMode: ui.toggleEditRubricMode,
+    editRubricMode,
+    setRubric: submission.setRubric,
+    turnOnReload: submission.turnOnReload,
+    turnOffReload: submission.turnOffReload,
+    canUserEdit: rubricManagerProps.isDemoMode
+      ? true
+      : !!(rubricManagerProps.isAdmin || assignment?.collaborativeRubricMode || course?.isRubricEditor),
+    showCursor,
+    updateCursorDomain: ui.updateCursorDomain,
+    demoMode: rubricManagerProps.isDemoMode || noSave === true,
+    showFrequent: !!assignment?.showFrequentlyUsedRubricComments,
+    course,
+  };
   type RubricMenuCategoryProps = React.ComponentProps<typeof RubricMenuCategoryUI>['props'];
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const { token } = theme.useToken();
