@@ -4,11 +4,7 @@ import queryString from 'query-string';
 import { useLocation, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
-import {
-  ICodeConsoleState,
-  PANEL_TYPE,
-  PERMISSION_LEVEL,
-} from '../../../types/CodeConsole.types';
+import { ICodeConsoleState, PANEL_TYPE, PERMISSION_LEVEL } from '../../../types/CodeConsole.types';
 import {
   ICommentToRubricCommentMap,
   IFileToCommentsMap,
@@ -22,11 +18,7 @@ import {
   submissionsApi,
 } from '../../../api-client/clients';
 import { assignmentKeys, submissionKeys } from '../../../lib/queryKeys';
-import {
-  Course,
-  CourseRoster,
-  RubricCategory,
-} from '../../../api-client';
+import { Course, CourseRoster, RubricCategory } from '../../../api-client';
 import type {
   AssignmentFileType,
   AssignmentType,
@@ -38,6 +30,7 @@ import type {
   TestCategoryType,
 } from '../../../types/models';
 import { FileWithId } from '../../../utils/file';
+import { getAuthToken } from '../../../utils/auth';
 import { Submission as SubmissionService } from '../../../services/submission';
 import { getLatestSubmissionTests } from '../../../utils/submissionTests';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
@@ -46,12 +39,7 @@ import type { Capabilities } from '../../../stores/usePermissionsStore';
 import { loadDemoGrader, loadDemoStudent } from '../demo';
 import { fetchTestData, StudentTestCasesByCategory, TestCasesByCategory } from '../types';
 import { getCourseAISettings } from '../../../utils/aiService';
-import {
-  calculateGrade,
-  fileBouncer,
-  processRubricResponse,
-  selectInitialFile,
-} from '../codeConsoleUtils';
+import { calculateGrade, processRubricResponse, selectInitialFile } from '../codeConsoleUtils';
 
 interface UseConsoleLoaderOptions {
   userEmail: string;
@@ -176,37 +164,29 @@ export function useConsoleLoader({
       permissionLevel = PERMISSION_LEVEL.NOT_FOUND;
     }
 
-    const values = queryString.parse(location.search);
     let simulatingStudent = false;
 
     // Check for permissionLevel override in query params (admin only)
-    // permissionLevel: 0=NOT_FOUND, 1=NONE, 2=READ, 3=READ_FILES_ONLY, 4=WRITE
-    if (values.permissionLevel !== undefined && permissionLevel === PERMISSION_LEVEL.WRITE) {
-      const levelOverride = parseInt(values.permissionLevel as string);
-      if (!isNaN(levelOverride)) {
-        if (levelOverride === 0) {
-          permissionLevel = PERMISSION_LEVEL.NOT_FOUND;
-        } else if (levelOverride === 1) {
-          permissionLevel = PERMISSION_LEVEL.NONE;
-        } else if (levelOverride === 2) {
-          permissionLevel = PERMISSION_LEVEL.READ;
-        } else if (levelOverride === 3) {
-          permissionLevel = PERMISSION_LEVEL.READ_FILES_ONLY;
-        } else if (levelOverride === 4) {
-          permissionLevel = PERMISSION_LEVEL.WRITE;
-        }
+    const PERMISSION_LEVEL_MAP: Record<number, PERMISSION_LEVEL> = {
+      0: PERMISSION_LEVEL.NOT_FOUND,
+      1: PERMISSION_LEVEL.NONE,
+      2: PERMISSION_LEVEL.READ,
+      3: PERMISSION_LEVEL.READ_FILES_ONLY,
+      4: PERMISSION_LEVEL.WRITE,
+    };
+    if (queryValues.permissionLevel !== undefined && permissionLevel === PERMISSION_LEVEL.WRITE) {
+      const levelOverride = parseInt(queryValues.permissionLevel as string);
+      if (levelOverride in PERMISSION_LEVEL_MAP) {
+        permissionLevel = PERMISSION_LEVEL_MAP[levelOverride];
       }
     }
 
-    if (permissionLevel === PERMISSION_LEVEL.WRITE && values.student !== undefined) {
+    if (permissionLevel === PERMISSION_LEVEL.WRITE && queryValues.student !== undefined) {
       permissionLevel = PERMISSION_LEVEL.READ;
       simulatingStudent = true;
     }
 
-    let noSave = false;
-    if (values.noSave !== undefined) {
-      noSave = true;
-    }
+    const noSave = queryValues.noSave !== undefined;
 
     // Everything we need to load
     let submission: StudentSubmissionType | AnonymousSubmissionType | undefined;
@@ -253,9 +233,10 @@ export function useConsoleLoader({
       }
       case PERMISSION_LEVEL.READ_FILES_ONLY: {
         // load the data with files only (no comments, rubrics, or grades)
+        // TODO: Use submissionsApi.retrieve() once the generated client supports ?filesOnly=true
         const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionID}/?filesOnly=true`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${getAuthToken()}`,
           },
         });
 
@@ -272,18 +253,10 @@ export function useConsoleLoader({
         // Start course fetch immediately (chained off assignment — runs while we process files below)
         const coursePromise = coursesApi.retrieve({ id: assignment.course }).then((c) => c as unknown as Course);
 
-        // Files are already included in the response as full objects
-        files = (submissionData.files as FileWithId[]) || [];
-
-        files = files.sort((a, b) => {
-          return a.name.localeCompare(b.name);
-        });
-
-        files = fileBouncer(files) as FileWithId[];
-
-        if (selectedFile === undefined && files.length > 0) {
-          selectedFile = files[0];
-        }
+        // Files are already included in the response as full objects — selectInitialFile handles sort + fileBouncer
+        ({ files, selectedFile } = selectInitialFile((submissionData.files as FileWithId[]) || [], {
+          file: queryValues.file as string | undefined,
+        }));
 
         // No comments, rubrics, or tests in files-only mode
         comments = {};
@@ -365,7 +338,7 @@ export function useConsoleLoader({
           caseObj[category.id] = [];
         });
         testCases.forEach((testCase) => {
-          caseObj[testCase.testCategory] = [...caseObj[testCase.testCategory], testCase];
+          (caseObj[testCase.testCategory] ??= []).push(testCase);
         });
         tests = submission.tests
           ? await Promise.all(submission.tests.map((id) => submissionTestsApi.retrieve({ id })))
@@ -389,8 +362,7 @@ export function useConsoleLoader({
           testCases: caseObj,
           tests: getLatestSubmissionTests(tests),
           isStudent:
-            simulatingStudent ||
-            (submission?.students !== undefined && submission.students.indexOf(userEmail) > -1),
+            simulatingStudent || (submission?.students !== undefined && submission.students.indexOf(userEmail) > -1),
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
         }));
@@ -483,10 +455,14 @@ export function useConsoleLoader({
         tests = await Promise.all(writableSubmission.tests.map((id) => submissionTestsApi.retrieve({ id })));
         const [categories, cases] = await fetchTestData(assignment);
 
-        ({ files, selectedFile } = selectInitialFile(files, {
-          file: queryValues.file as string | undefined,
-          comment: queryValues.comment as string | undefined,
-        }, { skipSelection: panelTypeOverride === PANEL_TYPE.TESTS }));
+        ({ files, selectedFile } = selectInitialFile(
+          files,
+          {
+            file: queryValues.file as string | undefined,
+            comment: queryValues.comment as string | undefined,
+          },
+          { skipSelection: panelTypeOverride === PANEL_TYPE.TESTS },
+        ));
 
         // fill in grade using available data if submission doesn't contain an up-to-date grade
         let submissionWithGrade: AnonymousSubmissionType = writableSubmission;
