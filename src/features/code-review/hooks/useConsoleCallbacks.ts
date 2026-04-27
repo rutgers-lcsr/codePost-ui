@@ -30,7 +30,19 @@ export function useConsoleCallbacks({ setState, submissionCaps, changeActiveComm
 
       window.requestAnimationFrame(() => {
         const commentElement = document.getElementById(`comment-${commentId}`);
-        commentElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (!commentElement) return;
+
+        // Scroll within the comments container only — scrollIntoView propagates
+        // to all ancestor scrollable containers, which shifts the sidebar panel off-screen.
+        const container = commentElement.closest('#code-panel--comments');
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          const elementRect = commentElement.getBoundingClientRect();
+          const offset = elementRect.top - containerRect.top - containerRect.height / 2 + elementRect.height / 2;
+          container.scrollBy({ top: offset, behavior: 'smooth' });
+        } else {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       });
     },
     [changeActiveComment, submissionCaps.comment_on_submission],
