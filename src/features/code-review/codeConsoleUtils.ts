@@ -386,13 +386,6 @@ export const fileBouncer = (files: FileType[]) => {
       };
     }
 
-    if (ft.capabilities.binary) {
-      return {
-        ...file,
-        code: 'Preview Not Available',
-      };
-    }
-
     return file;
   });
 };
@@ -417,9 +410,7 @@ export const processRubricResponse = (
     .sort(compareRubricCategories);
   const rComms: IRubricCategoryToRubricCommentsMap = {};
   rCats.forEach((cat) => {
-    rComms[cat.id] = (rubric.rubricComments || [])
-      .filter((c) => c.category === cat.id)
-      .sort(compareRubricComments);
+    rComms[cat.id] = (rubric.rubricComments || []).filter((c) => c.category === cat.id).sort(compareRubricComments);
   });
   return { rubricCategories: rCats, rubricComments: rComms };
 };
@@ -455,8 +446,7 @@ export const selectInitialFile = (
     );
     selectedFile = matchingFile || files[0];
   } else if (selectedFile === undefined) {
-    selectedFile =
-      files.find((f) => f.id === LOCAL_SETTINGS.mostRecentFile.getter()) || files[0];
+    selectedFile = files.find((f) => f.id === LOCAL_SETTINGS.mostRecentFile.getter()) || files[0];
   }
 
   return { files, selectedFile };

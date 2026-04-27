@@ -1,0 +1,13 @@
+test_name	status	duration_ms	points_earned	points_possible
+test_init	pass	12	5	5
+test_insert_single	pass	8	5	5
+test_insert_multiple	pass	15	10	10
+test_delete_leaf	pass	11	5	5
+test_delete_internal	fail	23	0	10
+test_search_existing	pass	7	5	5
+test_search_missing	pass	6	5	5
+test_traversal_inorder	pass	14	10	10
+test_traversal_preorder	pass	12	10	10
+test_edge_null_input	error	2	0	5
+test_performance_large	timeout	30001	0	15
+test_memory_usage	pass	156	10	10

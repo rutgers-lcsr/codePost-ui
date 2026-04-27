@@ -1,0 +1,41 @@
+{
+  "project": "codePost Assignment Autograder",
+  "version": "2.4.0",
+  "environment": {
+    "language": "python",
+    "version": "3.12",
+    "timeout_seconds": 30,
+    "memory_limit_mb": 256
+  },
+  "test_suites": [
+    {
+      "name": "Unit Tests",
+      "weight": 0.6,
+      "files": ["test_unit.py"],
+      "setup": "pip install -r requirements.txt"
+    },
+    {
+      "name": "Integration Tests",
+      "weight": 0.3,
+      "files": ["test_integration.py"],
+      "setup": null
+    },
+    {
+      "name": "Style Check",
+      "weight": 0.1,
+      "files": ["test_style.py"],
+      "setup": "pip install pycodestyle"
+    }
+  ],
+  "grading": {
+    "max_points": 100,
+    "late_penalty_per_day": 10,
+    "max_late_days": 3,
+    "allow_resubmission": true
+  },
+  "notifications": {
+    "on_submit": true,
+    "on_grade": true,
+    "channels": ["email", "dashboard"]
+  }
+}

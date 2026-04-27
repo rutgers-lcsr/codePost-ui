@@ -406,10 +406,11 @@ describe('fileBouncer', () => {
     expect((result[0] as { code?: string }).code).toBeUndefined();
   });
 
-  it('marks binary extension files', () => {
+  it('passes binary extension files through unchanged', () => {
     const files = [makeFile({ name: 'Main.class', extension: 'class', data: 'binary' })] as FileType[];
     const result = fileBouncer(files);
-    expect((result[0] as { code?: string }).code).toBe('Preview Not Available');
+    expect((result[0] as { code?: string }).code).toBeUndefined();
+    expect((result[0] as { data?: string }).data).toBe('binary');
   });
 
   it('does not mark non-binary files', () => {

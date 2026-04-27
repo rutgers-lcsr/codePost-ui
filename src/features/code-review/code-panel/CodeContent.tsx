@@ -23,6 +23,7 @@ import { Spin } from 'antd';
 // monaco-vendor) are only fetched when the submission actually contains those file types.
 const Markdown = React.lazy(() => import('./Markdown'));
 const Pdf = React.lazy(() => import('./Pdf').then((m) => ({ default: m.Pdf })));
+const BinaryPreview = React.lazy(() => import('./BinaryPreview').then((m) => ({ default: m.BinaryPreview })));
 const CodeWindow = React.lazy(() =>
   import('../../../components/admin/assignments/tests/edit/utils/CodeWindow').then((m) => ({ default: m.CodeWindow })),
 );
@@ -314,6 +315,41 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
         </div>
       );
     }
+  }
+
+  // Render binary file types (download card + hex viewer).
+  if (fileType.renderStrategy === 'binary') {
+    return (
+      <div>
+        {a11yLiveRegion}
+        <div id="code-container" className="code-container" style={containerStyle}>
+          <div
+            id="code-main"
+            className={`code ${fileType.panelClassName}`.trim()}
+            style={{
+              ...commonCodeStyle,
+              paddingLeft: '20px',
+              paddingTop: '0px',
+              paddingRight: '20px',
+              paddingBottom: '0px',
+            }}
+          >
+            <React.Suspense fallback={<LazyFallback />}>
+              <BinaryPreview
+                key={fileKey}
+                file={props.file}
+                comments={props.comments}
+                readOnly={props.readOnly}
+                user={props.user}
+                onHighlightClick={props.onHighlightClick}
+                executionResult={props.executionResult}
+                onClearOutputs={props.onClearOutputs}
+              />
+            </React.Suspense>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Render rich-content file types (markdown, jupyter, image) — formats with a custom

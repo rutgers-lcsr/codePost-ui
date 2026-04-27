@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample HTML — Student Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 2rem;
+            background: #fafafa;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #198665;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f0f0f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .badge--pass {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge--fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Assignment Results</h1>
+    <p>CS 101 — Fall 2026 — Homework 3</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Test Case</th>
+                <th>Status</th>
+                <th>Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>test_insert_empty</td>
+                <td><span class="badge badge--pass">PASS</span></td>
+                <td>5 / 5</td>
+            </tr>
+            <tr>
+                <td>test_insert_duplicate</td>
+                <td><span class="badge badge--pass">PASS</span></td>
+                <td>5 / 5</td>
+            </tr>
+            <tr>
+                <td>test_delete_root</td>
+                <td><span class="badge badge--fail">FAIL</span></td>
+                <td>0 / 10</td>
+            </tr>
+            <tr>
+                <td>test_traversal_order</td>
+                <td><span class="badge badge--pass">PASS</span></td>
+                <td>10 / 10</td>
+            </tr>
+            <tr>
+                <td>test_edge_cases</td>
+                <td><span class="badge badge--fail">FAIL</span></td>
+                <td>0 / 5</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        const rows = document.querySelectorAll('tbody tr');
+        let total = 0, earned = 0;
+        rows.forEach(row => {
+            const [e, t] = row.cells[2].textContent.split('/').map(Number);
+            earned += e; total += t;
+        });
+        const footer = document.createElement('p');
+        footer.style.marginTop = '1rem';
+        footer.style.fontWeight = 'bold';
+        footer.textContent = `Total: ${earned} / ${total} (${Math.round(earned / total * 100)}%)`;
+        document.body.appendChild(footer);
+    </script>
+</body>
+
+</html>

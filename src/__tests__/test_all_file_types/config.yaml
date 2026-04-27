@@ -1,0 +1,51 @@
+# Sample YAML — CI/CD pipeline configuration
+
+name: Autograder Pipeline
+trigger:
+  branches: [main, develop]
+  paths:
+    - 'assignments/**'
+    - 'grading/**'
+
+stages:
+  - name: Build
+    steps:
+      - task: SetupPython
+        inputs:
+          version: '3.12'
+      - script: |
+          pip install -r requirements.txt
+          pip install pytest coverage
+        displayName: Install Dependencies
+
+  - name: Test
+    dependsOn: Build
+    strategy:
+      matrix:
+        unit:
+          test_type: unit
+          timeout: 60
+        integration:
+          test_type: integration
+          timeout: 120
+    steps:
+      - script: |
+          pytest tests/test_$(test_type).py \
+            --timeout=$(timeout) \
+            --junitxml=results/$(test_type).xml \
+            --cov=src --cov-report=xml
+        displayName: 'Run $(test_type) tests'
+      - task: PublishTestResults
+        inputs:
+          testResultsFiles: 'results/*.xml'
+
+  - name: Grade
+    dependsOn: Test
+    condition: succeeded()
+    steps:
+      - script: python grading/calculate_grades.py
+        displayName: Calculate Grades
+      - script: python grading/upload_to_codepost.py
+        displayName: Upload Results
+        env:
+          CODEPOST_API_KEY: $(codepost-api-key)

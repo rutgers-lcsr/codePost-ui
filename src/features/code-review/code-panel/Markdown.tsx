@@ -195,6 +195,21 @@ const REHYPE_PLUGINS = [rehypeRaw];
 const NOTEBOOK_CHANGE_DEBOUNCE_MS = 150;
 const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
 
+/** Map image file extension to its MIME type for constructing data URIs. */
+const imageMimeType = (ext: string): string => {
+  const map: Record<string, string> = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    bmp: 'image/bmp',
+    ico: 'image/x-icon',
+    svg: 'image/svg+xml',
+  };
+  return map[ext] || 'image/png';
+};
+
 // Custom URL transform for ReactMarkdown v10+ (default strips data: URIs)
 const markdownUrlTransform = (url: string): string => {
   if (url.startsWith('data:image/')) return url;
@@ -701,12 +716,16 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     if (codeType !== 'image') return null;
     const ext = File.normalizedExtension(props.file);
     let src: string;
-    if (ext === 'svg') {
-      // SVG files store raw XML in file.data — encode as a data URI for the <img> tag.
+    if (fileContent.startsWith('data:')) {
+      // Content is already a data URI (e.g. from readAsDataURL upload) — use directly.
+      src = fileContent;
+    } else if (ext === 'svg') {
+      // Raw SVG XML — encode as a data URI for the <img> tag.
       src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(fileContent)}`;
     } else {
-      // Non-SVG images (PNG, JPG, etc.) arrive as base64 data URIs from the API.
-      src = fileContent;
+      // Raw base64 without data URI prefix — construct the full data URI.
+      const mime = imageMimeType(ext);
+      src = `data:${mime};base64,${fileContent}`;
     }
     // Wrap in a commentable div (line 1) so users can add comments on the image.
     const lineNumber = 1;

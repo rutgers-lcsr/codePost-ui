@@ -2,31 +2,34 @@
 import type { FileTypeDefinition } from '../types';
 
 /**
- * Binary file type for non-displayable files (compiled classes, archives, etc.).
- * These cannot be rendered as text, edited, or commented on in the code console.
+ * Binary file type for non-text files (compiled classes, archives, executables, etc.).
+ * Renders a download card with file metadata and an optional hex viewer.
  */
 export const binaryFileType: FileTypeDefinition = {
   id: 'binary',
   extensions: ['class', 'jar', 'gar', 'dds', 'eot', 'swf', 'tga', 'ttf', 'docx', 'exe', 'xlsx', 'db'],
-  renderer: null,
+  renderer: () =>
+    import('../../code-panel/BinaryPreview').then((m) => ({
+      default: m.BinaryPreview as React.ComponentType<unknown>,
+    })),
   capabilities: {
     edit: false,
-    comments: false,
+    comments: 'block',
     syntaxHighlight: false,
     executable: false,
     binary: true,
     wordWrap: false,
     deepLinking: false,
     blockFocus: false,
-    expectsLargePayload: false,
+    expectsLargePayload: true,
     clearableOutputs: false,
     forceReExecution: false,
   },
-  renderStrategy: 'code',
+  renderStrategy: 'binary',
   editMode: 'none',
-  commentLabel: () => '',
+  commentLabel: () => 'File',
   panelClassName: '',
-  resolveCommentKind: () => 'code',
+  resolveCommentKind: () => 'binary',
   executableExtensions: [],
   priority: 5,
 };

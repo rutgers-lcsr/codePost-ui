@@ -32,12 +32,13 @@ export type CommentKind =
 /**
  * Controls how CodeContent dispatches rendering for this file type.
  *
- * - `'rich'`  — uses the file type's `renderer` component wrapped in a Suspense
- *               boundary with block-level commenting (markdown, jupyter, image).
- * - `'pdf'`   — uses the file type's `renderer` with PDF-specific comment layering.
- * - `'code'`  — uses the default syntax-highlighter + line-level commenting stack.
+ * - `'rich'`    — uses the file type's `renderer` component wrapped in a Suspense
+ *                 boundary with block-level commenting (markdown, jupyter, image).
+ * - `'pdf'`     — uses the file type's `renderer` with PDF-specific comment layering.
+ * - `'binary'`  — uses the BinaryPreview component (download + hex view).
+ * - `'code'`    — uses the default syntax-highlighter + line-level commenting stack.
  */
-export type RenderStrategy = 'rich' | 'pdf' | 'code';
+export type RenderStrategy = 'rich' | 'pdf' | 'binary' | 'code';
 
 export interface FileTypeCapabilities {
   /** Whether inline editing is supported for this file type. */

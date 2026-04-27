@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assignment xmlns="https://codepost.io/schema/v1">
+  <metadata>
+    <course>CS 101</course>
+    <semester>Fall 2026</semester>
+    <title>Homework 3: Binary Search Trees</title>
+    <due-date>2026-10-15T23:59:00-04:00</due-date>
+  </metadata>
+
+  <rubric max-points="100">
+    <category name="Correctness" weight="60">
+      <criterion points="10">BST insertion works correctly</criterion>
+      <criterion points="10">BST deletion handles all cases</criterion>
+      <criterion points="10">Search returns correct results</criterion>
+      <criterion points="15">Traversals produce correct ordering</criterion>
+      <criterion points="15">Edge cases handled gracefully</criterion>
+    </category>
+    <category name="Style" weight="20">
+      <criterion points="10">Code follows PEP 8 conventions</criterion>
+      <criterion points="10">Functions are well-documented</criterion>
+    </category>
+    <category name="Testing" weight="20">
+      <criterion points="10">Unit tests cover main functionality</criterion>
+      <criterion points="10">Edge case tests included</criterion>
+    </category>
+  </rubric>
+
+  <files>
+    <required pattern="bst.py" />
+    <required pattern="test_bst.py" />
+    <optional pattern="README.md" />
+  </files>
+</assignment>

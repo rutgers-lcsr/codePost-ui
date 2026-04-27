@@ -1,0 +1,11 @@
+student_id,name,hw1,hw2,hw3,midterm,final,total,grade
+101,"Alice Johnson",95,88,92,87,91,90.6,A
+102,"Bob Smith",78,82,75,80,77,78.4,C+
+103,"Carol Davis",100,95,98,93,96,96.4,A
+104,"David Wilson",65,70,68,72,66,68.2,D+
+105,"Eve Martinez",88,91,85,89,92,89.0,B+
+106,"Frank Lee",92,87,90,95,88,90.4,A-
+107,"Grace Kim",55,60,58,63,50,57.2,F
+108,"Henry Chen",85,83,88,82,86,84.8,B
+109,"Ivy Thompson",93,96,94,91,97,94.2,A
+110,"Jack Brown",72,68,75,70,73,71.6,C-
