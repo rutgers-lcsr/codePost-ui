@@ -134,6 +134,54 @@ export const useHoveredCommentId = (): number | null => {
 };
 
 /**
+ * Scroll an element into view within its nearest scrollable ancestor only.
+ * Unlike `element.scrollIntoView()`, this does NOT propagate scroll to
+ * parent containers — preventing layout shifts (e.g. sidebar moving off-screen).
+ */
+export function scrollWithinContainer(
+  element: HTMLElement,
+  behavior: ScrollBehavior = 'smooth',
+  block: ScrollLogicalPosition = 'center',
+) {
+  // Walk up to find the nearest scrollable ancestor
+  let container = element.parentElement;
+  while (container) {
+    const style = getComputedStyle(container);
+    const overflowY = style.overflowY;
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      break;
+    }
+    container = container.parentElement;
+  }
+  if (!container) {
+    // No scrollable ancestor found — fall back to native (shouldn't happen)
+    element.scrollIntoView({ behavior, block });
+    return;
+  }
+
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+
+  let offset: number;
+  if (block === 'center') {
+    offset = elementRect.top - containerRect.top - containerRect.height / 2 + elementRect.height / 2;
+  } else if (block === 'nearest') {
+    if (elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom) {
+      return; // already visible
+    }
+    offset =
+      elementRect.top < containerRect.top
+        ? elementRect.top - containerRect.top
+        : elementRect.bottom - containerRect.bottom;
+  } else {
+    // 'start' or 'end'
+    offset = block === 'start' ? elementRect.top - containerRect.top : elementRect.bottom - containerRect.bottom;
+  }
+
+  container.scrollBy({ top: offset, behavior });
+}
+
+/**
  * Options for scrollHighlightIntoView, extending standard ScrollIntoViewOptions
  * with an optional lineNumber for fallback scrolling when the highlight DOM
  * element doesn't exist (e.g. windowed rendering has virtualized it away).
@@ -163,12 +211,7 @@ export const scrollHighlightIntoView = (commentId: number, options?: ScrollHighl
   const highlightElement = document.querySelector<HTMLElement>(`.highlight-${commentId}`);
 
   if (highlightElement) {
-    const scrollOptions: ScrollIntoViewOptions = {
-      behavior: options?.behavior ?? 'smooth',
-      block: options?.block ?? 'center',
-      inline: options?.inline ?? 'nearest',
-    };
-    highlightElement.scrollIntoView(scrollOptions);
+    scrollWithinContainer(highlightElement, options?.behavior ?? 'smooth', options?.block ?? 'center');
     return;
   }
 
@@ -177,11 +220,7 @@ export const scrollHighlightIntoView = (commentId: number, options?: ScrollHighl
   if (options?.lineNumber != null) {
     const blockElement = document.querySelector<HTMLElement>(`[index-number="${options.lineNumber}"]`);
     if (blockElement) {
-      blockElement.scrollIntoView({
-        behavior: options?.behavior ?? 'smooth',
-        block: options?.block ?? 'center',
-        inline: options?.inline ?? 'nearest',
-      });
+      scrollWithinContainer(blockElement, options?.behavior ?? 'smooth', options?.block ?? 'center');
       return;
     }
   }
@@ -261,20 +300,23 @@ export const CommentHighlightProvider: React.FC<CommentHighlightProviderProps> =
       base = comments.map((c) => (c.id === previewComment.id ? previewComment : c));
     }
     if (!suggestions || suggestions.length === 0) return base;
-    const pseudoComments: CommentType[] = suggestions.map((s) => ({
-      id: s.id + SUGGESTION_ID_OFFSET,
-      text: s.text,
-      startLine: s.startLine,
-      endLine: s.endLine,
-      startChar: s.startChar ?? 0,
-      // When endChar is 0 (default from the AI backend), use MAX_SAFE_INTEGER
-      // so getHighlights() highlights the full line instead of skipping it
-      // (startChar === endChar === 0 causes the highlight to be skipped entirely).
-      endChar: s.endChar || Number.MAX_SAFE_INTEGER,
-      file: s.file,
-      pointDelta: s.pointDelta ?? 0,
-      author: 'AI',
-    } as unknown as CommentType));
+    const pseudoComments: CommentType[] = suggestions.map(
+      (s) =>
+        ({
+          id: s.id + SUGGESTION_ID_OFFSET,
+          text: s.text,
+          startLine: s.startLine,
+          endLine: s.endLine,
+          startChar: s.startChar ?? 0,
+          // When endChar is 0 (default from the AI backend), use MAX_SAFE_INTEGER
+          // so getHighlights() highlights the full line instead of skipping it
+          // (startChar === endChar === 0 causes the highlight to be skipped entirely).
+          endChar: s.endChar || Number.MAX_SAFE_INTEGER,
+          file: s.file,
+          pointDelta: s.pointDelta ?? 0,
+          author: 'AI',
+        }) as unknown as CommentType,
+    );
     // The highlight system expects sorted input (CodePanelHighlighting.highlight
     // parameter is named sortedComments, and Code.tsx uses CommentIO.sortedIndex).
     return [...base, ...pseudoComments].sort(CommentIO.compare);

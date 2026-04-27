@@ -47,7 +47,12 @@ import { wait } from '../../../utils/animation';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
 import { findBlockElement } from './BlockUtils.tsx';
-import { scrollHighlightIntoView, useCommentHighlightStore, useHoveredCommentId } from './CommentHighlightContext';
+import {
+  scrollHighlightIntoView,
+  scrollWithinContainer,
+  useCommentHighlightStore,
+  useHoveredCommentId,
+} from './CommentHighlightContext';
 
 import CommentToRubric from './CommentToRubric';
 
@@ -330,7 +335,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         // PDF handles its own scroll via PdfHighlightLayer; line-based types don't have blocks.
         const ft = fileTypeRegistry.detect(props.file);
         if (ft.capabilities.comments === 'block') {
-          blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          scrollWithinContainer(blockElement, 'smooth', 'center');
         }
       }
 
