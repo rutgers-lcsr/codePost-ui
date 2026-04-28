@@ -209,13 +209,13 @@
       // IMPORTANT: This provides visible highlighting for code comments
       // SCOPED to code--underlay to prevent affecting notebooks/markdown
       [class*='highlight-'] {
-        // Forest green highlight - high contrast with syntax colors
-        background-color: rgba(46, 125, 50, 0.5) !important;
+        // Forest green highlight — lighter to keep syntax text readable
+        background-color: rgba(46, 125, 50, 0.25) !important;
 
         // Add subtle border and shadow for better definition
         box-shadow:
-          inset 0 0 0 1px rgba(27, 94, 32, 0.4),
-          0 1px 2px rgba(0, 0, 0, 0.12);
+          inset 0 0 0 1px rgba(27, 94, 32, 0.25),
+          0 1px 2px rgba(0, 0, 0, 0.08);
 
         // Position relative for proper rendering but no z-index to avoid conflicts
         position: relative;
@@ -257,13 +257,13 @@
       // Hover state for highlights - React Context managed
       // Applied via 'highlight--hovered' class when hoveredCommentId matches
       .highlight--hovered {
-        // Deep green on hover for clarity
-        background-color: rgba(27, 94, 32, 0.7) !important;
+        // Slightly deeper green on hover, still readable
+        background-color: rgba(27, 94, 32, 0.4) !important;
 
         // Stronger border and shadow for emphasis
         box-shadow:
-          inset 0 0 0 1px rgba(20, 70, 26, 0.6),
-          0 2px 4px rgba(0, 0, 0, 0.18);
+          inset 0 0 0 1px rgba(20, 70, 26, 0.35),
+          0 2px 4px rgba(0, 0, 0, 0.12);
 
         // Smooth transition for better UX
         transition:
@@ -298,6 +298,25 @@
 
       .highlight-cursor-dark {
         background-color: rgba(36, 190, 133, 0.6) !important;
+      }
+
+      // Gutter indicator for lines with a hovered/active comment highlight.
+      // The underlay sits behind the syntax layer (z-index 5), so this
+      // background shows through behind the line numbers.
+      .line--has-comment:has(.highlight--hovered) {
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          // Extend left into the gutter area (covers line numbers)
+          right: 100%;
+          top: 0;
+          bottom: 0;
+          width: 100vw;
+          background-color: rgba(46, 125, 50, 0.35);
+          pointer-events: none;
+        }
       }
     }
 

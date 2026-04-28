@@ -68,6 +68,7 @@ const Code = (props: CodePropsWithoutComments) => {
     draggingCommentId,
     draggingType,
     focusedCommentId,
+    lineHasComments,
   } = useCommentHighlightStore();
 
   const [cursor, setCursor] = React.useState<ICursorType>({
@@ -631,9 +632,11 @@ const Code = (props: CodePropsWithoutComments) => {
       const text = lines[i];
       const t = text === '' ? ' ' : text;
 
+      const hasComment = lineHasComments(i);
+
       if (props.readOnly) {
         result.push(
-          <div key={i} id={`line-${i}`}>
+          <div key={i} id={`line-${i}`} className={hasComment ? 'line--has-comment' : undefined}>
             {CodePanelHighlighting.highlight(
               comments,
               t,
@@ -651,6 +654,7 @@ const Code = (props: CodePropsWithoutComments) => {
           <div
             key={i}
             id={`line-${i}`}
+            className={hasComment ? 'line--has-comment' : undefined}
             onClick={onLineClick}
             onMouseDown={onMouseDown}
             onDragOver={onDragOver}
