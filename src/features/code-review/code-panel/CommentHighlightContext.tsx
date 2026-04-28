@@ -144,12 +144,15 @@ export function scrollWithinContainer(
   behavior: ScrollBehavior = 'smooth',
   block: ScrollLogicalPosition = 'center',
 ) {
-  // Walk up to find the nearest scrollable ancestor
+  // Walk up to find the nearest ancestor that is actually vertically scrollable.
+  // We check both computed overflow-y AND whether the container actually has
+  // vertical overflow — because CSS computes overflow-y:auto on containers
+  // that only set overflow-x:auto, even when they have no vertical overflow.
   let container = element.parentElement;
   while (container) {
     const style = getComputedStyle(container);
     const overflowY = style.overflowY;
-    if (overflowY === 'auto' || overflowY === 'scroll') {
+    if ((overflowY === 'auto' || overflowY === 'scroll') && container.scrollHeight > container.clientHeight) {
       break;
     }
     container = container.parentElement;
