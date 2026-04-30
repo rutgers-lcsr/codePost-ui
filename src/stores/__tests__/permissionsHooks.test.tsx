@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { createApiClientsMock } from '@test-utils/mocks';
 import {
   usePermissionsStore,
@@ -60,13 +60,12 @@ describe('permissions convenience hooks', () => {
         capabilitiesMap: { view_course: true },
       } as never);
 
-      const { result, rerender } = renderHook(() => useCourseCapabilities(99));
+      const { result } = renderHook(() => useCourseCapabilities(99));
       // Initially empty
       expect(result.current).toEqual(EMPTY_CAPS);
 
       // Wait for fetch to complete
-      await vi.waitFor(() => {
-        rerender();
+      await waitFor(() => {
         expect(result.current.view_course).toBe(true);
       });
     });
@@ -105,11 +104,10 @@ describe('permissions convenience hooks', () => {
         capabilitiesMap: { edit_rubric: true },
       } as never);
 
-      const { result, rerender } = renderHook(() => useAssignmentCapabilities(55));
+      const { result } = renderHook(() => useAssignmentCapabilities(55));
       expect(result.current).toEqual(EMPTY_CAPS);
 
-      await vi.waitFor(() => {
-        rerender();
+      await waitFor(() => {
         expect(result.current.edit_rubric).toBe(true);
       });
     });
@@ -147,11 +145,10 @@ describe('permissions convenience hooks', () => {
         capabilitiesMap: { create_course: true },
       } as never);
 
-      const { result, rerender } = renderHook(() => usePlatformCapabilities());
+      const { result } = renderHook(() => usePlatformCapabilities());
       expect(result.current).toEqual(EMPTY_CAPS);
 
-      await vi.waitFor(() => {
-        rerender();
+      await waitFor(() => {
         expect(result.current.create_course).toBe(true);
       });
     });
