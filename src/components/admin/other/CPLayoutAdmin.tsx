@@ -72,11 +72,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           onCollapse={onCollapse}
           style={{
             height: '100%',
-            overflow: 'hidden',
+            overflow: 'hidden auto',
             zIndex: 10,
-            position: 'sticky',
-            top: 0,
-            left: 0,
+            position: 'relative',
             borderRight: '1px solid rgba(255, 255, 255, 0.04)',
           }}
         >
