@@ -23,5 +23,8 @@ echo "[entrypoint] NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}"
 echo "[entrypoint] REACT_APP_API_URL=${REACT_APP_API_URL:-__CODEPOST_API_URL_PLACEHOLDER__}"
 echo "[entrypoint] Nginx config generated. Starting nginx..."
 
+# Ensure nginx user can write to runtime directories (build-time chown may not persist)
+chown -R nginx:nginx /var/log/nginx /var/cache/nginx /var/run/nginx.pid
+
 # Drop to nginx user and exec the CMD
 exec su-exec nginx "$@"
