@@ -3,6 +3,8 @@ import * as React from 'react';
 
 import useWindowSize from '../../core/useWindowSize';
 
+import { CLIENT_URL } from '../../../config';
+
 import { DoubleRightOutlined } from '@ant-design/icons';
 
 import { Button, Typography } from 'antd';
@@ -317,7 +319,7 @@ const Testimonials = () => {
           ))}
         </Swiper>
         <Button
-          href="https://codepost.cs.rutgers.edu/testimonials"
+          href={`${CLIENT_URL}/testimonials`}
           target="_blank"
           type="link"
           style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 10, marginBottom: 25 }}

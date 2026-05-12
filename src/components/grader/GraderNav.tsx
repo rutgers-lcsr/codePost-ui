@@ -14,6 +14,8 @@ import { Menu } from 'antd';
 
 import { Link, useLocation } from 'react-router-dom';
 
+import { CLIENT_URL } from '../../config';
+
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 interface IProps {
@@ -128,7 +130,7 @@ const GraderNav: React.FC<IProps> = (props) => {
         alignItems: 'center',
         fontSize: 13,
       } as React.CSSProperties,
-      onClick: () => openLink('https://codepost.cs.rutgers.edu/scholarships/computer-science-education'),
+      onClick: () => openLink(`${CLIENT_URL}/scholarships/computer-science-education`),
     },
   ];
 

@@ -10,6 +10,8 @@ import useWindowSize from '../core/useWindowSize';
 
 import CPButton from '../core/CPButton';
 
+import { CLIENT_URL } from '../../config';
+
 import { Suspense } from 'react';
 import landingVars from '../../styles/pages/_landingVars';
 import { colors } from '../../theme/colors';
@@ -138,7 +140,7 @@ const LandingHero = () => {
             </div>
             <CPButton
               key="Demo"
-              href="https://codepost.cs.rutgers.edu/demo"
+              href={`${CLIENT_URL}/demo`}
               target="_blank"
               cpType="link"
               ghost={true}

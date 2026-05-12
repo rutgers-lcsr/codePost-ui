@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';
+import { CLIENT_URL } from '../../../config';
 
 import { USER_TYPE } from '../../../types/common';
 
@@ -54,7 +55,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
 
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {
-      window.open('https://codepost.cs.rutgers.edu', '_blank');
+      window.open(CLIENT_URL, '_blank');
     }
   };
 

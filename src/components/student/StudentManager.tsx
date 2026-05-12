@@ -13,6 +13,7 @@ import { Course, Section, User } from '../../api-client';
 import { Assignment } from '../../types/common';
 
 import ComponentManager from '../core/ComponentManager';
+import { CLIENT_URL } from '../../config';
 import CPFlex from '../core/CPFlex';
 import CPLogo from '../core/CPLogo';
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
@@ -46,7 +47,7 @@ const StudentManager: React.FC<IStudentManagerProps> = (props) => {
 
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {
-      window.open('https://codepost.cs.rutgers.edu', '_blank');
+      window.open(CLIENT_URL, '_blank');
     }
   };
 
@@ -78,11 +79,7 @@ const StudentManager: React.FC<IStudentManagerProps> = (props) => {
           />
         }
         detail={
-          <StudentDashboard
-            courses={initialCourses}
-            userEmail={user.email!}
-            studentSections={user.studentSections}
-          />
+          <StudentDashboard courses={initialCourses} userEmail={user.email!} studentSections={user.studentSections} />
         }
         navigation={() => null}
         collapsible={true}

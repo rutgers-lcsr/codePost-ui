@@ -29,6 +29,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
 
 import CPFlex from '../core/CPFlex';
+import { CLIENT_URL } from '../../config';
 
 import { USER_TYPE } from '../../types/common';
 
@@ -63,7 +64,13 @@ import AssignmentSection from './AssignmentSection';
 import styles from './StudentConsole.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
 import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
-import { useStudentAssignmentsQuery, useStudentSubmissionsQuery, useSubmissionHistoriesQuery, fetchSubmissions, fetchHistory } from './hooks';
+import {
+  useStudentAssignmentsQuery,
+  useStudentSubmissionsQuery,
+  useSubmissionHistoriesQuery,
+  fetchSubmissions,
+  fetchHistory,
+} from './hooks';
 import { studentKeys } from '../../lib/queryKeys';
 
 /**********************************************************************************************************************/
@@ -121,8 +128,6 @@ const updateHistory = async (
   }
   return [];
 };
-
-
 
 const toSubmission = (submission: StudentSubmission): Submission => {
   return {
@@ -184,11 +189,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const submissions = submissionsQuery.data ?? {};
   const isLoadingSubmissions = submissionsQuery.isPending;
 
-  const historiesQuery = useSubmissionHistoriesQuery(
-    currentCourse?.id,
-    submissionsQuery.data,
-    user.email!,
-  );
+  const historiesQuery = useSubmissionHistoriesQuery(currentCourse?.id, submissionsQuery.data, user.email!);
   const viewsBySubmission = historiesQuery.data ?? {};
 
   // UI State
@@ -224,7 +225,15 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       setDetailAssignment(assignment);
       setDetailSubmission(sub);
     }
-  }, [uploadShortcut, currentCourse, isLoadingAssignments, currentCourseAssignments, submissions, initialCourses, navigate]);
+  }, [
+    uploadShortcut,
+    currentCourse,
+    isLoadingAssignments,
+    currentCourseAssignments,
+    submissions,
+    initialCourses,
+    navigate,
+  ]);
 
   /***********************************************************************************
    * Handler methods
@@ -291,10 +300,13 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
       return submission1.then((newSub) => {
         if (currentCourse) {
-          queryClient.setQueryData(studentKeys.submissions(currentCourse.id), (old: Record<number, Submission[]> | undefined) => ({
-            ...(old ?? {}),
-            [assignment.id]: [newSub],
-          }));
+          queryClient.setQueryData(
+            studentKeys.submissions(currentCourse.id),
+            (old: Record<number, Submission[]> | undefined) => ({
+              ...(old ?? {}),
+              [assignment.id]: [newSub],
+            }),
+          );
         }
         return newSub;
       });
@@ -547,7 +559,16 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         />
       );
     },
-    [submissions, getSubmissionStatus, user.email, markViewed, changePanel, downloadAssignment, currentCourse, permissionsCache],
+    [
+      submissions,
+      getSubmissionStatus,
+      user.email,
+      markViewed,
+      changePanel,
+      downloadAssignment,
+      currentCourse,
+      permissionsCache,
+    ],
   );
 
   // Render content
@@ -763,7 +784,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   /* Build header */
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {
-      window.open('https://codepost.cs.rutgers.edu', '_blank');
+      window.open(CLIENT_URL, '_blank');
     }
   };
 

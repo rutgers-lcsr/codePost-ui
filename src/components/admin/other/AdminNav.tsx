@@ -17,6 +17,7 @@ import { Menu } from 'antd';
 
 import { Link, useLocation } from 'react-router-dom';
 
+import { CLIENT_URL } from '../../../config';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
@@ -227,7 +228,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
               display: 'flex',
               alignItems: 'center',
             },
-            onClick: () => openLink('https://codepost.cs.rutgers.edu/scholarships/computer-science-education'),
+            onClick: () => openLink(`${CLIENT_URL}/scholarships/computer-science-education`),
           },
         ]}
       />

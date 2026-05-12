@@ -11,6 +11,7 @@ import { TeamOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Input, message, Modal, notification, Popover, Select, Space, Switch } from 'antd';
 
 import { colors } from '../../theme/colors';
+import { CLIENT_URL } from '../../config';
 
 /* other library imports */
 // import Select from 'react-select';
@@ -160,12 +161,12 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <br />
           <br />
           <Space.Compact style={{ width: 500 }}>
-            <Button disabled style={{ cursor: 'default' }}>Your email</Button>
-            <Input
-              value={props.user.email!}
-              disabled={true}
-            />
-          </Space.Compact> &nbsp;{' '}
+            <Button disabled style={{ cursor: 'default' }}>
+              Your email
+            </Button>
+            <Input value={props.user.email!} disabled={true} />
+          </Space.Compact>{' '}
+          &nbsp;{' '}
           <Popover
             title="Use a different email"
             content={
@@ -188,15 +189,20 @@ const CIPAdminModal = (props: IAdminModalProps) => {
           <br />
           <br />
           <Space.Compact style={{ width: 500 }}>
-            <Button disabled style={{ cursor: 'default' }}>Password</Button>
+            <Button disabled style={{ cursor: 'default' }}>
+              Password
+            </Button>
             <Input.Password onChange={(e) => setp1(e.target.value)} />
           </Space.Compact>
           &nbsp; You'll use this password to login into codePost directly. &nbsp; <br />
           <br />
           <Space.Compact style={{ width: 500 }}>
-            <Button disabled style={{ cursor: 'default' }}>Confirm</Button>
+            <Button disabled style={{ cursor: 'default' }}>
+              Confirm
+            </Button>
             <Input.Password onChange={(e) => setp2(e.target.value)} />
-          </Space.Compact> &nbsp;
+          </Space.Compact>{' '}
+          &nbsp;
           {p2.length > 0 && p1 !== p2 && <span style={{ color: 'red' }}>Passwords don't match</span>}
           {
             <ul>
@@ -338,7 +344,7 @@ interface IGraderModalProps {
 
 const CIPGraderModal = (props: IGraderModalProps) => {
   const goToAdminConsole = () => {
-    window.open(`https://codepost.cs.rutgers.edu/admin?source=j348d`);
+    window.open(`${CLIENT_URL}/admin?source=j348d`);
   };
 
   const elevateStatusAndGo = () => {
@@ -362,7 +368,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
       .then(() => {
         notification.success({
           message: 'Course created',
-          description: `Vist the newly opened codePost tab to check it out. If you don't see a new tab open, visit www.codepost.io/admin in your browser.`,
+          description: `Vist the newly opened codePost tab to check it out. If you don't see a new tab open, visit ${CLIENT_URL}/admin in your browser.`,
           duration: 0,
         });
         props.onClose();
@@ -394,7 +400,7 @@ const CIPGraderModal = (props: IGraderModalProps) => {
         <br />
         <br />
         If you want to learn more, you can check out what other instructors{' '}
-        <a href="https://codepost.cs.rutgers.edu/testimonials" target="_blank">
+        <a href={`${CLIENT_URL}/testimonials`} target="_blank">
           have said about codePost
         </a>
         .

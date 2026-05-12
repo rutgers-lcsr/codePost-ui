@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import { Button, Modal } from 'antd';
 
+import { CLIENT_URL } from '../../config';
+
 import { colors } from '../../theme/colors';
 import TestGIF from '../../img/gifs/AdminTestCreation.gif';
 import SubmitGIF from '../../img/gifs/StudentSubmit.gif';
@@ -44,7 +46,7 @@ export const AutograderInfoModal = () => {
             <img src={TestGIF} style={{ maxWidth: '75%', borderRadius: 8 }} alt="" />
             <div style={{ marginTop: 16, fontSize: 13, color: 'rgba(0, 0, 0, 0.6)' }}>
               To learn more about the codePost autograder,{' '}
-              <a href="https://codepost.cs.rutgers.edu/autograder" target="_blank">
+              <a href={`${CLIENT_URL}/autograder`} target="_blank">
                 check out this overview
               </a>
             </div>

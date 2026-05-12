@@ -18,6 +18,6 @@ export const hostname = () => {
   if (isLocalhost) {
     return 'http://localhost:3000';
   } else {
-    return 'https://codepost.cs.rutgers.edu';
+    return window.location.origin;
   }
 };

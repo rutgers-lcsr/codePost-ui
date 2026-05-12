@@ -17,6 +17,7 @@ import Select, { SingleValue } from 'react-select';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
+import { SUPPORT_URL } from '../../config';
 import { IOption } from '../../types/common';
 
 import universities from './universities';
@@ -371,7 +372,11 @@ class CreateSignup extends React.Component<IProps, IState> {
             {spacing}
             <Divider />
             <div style={{ marginTop: 5 }}>
-              Having trouble? Contact us at <b>team@codepost.io</b>.{spacing}
+              Having trouble? Visit our{' '}
+              <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+                <b>support page</b>
+              </a>
+              .{spacing}
             </div>
           </div>
         );
@@ -439,7 +444,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             />
             <div style={{ marginTop: 16 }}>
               <Typography.Text type="secondary">
-                Have questions? Contact us at <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>.
+                Have questions? Visit our <a href={SUPPORT_URL}>support page</a>.
               </Typography.Text>
             </div>
           </div>
@@ -477,7 +482,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Alert
               title="Whoops!"
               description={`We need a little more time to validate your account.
-                Please contact us at team@codepost.io to continue setting up your account.`}
+                Please visit our support page at ${SUPPORT_URL} to continue setting up your account.`}
               type="error"
             />
           </div>
@@ -492,7 +497,7 @@ class CreateSignup extends React.Component<IProps, IState> {
             <Alert
               title="Whoops!"
               description={`Something went wrong.
-                Please contact the codePost team at team@codepost.io to continue signing up.`}
+                Please visit our support page at ${SUPPORT_URL} to continue signing up.`}
               type="error"
             />
           </div>

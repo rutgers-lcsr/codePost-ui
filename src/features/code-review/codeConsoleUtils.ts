@@ -5,6 +5,7 @@
  */
 
 import type { AssignmentType, CommentType, SubmissionTestType, TestCaseType } from '../../types/models';
+import { SUPPORT_URL } from '../../config';
 import { CommentIO, UiComment } from '../../utils/comments';
 import { type FileWithId, type FileType, getFileContent } from '../../utils/file';
 import * as Immutable from '../../utils/immutable';
@@ -382,7 +383,7 @@ export const fileBouncer = (files: FileType[]) => {
     if (!ft.capabilities.expectsLargePayload && size_bytes > max_size_bytes) {
       return {
         ...file,
-        code: `This file is over the codePost allowable size (${max_size_bytes / 1000000}MB).\n\nPlease compress the file or contact team@codepost.io.`,
+        code: `This file is over the codePost allowable size (${max_size_bytes / 1000000}MB).\n\nPlease compress the file or visit ${SUPPORT_URL} for help.`,
       };
     }
 

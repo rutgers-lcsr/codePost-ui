@@ -17,6 +17,7 @@ import { Button, Divider } from 'antd';
 import { Link } from 'react-router-dom';
 
 /* codePost imports */
+import { SUPPORT_URL } from '../../config';
 import useWindowSize from '../core/useWindowSize';
 import PreAuthLayout from './PreAuthLayout';
 
@@ -133,7 +134,7 @@ const Pricing = (props: IProps) => {
             <br />
             <br />
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>$15 / student / course</p>
-            <a href="mailto:codepost@cs.rutgers.edu">
+            <a href={SUPPORT_URL}>
               <Button style={premiumButtonStyle}>
                 Coming soon <ArrowRightOutlined />
               </Button>

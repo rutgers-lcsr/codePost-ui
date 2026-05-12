@@ -1,5 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { submissionsApi } from '../api-client/clients';
+import { SUPPORT_URL } from '../config';
 import type {
   Submission as SubmissionModel,
   SubmissionHistory,
@@ -123,7 +124,7 @@ export class Submission {
       );
       return [files, comments, commentRubricComments];
     } catch {
-      message.error('Something went wrong loading the submission. Please try again or contact team@codepost.io');
+      message.error(`Something went wrong loading the submission. Please try again or visit ${SUPPORT_URL}`);
       return [[], {}, {}];
     }
   };

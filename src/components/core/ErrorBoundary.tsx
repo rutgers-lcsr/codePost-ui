@@ -3,6 +3,8 @@ import * as React from 'react';
 
 import { FileType, getFileContent } from '../../utils/file';
 
+import { CLIENT_URL, SUPPORT_URL } from '../../config';
+
 import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
 import {
   gatherBrowserContext,
@@ -207,7 +209,7 @@ const TroubleshootingCard: React.FC = () => {
           Open Chrome cookie settings: <Text code>chrome://settings/content/cookies</Text>
         </li>
         <li>
-          Click <Text strong>Allow → Add → https://codepost.cs.rutgers.edu</Text>
+          Click <Text strong>Allow → Add → {CLIENT_URL}</Text>
         </li>
         <li>Refresh the page</li>
       </ol>
@@ -223,7 +225,7 @@ const TroubleshootingCard: React.FC = () => {
           Click <Text strong>Cookies and Site Data → Manage Permissions</Text>
         </li>
         <li>
-          Add <Text strong>https://codepost.cs.rutgers.edu</Text> and Allow
+          Add <Text strong>{CLIENT_URL}</Text> and Allow
         </li>
         <li>Refresh the page</li>
       </ol>
@@ -442,7 +444,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
                 <Button key="retry" icon={<ReloadOutlined />} onClick={this.handleRefresh}>
                   Retry
                 </Button>,
-                <Button key="email" type="link" icon={<MailOutlined />} href="mailto:codepost@cs.rutgers.edu">
+                <Button key="email" type="link" icon={<MailOutlined />} href={SUPPORT_URL}>
                   Contact Support
                 </Button>,
               ]}
@@ -484,7 +486,7 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
               <Button key="home" onClick={this.handleGoHome} size="large">
                 Go to Homepage
               </Button>,
-              <Button key="email" type="link" icon={<MailOutlined />} href="mailto:codepost@cs.rutgers.edu">
+              <Button key="email" type="link" icon={<MailOutlined />} href={SUPPORT_URL}>
                 Contact Support
               </Button>,
             ]}

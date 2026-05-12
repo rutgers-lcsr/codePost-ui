@@ -2,6 +2,8 @@
 import { Typography } from 'antd';
 import { Link } from 'react-router-dom';
 
+import { SUPPORT_URL } from '../../config';
+
 import useWindowSize from '../core/useWindowSize';
 
 import landingVars from '../../styles/pages/_landingVars';
@@ -114,7 +116,7 @@ const securityFAQ = (
     <br />
     <span>
       If you have questions, please{' '}
-      <a className="text-link" href="mailto:codepost@cs.rutgers.edu">
+      <a className="text-link" href={SUPPORT_URL}>
         reach out to us
       </a>
       .

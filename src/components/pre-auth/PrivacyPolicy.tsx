@@ -10,6 +10,7 @@ import * as React from 'react';
 import { Typography } from 'antd';
 
 /* codePost imports */
+import { SUPPORT_URL } from '../../config';
 import PreAuthLayout from './PreAuthLayout';
 
 /**********************************************************************************************************************/
@@ -62,8 +63,8 @@ class PrivacyPolicy extends React.Component<IProps> {
             Your continued use of our website will be regarded as acceptance of our practices around privacy and
             personal information. If you have any questions about how we handle user data and personal information, feel
             free to contact us at{' '}
-            <a className="text-link" href="mailto:codepost@cs.rutgers.edu">
-              codepost@cs.rutgers.edu
+            <a className="text-link" href={SUPPORT_URL}>
+              our support page
             </a>
             .
           </Typography.Paragraph>

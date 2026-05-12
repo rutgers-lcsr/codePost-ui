@@ -10,6 +10,7 @@ import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useMem
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 /* codePost imports */
+import { CLIENT_URL } from './config';
 import LogInAs from './components/core/LogInAs';
 import Logout from './components/core/Logout';
 
@@ -82,7 +83,7 @@ const anonymousUser: User = {
   isOrgStaff: false,
 };
 
-const domains = ['mooc.codepost.io', 'localhost:3000', 'compedu.stanford.edu', 'princeton.edu'];
+const domains = [new URL(CLIENT_URL).host, 'localhost:3000'];
 
 /*****************************************************************************/
 
@@ -121,7 +122,7 @@ Please follow these steps for your current browser...
 Google Chrome:
   - Open up Chrome cookie settings:
       chrome://settings/content/cookies
-  - Click Allow -> Add -> https://codepost.cs.rutgers.edu
+  - Click Allow -> Add -> ${CLIENT_URL}
       See a screenshot here:
       https://share.getcloudapp.com/eDu69Dnz
   - Try refreshing!
@@ -130,7 +131,7 @@ Firefox:
   - Open up Firefox cookie settings:
       about:preferences#privacy
   - Click Cookies and Site Data -> Manage Permissions
-  - Type in https://codepost.cs.rutgers.edu -> Allow -> Save Changes
+  - Type in ${CLIENT_URL} -> Allow -> Save Changes
   - Try refreshing!
       `,
       );

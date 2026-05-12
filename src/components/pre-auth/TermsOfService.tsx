@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { Typography } from 'antd';
 
 /* codePost imports */
+import { SUPPORT_URL } from '../../config';
 import PreAuthLayout from './PreAuthLayout';
 
 /**********************************************************************************************************************/
@@ -368,9 +369,9 @@ class TermsOfService extends React.Component<IProps> {
           </Typography.Paragraph>
           <Typography.Title level={2}>12. Contact Information</Typography.Title>
           <Typography.Paragraph>
-            If you have any questions about these Terms or the Services please contact{' '}
-            <a href="mailto:codepost@cs.rutgers.edu" className="text-link">
-              codepost@cs.rutgers.edu
+            If you have any questions about these Terms or the Services please visit our{' '}
+            <a href={SUPPORT_URL} className="text-link">
+              support page
             </a>
           </Typography.Paragraph>
         </div>

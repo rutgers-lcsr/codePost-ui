@@ -2,6 +2,8 @@
 import { LogoutOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
+import { CLIENT_URL } from '../../../config';
+
 import CPButton from '../CPButton';
 import CPFlex from '../CPFlex';
 import CPLogo from '../CPLogo';
@@ -22,7 +24,7 @@ interface IStandardConsoleHeaderProps {
 const StandardConsoleHeader = (props: IStandardConsoleHeaderProps) => {
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {
-      window.open('https://codepost.cs.rutgers.edu', '_blank');
+      window.open(CLIENT_URL, '_blank');
     }
   };
 

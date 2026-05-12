@@ -8,6 +8,8 @@ import * as React from 'react';
 
 import { InboxOutlined } from '@ant-design/icons';
 
+import { SUPPORT_URL } from '../../../../../../config';
+
 /* ant imports */
 import { Collapse, Statistic, Switch, Upload } from 'antd';
 
@@ -186,7 +188,7 @@ These instructions will turn submissions downloaded from GitHub into a folder th
 
 ----------
 
-**Need help?** Shoot us an email at team@codepost.io
+**Need help?** Visit our [support page](${SUPPORT_URL})
 
 **Want to customize submission upload?** Check out our [Python SDK](https://github.com/codepost-io/codepost-python).
 You can also fork the scripts included [here](https://github.com/codepost-io/integration-github).

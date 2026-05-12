@@ -7,6 +7,8 @@
 
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
+import { SUPPORT_URL } from '../../../../config';
+
 /* ant imports */
 import {
   Breadcrumb,
@@ -292,11 +294,11 @@ const Moss = (props: IMossProps) => {
       if (res === 'DELAY') {
         return Promise.reject("This is taking a while. We'll email you when this is done.");
       } else if (typeof res === 'string') {
-        return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
+        return Promise.reject(`An unknown error occurred. Please try again or visit ${SUPPORT_URL}`);
       } else {
         // Uncaught Lambda Error
         if (res.StatusCode !== 200) {
-          return Promise.reject('An unknown error occurred. Please try again or contact team@codepost.io.');
+          return Promise.reject(`An unknown error occurred. Please try again or visit ${SUPPORT_URL}`);
         } else {
           const resPayload = await JSON.parse(res.Payload);
           // Completed Running Function
@@ -461,11 +463,10 @@ const Moss = (props: IMossProps) => {
         </Select>
         <div style={{ padding: '10px 0px' }}>
           <Space.Compact style={{ width: '350px' }}>
-            <Button disabled style={{ cursor: 'default' }}>Moss ID Number</Button>
-            <Input
-              value={mossID}
-              onChange={onChangeMossID}
-            />
+            <Button disabled style={{ cursor: 'default' }}>
+              Moss ID Number
+            </Button>
+            <Input value={mossID} onChange={onChangeMossID} />
             <CPTooltip
               title={
                 <span>
@@ -527,14 +528,10 @@ const Moss = (props: IMossProps) => {
   ) : (
     <div style={{ padding: '80px 100px 40px 100px' }}>
       <Space.Compact style={{ width: '100%' }}>
-        <Button disabled style={{ cursor: 'default' }} size="large">http://moss.stanford.edu/results/</Button>
-        <Input
-          key="parse-input"
-          value={urlID}
-          placeholder="Moss results ID"
-          onChange={onChangeUrlID}
-          size="large"
-        />
+        <Button disabled style={{ cursor: 'default' }} size="large">
+          http://moss.stanford.edu/results/
+        </Button>
+        <Input key="parse-input" value={urlID} placeholder="Moss results ID" onChange={onChangeUrlID} size="large" />
         {parseButton}
       </Space.Compact>
       {loading ? (

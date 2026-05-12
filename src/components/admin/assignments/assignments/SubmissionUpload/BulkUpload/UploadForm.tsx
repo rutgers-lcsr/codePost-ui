@@ -10,6 +10,8 @@
 /* ant imports */
 import { Typography } from 'antd';
 
+import { SUPPORT_URL } from '../../../../../../config';
+
 import { codePostFile, IProtoFileUpload } from './../FileReader';
 
 import { LMSImport } from './LMSImport';
@@ -96,7 +98,15 @@ const UploadForm = (props: IUploadFormProps) => {
     case 'jupyter':
       return <JupyterFolderImport {...props} />;
     case 'more':
-      return <div>Can't find what you're looking for? Let us know at team@codepost.io.</div>;
+      return (
+        <div>
+          Can't find what you're looking for? Visit our{' '}
+          <a href={SUPPORT_URL} target="_blank" rel="noopener noreferrer">
+            support page
+          </a>
+          .
+        </div>
+      );
     default:
       return <NormalFolderImport {...props} />;
   }

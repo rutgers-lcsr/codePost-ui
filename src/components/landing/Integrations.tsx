@@ -3,6 +3,8 @@ import * as React from 'react';
 
 import { Card, Tooltip } from 'antd';
 
+import { CLIENT_URL, SUPPORT_URL } from '../../config';
+
 import { Link } from 'react-router-dom';
 
 // Integration logos
@@ -35,7 +37,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         from GitHub to codePost for code review and higher resolution feedback.
         <br />
         <br /> See more detailed instructions for how to{' '}
-        <a href="https://github.com/codepost-io/integration-github">import submissions here.</a>.
+        <a href="https://github.com/rutgers-lcsr/integration-github">import submissions here.</a>.
       </span>
     ),
   },
@@ -55,7 +57,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         <br />
         <br />
         See how easy it is to comment on a Jupyter notebook in codePost{' '}
-        <a href="https://codepost.cs.rutgers.edu/why-use-codePost">here</a>.
+        <a href={`${CLIENT_URL}/why-use-codePost`}>here</a>.
       </span>
     ),
   },
@@ -87,7 +89,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
           <li>(Optional) An instructor can export scores back to Canvas</li>
         </ol>{' '}
         See more detailed instructions for how to{' '}
-        <a href="https://github.com/codepost-io/integration-canvas">import submissions here</a>.
+        <a href="https://github.com/rutgers-lcsr/integration-canvas">import submissions here</a>.
       </span>
     ),
   },
@@ -116,7 +118,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
           <li>(Optional) An instructor can export scores back to Blackboard</li>
         </ol>{' '}
         See more detailed instructions for how to{' '}
-        <a href="https://github.com/codepost-io/integration-blackboard">import submissions here</a>.
+        <a href="https://github.com/rutgers-lcsr/integration-blackboard">import submissions here</a>.
       </span>
     ),
   },
@@ -148,7 +150,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
           <li>(Optional) An instructor can export scores back to Brightspace</li>
         </ol>
         See more detailed instructions for how to{' '}
-        <a href="https://github.com/codepost-io/integration-brightspace">import submissions here</a>.
+        <a href="https://github.com/rutgers-lcsr/integration-brightspace">import submissions here</a>.
       </span>
     ),
   },
@@ -200,7 +202,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         <a href="https://www.pearsonhighered.com/revel/">Revel</a> provides interactive programming exercises.
         <br />
         <br />
-        Email team@codepost.io to learn how to integrate Revel with codePost.
+        Email <a href={SUPPORT_URL}>our support team</a> to learn how to integrate Revel with codePost.
       </span>
     ),
   },
@@ -213,7 +215,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         <a href="https://repl.it">Repl.it</a> is an online compiler and IDE.
         <br />
         <br />
-        Email team@codepost.io to learn how to integrate Repl.it with codePost.
+        Email <a href={SUPPORT_URL}>our support team</a> to learn how to integrate Repl.it with codePost.
       </span>
     ),
   },
@@ -235,7 +237,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         Import code snippets from JS Fiddle into codePost to allow graders and peer reviewers to give inline feedback.
         <br />
         <br />
-        Email team@codepost.io to learn how to integrate JS Fiddle with codePost.
+        Email <a href={SUPPORT_URL}>our support team</a> to learn how to integrate JS Fiddle with codePost.
       </span>
     ),
   },
@@ -250,7 +252,7 @@ export const INTEGRATIONS: { [id: string]: IntegrationType } = {
         Import code from Codepen into codePost to allow graders and peer reviewers to give inline feedback.
         <br />
         <br />
-        Email team@codepost.io to learn how to integrate Codepen with codePost.
+        Email <a href={SUPPORT_URL}>our support team</a> to learn how to integrate Codepen with codePost.
       </span>
     ),
   },

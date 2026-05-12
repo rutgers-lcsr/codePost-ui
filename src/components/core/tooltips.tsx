@@ -2,6 +2,8 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
+import { SUPPORT_URL } from '../../config';
+
 import { osControlKey } from './operatingSystem';
 
 // ************************ Console Tooltips ************************
@@ -133,8 +135,8 @@ const ADMIN_ASSIGNMENTS_UPLOADSUBMISSION =
   'Select multiple students, so long as none of them have a pre-existing submission for the assignment you selected.';
 const ADMIN_ASSIGNMENTS_UPLOADSUBMISSIONFILETYPES = (
   <div>
-    Not able to upload a file type that you think codePost should support?{' '}
-    <a href="mailto:codepost@cs.rutgers.edu?subject=File Support Request">Let us know</a> and we'll add it.
+    Not able to upload a file type that you think codePost should support? <a href={SUPPORT_URL}>Let us know</a> and
+    we'll add it.
   </div>
 );
 
@@ -195,8 +197,8 @@ from the old course into your new course. All other information (including roste
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (
   <span>
-    To sign up for an Enterprise plan, please contact us at{' '}
-    <a href="mailto:codepost@cs.rutgers.edu">codepost@cs.rutgers.edu</a>. To learn more, check out our{' '}
+    To sign up for an Enterprise plan, please visit our <a href={SUPPORT_URL}>support page</a>. To learn more, check out
+    our{' '}
     <Link to="/pricing" target="_blank">
       Pricing.
     </Link>

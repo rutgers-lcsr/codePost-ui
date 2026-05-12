@@ -3,6 +3,8 @@ import JSZip from 'jszip';
 
 import { message } from 'antd';
 
+import { SUPPORT_URL } from '../../../../../config';
+
 import { BinaryExtensions, File as CPFile, ImageExtensions, PDFExtensions } from '../../../../../utils/file';
 
 import { UploadFile } from 'antd/lib/upload/interface';
@@ -92,7 +94,7 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
         FILE_SIZE_LIMIT_IN_BYTES / 1e6
       } MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
         1,
-      )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please contact us at team@codepost.io.`,
+      )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please visit ${SUPPORT_URL}.`,
       15,
     );
     return Promise.resolve([]);
