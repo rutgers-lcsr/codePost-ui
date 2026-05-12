@@ -31,6 +31,9 @@ RUN npm run build:production
 # Production stage
 FROM nginx:alpine AS production
 
+# Install su-exec for dropping privileges in entrypoint
+RUN apk add --no-cache su-exec
+
 # Copy custom nginx config template
 COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
@@ -53,13 +56,10 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
 EXPOSE 8080
 EXPOSE 8443
 
-# Run as non-root user
-USER nginx
-
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8081/health || exit 1
 
-# Start via entrypoint (envsubst -> nginx)
+# Entrypoint runs as root to handle envsubst + cert permissions, then execs nginx as nginx user
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
