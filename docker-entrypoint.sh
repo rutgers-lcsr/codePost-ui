@@ -23,8 +23,13 @@ echo "[entrypoint] NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}"
 echo "[entrypoint] REACT_APP_API_URL=${REACT_APP_API_URL:-__CODEPOST_API_URL_PLACEHOLDER__}"
 echo "[entrypoint] Nginx config generated. Starting nginx..."
 
-# Ensure nginx user can write to runtime directories (build-time chown may not persist)
-chown -R nginx:nginx /var/log/nginx /var/cache/nginx /var/run/nginx.pid
+# Ensure nginx user can write to runtime directories.
+# The base nginx:alpine image symlinks log files to /dev/stdout and /dev/stderr,
+# which aren't writable by non-root. Replace with real files.
+rm -f /var/log/nginx/access.log /var/log/nginx/error.log
+touch /var/log/nginx/access.log /var/log/nginx/error.log
+chown -R nginx:nginx /var/log/nginx /var/cache/nginx
+chown nginx:nginx /var/run/nginx.pid
 
 # Drop to nginx user and exec the CMD
 exec su-exec nginx "$@"
