@@ -7,9 +7,7 @@
     <meta name="theme-color" content="#000000" />
 
     <!-- Polyfill for AWS SDK and other Node.js libraries -->
-    <script>
-        window.global = window;
-    </script>
+    <script src="/polyfills.js"></script>
 
     <!-- Preventing caching of index.html
       https://stackoverflow.com/questions/49547/how-to-control-web-page-caching-across-all-browsers -->
@@ -71,7 +69,9 @@
     </script> -->
 
     <!-- JQuery -->
-    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+        integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFsm"
+        crossorigin="anonymous"></script>
     <!-- 
     <script defer>
         console.log("LOADING INTERCOM");

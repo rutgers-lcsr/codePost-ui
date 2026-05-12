@@ -99,7 +99,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [toRedirect, setToRedirect] = useState<boolean>(false);
   const [triedLoading, setTriedLoading] = useState<boolean>(false);
-  const [isSuperUser, setIsSuperUser] = useState<boolean>(() => localStorage.getItem('isSuperUser') !== null);
+  const [isSuperUser, setIsSuperUser] = useState<boolean>(false);
   const [studentUploadShortcut, setStudentUploadShortcut] = useState<
     { assignmentID: number; files: IBaseFileUpload[] } | undefined
   >(undefined);
@@ -155,8 +155,9 @@ Firefox:
       setHasToken(true);
       setTriedLoading(false); // Reset this so the login effect can run
 
-      // If redirect URL is provided, redirect after token is set
-      if (redirectUrl) {
+      // If redirect URL is provided, redirect after token is set.
+      // Only allow relative paths to prevent open redirect attacks.
+      if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')) {
         window.location.href = redirectUrl;
       }
     } else {
@@ -441,12 +442,13 @@ Firefox:
   // Message handler for cross-origin authentication
   const messageHandler = useCallback(
     (event: MessageEvent) => {
+      // Strict origin check: the origin's host must exactly match a trusted domain
       let found = false;
-      for (const domain of domains) {
-        if (event.origin.indexOf(domain) !== -1) {
-          found = true;
-          break;
-        }
+      try {
+        const originHost = new URL(event.origin).host;
+        found = domains.includes(originHost);
+      } catch {
+        return;
       }
       if (!found) {
         return;
@@ -555,6 +557,19 @@ Firefox:
       localStorage.removeItem('isSuperUser');
     }
   }, [isSuperUser]);
+
+  // Restore isSuperUser from localStorage only when the API confirms admin status
+  // or the user is actively impersonating (codePostAdmin from replaceUser).
+  // This prevents a non-admin from gaining dashboard access by manually setting localStorage.
+  useEffect(() => {
+    if (user && localStorage.getItem('isSuperUser') !== null) {
+      if (user.codePostAdmin) {
+        setIsSuperUser(true);
+      }
+      // If the user is NOT a codePostAdmin, isSuperUser stays false.
+      // The replaceUser callback (used during impersonation) sets isSuperUser directly.
+    }
+  }, [user]);
 
   const consoleProps = useMemo(
     () => ({

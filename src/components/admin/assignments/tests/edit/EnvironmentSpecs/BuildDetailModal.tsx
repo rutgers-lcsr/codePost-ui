@@ -18,6 +18,7 @@ import {
 } from '@ant-design/icons';
 import { AnsiUp } from 'ansi-up';
 import { Editor } from '@monaco-editor/react';
+import { sanitizeHtml } from '../../../../../../utils/sanitize';
 
 /**********************************************************************************************************************/
 
@@ -124,7 +125,7 @@ export const BuildDetailModal = (props: IProps) => {
         <div
           dangerouslySetInnerHTML={{
             __html:
-              new AnsiUp().ansi_to_html(props.logs) ||
+              sanitizeHtml(new AnsiUp().ansi_to_html(props.logs)) ||
               (props.inProgress ? 'Initializing build...' : 'No logs available.'),
           }}
         />

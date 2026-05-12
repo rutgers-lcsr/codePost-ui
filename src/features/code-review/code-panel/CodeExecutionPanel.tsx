@@ -13,6 +13,7 @@ import {
   PlayCircleOutlined,
 } from '@ant-design/icons';
 import { Alert, Button, Card, Collapse, Space, Tag, Typography } from 'antd';
+import { sanitizeHtml } from '../../../utils/sanitize';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { executeFile } from '../execution/execution';
@@ -336,18 +337,20 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
                                 color: '#000',
                               }}
                               dangerouslySetInnerHTML={{
-                                __html: cell.source
-                                  // Convert markdown to basic HTML
-                                  .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                                  .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                                  .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                  .replace(/`(.*?)`/g, '<code>$1</code>')
-                                  .replace(/\n\n/g, '</p><p>')
-                                  .replace(/^\s*[-*]\s+(.*)$/gim, '<li>$1</li>')
-                                  .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-                                  .replace(/\n/g, '<br/>'),
+                                __html: sanitizeHtml(
+                                  cell.source
+                                    // Convert markdown to basic HTML
+                                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                                    .replace(/\n\n/g, '</p><p>')
+                                    .replace(/^\s*[-*]\s+(.*)$/gim, '<li>$1</li>')
+                                    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                                    .replace(/\n/g, '<br/>'),
+                                ),
                               }}
                             />
                           </div>
@@ -467,7 +470,9 @@ const CodeExecutionPanel: React.FC<CodeExecutionPanelProps> = ({ file, readOnly 
                                           </pre>
                                         )}
                                         {output.data && output.data['text/html'] && (
-                                          <div dangerouslySetInnerHTML={{ __html: output.data['text/html'] }} />
+                                          <div
+                                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(output.data['text/html']) }}
+                                          />
                                         )}
                                       </div>
                                     )}

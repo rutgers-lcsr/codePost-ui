@@ -41,13 +41,24 @@ RUN chmod +x /docker-entrypoint.sh
 # Copy built assets from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose ports
-EXPOSE 80
-EXPOSE 443
+# Prepare directories for non-root nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx && \
+    touch /var/run/nginx.pid && \
+    chown nginx:nginx /var/run/nginx.pid
+
+# Expose unprivileged ports (non-root can't bind <1024)
+EXPOSE 8080
+EXPOSE 8443
+
+# Run as non-root user
+USER nginx
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8080/health || exit 1
+  CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8081/health || exit 1
 
 # Start via entrypoint (envsubst -> nginx)
 ENTRYPOINT ["/docker-entrypoint.sh"]
