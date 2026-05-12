@@ -23,7 +23,7 @@ describe('serviceWorker', () => {
 
   it('returns production URL when hostname is not localhost', async () => {
     Object.defineProperty(window, 'location', {
-      value: { hostname: 'codepost.cs.rutgers.edu' },
+      value: { hostname: 'codepost.cs.rutgers.edu', origin: 'https://codepost.cs.rutgers.edu' },
       writable: true,
     });
     const { hostname } = await import('../serviceWorker');
