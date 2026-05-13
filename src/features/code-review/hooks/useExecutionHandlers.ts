@@ -32,6 +32,8 @@ export function useExecutionHandlers({ setState, lastCursorRef }: UseExecutionHa
       if (fileId) {
         const normalizedResult = {
           success: result.success,
+          stdout: result.stdout ?? undefined,
+          stderr: result.stderr ?? undefined,
           output_data: result.output_data ?? undefined,
           error: result.error ?? undefined,
         };
