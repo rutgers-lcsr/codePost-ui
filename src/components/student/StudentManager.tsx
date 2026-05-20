@@ -23,6 +23,8 @@ import RoleMenu from '../core/RoleMenu';
 
 import Student from './Student';
 import StudentDashboard from './StudentDashboard';
+import MobileStudentConsole from './MobileStudentConsole';
+import useShowMobileConsole from '../core/useShowMobileConsole';
 
 /**********************************************************************************************************************/
 
@@ -44,6 +46,19 @@ const CourseViewManager = ComponentManager(Student);
 /** Top-level student router — dashboard at index, course views at /:name/:period */
 const StudentManager: React.FC<IStudentManagerProps> = (props) => {
   const { initialCourses, user, handleLogout } = props;
+  const showMobile = useShowMobileConsole();
+
+  // On mobile, always show the mobile console regardless of route
+  if (showMobile) {
+    return (
+      <MobileStudentConsole
+        courses={initialCourses}
+        userEmail={user.email!}
+        studentSections={user.studentSections}
+        user={user}
+      />
+    );
+  }
 
   const openHome = () => {
     if (localStorage.getItem('source') === 'codePost') {

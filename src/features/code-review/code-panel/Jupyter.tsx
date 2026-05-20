@@ -351,3 +351,61 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
 
   return markdown;
 };
+
+// =============================================================================
+// Notebook Cell Diff Utilities
+// =============================================================================
+
+export type CellDiffStatus = 'unchanged' | 'modified' | 'added' | 'removed';
+
+export interface CellDiffEntry {
+  /** Index in the rendered (edited) notebook, or the insertion point for removed cells. */
+  editedIndex: number;
+  status: CellDiffStatus;
+  /** Original cell source (normalised to string). Present for 'modified' and 'removed'. */
+  originalSource?: string;
+}
+
+/** Normalise cell source (string | string[]) to a single string for comparison. */
+const normaliseCellSource = (source: string | string[]): string => (Array.isArray(source) ? source.join('') : source);
+
+/**
+ * Compare two notebooks cell-by-cell (index-based) and return a diff entry
+ * for every cell that will appear in the rendered view.
+ *
+ * The edited notebook drives the primary rendering.  Cells beyond the length of
+ * the shorter notebook are tagged as 'added' or 'removed'.
+ */
+export const diffNotebookCells = (original: Notebook | null, edited: Notebook | null): CellDiffEntry[] => {
+  if (!original || !edited) return [];
+
+  const origCells = original.cells ?? [];
+  const editCells = edited.cells ?? [];
+  const maxLen = Math.max(origCells.length, editCells.length);
+  const entries: CellDiffEntry[] = [];
+
+  for (let i = 0; i < maxLen; i++) {
+    const origCell = origCells[i];
+    const editCell = editCells[i];
+
+    if (!origCell && editCell) {
+      entries.push({ editedIndex: i, status: 'added' });
+    } else if (origCell && !editCell) {
+      entries.push({
+        editedIndex: i,
+        status: 'removed',
+        originalSource: normaliseCellSource(origCell.source),
+      });
+    } else if (origCell && editCell) {
+      const origSrc = normaliseCellSource(origCell.source);
+      const editSrc = normaliseCellSource(editCell.source);
+      if (origSrc === editSrc) {
+        entries.push({ editedIndex: i, status: 'unchanged' });
+      } else {
+        entries.push({ editedIndex: i, status: 'modified', originalSource: origSrc });
+      }
+    }
+  }
+
+  return entries;
+};

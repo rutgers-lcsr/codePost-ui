@@ -1,8 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 import React, { useState, useCallback } from 'react';
 import { DownOutlined } from '@ant-design/icons';
+import { Badge, Flex, Typography } from 'antd';
 import { AnimatePresence, motion } from 'motion/react';
-import styles from './StudentConsole.module.scss';
 
 export type SectionVariant = 'overdue' | 'dueToday' | 'dueSoon' | 'upcoming' | 'completed' | 'unpublished';
 
@@ -16,13 +16,13 @@ interface AssignmentSectionProps {
   defaultCollapsed?: boolean;
 }
 
-const iconClassName: Record<SectionVariant, string> = {
-  overdue: styles.sectionIconOverdue,
-  dueToday: styles.sectionIconDueToday,
-  dueSoon: styles.sectionIconDueSoon,
-  upcoming: styles.sectionIconUpcoming,
-  completed: styles.sectionIconCompleted,
-  unpublished: styles.sectionIconUnpublished,
+const variantColors: Record<SectionVariant, string> = {
+  overdue: '#ff4d4f',
+  dueToday: '#fa8c16',
+  dueSoon: '#faad14',
+  upcoming: '#1677ff',
+  completed: '#52c41a',
+  unpublished: '#8c8c8c',
 };
 
 const AssignmentSection: React.FC<AssignmentSectionProps> = ({
@@ -47,43 +47,56 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
     [toggleCollapse],
   );
 
+  const iconColor = variantColors[variant];
+
   return (
     <AnimatePresence>
       {count > 0 && (
         <motion.section
-          className={styles.section}
           aria-label={`${title} — ${count} assignment${count === 1 ? '' : 's'}`}
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          style={{ marginBottom: 16 }}
         >
-          <div
-            className={styles.sectionHeader}
+          <Flex
+            align="center"
+            gap={8}
             onClick={toggleCollapse}
             onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
             aria-expanded={!collapsed}
-            style={{ cursor: 'pointer' }}
+            style={{
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderRadius: 8,
+              background: 'rgba(0, 0, 0, 0.02)',
+              userSelect: 'none',
+            }}
           >
-            <div className={iconClassName[variant] ?? styles.sectionIconUpcoming} aria-hidden="true">
+            <span style={{ color: iconColor, fontSize: 16 }} aria-hidden="true">
               {icon}
-            </div>
-            <h2 className={styles.sectionTitle}>{title}</h2>
-            <span className={styles.sectionCount} aria-label={`${count} assignment${count === 1 ? '' : 's'}`}>
-              {count}
             </span>
+            <Typography.Text strong style={{ flex: 1 }}>
+              {title}
+            </Typography.Text>
+            <Badge count={count} color={iconColor} overflowCount={999} />
             <DownOutlined
-              className={collapsed ? styles.sectionChevron : styles.sectionChevronOpen}
+              style={{
+                fontSize: 12,
+                color: '#8c8c8c',
+                transition: 'transform 0.25s',
+                transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+              }}
               aria-hidden="true"
             />
-          </div>
+          </Flex>
 
           <AnimatePresence initial={false}>
             {!collapsed && (
               <motion.div
-                className={styles.sectionList}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -99,7 +112,7 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
                       transition: { staggerChildren: 0.06 },
                     },
                   }}
-                  style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sc-space-sm)' }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}
                 >
                   {React.Children.map(children, (child) => (
                     <motion.div

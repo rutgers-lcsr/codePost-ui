@@ -18,7 +18,7 @@ import {
   submissionsApi,
 } from '../../../api-client/clients';
 import { assignmentKeys, submissionKeys } from '../../../lib/queryKeys';
-import { Course, CourseRoster, RubricCategory } from '../../../api-client';
+import { Course, CourseRoster, RubricCategory, SubmissionConsoleData } from '../../../api-client';
 import type {
   AssignmentFileType,
   AssignmentType,
@@ -201,6 +201,7 @@ export function useConsoleLoader({
     let tests: SubmissionTestType[];
     let panelTypeOverride: PANEL_TYPE | undefined;
     let activeSiderKeyOverride: string | undefined;
+    let temporaryFileContent: Record<number, string> = {};
 
     if (queryValues.tab !== undefined) {
       const tabValue = queryValues.tab as string;
@@ -283,6 +284,7 @@ export function useConsoleLoader({
           testCases: {},
           tests: [],
           isStudent: true,
+          hideGrades: assignment.hideGrades ?? false,
         }));
 
         break;
@@ -295,32 +297,43 @@ export function useConsoleLoader({
           staleTime: 30_000,
         })) as unknown as StudentSubmissionType;
         submission = readSubmission;
-        [[assignment, course], [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
-          await Promise.all([
-            queryClient
-              .ensureQueryData({
-                queryKey: assignmentKeys.detail(readSubmission.assignment),
-                queryFn: () => assignmentsApi.retrieve({ id: readSubmission.assignment }),
-                staleTime: 60_000,
-              })
-              .then(async (a) => {
-                const assnTyped = a as unknown as AssignmentType;
-                const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
-                return [assnTyped, c] as const;
-              }),
-            SubmissionService.loadConsoleData(readSubmission.id).then(([_data, f, c, rc]) => [f, c, rc]) as unknown as [
-              FileWithId[],
-              IFileToCommentsMap,
-              ICommentToRubricCommentMap,
-            ],
-            queryClient
-              .ensureQueryData({
-                queryKey: assignmentKeys.rubric(readSubmission.assignment),
-                queryFn: () => assignmentsApi.rubricRetrieve({ id: readSubmission.assignment }),
-                staleTime: 60_000,
-              })
-              .then(processRubricResponse),
-          ]);
+        let consoleData: SubmissionConsoleData;
+        [
+          [assignment, course],
+          [consoleData, files, comments, commentRubricComments],
+          { rubricCategories, rubricComments },
+        ] = await Promise.all([
+          queryClient
+            .ensureQueryData({
+              queryKey: assignmentKeys.detail(readSubmission.assignment),
+              queryFn: () => assignmentsApi.retrieve({ id: readSubmission.assignment }),
+              staleTime: 60_000,
+            })
+            .then(async (a) => {
+              const assnTyped = a as unknown as AssignmentType;
+              const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
+              return [assnTyped, c] as const;
+            }),
+          SubmissionService.loadConsoleData(readSubmission.id) as unknown as [
+            SubmissionConsoleData,
+            FileWithId[],
+            IFileToCommentsMap,
+            ICommentToRubricCommentMap,
+          ],
+          queryClient
+            .ensureQueryData({
+              queryKey: assignmentKeys.rubric(readSubmission.assignment),
+              queryFn: () => assignmentsApi.rubricRetrieve({ id: readSubmission.assignment }),
+              staleTime: 60_000,
+            })
+            .then(processRubricResponse),
+        ]);
+
+        temporaryFileContent = Object.fromEntries(
+          (consoleData.files ?? [])
+            .filter((file: SubmissionConsoleData['files'][number]) => file.instructorEdit?.data !== undefined)
+            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.instructorEdit.data]),
+        );
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
 
@@ -358,6 +371,7 @@ export function useConsoleLoader({
           isLoading: false,
           selectedFile,
           permissionLevel,
+          temporaryFileContent,
           testCategories,
           testCases: caseObj,
           tests: getLatestSubmissionTests(tests),
@@ -365,6 +379,7 @@ export function useConsoleLoader({
             simulatingStudent || (submission?.students !== undefined && submission.students.indexOf(userEmail) > -1),
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
+          hideGrades: assignment.hideGrades ?? false,
         }));
 
         if (assignment && assignment.liveFeedbackMode) {
@@ -390,38 +405,54 @@ export function useConsoleLoader({
           | [FileWithId[], IFileToCommentsMap, ICommentToRubricCommentMap]
           | undefined;
 
-        [[assignment, course], [files, comments, commentRubricComments], { rubricCategories, rubricComments }] =
-          await Promise.all([
-            queryClient
-              .ensureQueryData({
-                queryKey: assignmentKeys.detail(writableSubmission.assignment),
-                queryFn: () => assignmentsApi.retrieve({ id: writableSubmission.assignment }),
-                staleTime: 60_000,
-              })
-              .then(async (a) => {
-                const assnTyped = a as unknown as AssignmentType;
-                const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
-                return [assnTyped, c] as const;
-              }),
-            cachedFiles
-              ? (Promise.resolve(cachedFiles) as unknown as [
-                  FileWithId[],
-                  IFileToCommentsMap,
-                  ICommentToRubricCommentMap,
-                ])
-              : (SubmissionService.loadConsoleData(writableSubmission.id).then(([_data, f, c, rc]) => [
-                  f,
-                  c,
-                  rc,
-                ]) as unknown as [FileWithId[], IFileToCommentsMap, ICommentToRubricCommentMap]),
-            queryClient
-              .ensureQueryData({
-                queryKey: assignmentKeys.rubric(writableSubmission.assignment),
-                queryFn: () => assignmentsApi.rubricRetrieve({ id: writableSubmission.assignment }),
-                staleTime: 60_000,
-              })
-              .then(processRubricResponse),
-          ]);
+        const cachedConsoleData = queryClient.getQueryData(submissionKeys.consoleData(submissionID)) as
+          | SubmissionConsoleData
+          | undefined;
+
+        let consoleData: SubmissionConsoleData | undefined = cachedConsoleData;
+        [
+          [assignment, course],
+          [consoleData, files, comments, commentRubricComments],
+          { rubricCategories, rubricComments },
+        ] = await Promise.all([
+          queryClient
+            .ensureQueryData({
+              queryKey: assignmentKeys.detail(writableSubmission.assignment),
+              queryFn: () => assignmentsApi.retrieve({ id: writableSubmission.assignment }),
+              staleTime: 60_000,
+            })
+            .then(async (a) => {
+              const assnTyped = a as unknown as AssignmentType;
+              const c = (await coursesApi.retrieve({ id: assnTyped.course })) as unknown as Course;
+              return [assnTyped, c] as const;
+            }),
+          cachedFiles && cachedConsoleData
+            ? (Promise.resolve([cachedConsoleData, ...cachedFiles]) as unknown as [
+                SubmissionConsoleData,
+                FileWithId[],
+                IFileToCommentsMap,
+                ICommentToRubricCommentMap,
+              ])
+            : (SubmissionService.loadConsoleData(writableSubmission.id) as unknown as [
+                SubmissionConsoleData,
+                FileWithId[],
+                IFileToCommentsMap,
+                ICommentToRubricCommentMap,
+              ]),
+          queryClient
+            .ensureQueryData({
+              queryKey: assignmentKeys.rubric(writableSubmission.assignment),
+              queryFn: () => assignmentsApi.rubricRetrieve({ id: writableSubmission.assignment }),
+              staleTime: 60_000,
+            })
+            .then(processRubricResponse),
+        ]);
+
+        temporaryFileContent = Object.fromEntries(
+          (consoleData?.files ?? [])
+            .filter((file: SubmissionConsoleData['files'][number]) => file.instructorEdit?.data !== undefined)
+            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.instructorEdit.data]),
+        );
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
         let assignmentFiles: AssignmentFileType[] = [];
@@ -509,6 +540,7 @@ export function useConsoleLoader({
           isLoading: false,
           selectedFile,
           permissionLevel,
+          temporaryFileContent,
           assignmentFiles,
           tests: getLatestSubmissionTests(tests),
           testCategories: Array.isArray(categories) ? categories : [],
@@ -517,6 +549,7 @@ export function useConsoleLoader({
           aiFeatureStatus,
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
+          hideGrades: assignment.hideGrades ?? false,
         }));
         break;
       }

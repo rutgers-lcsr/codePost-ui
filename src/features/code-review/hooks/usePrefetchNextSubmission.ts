@@ -88,7 +88,10 @@ export const usePrefetchNextSubmission = (
     queryClient.prefetchQuery({
       queryKey: submissionKeys.files(nextSub.id),
       queryFn: async () => {
-        return SubmissionService.loadConsoleData(nextSub.id).then(([_data, f, c, rc]) => [f, c, rc]);
+        return SubmissionService.loadConsoleData(nextSub.id).then(([data, f, c, rc]) => {
+          queryClient.setQueryData(submissionKeys.consoleData(nextSub.id), data);
+          return [f, c, rc];
+        });
       },
       staleTime: 30_000,
     });

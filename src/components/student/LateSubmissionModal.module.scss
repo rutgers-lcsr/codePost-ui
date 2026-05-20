@@ -1,0 +1,89 @@
+/* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software. */
+
+.lateModal {
+  :global(.ant-modal-body) {
+    padding-top: 8px;
+  }
+}
+
+.lateTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--sc-surface-raised, #fafafa);
+  border-radius: 8px;
+  border: 1px solid var(--sc-border, #f0f0f0);
+}
+
+.lateTimelineRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lateTimelineDotDue {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #faad14;
+  flex-shrink: 0;
+}
+
+.lateTimelineDotNow {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff4d4f;
+  flex-shrink: 0;
+}
+
+.lateTimelineLabel {
+  font-size: var(--sc-text-sm, 12px);
+  color: var(--sc-ink-muted, #8c8c8c);
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.lateTimelineValue {
+  font-size: var(--sc-text-sm, 12px);
+  color: var(--sc-ink, #262626);
+}
+
+.lateCreditTokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.latePenaltyCard {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 8px;
+}
+
+.latePenaltyTitle {
+  font-weight: 600;
+  font-size: var(--sc-text-sm, 12px);
+  color: #cf1322;
+  margin-bottom: 4px;
+}
+
+.latePenaltyText {
+  font-size: var(--sc-text-sm, 12px);
+  color: var(--sc-ink, #262626);
+}
+
+.lateNoPenalty {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 8px;
+  font-size: var(--sc-text-sm, 12px);
+  color: #389e0d;
+}

@@ -23,6 +23,8 @@ import RoleMenu from '../core/RoleMenu';
 
 import Admin from './Admin';
 import AdminDashboard from './AdminDashboard';
+import MobileAdminConsole from './MobileAdminConsole';
+import useShowMobileConsole from '../core/useShowMobileConsole';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { encodeForLink } from '../core/URLutils';
@@ -47,6 +49,7 @@ const AdminCourseRouter = ComponentManager(Admin, 'assignments/overview');
 /** Renders dashboard or redirects to stored course */
 const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
   const { initialCourses, user, handleLogout } = props;
+  const showMobile = useShowMobileConsole();
 
   // If a stored course exists and is in the list, redirect to it
   const storedID = LOCAL_SETTINGS.defaultCourse.getter();
@@ -71,6 +74,10 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
   }
 
   // Render the dashboard
+  if (showMobile) {
+    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} />;
+  }
+
   const header = (
     <CPFlex
       left={[<CourseMenu key="course" courses={initialCourses} currentCourse={undefined} base="admin" />]}
@@ -106,6 +113,14 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
 
 /** Top-level admin router — dashboard at index, course views at /:name/:period */
 const AdminManager: React.FC<IAdminManagerProps> = (props) => {
+  const { initialCourses, user } = props;
+  const showMobile = useShowMobileConsole();
+
+  // On mobile, always show the mobile console regardless of route
+  if (showMobile) {
+    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} />;
+  }
+
   return (
     <Routes>
       {/* Dashboard index */}

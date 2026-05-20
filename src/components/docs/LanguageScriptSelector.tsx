@@ -35,7 +35,15 @@ def test_partial_credit():
 
 @test(name="Partial Credit + Message", points=5)
 def test_partial_credit_message():
-    return 3, "Correct core logic, missing edge case"`,
+    return 3, "Correct core logic, missing edge case"
+@test(name="Hidden Test", points=5, hidden=True)
+def test_hidden():
+    return 0
+  
+@test(name="Learning Objective Test", points=5, objectives=["LO1", "LO2"])
+def test_learning_objective():
+    return 5, "Perfect solution"
+`,
 });
 
 const buildJavaLanguage = (): ScriptLanguage => ({
@@ -62,14 +70,24 @@ public Object testPartialCredit() {
 @Test(name="Partial Credit + Message", points=5)
 public Object testPartialCreditMessage() {
     return new Object[]{3, "Correct core logic, missing edge case"};
-}`,
+}
+@Test(name="Hidden Test", points=5, hidden=true)
+public Object testHidden() {
+    return 0;
+}
+
+@Test(name="Learning Objective Test", points=5, objectives={"LO1", "LO2"})
+public Object testLearningObjective() {
+    return new Object[]{5, "Perfect solution"};
+}    
+`,
 });
 
 const buildRLanguage = (): ScriptLanguage => ({
   key: 'r',
   label: 'R',
   syntaxLanguage: 'r',
-  usage: 'Use run_test(...). Return-pattern examples are included as separate test functions.',
+  usage: 'Use run_test(...). For hidden/objectives, add a @codepost directive comment directly above the test.',
   code: `run_test("Addition Test", 5, "Verifies add() works", function() {
   stopifnot(add(1, 2) == 3)
   return(NULL)
@@ -85,14 +103,25 @@ run_test("Partial Credit", 5, function() {
 
 run_test("Partial Credit + Message", 5, function() {
   return(list(score = 3, message = "Correct core logic, missing edge case"))
-})`,
+})
+
+# @codepost hidden
+run_test("Hidden Test", 5, function() {
+  return(0)
+})
+
+# @codepost objectives=LO1,LO2
+run_test("Learning Objective Test", 5, function() {
+  return(list(score = 5, message = "Perfect solution"))
+})
+`,
 });
 
 const buildCppLanguage = (): ScriptLanguage => ({
   key: 'cpp',
   label: 'C/C++',
   syntaxLanguage: 'cpp',
-  usage: 'Use TEST macros. Return-pattern examples are included as separate test macros.',
+  usage: 'Use TEST macros. For hidden/objectives, add a @codepost directive comment directly above the test macro.',
   code: `TEST(AdditionTest, 5.0) {
   assertTrue(add(1, 2) == 3, "1+2 should be 3");
   return;
@@ -108,14 +137,26 @@ TEST(PartialCredit, 5.0) {
 
 TEST(PartialCreditMessage, 5.0) {
   return return_score(3.0, "Correct core logic, missing edge case");
-}`,
+}
+
+// @codepost hidden
+TEST(HiddenTest, 5.0) {
+  return 0.0;
+}
+
+// @codepost objectives=LO1,LO2
+TEST(LearningObjectiveTest, 5.0) {
+  return return_score(5.0, "Perfect solution");
+}   
+
+`,
 });
 
 const buildJavascriptLanguage = (): ScriptLanguage => ({
   key: 'javascript',
   label: 'Node / JavaScript / TypeScript',
   syntaxLanguage: 'javascript',
-  usage: 'Use test(...). Return-pattern examples are included as separate test callbacks.',
+  usage: 'Use test(...). For hidden/objectives, add a @codepost directive comment directly above the test call.',
   code: `test(
   'Addition Test',
   5,
@@ -137,14 +178,25 @@ test('Partial Credit', 5, 'numeric return', () => {
 
 test('Partial Credit + Message', 5, 'object return', () => {
   return { score: 3, message: 'Correct core logic, missing edge case' };
-});`,
+});
+
+// @codepost hidden
+test('Hidden Test', 5, 'hidden test', () => {
+  return 0;
+});
+
+// @codepost objectives=LO1,LO2
+test('Learning Objective Test', 5, 'learning objective test', () => {
+  return { score: 5, message: 'Perfect solution' };
+});
+`,
 });
 
 const buildRubyLanguage = (): ScriptLanguage => ({
   key: 'ruby',
   label: 'Ruby',
   syntaxLanguage: 'ruby',
-  usage: 'Use run_test(...). Return-pattern examples are included as separate blocks.',
+  usage: 'Use run_test(...). For hidden/objectives, add a @codepost directive comment directly above the test.',
   code: `run_test("Addition Test", 5, "Verifies add() works", 30) do
   raise "1+2 should be 3" unless add(1, 2) == 3
   return nil
@@ -160,14 +212,26 @@ end
 
 run_test("Partial Credit + Message", 5, "array return") do
   return [3, "Correct core logic, missing edge case"]
-end`,
+end
+
+# @codepost hidden
+run_test("Hidden Test", 5, "hidden test") do
+  return 0
+end
+
+# @codepost objectives=LO1,LO2
+run_test("Learning Objective Test", 5, "learning objective test") do
+  return [5, "Perfect solution"]
+end
+
+`,
 });
 
 const buildPhpLanguage = (): ScriptLanguage => ({
   key: 'php',
   label: 'PHP',
   syntaxLanguage: 'php',
-  usage: 'Use Tester::test(...). Return-pattern examples are included as separate callbacks.',
+  usage: 'Use Tester::test(...). For hidden/objectives, add a @codepost directive comment directly above the test call.',
   code: `Tester::test("Addition Test", 5, "Verifies add() works", function () {
     if (add(1, 2) !== 3) {
         throw new Exception("1+2 should be 3");
@@ -185,7 +249,19 @@ Tester::test("Partial Credit", 5, "numeric return", function () {
 
 Tester::test("Partial Credit + Message", 5, "array return", function () {
     return ["score" => 3, "message" => "Correct core logic, missing edge case"];
-});`,
+});
+
+// @codepost hidden
+Tester::test("Hidden Test", 5, "hidden test", function () {
+    return 0;
+});
+
+// @codepost objectives=LO1,LO2
+Tester::test("Learning Objective Test", 5, "learning objective test", function () {
+    return ["score" => 5, "message" => "Perfect solution"];
+});
+
+`,
 });
 
 const SCRIPT_LANGUAGES: ScriptLanguage[] = [

@@ -53,7 +53,6 @@ interface IProps {
 /**********************************************************************************************************************/
 
 const MIN_ROWS = 10;
-const MANY_ROWS = 50;
 const HIGHLIGHT_BACKGROUND_COLOR = '#48cc98';
 const SEARCH_PLACEHOLDER = 'Search...';
 const SEARCH_INPUT_WIDTH = 320;
@@ -226,8 +225,7 @@ const TableDetail: React.FC<IProps> = ({
     return {
       showSizeChanger: true,
       pageSizeOptions: PAGE_SIZE_OPTIONS,
-      position:
-        filteredData.length > MANY_ROWS ? ['topRight' as const, 'bottomRight' as const] : ['bottomRight' as const],
+      position: ['bottomRight' as const],
       pageSize,
       onShowSizeChange: (_current: number, size: number) => setPageSize(size),
       onChange: (_page: number, size: number) => setPageSize(size),

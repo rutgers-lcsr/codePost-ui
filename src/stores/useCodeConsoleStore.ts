@@ -119,6 +119,7 @@ interface CodeConsoleStoreActions {
 
   // Temporary Edits
   setIsEditMode: (mode: boolean) => void;
+  setIsDiffMode: (mode: boolean) => void;
   setTemporaryFileContent: (fileId: number, content: string) => void;
   clearTemporaryFileContent: (fileId: number) => void;
 }
@@ -127,14 +128,51 @@ type CodeConsoleStore = ICodeConsoleState & CodeConsoleStoreActions;
 
 /** Keys belonging to ICodeConsoleState (not actions). Used to extract a pure-state snapshot. */
 const STATE_KEYS = new Set<string>([
-  'permissionLevel', 'activeCommentID', 'assignment', 'commentRubricComments', 'comments',
-  'assignmentFiles', 'showKeyboardShortcuts', 'files', 'graders', 'students', 'isLoading',
-  'rubricCategories', 'rubricComments', 'submission', 'readOnlySubmission', 'tests', 'testCases',
-  'testCategories', 'showInlineTestsModal', 'selectedFile', 'oldCommentIDs', 'codeZoom',
-  'codeVerticalOffset', 'demoCommentCounter', 'isStudent', 'editRubricMode', 'commentCounter',
-  'commentRefreshCounter', 'rubricReload', 'cursorMode', 'showCursor', 'showCustomCommentExplorer',
-  'showHelpModal', 'panelType', 'activeSiderKey', 'hideGrades', 'executionResults', 'aiEnabled',
-  'aiFeatureStatus', 'course', 'noSave', 'wordWrap', 'isEditMode', 'temporaryFileContent',
+  'permissionLevel',
+  'activeCommentID',
+  'assignment',
+  'commentRubricComments',
+  'comments',
+  'assignmentFiles',
+  'showKeyboardShortcuts',
+  'files',
+  'graders',
+  'students',
+  'isLoading',
+  'rubricCategories',
+  'rubricComments',
+  'submission',
+  'readOnlySubmission',
+  'tests',
+  'testCases',
+  'testCategories',
+  'showInlineTestsModal',
+  'selectedFile',
+  'oldCommentIDs',
+  'codeZoom',
+  'codeVerticalOffset',
+  'demoCommentCounter',
+  'isStudent',
+  'editRubricMode',
+  'commentCounter',
+  'commentRefreshCounter',
+  'rubricReload',
+  'cursorMode',
+  'showCursor',
+  'showCustomCommentExplorer',
+  'showHelpModal',
+  'panelType',
+  'activeSiderKey',
+  'hideGrades',
+  'executionResults',
+  'aiEnabled',
+  'aiFeatureStatus',
+  'course',
+  'noSave',
+  'wordWrap',
+  'isEditMode',
+  'isDiffMode',
+  'temporaryFileContent',
 ]);
 
 /** Returns a plain ICodeConsoleState snapshot from the Zustand store (no action methods). */
@@ -188,6 +226,7 @@ const getInitialState = (): ICodeConsoleState => ({
   aiFeatureStatus: {},
   wordWrap: LOCAL_SETTINGS.wordWrap.getter(),
   isEditMode: false,
+  isDiffMode: false,
   temporaryFileContent: {},
 });
 
@@ -387,6 +426,7 @@ export const useCodeConsoleStore = create<CodeConsoleStore>()(
 
       // Temporary Edits
       setIsEditMode: (mode) => set({ isEditMode: mode }, false, 'setIsEditMode'),
+      setIsDiffMode: (mode) => set({ isDiffMode: mode }, false, 'setIsDiffMode'),
       setTemporaryFileContent: (fileId, content) => {
         set(
           (state) => ({

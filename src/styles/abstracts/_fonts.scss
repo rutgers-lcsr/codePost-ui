@@ -1,8 +1,11 @@
 /* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software. */
 // Fonts
 
-$fontMain: Avenir Next, Lato, sans-serif;
-$fontCode: AndaleMono, PT Mono, monospace;
+$fontMain: 'Plus Jakarta Sans', system-ui, sans-serif;
+$fontCode:
+  AndaleMono,
+  PT Mono,
+  monospace;
 $fontLogo: Muli, Lato, sans-serif;
 
 // Export for tsx

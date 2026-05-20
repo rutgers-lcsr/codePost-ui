@@ -18,6 +18,8 @@ interface ITestPreviewItem {
   points: number;
   timeout?: number;
   truncated?: boolean;
+  hidden?: boolean;
+  objectives?: string[];
 }
 
 export const TestScriptPreview = ({ code, language }: IProps) => {
@@ -48,19 +50,19 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
   const syntaxHint = (() => {
     switch (normalizedLanguage) {
       case 'python':
-        return 'Use @test(name="Title", points=10, description="Optional", timeout=30) above a def.';
+        return 'Use @test(name="Title", points=10, description="Optional", timeout=30,hidden=True, objectives=["objective-id"]) above a def.';
       case 'java':
-        return 'Use @Test(name="Title", points=10, description="Optional", timeout=30) on a public method.';
+        return 'Use @Test(name="Title", points=10, description="Optional", timeout=30, hidden=true, objectives=["objective-id"]) on a public method.';
       case 'r':
-        return 'Use run_test("Title", 10, "Optional", function() { ... }, 30).';
+        return 'Use run_test("Title", 10, "Optional", function() { ... }, 30,True, ["objective-id"]).';
       case 'cpp':
         return 'Use TEST(Name, 10.0), TEST_DESC(...), or TEST_TIMEOUT/TEST_DESC_TIMEOUT macros.';
       case 'js':
-        return 'Use test("Title", 10, "Optional", () => { ... }, 30).';
+        return 'Use test("Title", 10, "Optional", () => { ... }, 30, True, ["objective-id"]).';
       case 'ruby':
-        return 'Use run_test("Title", 10, "Optional") do ... end (optionally add timeout as 4th arg).';
+        return 'Use run_test("Title", 10, "Optional") do ... end (optionally add timeout as 4th arg, hidden as 5th arg, and objectives as 6th arg).';
       case 'php':
-        return 'Use Tester::test("Title", 10, "Optional", function () { ... }, 30).';
+        return 'Use Tester::test("Title", 10, "Optional", function () { ... }, 30, True, ["objective-id"]).';
       default:
         return 'Preview parsing supports Python, Java, R, C/C++, Node/JS, Ruby, and PHP.';
     }
@@ -182,6 +184,11 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
                       truncated
                     </Tag>
                   )}
+                  {item.hidden && (
+                    <Tag color="red" style={{ margin: 0, fontSize: 10 }}>
+                      hidden
+                    </Tag>
+                  )}
                   <code
                     style={{ fontSize: 10, color: '#999', background: '#f0f0f0', padding: '2px 4px', borderRadius: 4 }}
                   >
@@ -193,6 +200,16 @@ export const TestScriptPreview = ({ code, language }: IProps) => {
                   <Typography.Paragraph type="secondary" style={{ fontSize: 13, margin: 0 }}>
                     {item.description}
                   </Typography.Paragraph>
+                )}
+
+                {item.objectives && item.objectives.length > 0 && (
+                  <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {item.objectives.map((obj) => (
+                      <Tag key={obj} color="purple" style={{ margin: 0, fontSize: 11 }}>
+                        {obj}
+                      </Tag>
+                    ))}
+                  </div>
                 )}
               </div>
 

@@ -1,21 +1,61 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowLeftOutlined,
+  BellOutlined,
   BookOutlined,
+  CalendarOutlined,
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  EditOutlined,
+  EyeOutlined,
   FolderOutlined,
+  HomeOutlined,
   InboxOutlined,
+  RiseOutlined,
   SearchOutlined,
   SettingOutlined,
   TeamOutlined,
+  TrophyOutlined,
+  WarningFilled,
+  WarningOutlined,
 } from '@ant-design/icons';
+import {
+  Avatar,
+  Badge,
+  Card,
+  Collapse,
+  DatePicker,
+  Empty,
+  Flex,
+  Input,
+  Progress,
+  Segmented,
+  Spin,
+  Statistic,
+  Switch,
+  Tag,
+  Timeline,
+  Typography,
+} from 'antd';
 import { AnimatePresence, motion } from 'motion/react';
+import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 
-import { Course } from '../../api-client';
+import { Course, CourseAuditEvent, User } from '../../api-client';
+import { assignmentsApi } from '../../api-client/clients';
+import { Assignment } from '../../types/common';
+import { assignmentKeys } from '../../lib/queryKeys';
 import { encodedCourseLink } from '../core/CourseMenu';
 import { useAdminDashboardData } from './useAdminDashboardData';
+import { useAssignmentsQuery } from './hooks/useAssignmentsQuery';
+import { CourseAuditLogService } from '../../services/courseAuditLog';
+import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import styles from './MobileAdminConsole.module.scss';
+
+const { Title, Text } = Typography;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Types                                                                     */
@@ -24,9 +64,10 @@ import styles from './MobileAdminConsole.module.scss';
 interface MobileAdminConsoleProps {
   courses: Course[];
   userEmail: string;
+  user: User;
 }
 
-type AdminTab = 'courses' | 'settings';
+type NavTab = 'home' | 'activity' | 'settings';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Helpers                                                                   */
@@ -39,39 +80,674 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
+function formatDueDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return 'No due date';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return `${Math.abs(diffDays)}d overdue`;
+  if (diffDays === 0) return 'Due today';
+  if (diffDays === 1) return 'Due tomorrow';
+  if (diffDays <= 7) return `Due in ${diffDays}d`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getGradingProgress(a: Assignment): number {
+  const total = (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0);
+  if (total === 0) return 0;
+  return Math.round(((a.submissions_finalized_count ?? 0) / total) * 100);
+}
+
+function formatEventType(eventType: string): string {
+  return eventType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function timeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  if (diffMin < 1) return `Just now · ${timeStr}`;
+  if (diffMin < 60) return `${diffMin}m ago · ${timeStr}`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago · ${timeStr}`;
+  const d = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${d} · ${timeStr}`;
+}
+
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Component                                                                 */
+/* CourseDetail                                                              */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEmail }) => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('courses');
+const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course, onBack }) => {
+  const queryClient = useQueryClient();
+  const { data: assignments = [], isLoading } = useAssignmentsQuery(course);
+  const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [assignmentSearch, setAssignmentSearch] = useState('');
+  const [savingField, setSavingField] = useState<string | null>(null);
+
+  const handleUpdateAssignment = useCallback(
+    async (assignmentId: number, patch: Record<string, unknown>) => {
+      const fieldKey = Object.keys(patch).join(',');
+      setSavingField(`${assignmentId}-${fieldKey}`);
+      try {
+        await assignmentsApi.partialUpdate({ id: assignmentId, patchedAssignment: patch });
+        queryClient.invalidateQueries({ queryKey: assignmentKeys.list(course.id) });
+      } catch {
+        /* noop */
+      } finally {
+        setSavingField(null);
+      }
+    },
+    [course.id, queryClient],
+  );
+
+  const filteredAssignments = useMemo(() => {
+    let list = assignments;
+    if (assignmentFilter === 'published') list = list.filter((a) => a.isReleased);
+    else if (assignmentFilter === 'draft') list = list.filter((a) => !a.isReleased);
+    if (assignmentSearch) {
+      const q = assignmentSearch.toLowerCase();
+      list = list.filter((a) => a.name.toLowerCase().includes(q));
+    }
+    return list;
+  }, [assignments, assignmentFilter, assignmentSearch]);
+
+  const gradedCount = assignments.filter((a) => getGradingProgress(a) === 100).length;
+  const totalSubmissions = assignments.reduce(
+    (sum, a) => sum + (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0),
+    0,
+  );
+  const totalUnclaimed = assignments.reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0);
+
+  const isSaving = (id: number, field: string) => savingField === `${id}-${field}`;
+
+  /* Quick nav links ──────────────────────────────────────────────────────── */
+  const quickLinks: { label: string; icon: React.ReactNode; path: string }[] = [
+    { label: 'Assignments', icon: <BookOutlined />, path: 'assignments/overview' },
+    { label: 'Roster', icon: <TeamOutlined />, path: 'roster/students' },
+    { label: 'Submissions', icon: <InboxOutlined />, path: 'submissions/by_student' },
+    { label: 'Settings', icon: <SettingOutlined />, path: 'settings' },
+  ];
+
+  return (
+    <div className={styles.scrollContent}>
+      {/* Header */}
+      <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
+        <button type="button" className={styles.backButton} onClick={onBack} aria-label="Back">
+          <ArrowLeftOutlined />
+        </button>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Title level={4} style={{ margin: 0 }} ellipsis>
+            {course.name}
+          </Title>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {course.period}
+          </Text>
+        </div>
+        {course.archived && <Tag>Archived</Tag>}
+      </Flex>
+
+      {/* Attention banner */}
+      {totalUnclaimed > 0 && (
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          <Card
+            size="small"
+            style={{ marginBottom: 12, background: '#fffbe6', borderColor: '#ffe58f' }}
+            styles={{ body: { padding: '8px 12px' } }}
+          >
+            <Flex align="center" gap={8}>
+              <WarningFilled style={{ color: '#faad14', fontSize: 16 }} />
+              <Text style={{ fontSize: 13 }}>
+                <Text strong>{totalUnclaimed}</Text> unclaimed submission{totalUnclaimed === 1 ? '' : 's'} need graders
+                assigned
+              </Text>
+            </Flex>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Quick stats */}
+      <Card size="small" style={{ marginBottom: 12 }}>
+        <Flex justify="space-around">
+          <Statistic
+            title="Students"
+            value={course.studentCount ?? 0}
+            styles={{ content: { fontSize: 16 } }}
+            prefix={<TeamOutlined style={{ marginRight: 2 }} />}
+          />
+          <Statistic title="Assignments" value={assignments.length} styles={{ content: { fontSize: 16 } }} />
+          <Statistic
+            title="Graded"
+            value={gradedCount}
+            suffix={`/${assignments.length}`}
+            styles={{
+              content: {
+                fontSize: 16,
+                color: gradedCount === assignments.length && assignments.length > 0 ? '#52c41a' : undefined,
+              },
+            }}
+          />
+          <Statistic title="Submissions" value={totalSubmissions} styles={{ content: { fontSize: 16 } }} />
+        </Flex>
+      </Card>
+
+      {/* Quick navigation links to real course pages */}
+      <div className={styles.quickNavRow}>
+        {quickLinks.map((link) => (
+          <Link key={link.path} to={encodedCourseLink('admin', course, link.path)} className={styles.quickNavButton}>
+            <span className={styles.quickNavIcon}>{link.icon}</span>
+            <span className={styles.quickNavLabel}>{link.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Assignment filter + search */}
+      <Segmented
+        block
+        value={assignmentFilter}
+        onChange={(val) => setAssignmentFilter(val as 'all' | 'published' | 'draft')}
+        options={[
+          { label: `All (${assignments.length})`, value: 'all' },
+          { label: 'Published', value: 'published' },
+          { label: 'Drafts', value: 'draft' },
+        ]}
+        style={{ marginBottom: 8 }}
+      />
+      {assignments.length > 4 && (
+        <Input
+          prefix={<SearchOutlined />}
+          placeholder="Search assignments…"
+          value={assignmentSearch}
+          onChange={(e) => setAssignmentSearch(e.target.value)}
+          allowClear
+          size="small"
+          style={{ marginBottom: 12 }}
+        />
+      )}
+
+      {/* Assignment list */}
+      {isLoading ? (
+        <Flex justify="center" style={{ padding: 40 }}>
+          <Spin />
+          <Text type="secondary" style={{ fontSize: 13, marginTop: 8 }}>Loading assignments…</Text>
+        </Flex>
+      ) : filteredAssignments.length > 0 ? (
+        <Flex vertical gap={10}>
+          <AnimatePresence>
+            {filteredAssignments.map((a, idx) => {
+              const progress = getGradingProgress(a);
+              const unclaimed = a.submissions_unclaimed_count ?? 0;
+              const hasMean = a.mean !== null && a.mean !== undefined;
+              const hasMedian = a.median !== null && a.median !== undefined;
+
+              return (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2, delay: idx * 0.025 }}
+                >
+                  <Collapse
+                    size="small"
+                    items={[
+                      {
+                        key: a.id,
+                        label: (
+                          <div>
+                            <Flex justify="space-between" align="center" gap={8}>
+                              <Text strong style={{ fontSize: 14 }}>
+                                {a.name}
+                              </Text>
+                              <Tag color={a.isReleased ? 'success' : 'default'}>
+                                {a.isReleased ? 'Published' : 'Draft'}
+                              </Tag>
+                            </Flex>
+                            <Flex gap={12} wrap style={{ marginTop: 4 }}>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                <CalendarOutlined /> {formatDueDate(a.uploadDueDate)}
+                              </Text>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                <EditOutlined /> {a.points} pts
+                              </Text>
+                              {hasMean && (
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  <RiseOutlined /> Mean {Number(a.mean).toFixed(1)}
+                                </Text>
+                              )}
+                              {unclaimed > 0 && (
+                                <Text type="warning" style={{ fontSize: 12 }}>
+                                  <WarningOutlined /> {unclaimed} unclaimed
+                                </Text>
+                              )}
+                            </Flex>
+                          </div>
+                        ),
+                        children: (
+                          <Flex vertical gap={16}>
+                            {/* Grade stats */}
+                            {(hasMean || hasMedian) && (
+                              <div>
+                                <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+                                  <RiseOutlined /> Grade Statistics
+                                </Text>
+                                <Flex gap={24}>
+                                  {hasMean && (
+                                    <div>
+                                      <Text type="secondary" style={{ fontSize: 11 }}>
+                                        Mean
+                                      </Text>
+                                      <br />
+                                      <Text strong>
+                                        {Number(a.mean).toFixed(1)} / {a.points}
+                                      </Text>
+                                    </div>
+                                  )}
+                                  {hasMedian && (
+                                    <div>
+                                      <Text type="secondary" style={{ fontSize: 11 }}>
+                                        Median
+                                      </Text>
+                                      <br />
+                                      <Text strong>
+                                        {Number(a.median).toFixed(1)} / {a.points}
+                                      </Text>
+                                    </div>
+                                  )}
+                                </Flex>
+                              </div>
+                            )}
+
+                            {/* Visibility */}
+                            <div>
+                              <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+                                <EyeOutlined /> Visibility
+                              </Text>
+                              <Flex vertical gap={8}>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Published</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.isReleased}
+                                    loading={isSaving(a.id, 'isReleased,isVisible')}
+                                    onChange={(checked) =>
+                                      handleUpdateAssignment(a.id, { isReleased: checked, isVisible: checked })
+                                    }
+                                  />
+                                </Flex>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Visible to students</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.isVisible}
+                                    loading={isSaving(a.id, 'isVisible')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { isVisible: checked })}
+                                  />
+                                </Flex>
+                              </Flex>
+                            </div>
+
+                            {/* Grades & Feedback */}
+                            <div>
+                              <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+                                <TrophyOutlined /> Grades & Feedback
+                              </Text>
+                              <Flex vertical gap={8}>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Release grades</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.feedbackReleased}
+                                    loading={isSaving(a.id, 'feedbackReleased')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { feedbackReleased: checked })}
+                                  />
+                                </Flex>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Hide grades from students</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.hideGrades}
+                                    loading={isSaving(a.id, 'hideGrades')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { hideGrades: checked })}
+                                  />
+                                </Flex>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Live feedback mode</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.liveFeedbackMode}
+                                    loading={isSaving(a.id, 'liveFeedbackMode')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { liveFeedbackMode: checked })}
+                                  />
+                                </Flex>
+                              </Flex>
+                            </div>
+
+                            {/* Due Date */}
+                            <div>
+                              <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+                                <ClockCircleOutlined /> Due Date
+                              </Text>
+                              <DatePicker
+                                showTime
+                                size="small"
+                                style={{ width: '100%' }}
+                                value={a.uploadDueDate ? dayjs(a.uploadDueDate) : null}
+                                onChange={(date) => {
+                                  if (date) handleUpdateAssignment(a.id, { uploadDueDate: date.toISOString() });
+                                }}
+                                placeholder="Set due date"
+                              />
+                            </div>
+
+                            {/* Submissions */}
+                            <div>
+                              <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+                                <InboxOutlined /> Submissions
+                              </Text>
+                              <Flex vertical gap={8}>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Allow student uploads</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.allowStudentUpload}
+                                    loading={isSaving(a.id, 'allowStudentUpload')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { allowStudentUpload: checked })}
+                                  />
+                                </Flex>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Allow late uploads</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.allowLateUploads}
+                                    loading={isSaving(a.id, 'allowLateUploads')}
+                                    onChange={(checked) => handleUpdateAssignment(a.id, { allowLateUploads: checked })}
+                                  />
+                                </Flex>
+                                <Flex justify="space-between" align="center">
+                                  <Text style={{ fontSize: 13 }}>Allow regrade requests</Text>
+                                  <Switch
+                                    size="small"
+                                    checked={!!a.allowRegradeRequests}
+                                    loading={isSaving(a.id, 'allowRegradeRequests')}
+                                    onChange={(checked) =>
+                                      handleUpdateAssignment(a.id, { allowRegradeRequests: checked })
+                                    }
+                                  />
+                                </Flex>
+                              </Flex>
+                            </div>
+
+                            {/* Open in full admin */}
+                            <Link
+                              to={encodedCourseLink('admin', course, 'assignments/overview')}
+                              className={styles.openFullLink}
+                            >
+                              Open full assignment manager →
+                            </Link>
+                          </Flex>
+                        ),
+                      },
+                    ]}
+                  />
+
+                  {/* Grading progress bar below collapse */}
+                  <Card size="small" style={{ marginTop: 3 }} styles={{ body: { padding: '6px 12px' } }}>
+                    <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        Grading progress
+                      </Text>
+                      <Flex align="center" gap={4}>
+                        {progress === 100 && <CheckCircleFilled style={{ color: '#52c41a', fontSize: 11 }} />}
+                        <Text strong style={{ fontSize: 11 }}>
+                          {progress}%
+                        </Text>
+                      </Flex>
+                    </Flex>
+                    <Progress
+                      percent={progress}
+                      showInfo={false}
+                      size="small"
+                      status={progress === 100 ? 'success' : 'active'}
+                    />
+                    <Flex gap={12} style={{ marginTop: 3 }}>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        {a.submissions_finalized_count ?? 0} finalized
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        {a.submissions_inprogress_count ?? 0} in progress
+                      </Text>
+                    </Flex>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </Flex>
+      ) : (
+        <Empty
+          description={
+            assignmentSearch
+              ? 'No assignments match your search'
+              : assignmentFilter === 'all'
+                ? 'No assignments yet'
+                : `No ${assignmentFilter} assignments`
+          }
+        />
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* ActivityFeed                                                              */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
+  const [events, setEvents] = useState<(CourseAuditEvent & { courseName?: string })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [activitySearch, setActivitySearch] = useState('');
+  const [selectedEventType, setSelectedEventType] = useState<string | null>(null);
+
+  const activeCourses = useMemo(() => courses.filter((c) => !c.archived), [courses]);
+
+  const uniqueEventTypes = useMemo(() => {
+    const types = new Set<string>();
+    for (const e of events) if (e.eventType) types.add(e.eventType);
+    return [...types].sort();
+  }, [events]);
+
+  const filteredEvents = useMemo(() => {
+    let filtered = events;
+    if (selectedEventType) filtered = filtered.filter((e) => e.eventType === selectedEventType);
+    if (activitySearch) {
+      const q = activitySearch.toLowerCase();
+      filtered = filtered.filter(
+        (e) =>
+          formatEventType(e.eventType).toLowerCase().includes(q) ||
+          e.userEmail?.toLowerCase().includes(q) ||
+          e.assignmentName?.toLowerCase().includes(q) ||
+          e.courseName?.toLowerCase().includes(q),
+      );
+    }
+    return filtered;
+  }, [events, activitySearch, selectedEventType]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    const fetchEvents = async () => {
+      const targets = selectedCourseId ? activeCourses.filter((c) => c.id === selectedCourseId) : activeCourses.slice(0, 5);
+      const allEvents: (CourseAuditEvent & { courseName?: string })[] = [];
+
+      for (const course of targets) {
+        try {
+          const result = await CourseAuditLogService.list(course.id, { pageSize: 10 });
+          allEvents.push(...(result.results ?? []).map((e) => ({ ...e, courseName: course.name })));
+        } catch {
+          /* skip */
+        }
+      }
+
+      if (!cancelled) {
+        allEvents.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+        setEvents(allEvents.slice(0, 40));
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+    return () => { cancelled = true; };
+  }, [activeCourses, selectedCourseId]);
+
+  return (
+    <div className={styles.scrollContent}>
+      <Title level={4} style={{ marginBottom: 4 }}>
+        Activity
+      </Title>
+      <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+        Recent events across your courses
+      </Text>
+
+      {/* Course filter */}
+      {activeCourses.length > 1 && (
+        <Flex wrap gap={6} style={{ marginBottom: 12 }}>
+          <Tag
+            color={selectedCourseId === null ? 'blue' : undefined}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedCourseId(null)}
+          >
+            All courses
+          </Tag>
+          {activeCourses.map((c) => (
+            <Tag
+              key={c.id}
+              color={selectedCourseId === c.id ? 'blue' : undefined}
+              style={{ cursor: 'pointer' }}
+              onClick={() => setSelectedCourseId(selectedCourseId === c.id ? null : c.id)}
+            >
+              {c.name}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+
+      <Input
+        prefix={<SearchOutlined />}
+        placeholder="Search activity…"
+        value={activitySearch}
+        onChange={(e) => setActivitySearch(e.target.value)}
+        allowClear
+        size="middle"
+        style={{ marginBottom: uniqueEventTypes.length > 1 ? 10 : 16 }}
+      />
+
+      {uniqueEventTypes.length > 1 && (
+        <Flex wrap gap={6} style={{ marginBottom: 16 }}>
+          <Tag
+            color={selectedEventType === null ? 'purple' : undefined}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setSelectedEventType(null)}
+          >
+            All events
+          </Tag>
+          {uniqueEventTypes.map((type) => (
+            <Tag
+              key={type}
+              color={selectedEventType === type ? 'purple' : undefined}
+              style={{ cursor: 'pointer' }}
+              onClick={() => setSelectedEventType(selectedEventType === type ? null : type)}
+            >
+              {formatEventType(type)}
+            </Tag>
+          ))}
+        </Flex>
+      )}
+
+      {loading ? (
+        <Flex justify="center" style={{ padding: 48 }}>
+          <Spin />
+          <Text type="secondary" style={{ fontSize: 13, marginTop: 8 }}>Loading activity…</Text>
+        </Flex>
+      ) : filteredEvents.length > 0 ? (
+        <Timeline
+          items={filteredEvents.map((event) => ({
+            children: (
+              <div>
+                <Flex justify="space-between" align="center">
+                  <Text strong style={{ fontSize: 13 }}>
+                    {formatEventType(event.eventType)}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 11 }}>
+                    {timeAgo(event.created)}
+                  </Text>
+                </Flex>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {event.userEmail}
+                  {event.assignmentName && ` · ${event.assignmentName}`}
+                </Text>
+                {event.courseName && (
+                  <>
+                    <br />
+                    <Tag style={{ marginTop: 4, fontSize: 11 }}>{event.courseName}</Tag>
+                  </>
+                )}
+              </div>
+            ),
+          }))}
+        />
+      ) : (
+        <Empty
+          image={<BellOutlined style={{ fontSize: 40, color: '#d9d9d9' }} />}
+          description={
+            <div>
+              <Text strong>{activitySearch ? 'No matching events' : 'No recent activity'}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {activitySearch ? 'Try a different search term.' : 'Events appear here as users interact with courses.'}
+              </Text>
+            </div>
+          }
+        />
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Main Component                                                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEmail, user }) => {
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [searchText, setSearchText] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   const { stats, activeCourses, archivedCourses } = useAdminDashboardData(courses);
 
   const firstName = userEmail.split('@')[0].split('.')[0];
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  /* ── Unique periods ──────────────────────────────────────────────────── */
-
   const uniquePeriods = useMemo(() => {
     const periods = new Set<string>();
-    for (const c of courses) {
-      if (c.period) periods.add(c.period);
-    }
+    for (const c of courses) if (c.period) periods.add(c.period);
     return [...periods].sort((a, b) => a.localeCompare(b));
   }, [courses]);
-
-  /* ── Filtered courses ────────────────────────────────────────────────── */
 
   const filteredActive = useMemo(() => {
     return activeCourses.filter((c) => {
       if (selectedPeriod && c.period !== selectedPeriod) return false;
       if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
+      const q = searchText.toLowerCase();
+      return c.name.toLowerCase().includes(q) || c.period.toLowerCase().includes(q);
     });
   }, [activeCourses, searchText, selectedPeriod]);
 
@@ -79,31 +755,42 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
     return archivedCourses.filter((c) => {
       if (selectedPeriod && c.period !== selectedPeriod) return false;
       if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
+      const q = searchText.toLowerCase();
+      return c.name.toLowerCase().includes(q) || c.period.toLowerCase().includes(q);
     });
   }, [archivedCourses, searchText, selectedPeriod]);
 
-  /* ── Empty state ─────────────────────────────────────────────────────── */
+  /* ── Empty / no courses ─────────────────────────────────────────────── */
 
   if (courses.length === 0) {
     return (
       <div className={styles.mobileShell}>
         <main className={styles.main}>
           <div className={styles.scrollContent}>
-            <div className={styles.emptyState}>
-              <InboxOutlined className={styles.emptyIcon} />
-              <h2 className={styles.emptyTitle}>No courses yet</h2>
-              <p className={styles.emptySubtext}>Create your first course to get started.</p>
-            </div>
+            <Empty
+              image={<InboxOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
+              description={
+                <div>
+                  <Text strong>No courses yet</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Create your first course from a desktop browser to get started.
+                  </Text>
+                </div>
+              }
+            />
           </div>
         </main>
         <nav className={styles.bottomNav} aria-label="Main navigation">
-          <button className={styles.navItem} data-active="true" aria-label="Courses" aria-current="page">
-            <BookOutlined className={styles.navIcon} />
-            <span className={styles.navLabel}>Courses</span>
+          <button type="button" className={styles.navItem} data-active="true" aria-label="Home">
+            <HomeOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Home</span>
           </button>
-          <button className={styles.navItem} aria-label="Settings">
+          <button type="button" className={styles.navItem} aria-label="Activity">
+            <BellOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Activity</span>
+          </button>
+          <button type="button" className={styles.navItem} aria-label="Settings">
             <SettingOutlined className={styles.navIcon} />
             <span className={styles.navLabel}>Settings</span>
           </button>
@@ -112,242 +799,286 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
     );
   }
 
-  /* ── Courses tab ─────────────────────────────────────────────────────── */
+  /* ── Home tab ────────────────────────────────────────────────────────── */
 
-  const renderCourses = () => (
-    <div className={styles.scrollContent}>
-      {/* Header */}
-      <header className={styles.hero}>
-        <span className={styles.roleChip}>Admin</span>
-        <motion.h1
-          className={styles.heroTitle}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {getGreeting()},<br />
-          {displayName}
-        </motion.h1>
-        <motion.p
-          className={styles.heroSubtitle}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          Manage {stats.activeCourses} course{stats.activeCourses === 1 ? '' : 's'}
-        </motion.p>
-      </header>
+  const renderHome = () => {
+    if (selectedCourse) {
+      return <CourseDetail course={selectedCourse} onBack={() => setSelectedCourse(null)} />;
+    }
 
-      {/* Stats */}
-      <motion.div
-        className={styles.statsRow}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.05 }}
-      >
-        <div className={styles.statChip} data-variant="brand">
-          <span className={styles.statValue}>{stats.activeCourses}</span>
-          <span className={styles.statLabel}>Active</span>
+    return (
+      <div className={styles.scrollContent}>
+        {/* Greeting */}
+        <div style={{ marginBottom: 20 }}>
+          <Tag color="purple" style={{ marginBottom: 8 }}>
+            Admin
+          </Tag>
+          <Title level={3} style={{ margin: 0 }}>
+            {getGreeting()}, {displayName}
+          </Title>
+          <Text type="secondary">
+            {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'} · {stats.totalStudents} students
+          </Text>
         </div>
-        <div className={styles.statChip} data-variant="accent">
-          <span className={styles.statValue}>{stats.totalStudents}</span>
-          <span className={styles.statLabel}>Students</span>
-        </div>
-        <div className={styles.statChip} data-variant="secondary">
-          <span className={styles.statValue}>{stats.totalAssignments}</span>
-          <span className={styles.statLabel}>Assignments</span>
-        </div>
-        <div className={styles.statChip} data-variant="neutral">
-          <span className={styles.statValue}>{stats.archivedCourses}</span>
-          <span className={styles.statLabel}>Archived</span>
-        </div>
-      </motion.div>
 
-      {/* Search + Filter */}
-      {(courses.length > 3 || uniquePeriods.length > 1) && (
-        <div className={styles.filterBlock}>
-          {courses.length > 3 && (
-            <div className={styles.searchWrap}>
-              <SearchOutlined className={styles.searchIcon} />
-              <input
-                className={styles.searchInput}
-                type="text"
+        {/* Summary stats */}
+        <Card size="small" style={{ marginBottom: 20 }}>
+          <Flex justify="space-around">
+            <Statistic title="Active" value={stats.activeCourses} styles={{ content: { fontSize: 20, color: '#722ed1' } }} />
+            <Statistic title="Students" value={stats.totalStudents} styles={{ content: { fontSize: 20 } }} />
+            <Statistic title="Assignments" value={stats.totalAssignments} styles={{ content: { fontSize: 20 } }} />
+            <Statistic title="Archived" value={stats.archivedCourses} styles={{ content: { fontSize: 20 } }} />
+          </Flex>
+        </Card>
+
+        {/* Search + period filter */}
+        {(courses.length > 3 || uniquePeriods.length > 1) && (
+          <div style={{ marginBottom: 16 }}>
+            {courses.length > 3 && (
+              <Input
+                prefix={<SearchOutlined />}
                 placeholder="Search courses…"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                aria-label="Search courses"
+                allowClear
+                size="middle"
+                style={{ marginBottom: uniquePeriods.length > 1 ? 10 : 0 }}
               />
-            </div>
-          )}
-          {uniquePeriods.length > 1 && (
-            <div className={styles.periodScroll} role="group" aria-label="Filter by period">
-              {uniquePeriods.map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  className={styles.periodPill}
-                  data-active={selectedPeriod === period}
-                  onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
-                  aria-pressed={selectedPeriod === period}
-                >
-                  {period}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Active courses */}
-      {filteredActive.length > 0 && (
-        <motion.section
-          className={styles.section}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1 }}
-        >
-          <div className={styles.sectionHead}>
-            <BookOutlined className={styles.sectionIcon} />
-            <h2 className={styles.sectionTitle}>Active Courses</h2>
-            <span className={styles.badge}>{filteredActive.length}</span>
+            )}
+            {uniquePeriods.length > 1 && (
+              <Flex wrap gap={6}>
+                {uniquePeriods.map((period) => (
+                  <Tag
+                    key={period}
+                    color={selectedPeriod === period ? 'purple' : undefined}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
+                  >
+                    {period}
+                  </Tag>
+                ))}
+              </Flex>
+            )}
           </div>
-          <div className={styles.courseList}>
-            <AnimatePresence>
-              {filteredActive.map((course, idx) => (
-                <motion.div
-                  key={course.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.25, delay: idx * 0.03 }}
-                >
-                  <Link to={encodedCourseLink('admin', course, 'assignments/overview')} className={styles.courseCard}>
-                    <div className={styles.courseCardTop}>
-                      <h3 className={styles.courseName}>{course.name}</h3>
-                      <span className={styles.coursePeriod}>{course.period}</span>
-                    </div>
-                    <div className={styles.courseCardBottom}>
-                      <span className={styles.courseStat}>
-                        <TeamOutlined /> {course.studentCount ?? 0} students
-                      </span>
-                      <span className={styles.courseStat}>
-                        <BookOutlined /> {course.assignments?.length ?? 0} assignments
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </motion.section>
-      )}
+        )}
 
-      {/* Archived */}
-      {filteredArchived.length > 0 && (
-        <motion.section
-          className={styles.section}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15 }}
-        >
-          <button
-            type="button"
-            className={styles.archivedToggle}
-            onClick={() => setShowArchived(!showArchived)}
-            aria-expanded={showArchived}
-          >
-            <FolderOutlined className={styles.archivedToggleIcon} />
-            <span>Archived ({filteredArchived.length})</span>
-            <span className={styles.archivedChevron} data-open={showArchived}>
-              ›
-            </span>
-          </button>
+        {/* Active courses */}
+        {filteredActive.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <Flex align="center" gap={8} style={{ marginBottom: 10 }}>
+              <BookOutlined style={{ color: '#722ed1' }} />
+              <Text strong style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Active Courses
+              </Text>
+              <Badge count={filteredActive.length} size="small" color="purple" />
+            </Flex>
 
-          <AnimatePresence>
-            {showArchived && (
-              <motion.div
-                className={styles.courseList}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                style={{ overflow: 'hidden' }}
-              >
-                {filteredArchived.map((course, idx) => (
+            <Flex vertical gap={10}>
+              <AnimatePresence>
+                {filteredActive.map((course, idx) => (
                   <motion.div
                     key={course.id}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.03 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.22, delay: idx * 0.03 }}
                   >
-                    <Link
-                      to={encodedCourseLink('admin', course, 'assignments/overview')}
+                    <Card
+                      size="small"
+                      hoverable
+                      onClick={() => setSelectedCourse(course)}
                       className={styles.courseCard}
-                      data-archived="true"
                     >
-                      <div className={styles.courseCardTop}>
-                        <h3 className={styles.courseName}>{course.name}</h3>
-                        <span className={styles.archivedBadge}>Archived</span>
-                      </div>
-                      <div className={styles.courseCardBottom}>
-                        <span className={styles.courseStat}>
+                      <Flex justify="space-between" align="flex-start" gap={8}>
+                        <Text strong style={{ flex: 1, minWidth: 0 }}>
+                          {course.name}
+                        </Text>
+                        <Tag style={{ flexShrink: 0 }}>{course.period}</Tag>
+                      </Flex>
+                      <Flex gap={16} style={{ marginTop: 8 }}>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
                           <TeamOutlined /> {course.studentCount ?? 0} students
-                        </span>
-                        <span className={styles.coursePeriodSmall}>{course.period}</span>
-                      </div>
-                    </Link>
+                        </Text>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          <BookOutlined /> {course.assignments?.length ?? 0} assignments
+                        </Text>
+                      </Flex>
+                      {/* Quick links inline on card */}
+                      <Flex gap={6} style={{ marginTop: 10 }} wrap>
+                        {[
+                          { label: 'Assignments', path: 'assignments/overview' },
+                          { label: 'Roster', path: 'roster/students' },
+                          { label: 'Submissions', path: 'submissions/by_student' },
+                        ].map((link) => (
+                          <Link
+                            key={link.path}
+                            to={encodedCourseLink('admin', course, link.path)}
+                            onClick={(e) => e.stopPropagation()}
+                            className={styles.inlineLink}
+                          >
+                            {link.label}
+                          </Link>
+                        ))}
+                      </Flex>
+                    </Card>
                   </motion.div>
                 ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.section>
-      )}
+              </AnimatePresence>
+            </Flex>
+          </div>
+        )}
 
-      {/* No results */}
-      {searchText && filteredActive.length === 0 && filteredArchived.length === 0 && (
-        <div className={styles.emptyState}>
-          <SearchOutlined className={styles.emptyIcon} />
-          <h2 className={styles.emptyTitle}>No courses found</h2>
-          <p className={styles.emptySubtext}>Try a different search term.</p>
-        </div>
-      )}
-    </div>
-  );
+        {/* Archived courses */}
+        {filteredArchived.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <Card
+              size="small"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowArchived((v) => !v)}
+            >
+              <Flex justify="space-between" align="center">
+                <Flex align="center" gap={8}>
+                  <FolderOutlined />
+                  <Text type="secondary">Archived ({filteredArchived.length})</Text>
+                </Flex>
+                <Text
+                  type="secondary"
+                  style={{ transform: showArchived ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}
+                >
+                  ›
+                </Text>
+              </Flex>
+            </Card>
 
-  /* ── Settings tab (lightweight for mobile) ───────────────────────────── */
+            <AnimatePresence>
+              {showArchived && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <Flex vertical gap={8} style={{ marginTop: 8 }}>
+                    {filteredArchived.map((course) => (
+                      <Card key={course.id} size="small" hoverable onClick={() => setSelectedCourse(course)}>
+                        <Flex justify="space-between" align="center">
+                          <Text type="secondary">{course.name}</Text>
+                          <Tag>Archived</Tag>
+                        </Flex>
+                        <Flex gap={16} style={{ marginTop: 4 }}>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            <TeamOutlined /> {course.studentCount ?? 0}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {course.period}
+                          </Text>
+                        </Flex>
+                      </Card>
+                    ))}
+                  </Flex>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {searchText && filteredActive.length === 0 && filteredArchived.length === 0 && (
+          <Empty image={<SearchOutlined style={{ fontSize: 36, color: '#d9d9d9' }} />} description="No courses found" />
+        )}
+      </div>
+    );
+  };
+
+  /* ── Settings tab ────────────────────────────────────────────────────── */
 
   const renderSettings = () => (
     <div className={styles.scrollContent}>
-      <header className={styles.tabHeader}>
-        <h1 className={styles.tabTitle}>Settings</h1>
-      </header>
+      <Title level={4} style={{ marginBottom: 16 }}>
+        Settings
+      </Title>
 
-      <div className={styles.settingsList}>
-        <p className={styles.settingsNote}>
-          Course administration settings are available on desktop. Use the courses tab to manage assignments and view
-          submissions.
-        </p>
-      </div>
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex gap={12} align="center">
+          <Avatar size={44} style={{ background: '#722ed1', flexShrink: 0 }}>
+            {displayName.charAt(0).toUpperCase()}
+          </Avatar>
+          <div style={{ minWidth: 0 }}>
+            <Text strong>{displayName}</Text>
+            <br />
+            <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+              {userEmail}
+            </Text>
+            <br />
+            <Tag color="purple" style={{ marginTop: 4 }}>
+              Course Administrator
+            </Tag>
+          </div>
+        </Flex>
+      </Card>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex vertical gap={8}>
+          <Flex justify="space-between">
+            <Text type="secondary">Email</Text>
+            <Text>{userEmail}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Active Courses</Text>
+            <Text>{stats.activeCourses}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Total Students</Text>
+            <Text>{stats.totalStudents}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Total Assignments</Text>
+            <Text>{stats.totalAssignments}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Archived Courses</Text>
+            <Text>{stats.archivedCourses}</Text>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {renderRoleSwitcher(user, 'admin')}
+
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        For full account management — password changes, notification preferences, rubric editing, and bulk roster
+        changes — use the desktop version.
+      </Text>
     </div>
   );
 
-  /* ── Shell ────────────────────────────────────────────────────────────── */
+  /* ── Shell ─────────────────────────────────────────────────────────────── */
 
   return (
     <div className={styles.mobileShell}>
       <main className={styles.main}>
         <AnimatePresence mode="wait">
-          {activeTab === 'courses' && (
+          {activeTab === 'home' && (
             <motion.div
-              key="courses"
+              key="home"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
               className={styles.tabPanel}
             >
-              {renderCourses()}
+              {renderHome()}
+            </motion.div>
+          )}
+          {activeTab === 'activity' && (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.18 }}
+              className={styles.tabPanel}
+            >
+              <ActivityFeed courses={courses} />
             </motion.div>
           )}
           {activeTab === 'settings' && (
@@ -356,7 +1087,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.18 }}
               className={styles.tabPanel}
             >
               {renderSettings()}
@@ -365,24 +1096,36 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
         </AnimatePresence>
       </main>
 
-      {/* Bottom navigation */}
       <nav className={styles.bottomNav} aria-label="Main navigation">
         <button
+          type="button"
           className={styles.navItem}
-          data-active={activeTab === 'courses'}
-          onClick={() => setActiveTab('courses')}
-          aria-label="Courses"
-          aria-current={activeTab === 'courses' ? 'page' : undefined}
+          data-active={activeTab === 'home' ? 'true' : 'false'}
+          onClick={() => {
+            setActiveTab('home');
+            setSelectedCourse(null);
+          }}
+          aria-label="Home"
         >
-          <BookOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Courses</span>
+          <HomeOutlined className={styles.navIcon} />
+          <span className={styles.navLabel}>Home</span>
         </button>
         <button
+          type="button"
           className={styles.navItem}
-          data-active={activeTab === 'settings'}
+          data-active={activeTab === 'activity' ? 'true' : 'false'}
+          onClick={() => setActiveTab('activity')}
+          aria-label="Activity"
+        >
+          <BellOutlined className={styles.navIcon} />
+          <span className={styles.navLabel}>Activity</span>
+        </button>
+        <button
+          type="button"
+          className={styles.navItem}
+          data-active={activeTab === 'settings' ? 'true' : 'false'}
           onClick={() => setActiveTab('settings')}
           aria-label="Settings"
-          aria-current={activeTab === 'settings' ? 'page' : undefined}
         >
           <SettingOutlined className={styles.navIcon} />
           <span className={styles.navLabel}>Settings</span>

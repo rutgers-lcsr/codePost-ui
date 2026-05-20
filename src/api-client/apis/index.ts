@@ -15,6 +15,7 @@ export { CoursesApi } from './CoursesApi';
 export { DashboardApi } from './DashboardApi';
 export { FilesApi } from './FilesApi';
 export { ImpersonateApi } from './ImpersonateApi';
+export { LearningObjectivesApi } from './LearningObjectivesApi';
 export { LogsApi } from './LogsApi';
 export { OrganizationsApi } from './OrganizationsApi';
 export { OttApi } from './OttApi';

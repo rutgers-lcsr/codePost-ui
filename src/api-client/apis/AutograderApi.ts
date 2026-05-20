@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * codePost API
- *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
+ *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install codepost ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
  *
  * The version of the OpenAPI document: 3.0.0
  *
@@ -18,7 +18,6 @@ import type {
   AsyncExecutionRequest,
   AsyncTaskResponse,
   CacheCheckResponse,
-  CodeExecutionRequest,
   Environment,
   EnvironmentBuildResponse,
   EnvironmentBuildStatusError,
@@ -34,10 +33,7 @@ import type {
   EnvironmentRunAllResponse,
   EnvironmentRunResponse,
   EnvironmentStatusResponse,
-  ExecutionResult,
   FileExecutionRequest,
-  NotebookCellExecutionRequest,
-  NotebookExecutionRequest,
   PatchedEnvironment,
   PatchedEnvironmentBuildRequest,
   PatchedEnvironmentRunAllRequest,
@@ -160,28 +156,12 @@ export interface EnvironmentsUpdateRequest {
   >;
 }
 
-export interface ExecuteCodeCreateRequest {
-  codeExecutionRequest: CodeExecutionRequest;
-}
-
 export interface ExecuteFileAsyncCreateRequest {
   asyncExecutionRequest: AsyncExecutionRequest;
 }
 
-export interface ExecuteFileCreateRequest {
-  fileExecutionRequest: FileExecutionRequest;
-}
-
 export interface ExecuteFileStreamingCreateRequest {
   fileExecutionRequest: FileExecutionRequest;
-}
-
-export interface ExecuteNotebookCellCreateRequest {
-  notebookCellExecutionRequest: NotebookCellExecutionRequest;
-}
-
-export interface ExecuteNotebookCreateRequest {
-  notebookExecutionRequest: NotebookExecutionRequest;
 }
 
 export interface TasksRetrieveRequest {
@@ -1248,68 +1228,6 @@ export class AutograderApi extends runtime.BaseAPI {
   }
 
   /**
-   * Execute a code snippet using the autograder executors.  DEPRECATED: Use async endpoints.
-   */
-  async executeCodeCreateRaw(
-    requestParameters: ExecuteCodeCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ExecutionResult>> {
-    if (requestParameters['codeExecutionRequest'] == null) {
-      throw new runtime.RequiredError(
-        'codeExecutionRequest',
-        'Required parameter "codeExecutionRequest" was null or undefined when calling executeCodeCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters['Content-Type'] = 'application/json';
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined || this.configuration.password !== undefined)
-    ) {
-      headerParameters['Authorization'] =
-        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
-    }
-
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
-    }
-
-    let urlPath = `/autograder/execute/code/`;
-
-    const response = await this.request(
-      {
-        path: urlPath,
-        method: 'POST',
-        headers: headerParameters,
-        query: queryParameters,
-        body: requestParameters['codeExecutionRequest'],
-      },
-      initOverrides,
-    );
-
-    return new runtime.JSONApiResponse(response);
-  }
-
-  /**
-   * Execute a code snippet using the autograder executors.  DEPRECATED: Use async endpoints.
-   */
-  async executeCodeCreate(
-    requestParameters: ExecuteCodeCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ExecutionResult> {
-    const response = await this.executeCodeCreateRaw(requestParameters, initOverrides);
-    return await response.value();
-  }
-
-  /**
    * Async file execution endpoint.  Permissions: - Staff: Can execute freely, including force_execute - Students: Can only retrieve cached results (cache must exist)
    */
   async executeFileAsyncCreateRaw(
@@ -1422,68 +1340,6 @@ export class AutograderApi extends runtime.BaseAPI {
   }
 
   /**
-   * Execute a codePost file - use stream execution instead. This endpoint is used for testing file execution.  DEPRECATED: Use /autograder/async/execute/file/ instead. This view executes synchronously, blocking the request thread. It should not be used in production for long-running tasks.  Permissions: - Codepost staff only: Superusers can execute any file - Course Staff: Can execute with overrides if allowed by assignment  Uses FilePermissions which delegates to appropriate permission class based on file type (SubmissionFile, AssignmentFile, CourseFile)  POST /autograder/execute/file/ {     \"file_id\": 123,     \"timeout\": 30 }
-   */
-  async executeFileCreateRaw(
-    requestParameters: ExecuteFileCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ExecutionResult>> {
-    if (requestParameters['fileExecutionRequest'] == null) {
-      throw new runtime.RequiredError(
-        'fileExecutionRequest',
-        'Required parameter "fileExecutionRequest" was null or undefined when calling executeFileCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters['Content-Type'] = 'application/json';
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined || this.configuration.password !== undefined)
-    ) {
-      headerParameters['Authorization'] =
-        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
-    }
-
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
-    }
-
-    let urlPath = `/autograder/execute/file/`;
-
-    const response = await this.request(
-      {
-        path: urlPath,
-        method: 'POST',
-        headers: headerParameters,
-        query: queryParameters,
-        body: requestParameters['fileExecutionRequest'],
-      },
-      initOverrides,
-    );
-
-    return new runtime.JSONApiResponse(response);
-  }
-
-  /**
-   * Execute a codePost file - use stream execution instead. This endpoint is used for testing file execution.  DEPRECATED: Use /autograder/async/execute/file/ instead. This view executes synchronously, blocking the request thread. It should not be used in production for long-running tasks.  Permissions: - Codepost staff only: Superusers can execute any file - Course Staff: Can execute with overrides if allowed by assignment  Uses FilePermissions which delegates to appropriate permission class based on file type (SubmissionFile, AssignmentFile, CourseFile)  POST /autograder/execute/file/ {     \"file_id\": 123,     \"timeout\": 30 }
-   */
-  async executeFileCreate(
-    requestParameters: ExecuteFileCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ExecutionResult> {
-    const response = await this.executeFileCreateRaw(requestParameters, initOverrides);
-    return await response.value();
-  }
-
-  /**
    * Handle streaming execution request
    */
   async executeFileStreamingCreateRaw(
@@ -1542,130 +1398,6 @@ export class AutograderApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<void> {
     await this.executeFileStreamingCreateRaw(requestParameters, initOverrides);
-  }
-
-  /**
-   * Execute a single notebook cell by wrapping it in a minimal notebook.
-   */
-  async executeNotebookCellCreateRaw(
-    requestParameters: ExecuteNotebookCellCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ExecutionResult>> {
-    if (requestParameters['notebookCellExecutionRequest'] == null) {
-      throw new runtime.RequiredError(
-        'notebookCellExecutionRequest',
-        'Required parameter "notebookCellExecutionRequest" was null or undefined when calling executeNotebookCellCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters['Content-Type'] = 'application/json';
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined || this.configuration.password !== undefined)
-    ) {
-      headerParameters['Authorization'] =
-        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
-    }
-
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
-    }
-
-    let urlPath = `/autograder/execute/notebook-cell/`;
-
-    const response = await this.request(
-      {
-        path: urlPath,
-        method: 'POST',
-        headers: headerParameters,
-        query: queryParameters,
-        body: requestParameters['notebookCellExecutionRequest'],
-      },
-      initOverrides,
-    );
-
-    return new runtime.JSONApiResponse(response);
-  }
-
-  /**
-   * Execute a single notebook cell by wrapping it in a minimal notebook.
-   */
-  async executeNotebookCellCreate(
-    requestParameters: ExecuteNotebookCellCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ExecutionResult> {
-    const response = await this.executeNotebookCellCreateRaw(requestParameters, initOverrides);
-    return await response.value();
-  }
-
-  /**
-   * Execute a full notebook payload.  DEPRECATED: Use async endpoints.
-   */
-  async executeNotebookCreateRaw(
-    requestParameters: ExecuteNotebookCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<ExecutionResult>> {
-    if (requestParameters['notebookExecutionRequest'] == null) {
-      throw new runtime.RequiredError(
-        'notebookExecutionRequest',
-        'Required parameter "notebookExecutionRequest" was null or undefined when calling executeNotebookCreate().',
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters['Content-Type'] = 'application/json';
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined || this.configuration.password !== undefined)
-    ) {
-      headerParameters['Authorization'] =
-        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
-    }
-
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
-    }
-
-    let urlPath = `/autograder/execute/notebook/`;
-
-    const response = await this.request(
-      {
-        path: urlPath,
-        method: 'POST',
-        headers: headerParameters,
-        query: queryParameters,
-        body: requestParameters['notebookExecutionRequest'],
-      },
-      initOverrides,
-    );
-
-    return new runtime.JSONApiResponse(response);
-  }
-
-  /**
-   * Execute a full notebook payload.  DEPRECATED: Use async endpoints.
-   */
-  async executeNotebookCreate(
-    requestParameters: ExecuteNotebookCreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<ExecutionResult> {
-    const response = await this.executeNotebookCreateRaw(requestParameters, initOverrides);
-    return await response.value();
   }
 
   /**

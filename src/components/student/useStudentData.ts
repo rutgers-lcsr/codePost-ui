@@ -222,7 +222,11 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
 
         if (status === SubmissionStatus.NOT_PUBLISHED) {
           unpublished.push(assignment);
-        } else if (status === SubmissionStatus.SUBMITTED) {
+        } else if (
+          status === SubmissionStatus.SUBMITTED ||
+          status === SubmissionStatus.NOT_REVIEWED ||
+          status === SubmissionStatus.PENDING
+        ) {
           completed.push(assignment);
         } else if (assignment.uploadDueDate) {
           const dueDate = new Date(assignment.uploadDueDate);

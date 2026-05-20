@@ -52,7 +52,7 @@ interface IProps {
 /**********************************************************************************************************************/
 
 const SEARCH_INPUT_WIDTH = 220;
-const FILTER_SELECT_WIDTH = 140;
+const FILTER_SELECT_WIDTH = 330;
 
 const STATUS_OPTIONS = [
   { label: 'All statuses', value: 'all' },
@@ -218,7 +218,7 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
       style={{
         background: colors.neutralBackground,
         borderRadius: 8,
-        padding: '12px 16px',
+        padding: '8px 16px',
         marginBottom: 16,
         border: `1px solid ${colors.neutralDivider}`,
       }}
@@ -234,27 +234,6 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
           marginBottom: 10,
         }}
       >
-        <span
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 13,
-            color: colors.neutralMainText,
-            fontWeight: 600,
-          }}
-        >
-          <FilterOutlined style={{ color: colors.brandPrimary }} />
-          Filter assignments
-          {isFiltered && (
-            <Badge
-              count={activeFilterCount}
-              style={{ backgroundColor: colors.brandPrimary, fontSize: 11 }}
-              title={`${activeFilterCount} filter${activeFilterCount !== 1 ? 's' : ''} active`}
-            />
-          )}
-        </span>
-
         {/* Result count + clear all */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {isFiltered && (
@@ -303,7 +282,7 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
             value={filters.status}
             onChange={(val) => update({ status: val })}
             options={STATUS_OPTIONS}
-            style={{ width: 200 }}
+            style={{ width: FILTER_SELECT_WIDTH }}
             aria-label="Filter by publishing status"
           />
         </FilterField>
@@ -313,7 +292,7 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
             value={filters.progress}
             onChange={(val) => update({ progress: val })}
             options={PROGRESS_OPTIONS}
-            style={{ width: 190 }}
+            style={{ width: FILTER_SELECT_WIDTH }}
             aria-label="Filter by grading progress"
           />
         </FilterField>

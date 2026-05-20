@@ -946,14 +946,18 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   ) : (
                     <MessageOutlined />
                   ),
-                  label: assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback',
+                  label: assignment.feedbackReleased ? 'Feedback released' : 'Feedback unreleased',
                   disabled: !canReleaseGrades,
                   onClick: () => toggleSubmissionsReleased(assignment),
                 },
                 {
                   key: 'grades',
                   icon: assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />,
-                  label: assignment.hideGrades ? 'Show grades' : 'Hide grades',
+                  label: !assignment.feedbackReleased
+                    ? 'Grades (feedback unreleased)'
+                    : assignment.hideGrades
+                      ? 'Grades hidden'
+                      : 'Grades visible',
                   disabled: !assignment.feedbackReleased || !canReleaseGrades,
                   onClick: () => toggleHideGrades(assignment),
                 },
@@ -1018,21 +1022,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                       ) : (
                         <MessageOutlined />
                       ),
-                      label: (
-                        <span>
-                          {assignment.feedbackReleased ? 'Unrelease feedback' : 'Release feedback'}
-                          <span
-                            style={{
-                              marginLeft: 8,
-                              fontSize: 11,
-                              color: assignment.feedbackReleased ? colors.brandPrimary : colors.neutralSecondaryText,
-                              fontWeight: assignment.feedbackReleased ? 600 : 400,
-                            }}
-                          >
-                            {assignment.feedbackReleased ? 'ON' : 'OFF'}
-                          </span>
-                        </span>
-                      ),
+                      label: assignment.feedbackReleased ? 'Feedback released' : 'Feedback unreleased',
                       onClick: () => toggleSubmissionsReleased(assignment),
                       disabled: !canReleaseGrades,
                     },
@@ -1047,25 +1037,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                           style={{ color: assignment.feedbackReleased ? colors.brandPrimary : undefined }}
                         />
                       ),
-                      label: (
-                        <span>
-                          {assignment.hideGrades ? 'Show grades' : 'Hide grades'}
-                          <span
-                            style={{
-                              marginLeft: 8,
-                              fontSize: 11,
-                              color: !assignment.feedbackReleased
-                                ? colors.neutralSecondaryText
-                                : assignment.hideGrades
-                                  ? colors.actionRed
-                                  : colors.brandPrimary,
-                              fontWeight: assignment.feedbackReleased ? 600 : 400,
-                            }}
-                          >
-                            {!assignment.feedbackReleased ? 'N/A' : assignment.hideGrades ? 'HIDDEN' : 'VISIBLE'}
-                          </span>
-                        </span>
-                      ),
+                      label: !assignment.feedbackReleased
+                        ? 'Grades (feedback unreleased)'
+                        : assignment.hideGrades
+                          ? 'Grades hidden'
+                          : 'Grades visible',
                       disabled: !assignment.feedbackReleased || !canReleaseGrades,
                       onClick: () => toggleHideGrades(assignment),
                     },

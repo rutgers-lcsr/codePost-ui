@@ -38,7 +38,7 @@ interface ICPLayoutAdminProps {
 }
 
 const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
-  const [collapsed, setCollapsed] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(true);
   const windowSize = useWindowSize();
   useFixedWindow();
 

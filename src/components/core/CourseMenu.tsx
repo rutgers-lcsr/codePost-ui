@@ -3,21 +3,16 @@
 /* Imports
 /**********************************************************************************************************************/
 
-/* react imports */
 import { useCallback, useMemo, useState } from 'react';
 
-/* other library imports */
 import { Link } from 'react-router-dom';
-import { theme, Input } from 'antd';
-import { AppstoreOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Input, theme } from 'antd';
+import { AppstoreOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
 
-/* codePost imports */
 import { Course } from '../../api-client';
 
 import { encodeForLink } from '../core/URLutils';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
-
-import CPDropdown from './CPDropdown';
 import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 
 /**********************************************************************************************************************/
@@ -33,186 +28,305 @@ export const encodedCourseLink = (base: string, course: Course, panel?: string) 
   return `/${base}/${encodeForLink(course.name)}/${encodeForLink(course.period)}/${panel !== undefined ? panel : ''}`;
 };
 
+/* ── Period sort helper (shared across active + archived grouping) ─────── */
+
+const SEASON_RANK: Record<string, number> = { fall: 3, summer: 2, spring: 1, winter: 0 };
+
+function periodSortKey(p: string): number {
+  const year = parseInt(p.match(/\b(20\d{2}|19\d{2})\b/)?.[1] ?? '0');
+  const lower = p.toLowerCase();
+  const season = Object.entries(SEASON_RANK).find(([k]) => lower.includes(k))?.[1] ?? -1;
+  return year * 10 + season;
+}
+
+/* ── Compact course row ───────────────────────────────────────────────── */
+
+interface CourseRowProps {
+  course: Course;
+  isCurrent: boolean;
+  base: string;
+  panel?: string;
+  dimmed?: boolean;
+  onNavigate: () => void;
+  onMouseEnter: () => void;
+  colorText: string;
+  colorPrimary: string;
+  colorPrimaryBg: string;
+  colorBgTextHover: string;
+}
+
+function CourseRow({
+  course,
+  isCurrent,
+  base,
+  panel,
+  dimmed,
+  onNavigate,
+  onMouseEnter,
+  colorText,
+  colorPrimary,
+  colorPrimaryBg,
+  colorBgTextHover,
+}: CourseRowProps) {
+  const [hovered, setHovered] = useState(false);
+
+  const bg = isCurrent ? colorPrimaryBg : hovered ? colorBgTextHover : undefined;
+
+  return (
+    <Link
+      to={encodedCourseLink(base, course, panel)}
+      onMouseEnter={() => { setHovered(true); onMouseEnter(); }}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onNavigate}
+      style={{ textDecoration: 'none', display: 'block' }}
+    >
+      <div
+        style={{
+          padding: '6px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          background: bg,
+          borderLeft: `3px solid ${isCurrent ? colorPrimary : 'transparent'}`,
+          color: dimmed ? 'rgba(0,0,0,0.35)' : colorText,
+          fontWeight: isCurrent ? 600 : 400,
+          fontSize: 13,
+          lineHeight: '18px',
+          transition: 'background 0.12s',
+        }}
+      >
+        {course.name}
+      </div>
+    </Link>
+  );
+}
+
+/* ── Main component ───────────────────────────────────────────────────── */
+
 const CourseMenu = (props: IProps) => {
   const { token } = theme.useToken();
   const [searchText, setSearchText] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const prefetchCourse = usePrefetchCourse();
 
-  const handleOpenChange = useCallback((open: boolean) => {
-    setDropdownOpen(open);
-    if (!open) setSearchText('');
+  const handleOpenChange = useCallback((next: boolean) => {
+    setOpen(next);
+    if (!next) setSearchText('');
   }, []);
 
-  let selectorText = 'No courses yet...';
-  if (props.courses.length > 0) {
-    selectorText = 'Select a course';
-  }
+  const close = useCallback(() => setOpen(false), []);
 
-  if (props.currentCourse) {
-    selectorText = `${props.currentCourse.name} | ${props.currentCourse.period}`;
-  }
+  /* ── Filter + group active courses by period ────────────────────────── */
 
-  // Organize and filter courses
-  const { activeCourses, archivedCourses } = useMemo(() => {
-    const filtered = props.courses.filter((course) => {
-      if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return course.name.toLowerCase().includes(search) || course.period.toLowerCase().includes(search);
-    });
+  const { groupedActive, archivedCourses } = useMemo(() => {
+    const search = searchText.toLowerCase();
+    const matches = (c: Course) =>
+      !search || c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
 
-    const active = filtered.filter((c) => !c.archived);
-    const archived = filtered.filter((c) => c.archived);
+    const active = props.courses.filter((c) => !c.archived && matches(c));
+    const archived = props.courses.filter((c) => c.archived && matches(c));
 
-    // Sort by name, then period
-    const sortCourses = (a: Course, b: Course) => {
-      const nameCompare = a.name.localeCompare(b.name);
-      return nameCompare !== 0 ? nameCompare : a.period.localeCompare(b.period);
-    };
+    const sortByName = (a: Course, b: Course) => a.name.localeCompare(b.name);
+    archived.sort(sortByName);
 
-    return {
-      activeCourses: active.sort(sortCourses),
-      archivedCourses: archived.sort(sortCourses),
-    };
+    // Group active by period, newest period first
+    const groups = new Map<string, Course[]>();
+    for (const c of active) {
+      const list = groups.get(c.period) ?? [];
+      list.push(c);
+      groups.set(c.period, list);
+    }
+    for (const list of groups.values()) list.sort(sortByName);
+
+    const groupedActive = [...groups.entries()].sort((a, b) => periodSortKey(b[0]) - periodSortKey(a[0]));
+
+    return { groupedActive, archivedCourses: archived };
   }, [props.courses, searchText]);
 
-  // Build menu items
-  const menuItems = [];
+  const noResults = searchText && groupedActive.length === 0 && archivedCourses.length === 0;
 
-  // Add search input as a non-selectable item
-  if (props.courses.length > 5) {
-    menuItems.push({
-      key: 'search',
-      label: (
-        <div onClick={(e) => e.stopPropagation()} style={{ padding: '4px 0' }}>
-          <Input
-            placeholder="Search courses..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            autoFocus
-          />
-        </div>
-      ),
-      disabled: true,
-      style: { cursor: 'default' },
-    });
+  /* ── Trigger label ──────────────────────────────────────────────────── */
 
-    menuItems.push({
-      type: 'divider' as const,
-      key: 'search-divider',
-    });
+  let label = props.courses.length === 0 ? 'No courses yet…' : 'Select a course';
+  if (props.currentCourse) {
+    label = `${props.currentCourse.name} | ${props.currentCourse.period}`;
   }
 
-  // Add active courses
-  if (activeCourses.length > 0) {
-    activeCourses.forEach((course) => {
-      const isCurrentCourse = props.currentCourse?.id === course.id;
-      menuItems.push({
-        key: course.id,
-        label: (
-          <Link to={encodedCourseLink(props.base, course, props.panel)} onMouseEnter={() => prefetchCourse(course)}>
+  /* ── Custom dropdown content ────────────────────────────────────────── */
+
+  const dropdownContent = (
+    <div
+      style={{
+        background: token.colorBgElevated,
+        borderRadius: token.borderRadiusLG,
+        boxShadow: token.boxShadowSecondary,
+        width: 300,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Search */}
+      <div
+        style={{
+          padding: '7px 10px',
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <SearchOutlined style={{ color: token.colorTextTertiary, fontSize: 13 }} />
+        <Input
+          placeholder="Search courses…"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          allowClear
+          autoFocus
+          variant="borderless"
+          style={{ padding: 0, fontSize: 13 }}
+        />
+      </div>
+
+      {/* Course groups */}
+      <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+        {groupedActive.map(([period, courses]) => (
+          <div key={period}>
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontWeight: isCurrentCourse ? 600 : 400,
+                padding: '8px 12px 3px',
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: token.colorTextTertiary,
+                userSelect: 'none',
               }}
             >
-              <span>{course.name}</span>
-              <span style={{ color: token.colorTextTertiary, fontSize: '0.9em', marginLeft: '16px' }}>
-                {course.period}
-              </span>
+              {period}
             </div>
-          </Link>
-        ),
-      });
-    });
-  }
+            {courses.map((course) => (
+              <CourseRow
+                key={course.id}
+                course={course}
+                isCurrent={props.currentCourse?.id === course.id}
+                base={props.base}
+                panel={props.panel}
+                onNavigate={close}
+                onMouseEnter={() => prefetchCourse(course)}
+                colorText={token.colorText}
+                colorPrimary={token.colorPrimary}
+                colorPrimaryBg={token.colorPrimaryBg}
+                colorBgTextHover={token.colorBgTextHover}
+              />
+            ))}
+          </div>
+        ))}
 
-  // Add divider and archived courses if they exist
-  if (archivedCourses.length > 0) {
-    if (activeCourses.length > 0) {
-      menuItems.push({
-        type: 'divider' as const,
-        key: 'archived-divider',
-      });
-      menuItems.push({
-        key: 'archived-label',
-        label: <span style={{ color: token.colorTextTertiary, fontSize: '0.85em' }}>Archived Courses</span>,
-        disabled: true,
-        style: { cursor: 'default' },
-      });
-    }
-
-    archivedCourses.forEach((course) => {
-      const isCurrentCourse = props.currentCourse?.id === course.id;
-      menuItems.push({
-        key: course.id,
-        label: (
-          <Link to={encodedCourseLink(props.base, course, props.panel)} onMouseEnter={() => prefetchCourse(course)}>
+        {/* Archived */}
+        {archivedCourses.length > 0 && (
+          <>
+            <div style={{ borderTop: `1px solid ${token.colorBorderSecondary}`, margin: '4px 0' }} />
             <div
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontWeight: isCurrentCourse ? 600 : 400,
+                padding: '4px 12px 3px',
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: token.colorTextTertiary,
+                userSelect: 'none',
               }}
             >
-              <span style={{ color: token.colorTextQuaternary }}>{course.name}</span>
-              <span style={{ color: token.colorTextQuaternary, fontSize: '0.9em', marginLeft: '16px' }}>
-                {course.period}
-              </span>
+              Archived
             </div>
-          </Link>
-        ),
-      });
-    });
-  }
+            {archivedCourses.map((course) => (
+              <CourseRow
+                key={course.id}
+                course={course}
+                isCurrent={props.currentCourse?.id === course.id}
+                base={props.base}
+                panel={props.panel}
+                dimmed
+                onNavigate={close}
+                onMouseEnter={() => prefetchCourse(course)}
+                colorText={token.colorText}
+                colorPrimary={token.colorPrimary}
+                colorPrimaryBg={token.colorPrimaryBg}
+                colorBgTextHover={token.colorBgTextHover}
+              />
+            ))}
+          </>
+        )}
 
-  // Show "No results" if search returns nothing
-  if (searchText && activeCourses.length === 0 && archivedCourses.length === 0) {
-    menuItems.push({
-      key: 'no-results',
-      label: <span style={{ color: token.colorTextTertiary }}>No courses found</span>,
-      disabled: true,
-    });
-  }
+        {/* No results */}
+        {noResults && (
+          <div
+            style={{
+              padding: '24px 12px',
+              textAlign: 'center',
+              fontSize: 13,
+              color: token.colorTextTertiary,
+            }}
+          >
+            No courses found
+          </div>
+        )}
+      </div>
 
-  // "View all courses" link at the bottom
-  if (props.courses.length > 1) {
-    menuItems.push({
-      type: 'divider' as const,
-      key: 'dashboard-divider',
-    });
-    menuItems.push({
-      key: 'view-all',
-      label: (
-        <Link
-          to={`/${props.base}/`}
-          onClick={() => LOCAL_SETTINGS.defaultCourse.setter(0)}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, color: token.colorTextSecondary }}
+      {/* Footer */}
+      {props.courses.length > 1 && (
+        <div
+          style={{
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
+            padding: '4px 8px',
+          }}
         >
-          <AppstoreOutlined />
-          View all courses
-        </Link>
-      ),
-    });
-  }
+          <Link
+            to={`/${props.base}/`}
+            onClick={() => {
+              LOCAL_SETTINGS.defaultCourse.setter(0);
+              close();
+            }}
+            style={{ textDecoration: 'none' }}
+          >
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              size="small"
+              style={{ color: token.colorTextSecondary, width: '100%', textAlign: 'left' }}
+            >
+              View all courses
+            </Button>
+          </Link>
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <CPDropdown
-      value={selectorText}
-      minWidth={350}
-      open={dropdownOpen}
+    <Dropdown
+      open={open}
       onOpenChange={handleOpenChange}
-      menu={{
-        items: menuItems,
-        style: { maxHeight: '400px', overflowY: 'auto' },
-      }}
-    />
+      trigger={['click']}
+      dropdownRender={() => dropdownContent}
+    >
+      <Button
+        style={{
+          minWidth: 160,
+          maxWidth: 320,
+          textAlign: 'left',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: 8 }}>
+            {label}
+          </span>
+          <DownOutlined style={{ fontSize: 10, flexShrink: 0 }} />
+        </div>
+      </Button>
+    </Dropdown>
   );
 };
 

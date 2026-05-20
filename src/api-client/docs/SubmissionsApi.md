@@ -20,6 +20,7 @@ All URIs are relative to _http://localhost_
 | [**partialUpdate**](SubmissionsApi.md#partialupdate)                                               | **PATCH** /submissions/{id}/                            |             |
 | [**removePartnerRetrieve**](SubmissionsApi.md#removepartnerretrieve)                               | **GET** /submissions/{id}/removePartner/                |             |
 | [**retrieve**](SubmissionsApi.md#retrieve)                                                         | **GET** /submissions/{id}/                              |             |
+| [**saveFileEditPartialUpdate**](SubmissionsApi.md#savefileeditpartialupdate)                       | **PATCH** /submissions/{id}/saveFileEdit/               |             |
 | [**submissionTestsList**](SubmissionsApi.md#submissiontestslist)                                   | **GET** /submissions/{id}/submissionTests/              |             |
 | [**submitRegradePartialUpdate**](SubmissionsApi.md#submitregradepartialupdate)                     | **PATCH** /submissions/{id}/submitRegrade/              |             |
 | [**suggestedCommentsList**](SubmissionsApi.md#suggestedcommentslist)                               | **GET** /submissions/{id}/suggestedComments/            |             |
@@ -1187,6 +1188,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## saveFileEditPartialUpdate
+
+> SubmissionFileEdit saveFileEditPartialUpdate(id, patchedSubmissionFileEditSave)
+
+Create or update a persisted edit for a submission file. Course admins may always save edits; graders may save only when the assignment\&#39;s &#x60;gradersCanEditSubmissions&#x60; flag is True.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  SubmissionsApi,
+} from '';
+import type { SaveFileEditPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+    // PatchedSubmissionFileEditSave (optional)
+    patchedSubmissionFileEditSave: ...,
+  } satisfies SaveFileEditPartialUpdateRequest;
+
+  try {
+    const data = await api.saveFileEditPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                              | Type                                                              | Description                                         | Notes                     |
+| --------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------- | ------------------------- |
+| **id**                            | `number`                                                          | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+| **patchedSubmissionFileEditSave** | [PatchedSubmissionFileEditSave](PatchedSubmissionFileEditSave.md) |                                                     | [Optional]                |
+
+### Return type
+
+[**SubmissionFileEdit**](SubmissionFileEdit.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

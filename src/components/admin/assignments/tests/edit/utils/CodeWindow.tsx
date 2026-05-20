@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import { codeMirorLanguageMap } from './languageUtils';
 
 import useHotkeys, { S_KEY } from '@code-review/useHotkeys';
-import Editor, { EditorProps } from '@monaco-editor/react';
+import Editor, { DiffEditor, EditorProps } from '@monaco-editor/react';
 import { osControlKey } from '../../../../../core/operatingSystem';
 import { File } from '../../../../../../utils/file';
 
@@ -17,6 +17,8 @@ type themeType = 'light' | 'dark';
 
 interface IProps {
   code: string;
+  originalCode?: string;
+  showDiff?: boolean;
   name: string;
   onSave?: (code: string) => Promise<void>;
   onChange?: (code: string) => void;
@@ -88,31 +90,51 @@ export const CodeWindow = (props: IProps) => {
         </Button>
       )}
 
-      <Editor
-        height="100%"
-        width="100%"
-        language={getMode()}
-        options={{
-          automaticLayout: true,
-          minimap: { enabled: false },
-          scrollBeyondLastLine: true,
-          wordWrap: 'off',
-          scrollbar: {
-            horizontal: 'visible',
-            handleMouseWheel: true,
-          },
-          readOnly: !(props.onSave || props.onChange) || isSaving,
-        }}
-        value={props.onSave ? editedCode : props.code}
-        onChange={(value) => {
-          setEditedCode(value || '');
-          if (props.onChange) {
-            props.onChange(value || '');
-          }
-        }}
-        onMount={props.onMount}
-        theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
-      />
+      {props.showDiff ? (
+        <DiffEditor
+          height="100%"
+          width="100%"
+          language={getMode()}
+          original={props.originalCode ?? ''}
+          modified={props.onSave ? editedCode : props.code}
+          options={{
+            automaticLayout: true,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: true,
+            wordWrap: 'off',
+            renderSideBySide: true,
+            readOnly: !(props.onSave || props.onChange) || isSaving,
+            originalEditable: false,
+          }}
+          theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
+        />
+      ) : (
+        <Editor
+          height="100%"
+          width="100%"
+          language={getMode()}
+          options={{
+            automaticLayout: true,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: true,
+            wordWrap: 'off',
+            scrollbar: {
+              horizontal: 'visible',
+              handleMouseWheel: true,
+            },
+            readOnly: !(props.onSave || props.onChange) || isSaving,
+          }}
+          value={props.onSave ? editedCode : props.code}
+          onChange={(value) => {
+            setEditedCode(value || '');
+            if (props.onChange) {
+              props.onChange(value || '');
+            }
+          }}
+          onMount={props.onMount}
+          theme={props.theme === 'dark' ? 'vs-dark' : 'light'}
+        />
+      )}
     </div>
   );
 };

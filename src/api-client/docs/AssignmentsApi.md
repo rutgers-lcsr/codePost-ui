@@ -16,6 +16,7 @@ All URIs are relative to _http://localhost_
 | [**drawUnassignedList**](AssignmentsApi.md#drawunassignedlist)                   | **GET** /assignments/{id}/drawUnassigned/       |             |
 | [**generateDescriptionCreate**](AssignmentsApi.md#generatedescriptioncreate)     | **POST** /assignments/{id}/generateDescription/ |             |
 | [**generateTestCreate**](AssignmentsApi.md#generatetestcreate)                   | **POST** /assignments/{id}/generateTest/        |             |
+| [**learningObjectivesList**](AssignmentsApi.md#learningobjectiveslist)           | **GET** /assignments/{id}/learningObjectives/   |             |
 | [**list**](AssignmentsApi.md#list)                                               | **GET** /assignments/                           |             |
 | [**partialUpdate**](AssignmentsApi.md#partialupdate)                             | **PATCH** /assignments/{id}/                    |             |
 | [**queueLengthRetrieve**](AssignmentsApi.md#queuelengthretrieve)                 | **GET** /assignments/{id}/queueLength/          |             |
@@ -893,6 +894,77 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## learningObjectivesList
+
+> Array&lt;LearningObjective&gt; learningObjectivesList(id)
+
+Return all learning objectives for this assignment.
+
+### Example
+
+```ts
+import { Configuration, AssignmentsApi } from '';
+import type { LearningObjectivesListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+  } satisfies LearningObjectivesListRequest;
+
+  try {
+    const data = await api.learningObjectivesList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;LearningObjective&gt;**](LearningObjective.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

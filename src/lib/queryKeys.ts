@@ -37,6 +37,7 @@ export const graderKeys = {
 
 export const submissionKeys = {
   detail: (submissionId: number) => ['submission', 'detail', submissionId] as const,
+  consoleData: (submissionId: number) => ['submission', 'consoleData', submissionId] as const,
   files: (submissionId: number) => ['submission', 'files', submissionId] as const,
   permissions: (submissionId: number) => ['submission', 'permissions', submissionId] as const,
 };

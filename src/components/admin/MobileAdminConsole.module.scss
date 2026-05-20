@@ -1,20 +1,13 @@
 /* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software. */
-/* Mobile Admin Console — Administrative dashboard for mobile */
 
-@use '../../styles/abstracts/student-console-tokens';
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SHELL
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* Mobile Admin Console — Shell layout only. Components use Ant Design. */
 
 .mobileShell {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: var(--sc-warm-bg);
-  font-family: var(--sc-font-body);
-  color: var(--sc-ink);
+  background: #fafafa;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   padding-top: env(safe-area-inset-top, 0);
@@ -37,431 +30,44 @@
 }
 
 .scrollContent {
-  padding: 24px 20px 40px;
+  padding: 20px 16px 40px;
   min-height: 100%;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   HERO
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Back button ─────────────────────────────────────────────────────────── */
 
-.hero {
-  margin-bottom: 24px;
-  padding-top: 8px;
-}
-
-.roleChip {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 3px 10px;
-  border-radius: var(--sc-radius-pill);
-  background: linear-gradient(135deg, var(--sc-brand), #14644e);
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.heroTitle {
-  font-family: var(--sc-font-display);
-  font-size: 1.75rem;
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: -0.03em;
-  color: var(--sc-ink);
-  margin: 0;
-}
-
-.heroSubtitle {
-  font-size: var(--sc-text-sm);
-  color: var(--sc-ink-muted);
-  margin: 6px 0 0;
-  font-weight: 500;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   STATS ROW
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.statsRow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-bottom: 4px;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.statChip {
-  flex: 1 0 0;
-  min-width: 68px;
-  scroll-snap-align: start;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 12px 6px 10px;
-  border-radius: var(--sc-radius-md);
-  background: var(--sc-warm-surface);
-  border: 1px solid var(--sc-border-light);
-
-  &[data-variant='brand'] {
-    border-bottom: 2.5px solid var(--sc-brand);
-  }
-
-  &[data-variant='accent'] {
-    border-bottom: 2.5px solid var(--sc-accent);
-  }
-
-  &[data-variant='secondary'] {
-    border-bottom: 2.5px solid var(--sc-status-warning);
-  }
-
-  &[data-variant='neutral'] {
-    border-bottom: 2.5px solid var(--sc-ink-faint);
-  }
-}
-
-.statValue {
-  font-family: var(--sc-font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--sc-ink);
-  line-height: 1;
-}
-
-.statLabel {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--sc-ink-muted);
-  white-space: nowrap;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   FILTER BLOCK
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.filterBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.searchWrap {
-  position: relative;
+.backButton {
   display: flex;
   align-items: center;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 14px;
-  font-size: 14px;
-  color: var(--sc-ink-faint);
-  pointer-events: none;
-}
-
-.searchInput {
-  width: 100%;
-  padding: 12px 14px 12px 38px;
-  font-size: var(--sc-text-sm);
-  font-family: var(--sc-font-body);
-  border: 1.5px solid var(--sc-border-light);
-  border-radius: var(--sc-radius-md);
-  background: var(--sc-warm-surface);
-  color: var(--sc-ink);
-  transition:
-    border-color var(--sc-duration-fast) var(--sc-ease),
-    box-shadow var(--sc-duration-fast) var(--sc-ease);
-
-  &::placeholder {
-    color: var(--sc-ink-faint);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--sc-brand);
-    box-shadow: 0 0 0 3px rgba(25, 134, 101, 0.1);
-  }
-}
-
-.periodScroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.periodPill {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: var(--sc-radius-pill);
-  background: var(--sc-warm-elevated);
-  border: 1.5px solid var(--sc-border-light);
-  color: var(--sc-ink-muted);
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  background: #fff;
+  color: #333;
+  font-size: 16px;
   cursor: pointer;
-  transition:
-    background-color var(--sc-duration-fast) var(--sc-ease),
-    border-color var(--sc-duration-fast) var(--sc-ease),
-    color var(--sc-duration-fast) var(--sc-ease);
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
-
-  &[data-active='true'] {
-    background: var(--sc-brand);
-    border-color: var(--sc-brand);
-    color: #ffffff;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECTION
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.section {
-  margin-bottom: 24px;
-}
-
-.sectionHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1.5px solid var(--sc-divider);
-}
-
-.sectionIcon {
-  font-size: 14px;
-  color: var(--sc-brand);
-}
-
-.sectionTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--sc-ink-muted);
-  margin: 0;
-  flex: 1;
-}
-
-.badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--sc-radius-pill);
-  background: var(--sc-warm-elevated);
-  color: var(--sc-ink-muted);
-  border: 1px solid var(--sc-border-light);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   COURSE LIST & CARDS
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.courseList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.courseCard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-  background: var(--sc-warm-surface);
-  border: 1px solid var(--sc-border-light);
-  border-radius: var(--sc-radius-lg);
-  border-left: 3.5px solid var(--sc-brand);
-  text-decoration: none;
-  color: inherit;
-  transition:
-    box-shadow var(--sc-duration-fast) var(--sc-ease),
-    transform var(--sc-duration-fast) var(--sc-ease);
 
   &:active {
-    box-shadow: var(--sc-shadow-md);
-    transform: scale(0.985);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--sc-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-archived='true'] {
-    border-left-color: var(--sc-ink-faint);
-    opacity: 0.85;
+    background: #f5f5f5;
   }
 }
 
-.courseCardTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.courseName {
-  font-family: var(--sc-font-display);
-  font-size: var(--sc-text-md);
-  font-weight: 500;
-  color: var(--sc-ink);
-  margin: 0;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-.coursePeriod {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--sc-ink-muted);
-  background: var(--sc-warm-elevated);
-  padding: 2px 8px;
-  border-radius: var(--sc-radius-pill);
-  white-space: nowrap;
-  border: 1px solid var(--sc-border-light);
-  flex-shrink: 0;
-}
-
-.courseCardBottom {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.courseStat {
-  font-size: var(--sc-text-xs);
-  color: var(--sc-ink-secondary);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.coursePeriodSmall {
-  font-size: 10px;
-  color: var(--sc-ink-faint);
-  font-weight: 500;
-  margin-left: auto;
-}
-
-.archivedBadge {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--sc-ink-faint);
-  background: var(--sc-warm-elevated);
-  padding: 2px 8px;
-  border-radius: var(--sc-radius-pill);
-  border: 1px solid var(--sc-border-light);
-  flex-shrink: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ARCHIVED TOGGLE
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.archivedToggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 0;
-  font-size: var(--sc-text-sm);
-  font-weight: 600;
-  color: var(--sc-ink-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  margin-bottom: 8px;
-  border-bottom: 1.5px solid var(--sc-divider);
-}
-
-.archivedToggleIcon {
-  font-size: 14px;
-}
-
-.archivedChevron {
-  margin-left: auto;
-  font-size: 16px;
-  font-weight: 700;
-  transition: transform var(--sc-duration-fast) var(--sc-ease);
-  transform: rotate(0deg);
-
-  &[data-open='true'] {
-    transform: rotate(90deg);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SETTINGS TAB
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.tabHeader {
-  margin-bottom: 20px;
-  padding-top: 4px;
-}
-
-.tabTitle {
-  font-family: var(--sc-font-display);
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: var(--sc-ink);
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.settingsList {
-  padding: 0;
-}
-
-.settingsNote {
-  font-size: var(--sc-text-sm);
-  color: var(--sc-ink-muted);
-  line-height: 1.6;
-  padding: 16px;
-  background: var(--sc-warm-surface);
-  border: 1px solid var(--sc-border-light);
-  border-radius: var(--sc-radius-md);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   BOTTOM NAVIGATION BAR
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Bottom navigation ───────────────────────────────────────────────────── */
 
 .bottomNav {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  gap: 0;
-  background: var(--sc-warm-surface);
-  border-top: 1px solid var(--sc-border-light);
+  border-top: 1px solid #f0f0f0;
   padding-bottom: env(safe-area-inset-bottom, 0);
   flex-shrink: 0;
-  position: relative;
-  z-index: 100;
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .navItem {
@@ -470,96 +76,113 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   padding: 10px 0 8px;
   min-height: 56px;
   background: none;
   border: none;
   cursor: pointer;
-  position: relative;
-  transition: color var(--sc-duration-fast) var(--sc-ease);
-  color: var(--sc-ink-faint);
+  color: #999;
   -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s;
 
   &[data-active='true'] {
-    color: var(--sc-brand);
-  }
-
-  &[data-active='true']::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 2.5px;
-    border-radius: 0 0 2px 2px;
-    background: var(--sc-brand);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--sc-focus);
-    outline-offset: -2px;
-    border-radius: 4px;
+    color: #722ed1;
   }
 }
 
 .navIcon {
   font-size: 20px;
-  transition: transform var(--sc-duration-fast) var(--sc-ease);
-
-  .navItem[data-active='true'] & {
-    transform: scale(1.05);
-  }
 }
 
 .navLabel {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.02em;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   EMPTY STATE
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Quick navigation row (course detail) ────────────────────────────────── */
 
-.emptyState {
+.quickNavRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.quickNavButton {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: #f9f0ff;
+  border: 1px solid #efdbff;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #722ed1;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    background: #efdbff;
+  }
+}
+
+.quickNavIcon {
+  font-size: 16px;
+}
+
+.quickNavLabel {
+  font-size: 11px;
+  font-weight: 600;
   text-align: center;
-  padding: 64px 24px;
-  gap: 8px;
-  min-height: 50vh;
+  line-height: 1.2;
 }
 
-.emptyIcon {
-  font-size: 36px;
-  color: var(--sc-ink-faint);
-  opacity: 0.6;
+/* ── "Open in full" link inside assignment collapse ──────────────────────── */
+
+.openFullLink {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: #722ed1;
+  text-decoration: none;
+  padding: 6px 0;
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
-.emptyTitle {
-  font-family: var(--sc-font-display);
-  font-size: var(--sc-text-lg);
-  font-weight: 500;
-  color: var(--sc-ink);
-  margin: 8px 0 0;
+/* ── Course card (home tab) ──────────────────────────────────────────────── */
+
+.courseCard {
+  cursor: pointer;
 }
 
-.emptySubtext {
-  font-size: var(--sc-text-sm);
-  color: var(--sc-ink-muted);
-  margin: 0;
+/* ── Inline quick links on course cards ─────────────────────────────────── */
+
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #f0f0f0;
+  font-size: 12px;
+  color: #555;
+  text-decoration: none;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    background: #e0e0e0;
+  }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   REDUCED MOTION
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .courseCard {
-    transition: none;
+  .tabPanel {
+    scroll-behavior: auto;
   }
 }

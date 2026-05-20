@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 
-import { Modal, Spin } from 'antd';
+import { Alert, Flex, Modal, Spin, Tag, Typography } from 'antd';
 
 import dayjs from 'dayjs';
 import { CodePostDate } from '../utils/CodepostDate';
@@ -9,7 +9,7 @@ import { CodePostDate } from '../utils/CodepostDate';
 import { AssignmentStudent } from '../../services/assignment';
 import type { BeforeStudentUploadResponse } from '../../api-client';
 import type { AssignmentStudentType } from '../../types/models';
-import styles from './StudentConsole.module.scss';
+import styles from './LateSubmissionModal.module.scss';
 
 interface ILateSubmissionModalProps {
   open: boolean;
@@ -54,16 +54,16 @@ const LateSubmissionModal = (props: ILateSubmissionModalProps) => {
 
     for (let i = 0; i < used; i++) {
       tokens.push(
-        <span key={`used-${i}`} className={styles.lateCreditTokenUsed} aria-label="Credit used">
+        <Tag key={`used-${i}`} color="orange" aria-label="Credit used">
           ✓
-        </span>,
+        </Tag>,
       );
     }
     for (let i = 0; i < remaining; i++) {
       tokens.push(
-        <span key={`avail-${i}`} className={styles.lateCreditTokenAvailable} aria-label="Credit available">
+        <Tag key={`avail-${i}`} color="default" aria-label="Credit available">
           ○
-        </span>,
+        </Tag>,
       );
     }
     return tokens;

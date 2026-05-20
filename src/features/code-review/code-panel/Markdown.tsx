@@ -21,7 +21,13 @@ import { File, getFileContent } from '../../../utils/file';
 import { getBlockClassName } from './BlockUtils.tsx';
 import { ICodeContentCoreProps, ICodeContentEditProps } from './CodeContent';
 import CommentHighlightContext, { SUGGESTION_ID_OFFSET } from './CommentHighlightContext';
-import { jupyterToMarkdown, normalizeNotebookJson, type Notebook } from './Jupyter';
+import {
+  jupyterToMarkdown,
+  normalizeNotebookJson,
+  diffNotebookCells,
+  type Notebook,
+  type CellDiffEntry,
+} from './Jupyter';
 import Editor from '@monaco-editor/react';
 import Link from 'antd/es/typography/Link';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
@@ -241,6 +247,8 @@ interface MarkdownContextStore {
   onKeyDown: ((e: React.KeyboardEvent<HTMLElement>) => void) | undefined;
   isJupyter: boolean;
   isEditMode: boolean;
+  isDiffMode: boolean;
+  cellDiffEntries: CellDiffEntry[];
   onCellContentChange: (cellIndex: number, newContent: string) => void;
 }
 
@@ -327,7 +335,16 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
   const notebookSyncTimeoutRef = React.useRef<number | null>(null);
   const pendingNotebookPayloadRef = React.useRef<string | null>(null);
 
-  const notebookContent = props.isEditMode && props.temporaryContent ? props.temporaryContent : fileContent;
+  const notebookContent =
+    (props.isEditMode || props.isDiffMode) && props.temporaryContent ? props.temporaryContent : fileContent;
+
+  // Compute cell-level diffs for notebook diff mode
+  const cellDiffEntries = React.useMemo<CellDiffEntry[]>(() => {
+    if (!isJupyter || !props.isDiffMode || !props.temporaryContent) return [];
+    const originalNotebook = normalizeNotebookJson(fileContent);
+    const editedNotebook = normalizeNotebookJson(props.temporaryContent);
+    return diffNotebookCells(originalNotebook, editedNotebook);
+  }, [isJupyter, props.isDiffMode, props.temporaryContent, fileContent]);
 
   // Create a stable debounced change handler for prop updates
   // This decouples the local editor state (which is fast) from the expensive parent re-render (which is slow)
@@ -640,6 +657,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       onKeyDown: handleBlockKeyDown,
       isJupyter,
       isEditMode: props.isEditMode,
+      isDiffMode: props.isDiffMode,
+      cellDiffEntries,
       onCellContentChange,
     }),
     [
@@ -655,6 +674,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       handleBlockKeyDown,
       isJupyter,
       props.isEditMode,
+      props.isDiffMode,
+      cellDiffEntries,
       onCellContentChange,
     ],
   );
@@ -765,10 +786,76 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
     handleBlockKeyDown,
   ]);
 
+  // In diff mode, collect removed cells (cells that exist in original but not in edited).
+  // These don't have corresponding rendered divs in the edited markdown, so we render
+  // them as standalone blocks at the end.
+  const removedCellBlocks = React.useMemo(() => {
+    if (!isJupyter || !props.isDiffMode) return null;
+    const removed = cellDiffEntries.filter((e) => e.status === 'removed');
+    if (removed.length === 0) return null;
+    return removed.map((entry) => (
+      <div
+        key={`removed-${entry.editedIndex}`}
+        className="jupyter-block"
+        style={{ borderLeft: '4px solid #ff4d4f', padding: '8px', margin: '8px 0' }}
+      >
+        <div
+          style={{
+            display: 'inline-block',
+            fontSize: '11px',
+            fontWeight: 600,
+            color: '#fff',
+            backgroundColor: '#ff4d4f',
+            borderRadius: '3px',
+            padding: '1px 6px',
+            marginBottom: '4px',
+            lineHeight: '18px',
+          }}
+        >
+          Removed
+        </div>
+        <div style={{ fontSize: '11px', color: markdownTheme.text, opacity: 0.6, marginBottom: '4px' }}>
+          Cell {entry.editedIndex + 1}
+        </div>
+        <div
+          style={{
+            borderRadius: '4px',
+            border: `1px solid ${markdownTheme.outputBorder ?? 'rgba(0,0,0,0.08)'}`,
+            overflow: 'hidden',
+            opacity: 0.6,
+            maxHeight: '300px',
+            overflowY: 'auto',
+          }}
+        >
+          <SyntaxHighlighter
+            language="python"
+            style={syntaxHighlightTheme}
+            customStyle={{
+              margin: 0,
+              padding: '8px 12px',
+              fontSize: '13px',
+              fontFamily: 'monospace',
+              backgroundColor: markdownTheme.codeBackground ?? markdownTheme.outputBackground ?? 'rgba(0,0,0,0.04)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              color: markdownTheme.text,
+            }}
+            showLineNumbers={false}
+            wrapLines={true}
+            wrapLongLines={true}
+          >
+            {entry.originalSource || ' '}
+          </SyntaxHighlighter>
+        </div>
+      </div>
+    ));
+  }, [isJupyter, props.isDiffMode, cellDiffEntries, markdownTheme, syntaxHighlightTheme]);
+
   return (
     <MarkdownContext.Provider value={contextValue}>
       <div id="code-markdown" className="markdown" style={rootStyle}>
         {imageElement ?? markdownElement}
+        {removedCellBlocks}
       </div>
     </MarkdownContext.Provider>
   );
@@ -1122,6 +1209,84 @@ const MarkdownHeading = (props: HeadingProps) => {
   );
 };
 
+// ── Diff: collapsible panel showing original cell content ────────────────────
+const CellDiffOriginal: React.FC<{
+  originalSource: string;
+  status: 'modified' | 'removed' | 'added';
+  language?: string;
+  markdownTheme: MarkdownThemeValues;
+  syntaxHighlightTheme: React.ComponentProps<typeof SyntaxHighlighter>['style'];
+}> = ({ originalSource, status, language, markdownTheme, syntaxHighlightTheme }) => {
+  const [expanded, setExpanded] = React.useState(status === 'removed');
+
+  const label = status === 'removed' ? 'Removed content' : 'Original';
+
+  return (
+    <div style={{ marginTop: '6px' }}>
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: status === 'removed' ? '#ff4d4f' : '#1890ff',
+          padding: '2px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '9px',
+            transition: 'transform 0.15s',
+            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+          }}
+        >
+          ▶
+        </span>
+        {expanded ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+      </button>
+      {expanded && (
+        <div
+          style={{
+            margin: '4px 0 0 0',
+            borderRadius: '4px',
+            border: `1px solid ${markdownTheme.outputBorder ?? 'rgba(0,0,0,0.08)'}`,
+            overflow: 'hidden',
+            opacity: status === 'removed' ? 0.6 : 0.75,
+            maxHeight: '300px',
+            overflowY: 'auto',
+          }}
+        >
+          <SyntaxHighlighter
+            language={language || 'text'}
+            style={syntaxHighlightTheme}
+            customStyle={{
+              margin: 0,
+              padding: '8px 12px',
+              fontSize: '13px',
+              fontFamily: 'monospace',
+              backgroundColor: markdownTheme.codeBackground ?? markdownTheme.outputBackground ?? 'rgba(0,0,0,0.04)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              color: markdownTheme.text,
+            }}
+            showLineNumbers={false}
+            wrapLines={true}
+            wrapLongLines={true}
+          >
+            {originalSource || ' '}
+          </SyntaxHighlighter>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MarkdownDiv = (props: MarkdownNodeProps) => {
   const {
     getClassName,
@@ -1132,6 +1297,10 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
     onMouseUp,
     onKeyDown,
     isEditMode,
+    isDiffMode,
+    cellDiffEntries,
+    markdownTheme,
+    syntaxHighlightTheme,
   } = useMarkdownContext();
   // Also read from CommentHighlightContext to include suggestion pseudo-comments.
   // The local getCommentsForLine from MarkdownContext only has real comments, so
@@ -1246,6 +1415,42 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
         } as React.CSSProperties)
       : undefined;
 
+    // Diff mode: look up the diff entry for this cell
+    const diffEntry = isDiffMode ? cellDiffEntries.find((e) => e.editedIndex === cellNum) : undefined;
+    const diffStatus = diffEntry?.status;
+
+    // Diff indicator border colors
+    const diffBorderStyle: React.CSSProperties | undefined = diffStatus
+      ? {
+          borderLeft:
+            diffStatus === 'modified'
+              ? '4px solid #1890ff'
+              : diffStatus === 'added'
+                ? '4px solid #52c41a'
+                : diffStatus === 'removed'
+                  ? '4px solid #ff4d4f'
+                  : undefined,
+        }
+      : undefined;
+
+    const diffBadgeLabel =
+      diffStatus === 'modified'
+        ? 'Modified'
+        : diffStatus === 'added'
+          ? 'Added'
+          : diffStatus === 'removed'
+            ? 'Removed'
+            : null;
+
+    const diffBadgeColor =
+      diffStatus === 'modified'
+        ? '#1890ff'
+        : diffStatus === 'added'
+          ? '#52c41a'
+          : diffStatus === 'removed'
+            ? '#ff4d4f'
+            : undefined;
+
     return (
       <MarkdownCellContext.Provider
         value={{ cellIndex: Number.isNaN(cellNum) ? null : cellNum, cellType: cellType || null }}
@@ -1254,7 +1459,7 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
           data-jupyter-cell={cellIndex}
           data-cell-uuid={cellUuid}
           className={computedClassName}
-          style={suggestionStyle}
+          style={{ ...suggestionStyle, ...diffBorderStyle }}
           index-number={cellIndex}
           data-has-comment={cellHasComments ? 'true' : undefined}
           onMouseUp={isEditMode ? undefined : onMouseUp}
@@ -1271,7 +1476,33 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
           {...safeProps}
           title={`Cell ${1 + parseInt(cellIndex)}`}
         >
-          {props.children}
+          {diffBadgeLabel && (
+            <div
+              style={{
+                display: 'inline-block',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#fff',
+                backgroundColor: diffBadgeColor,
+                borderRadius: '3px',
+                padding: '1px 6px',
+                marginBottom: '4px',
+                lineHeight: '18px',
+              }}
+            >
+              {diffBadgeLabel}
+            </div>
+          )}
+          {diffStatus !== 'removed' && props.children}
+          {diffEntry?.originalSource !== undefined && (
+            <CellDiffOriginal
+              originalSource={diffEntry.originalSource}
+              status={diffStatus!}
+              language={cellType === 'code' ? 'python' : undefined}
+              markdownTheme={markdownTheme}
+              syntaxHighlightTheme={syntaxHighlightTheme}
+            />
+          )}
         </div>
       </MarkdownCellContext.Provider>
     );

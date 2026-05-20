@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOutlined, InboxOutlined, SearchOutlined, TeamOutlined, FolderOutlined } from '@ant-design/icons';
-import { Input } from 'antd';
+import { BookOutlined, FolderOutlined, InboxOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
+import { Button, Card, Empty, Flex, Input, Statistic, Tag, Typography } from 'antd';
 import { motion } from 'motion/react';
 
 import { Course } from '../../api-client';
@@ -12,6 +12,8 @@ import { useAdminDashboardData } from './useAdminDashboardData';
 import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import styles from './AdminDashboard.module.scss';
+
+const { Title, Text } = Typography;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Types                                                                     */
@@ -42,8 +44,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
   const prefetchCourse = usePrefetchCourse();
   const [searchText, setSearchText] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
+  const [showAllPeriods, setShowAllPeriods] = useState(false);
 
-  // Clear stored course so next /admin/ visit lands on dashboard
   useEffect(() => {
     LOCAL_SETTINGS.defaultCourse.setter(0);
   }, []);
@@ -51,15 +53,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
   const firstName = userEmail.split('@')[0].split('.')[0];
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  /* ── Unique periods ──────────────────────────────────────────────────── */
+  /* ── Unique periods, sorted newest-first ────────────────────────────── */
 
-  const uniquePeriods = useMemo(() => {
+  const sortedPeriods = useMemo(() => {
     const periods = new Set<string>();
     for (const c of courses) {
       if (c.period) periods.add(c.period);
     }
-    return [...periods].sort((a, b) => a.localeCompare(b));
+    const seasonRank: Record<string, number> = { fall: 3, summer: 2, spring: 1, winter: 0 };
+    return [...periods].sort((a, b) => {
+      const yearOf = (s: string) => parseInt(s.match(/\b(20\d{2}|19\d{2})\b/)?.[1] ?? '0');
+      const seasonOf = (s: string) => {
+        const lower = s.toLowerCase();
+        for (const [key, rank] of Object.entries(seasonRank)) {
+          if (lower.includes(key)) return rank;
+        }
+        return -1;
+      };
+      const yearDiff = yearOf(b) - yearOf(a);
+      return yearDiff !== 0 ? yearDiff : seasonOf(b) - seasonOf(a);
+    });
   }, [courses]);
+
+  const VISIBLE_PERIOD_COUNT = 4;
+  const visiblePeriods = showAllPeriods ? sortedPeriods : sortedPeriods.slice(0, VISIBLE_PERIOD_COUNT);
+  const hiddenPeriodCount = sortedPeriods.length - VISIBLE_PERIOD_COUNT;
 
   /* ── Filter courses by search + period ───────────────────────────────── */
 
@@ -86,11 +104,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
   if (courses.length === 0) {
     return (
       <div className={styles.dashboard}>
-        <div className={styles.emptyState}>
-          <InboxOutlined className={styles.emptyIcon} />
-          <h2 className={styles.emptyTitle}>No courses yet</h2>
-          <p className={styles.emptySubtext}>Create your first course to get started.</p>
-        </div>
+        <Empty
+          image={<InboxOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+          description={
+            <div>
+              <Text strong style={{ fontSize: 16 }}>
+                No courses yet
+              </Text>
+              <br />
+              <Text type="secondary">Create your first course to get started.</Text>
+            </div>
+          }
+          style={{ padding: '80px 0' }}
+        />
       </div>
     );
   }
@@ -100,72 +126,68 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
   return (
     <div className={styles.dashboard}>
       {/* ── Greeting ────────────────────────────────────────────────────── */}
-      <div className={styles.greeting} role="heading" aria-level={1}>
-        <p className={styles.roleLabel}>Admin Console</p>
-        <h1 className={styles.greetingTitle}>
+      <div style={{ marginBottom: 36 }}>
+        <Title level={2} style={{ margin: 0, fontSize: 28 }}>
           {getGreeting()}, {displayName}
-        </h1>
-        <p className={styles.greetingSubtitle}>
+        </Title>
+        <Text type="secondary" style={{ fontSize: 15 }}>
           {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'}
           {stats.archivedCourses > 0 && `, ${stats.archivedCourses} archived`}
-        </p>
+        </Text>
       </div>
 
-      {/* ── Summary strip ───────────────────────────────────────────────── */}
+      {/* ── Summary stats ───────────────────────────────────────────────── */}
       <motion.div
-        className={styles.summaryStrip}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
       >
-        <div className={styles.summaryCardBrand}>
-          <span className={styles.summaryValue}>{stats.activeCourses}</span>
-          <span className={styles.summaryLabel}>Active courses</span>
-        </div>
-        <div className={styles.summaryCardAccent}>
-          <span className={styles.summaryValue}>{stats.totalStudents}</span>
-          <span className={styles.summaryLabel}>Total students</span>
-        </div>
-        <div className={styles.summaryCardWarning}>
-          <span className={styles.summaryValue}>{stats.totalAssignments}</span>
-          <span className={styles.summaryLabel}>Total assignments</span>
-        </div>
-        <div className={styles.summaryCardNeutral}>
-          <span className={styles.summaryValue}>{stats.archivedCourses}</span>
-          <span className={styles.summaryLabel}>Archived</span>
-        </div>
+        <Card style={{ marginBottom: 32, padding: '8px 0' }}>
+          <Flex justify="space-around" wrap="wrap" gap={24}>
+            <Statistic title="Active courses" value={stats.activeCourses} valueStyle={{ color: '#198665' }} />
+            <Statistic title="Total students" value={stats.totalStudents} valueStyle={{ color: '#1677ff' }} />
+            <Statistic title="Assignments" value={stats.totalAssignments} valueStyle={{ color: '#fa8c16' }} />
+            <Statistic title="Archived" value={stats.archivedCourses} />
+          </Flex>
+        </Card>
       </motion.div>
 
       {/* ── Filter bar ────────────────────────────────────────────────── */}
-      {(courses.length > 5 || uniquePeriods.length > 1) && (
-        <div className={styles.filterBar}>
+      {(courses.length > 5 || sortedPeriods.length > 1) && (
+        <Flex vertical gap={10} style={{ marginBottom: 20 }}>
           {courses.length > 5 && (
             <Input
-              className={styles.searchInput}
               placeholder="Search courses..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
               aria-label="Search courses"
+              style={{ maxWidth: 280 }}
             />
           )}
-          {uniquePeriods.length > 1 && (
-            <div className={styles.periodFilters} role="group" aria-label="Filter by period">
-              {uniquePeriods.map((period) => (
-                <button
+          {sortedPeriods.length > 1 && (
+            <Flex gap={6} align="center" wrap="wrap">
+              <Tag.CheckableTag checked={selectedPeriod === null} onChange={() => setSelectedPeriod(null)}>
+                All
+              </Tag.CheckableTag>
+              {visiblePeriods.map((period) => (
+                <Tag.CheckableTag
                   key={period}
-                  type="button"
-                  className={selectedPeriod === period ? styles.periodPillActive : styles.periodPill}
-                  onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
-                  aria-pressed={selectedPeriod === period}
+                  checked={selectedPeriod === period}
+                  onChange={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
                 >
                   {period}
-                </button>
+                </Tag.CheckableTag>
               ))}
-            </div>
+              {!showAllPeriods && hiddenPeriodCount > 0 && (
+                <Button type="link" size="small" onClick={() => setShowAllPeriods(true)}>
+                  +{hiddenPeriodCount} older
+                </Button>
+              )}
+            </Flex>
           )}
-        </div>
+        </Flex>
       )}
 
       {/* ── Active courses ──────────────────────────────────────────────── */}
@@ -175,10 +197,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
         >
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Your Courses</h2>
-            <span className={styles.sectionCount}>{filteredActive.length}</span>
-          </div>
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <Title level={5} style={{ margin: 0 }}>
+              Your Courses
+            </Title>
+            <Tag>{filteredActive.length}</Tag>
+          </Flex>
           <div className={styles.courseGrid}>
             {filteredActive.map((course, i) => (
               <motion.div
@@ -189,25 +213,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
               >
                 <Link
                   to={encodedCourseLink('admin', course, 'assignments/overview')}
-                  className={styles.courseCard}
+                  style={{ textDecoration: 'none' }}
                   onMouseEnter={() => prefetchCourse(course)}
                 >
-                  <div className={styles.courseCardHeader}>
-                    <h3 className={styles.courseCardName}>{course.name}</h3>
-                    <div className={styles.courseCardBadges}>
-                      <span className={styles.courseCardPeriod}>{course.period}</span>
-                    </div>
-                  </div>
-                  <div className={styles.courseCardStats}>
-                    <span className={styles.courseCardStat}>
-                      <BookOutlined className={styles.courseCardStatIcon} />
-                      {course.assignments?.length ?? 0} assignment{(course.assignments?.length ?? 0) === 1 ? '' : 's'}
-                    </span>
-                    <span className={styles.courseCardStat}>
-                      <TeamOutlined className={styles.courseCardStatIcon} />
-                      {course.studentCount ?? 0} student{(course.studentCount ?? 0) === 1 ? '' : 's'}
-                    </span>
-                  </div>
+                  <Card size="small" hoverable>
+                    <Flex justify="space-between" align="flex-start">
+                      <Text strong style={{ fontSize: 15 }}>
+                        {course.name}
+                      </Text>
+                      <Tag>{course.period}</Tag>
+                    </Flex>
+                    <Flex gap={16} style={{ marginTop: 10 }}>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <BookOutlined /> {course.assignments?.length ?? 0} assignment
+                        {(course.assignments?.length ?? 0) === 1 ? '' : 's'}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <TeamOutlined /> {course.studentCount ?? 0} student{(course.studentCount ?? 0) === 1 ? '' : 's'}
+                      </Text>
+                    </Flex>
+                  </Card>
                 </Link>
               </motion.div>
             ))}
@@ -221,12 +246,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
+          style={{ marginTop: 24 }}
         >
-          <div className={styles.sectionHeader}>
-            <FolderOutlined style={{ color: 'var(--sc-ink-faint)' }} />
-            <h2 className={styles.sectionTitle}>Archived</h2>
-            <span className={styles.sectionCount}>{filteredArchived.length}</span>
-          </div>
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <FolderOutlined style={{ color: '#999' }} />
+            <Title level={5} style={{ margin: 0 }}>
+              Archived
+            </Title>
+            <Tag>{filteredArchived.length}</Tag>
+          </Flex>
           <div className={styles.courseGrid}>
             {filteredArchived.map((course, i) => (
               <motion.div
@@ -237,26 +265,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
               >
                 <Link
                   to={encodedCourseLink('admin', course, 'assignments/overview')}
-                  className={styles.courseCardArchived}
+                  style={{ textDecoration: 'none' }}
                   onMouseEnter={() => prefetchCourse(course)}
                 >
-                  <div className={styles.courseCardHeader}>
-                    <h3 className={styles.courseCardName}>{course.name}</h3>
-                    <div className={styles.courseCardBadges}>
-                      <span className={styles.courseCardArchivedBadge}>Archived</span>
-                      <span className={styles.courseCardPeriod}>{course.period}</span>
-                    </div>
-                  </div>
-                  <div className={styles.courseCardStats}>
-                    <span className={styles.courseCardStat}>
-                      <BookOutlined className={styles.courseCardStatIcon} />
-                      {course.assignments?.length ?? 0} assignment{(course.assignments?.length ?? 0) === 1 ? '' : 's'}
-                    </span>
-                    <span className={styles.courseCardStat}>
-                      <TeamOutlined className={styles.courseCardStatIcon} />
-                      {course.studentCount ?? 0} student{(course.studentCount ?? 0) === 1 ? '' : 's'}
-                    </span>
-                  </div>
+                  <Card size="small" hoverable style={{ opacity: 0.75 }}>
+                    <Flex justify="space-between" align="flex-start">
+                      <Text strong style={{ fontSize: 15 }}>
+                        {course.name}
+                      </Text>
+                      <Flex gap={4}>
+                        <Tag color="default">Archived</Tag>
+                        <Tag>{course.period}</Tag>
+                      </Flex>
+                    </Flex>
+                    <Flex gap={16} style={{ marginTop: 10 }}>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <BookOutlined /> {course.assignments?.length ?? 0} assignment
+                        {(course.assignments?.length ?? 0) === 1 ? '' : 's'}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <TeamOutlined /> {course.studentCount ?? 0} student{(course.studentCount ?? 0) === 1 ? '' : 's'}
+                      </Text>
+                    </Flex>
+                  </Card>
                 </Link>
               </motion.div>
             ))}
@@ -266,11 +297,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
 
       {/* ── No search results ───────────────────────────────────────────── */}
       {searchText && filteredActive.length === 0 && filteredArchived.length === 0 && (
-        <div className={styles.emptyState}>
-          <SearchOutlined className={styles.emptyIcon} />
-          <h2 className={styles.emptyTitle}>No courses found</h2>
-          <p className={styles.emptySubtext}>Try a different search term.</p>
-        </div>
+        <Empty
+          image={<SearchOutlined style={{ fontSize: 36, color: '#bbb' }} />}
+          description={
+            <div>
+              <Text strong>No courses found</Text>
+              <br />
+              <Text type="secondary">Try a different search term.</Text>
+            </div>
+          }
+          style={{ padding: '48px 0' }}
+        />
       )}
     </div>
   );

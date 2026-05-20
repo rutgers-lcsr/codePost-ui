@@ -4,6 +4,8 @@ import queryString from 'query-string';
 import { useLocation } from 'react-router-dom';
 import { Empty, Tag } from 'antd';
 
+import type { SubmissionFile } from '../../../api-client';
+
 import { PANEL_TYPE, PERMISSION_LEVEL } from '../../../types/CodeConsole.types';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { FileWithId } from '../../../utils/file';
@@ -153,6 +155,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
   const fileIDs = React.useMemo(() => files.map((file) => file.id), [files]);
   const isEditMode = useCodeConsoleStore((s) => s.isEditMode);
   const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
+  const isDiffMode = useCodeConsoleStore((s) => s.isDiffMode);
 
   // Capability shortcuts
   const caps = props.submissionCaps;
@@ -207,8 +210,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
 
   // ─── Build LayoutConfig ──────────────────────────────────────
   const isWrite =
-    permissionLevel === PERMISSION_LEVEL.WRITE ||
-    (props.inDemoMode && permissionLevel !== PERMISSION_LEVEL.READ);
+    permissionLevel === PERMISSION_LEVEL.WRITE || (props.inDemoMode && permissionLevel !== PERMISSION_LEVEL.READ);
   const isRead = permissionLevel === PERMISSION_LEVEL.READ;
   const isFilesOnly = permissionLevel === PERMISSION_LEVEL.READ_FILES_ONLY;
 
@@ -289,23 +291,22 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
 
   // ─── Build header ────────────────────────────────────────────
 
-  const middleHeader: React.ReactNode[] =
-    config.showFeedback
-      ? [
-          <GradeButton
-            key="subheader-grade"
-            assignment={assignment}
-            submission={submission === undefined ? readOnlySubmission! : submission}
-            calculateGrade={props.calculateGradeFromState}
-            rubricCategories={props.rubricCategories}
-            comments={props.comments}
-            commentRubricComments={props.commentRubricComments}
-            files={files}
-            submissionTests={tests}
-            testCases={Object.values(testCases).flat() as TestCaseType[]}
-          />,
-        ]
-      : [];
+  const middleHeader: React.ReactNode[] = config.showFeedback
+    ? [
+        <GradeButton
+          key="subheader-grade"
+          assignment={assignment}
+          submission={submission === undefined ? readOnlySubmission! : submission}
+          calculateGrade={props.calculateGradeFromState}
+          rubricCategories={props.rubricCategories}
+          comments={props.comments}
+          commentRubricComments={props.commentRubricComments}
+          files={files}
+          submissionTests={tests}
+          testCases={Object.values(testCases).flat() as TestCaseType[]}
+        />,
+      ]
+    : [];
 
   let leftHeader: React.ReactNode[];
   let rightHeader: React.ReactNode[];
@@ -351,9 +352,13 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
         small={true}
       />,
       <ThemeToggle key="theme-toggle" small={true} />,
-      ...(!props.inDemoMode && config.showDownload ? [<DownloadCode key="download-code" submission={submission!} />] : []),
+      ...(!props.inDemoMode && config.showDownload
+        ? [<DownloadCode key="download-code" submission={submission!} />]
+        : []),
       controls,
-      ...(!props.inDemoMode && config.showFeedback ? [<ViewAsStudent key="view-as-student" pathname={location.pathname} />] : []),
+      ...(!props.inDemoMode && config.showFeedback
+        ? [<ViewAsStudent key="view-as-student" pathname={location.pathname} />]
+        : []),
       <FinalizeButton
         key="subheader-finalize"
         course={course!}
@@ -393,8 +398,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
   // All 3 modes (write, filesOnly, read) share CommentHighlightProvider + CodePanelLayout.
   // We build the inner code/comments components conditionally, then wrap once.
   const showCodePanel =
-    selectedFile &&
-    (config.canWrite || config.isFilesOnly || panelType === PANEL_TYPE.FILE || !props.inDemoMode);
+    selectedFile && (config.canWrite || config.isFilesOnly || panelType === PANEL_TYPE.FILE || !props.inDemoMode);
 
   let content: React.ReactNode = undefined;
 
@@ -422,6 +426,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
             executionResult={executionResult}
             onClearOutputs={props.handleClearOutputs}
             isEditMode={useCodeConsoleStore.getState().isEditMode}
+            isDiffMode={isDiffMode}
             onContentChange={props.handleContentChange}
           />
         )
@@ -434,6 +439,8 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
             onHighlightClick={config.isFilesOnly ? (_e) => {} : onHighlightClick}
             executionResult={executionResult}
             onClearOutputs={props.handleClearOutputs}
+            temporaryContent={(selectedFile as SubmissionFile | undefined)?.instructorEdit?.data}
+            isDiffMode={isDiffMode}
           />
         );
 
@@ -468,9 +475,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
             }
           : {})}
         showCursor={showCursor}
-        aiEnabled={
-          aiEnabled && aiFeatureStatus.comment_generation !== false && capGenerateAiComments !== false
-        }
+        aiEnabled={aiEnabled && aiFeatureStatus.comment_generation !== false && capGenerateAiComments !== false}
         onPin={props.handlePinComment}
         forcedUpdates={props.templateForceUpdates}
         suggestedComments={fileSuggestedComments}
@@ -527,6 +532,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
             zoom={codeZoom}
             updateVerticalOffset={props.setVerticalOffset}
             isEditMode={config.canWrite ? useCodeConsoleStore.getState().isEditMode : undefined}
+            isDiffMode={isDiffMode}
           />
         </CommentHighlightProvider>
         {config.canWrite && !props.inDemoMode && (

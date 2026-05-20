@@ -27,12 +27,26 @@ interface IAdminNavProps extends IWithWindowWatcherProps {
   courseId?: number;
 }
 
+const DEFAULT_OPEN_KEYS = ['assignments', 'course-settings'];
+
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const location = useLocation();
   const courseCaps = useCourseCapabilities(props.courseId);
   const canManageSections = courseCaps.manage_sections !== false;
   const canViewAuditLog = courseCaps.view_audit_log !== false;
   const canEditSettings = courseCaps.edit_course_settings !== false;
+
+  // Track openKeys so we can clear them while collapsed. AntD renders any
+  // keys in the open set as popover overlays on mount when the Sider is
+  // collapsed, which made the submenus flash open on refresh.
+  const [openKeys, setOpenKeys] = React.useState<string[]>(props.collapsed ? [] : DEFAULT_OPEN_KEYS);
+  React.useEffect(() => {
+    if (props.collapsed) {
+      setOpenKeys([]);
+    } else {
+      setOpenKeys(DEFAULT_OPEN_KEYS);
+    }
+  }, [props.collapsed]);
   // Extract the base URL (up to /admin/courseName/period) by removing any nested paths
   const getCourseBaseURL = () => {
     // baseURL might be something like /admin/CourseName/Period/assignments/overview
@@ -85,7 +99,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const main = (
     <Menu
       theme="dark"
-      defaultOpenKeys={['assignments', 'course-settings']}
+      openKeys={openKeys}
+      onOpenChange={(keys) => setOpenKeys(keys as string[])}
       selectedKeys={[getDefaultSelectedKey()]}
       mode="inline"
       items={[

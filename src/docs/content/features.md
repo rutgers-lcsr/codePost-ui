@@ -198,6 +198,7 @@ codePost supports script-based autograding that lets instructors define tests di
 - The backend parses your script and creates test cases automatically.
 - The **Preview** panel shows how your tests will appear to graders.
 - Total points are computed from the `points` values in your test definitions.
+- Learning objectives can be tagged to tests for outcome tracking.
 
 > [!IMPORTANT]
 > Make sure each test includes a **name** and **points**. This keeps preview and scoring consistent.

@@ -250,6 +250,21 @@ export interface ActivateCipResponse {
   success: boolean;
 }
 /**
+ * * `all` - All linked tests must pass
+ * * `any` - At least one linked test must pass
+ * * `percentage` - Percentage of linked tests that pass
+ * * `points_weighted` - Weighted by test point values
+ * @export
+ * @enum {string}
+ */
+export enum AggregationModeEnum {
+  All = 'all',
+  Any = 'any',
+  Percentage = 'percentage',
+  PointsWeighted = 'points_weighted',
+}
+
+/**
  * * `all` - All courses
  * * `selected` - Selected courses only
  * * `none` - Disabled
@@ -2743,37 +2758,6 @@ export interface CheckStatusNewAdminUserResponse {
   status: boolean;
 }
 /**
- * Request serializer for code execution
- * @export
- * @interface CodeExecutionRequest
- */
-export interface CodeExecutionRequest {
-  /**
-   * Code to execute
-   * @type {string}
-   * @memberof CodeExecutionRequest
-   */
-  code: string;
-  /**
-   * Language for execution
-   * @type {string}
-   * @memberof CodeExecutionRequest
-   */
-  language: string;
-  /**
-   *
-   * @type {number}
-   * @memberof CodeExecutionRequest
-   */
-  timeout?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof CodeExecutionRequest
-   */
-  workingDir?: string | null;
-}
-/**
  *
  * @export
  * @interface Comment
@@ -4198,10 +4182,10 @@ export interface EnvironmentCleanupResponse {
   success: boolean;
   /**
    *
-   * @type {number}
+   * @type {string}
    * @memberof EnvironmentCleanupResponse
    */
-  deletedCount: number;
+  taskId: string;
   /**
    *
    * @type {string}
@@ -4453,69 +4437,6 @@ export interface EnvironmentStatusResponse {
   historyCount?: number;
 }
 /**
- * Standard execution result for code files and notebooks.
- *
- * This is the primary response type for all execution endpoints.
- * @export
- * @interface ExecutionResult
- */
-export interface ExecutionResult {
-  /**
-   * Whether execution completed successfully
-   * @type {boolean}
-   * @memberof ExecutionResult
-   */
-  success: boolean;
-  /**
-   * Standard output from execution
-   * @type {string}
-   * @memberof ExecutionResult
-   */
-  stdout?: string;
-  /**
-   * Standard error from execution
-   * @type {string}
-   * @memberof ExecutionResult
-   */
-  stderr?: string;
-  /**
-   * Error message if execution failed
-   * @type {string}
-   * @memberof ExecutionResult
-   */
-  error?: string | null;
-  /**
-   * Execution duration in seconds
-   * @type {number}
-   * @memberof ExecutionResult
-   */
-  executionTime?: number;
-  /**
-   * Structured output data (notebook cells, images, etc.)
-   * @type {{ [key: string]: any | undefined; }}
-   * @memberof ExecutionResult
-   */
-  outputData?: { [key: string]: any | undefined };
-  /**
-   * System-level logs from the executor
-   * @type {Array<string>}
-   * @memberof ExecutionResult
-   */
-  systemLogs?: Array<string>;
-  /**
-   * Structured test results (if present)
-   * @type {Array<{ [key: string]: any | undefined; }>}
-   * @memberof ExecutionResult
-   */
-  tests?: Array<{ [key: string]: any | undefined }>;
-  /**
-   * When the execution completed
-   * @type {string}
-   * @memberof ExecutionResult
-   */
-  timestamp?: string;
-}
-/**
  * Request serializer for file execution endpoints
  * @export
  * @interface FileExecutionRequest
@@ -4688,6 +4609,45 @@ export interface HealthCheck {
 }
 
 /**
+ * Replaces individual hidden-test rows in student-facing responses. The student learns
+ * how many hidden tests they passed and the point impact, but never sees the underlying
+ * TestCase names, descriptions, or logs.
+ * @export
+ * @interface HiddenTestSummary
+ */
+export interface HiddenTestSummary {
+  /**
+   *
+   * @type {string}
+   * @memberof HiddenTestSummary
+   */
+  label: string;
+  /**
+   *
+   * @type {number}
+   * @memberof HiddenTestSummary
+   */
+  passedCount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof HiddenTestSummary
+   */
+  totalCount: number;
+  /**
+   *
+   * @type {number}
+   * @memberof HiddenTestSummary
+   */
+  pointsEarned: number;
+  /**
+   *
+   * @type {number}
+   * @memberof HiddenTestSummary
+   */
+  pointsTotal: number;
+}
+/**
  *
  * @export
  * @interface ImpersonateRequest
@@ -4800,6 +4760,121 @@ export enum LastSolutionRunEnum {
   NUMBER_3 = 3,
 }
 
+/**
+ *
+ * @export
+ * @interface LearningObjective
+ */
+export interface LearningObjective {
+  /**
+   *
+   * @type {number}
+   * @memberof LearningObjective
+   */
+  readonly id: number;
+  /**
+   * The related assignment__id.
+   * @type {number}
+   * @memberof LearningObjective
+   */
+  assignment: number;
+  /**
+   * Short identifier used in test decorators, e.g. 'recursion'.
+   * @type {string}
+   * @memberof LearningObjective
+   */
+  shortId: string;
+  /**
+   * Display name for the learning objective.
+   * @type {string}
+   * @memberof LearningObjective
+   */
+  name: string;
+  /**
+   * Optional longer description of the objective.
+   * @type {string}
+   * @memberof LearningObjective
+   */
+  description?: string;
+  /**
+   * Controls when students can see this objective in test results.
+   *
+   * * `always` - Always show
+   * * `on_pass` - Show when tests pass
+   * * `on_fail` - Show when tests fail
+   * * `never` - Admin only
+   * @type {VisibilityModeEnum}
+   * @memberof LearningObjective
+   */
+  visibilityMode?: VisibilityModeEnum;
+  /**
+   * How to aggregate results from multiple linked tests.
+   *
+   * * `all` - All linked tests must pass
+   * * `any` - At least one linked test must pass
+   * * `percentage` - Percentage of linked tests that pass
+   * * `points_weighted` - Weighted by test point values
+   * @type {AggregationModeEnum}
+   * @memberof LearningObjective
+   */
+  aggregationMode?: AggregationModeEnum;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof LearningObjective
+   */
+  readonly testCases: Array<number>;
+}
+
+/**
+ *
+ * @export
+ * @interface LearningObjectiveSummary
+ */
+export interface LearningObjectiveSummary {
+  /**
+   *
+   * @type {number}
+   * @memberof LearningObjectiveSummary
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof LearningObjectiveSummary
+   */
+  shortId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof LearningObjectiveSummary
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof LearningObjectiveSummary
+   */
+  description: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof LearningObjectiveSummary
+   */
+  met: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof LearningObjectiveSummary
+   */
+  score: number;
+  /**
+   *
+   * @type {string}
+   * @memberof LearningObjectiveSummary
+   */
+  aggregationMode: string;
+}
 /**
  *
  * @export
@@ -5061,62 +5136,6 @@ export interface ModelFile {
    * @memberof ModelFile
    */
   readonly modified: string;
-}
-/**
- * Request serializer for executing a single notebook cell
- * @export
- * @interface NotebookCellExecutionRequest
- */
-export interface NotebookCellExecutionRequest {
-  /**
-   * Cell code to execute
-   * @type {string}
-   * @memberof NotebookCellExecutionRequest
-   */
-  cellCode: string;
-  /**
-   *
-   * @type {number}
-   * @memberof NotebookCellExecutionRequest
-   */
-  cellIndex?: number;
-  /**
-   *
-   * @type {number}
-   * @memberof NotebookCellExecutionRequest
-   */
-  timeout?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof NotebookCellExecutionRequest
-   */
-  kernelName?: string;
-}
-/**
- * Request serializer for notebook execution
- * @export
- * @interface NotebookExecutionRequest
- */
-export interface NotebookExecutionRequest {
-  /**
-   * Notebook JSON content
-   * @type {string}
-   * @memberof NotebookExecutionRequest
-   */
-  notebookContent: string;
-  /**
-   *
-   * @type {number}
-   * @memberof NotebookExecutionRequest
-   */
-  timeout?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof NotebookExecutionRequest
-   */
-  kernelName?: string;
 }
 /**
  *
@@ -6853,6 +6872,72 @@ export interface PatchedFile {
 /**
  *
  * @export
+ * @interface PatchedLearningObjective
+ */
+export interface PatchedLearningObjective {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedLearningObjective
+   */
+  readonly id?: number;
+  /**
+   * The related assignment__id.
+   * @type {number}
+   * @memberof PatchedLearningObjective
+   */
+  assignment?: number;
+  /**
+   * Short identifier used in test decorators, e.g. 'recursion'.
+   * @type {string}
+   * @memberof PatchedLearningObjective
+   */
+  shortId?: string;
+  /**
+   * Display name for the learning objective.
+   * @type {string}
+   * @memberof PatchedLearningObjective
+   */
+  name?: string;
+  /**
+   * Optional longer description of the objective.
+   * @type {string}
+   * @memberof PatchedLearningObjective
+   */
+  description?: string;
+  /**
+   * Controls when students can see this objective in test results.
+   *
+   * * `always` - Always show
+   * * `on_pass` - Show when tests pass
+   * * `on_fail` - Show when tests fail
+   * * `never` - Admin only
+   * @type {VisibilityModeEnum}
+   * @memberof PatchedLearningObjective
+   */
+  visibilityMode?: VisibilityModeEnum;
+  /**
+   * How to aggregate results from multiple linked tests.
+   *
+   * * `all` - All linked tests must pass
+   * * `any` - At least one linked test must pass
+   * * `percentage` - Percentage of linked tests that pass
+   * * `points_weighted` - Weighted by test point values
+   * @type {AggregationModeEnum}
+   * @memberof PatchedLearningObjective
+   */
+  aggregationMode?: AggregationModeEnum;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof PatchedLearningObjective
+   */
+  readonly testCases?: Array<number>;
+}
+
+/**
+ *
+ * @export
  * @interface PatchedMaintenanceBanner
  */
 export interface PatchedMaintenanceBanner {
@@ -7569,6 +7654,31 @@ export interface PatchedSubmissionFile {
    * @memberof PatchedSubmissionFile
    */
   readonly modified?: string;
+  /**
+   *
+   * @type {SubmissionFileEdit}
+   * @memberof PatchedSubmissionFile
+   */
+  readonly edit?: SubmissionFileEdit;
+}
+/**
+ *
+ * @export
+ * @interface PatchedSubmissionFileEditSave
+ */
+export interface PatchedSubmissionFileEditSave {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSubmissionFileEditSave
+   */
+  fileId?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSubmissionFileEditSave
+   */
+  data?: string;
 }
 /**
  *
@@ -7648,6 +7758,12 @@ export interface PatchedSubmissionTest {
    * @memberof PatchedSubmissionTest
    */
   results?: any | null;
+  /**
+   *
+   * @type {HiddenTestSummary}
+   * @memberof PatchedSubmissionTest
+   */
+  readonly hiddenSummary?: HiddenTestSummary | null;
 }
 /**
  *
@@ -7968,6 +8084,18 @@ export interface PatchedTestCase {
    * @memberof PatchedTestCase
    */
   timeout?: number;
+  /**
+   * If True, students see only pass/fail status and point impact — not the test name, logs, or explanation.
+   * @type {boolean}
+   * @memberof PatchedTestCase
+   */
+  hidden?: boolean;
+  /**
+   * Learning objectives this test is associated with.
+   * @type {Array<number>}
+   * @memberof PatchedTestCase
+   */
+  learningObjectives?: Array<number>;
 }
 
 /**
@@ -9419,6 +9547,43 @@ export interface SubmissionFile {
    * @memberof SubmissionFile
    */
   readonly modified: string;
+  /**
+   *
+   * @type {SubmissionFileEdit}
+   * @memberof SubmissionFile
+   */
+  readonly edit: SubmissionFileEdit;
+}
+/**
+ *
+ * @export
+ * @interface SubmissionFileEdit
+ */
+export interface SubmissionFileEdit {
+  /**
+   * The persisted edited contents for this submission file (set by an instructor or, if allowed, a grader).
+   * @type {string}
+   * @memberof SubmissionFileEdit
+   */
+  readonly data: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionFileEdit
+   */
+  readonly lastEditedBy: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionFileEdit
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionFileEdit
+   */
+  readonly modified: string;
 }
 /**
  * Simplified serializer for students uploading submission files.
@@ -9531,6 +9696,12 @@ export interface SubmissionFileWithNestedComments {
    * @memberof SubmissionFileWithNestedComments
    */
   readonly modified: string;
+  /**
+   *
+   * @type {SubmissionFileEdit}
+   * @memberof SubmissionFileWithNestedComments
+   */
+  readonly edit: SubmissionFileEdit;
 }
 /**
  *
@@ -9715,6 +9886,12 @@ export interface SubmissionTest {
    * @memberof SubmissionTest
    */
   results?: any | null;
+  /**
+   *
+   * @type {HiddenTestSummary}
+   * @memberof SubmissionTest
+   */
+  readonly hiddenSummary: HiddenTestSummary | null;
 }
 /**
  *
@@ -9734,6 +9911,12 @@ export interface SubmissionTestResultsResponse {
    * @memberof SubmissionTestResultsResponse
    */
   logs: string;
+  /**
+   *
+   * @type {Array<LearningObjectiveSummary>}
+   * @memberof SubmissionTestResultsResponse
+   */
+  learningObjectives?: Array<LearningObjectiveSummary>;
 }
 /**
  *
@@ -10288,6 +10471,18 @@ export interface TestCase {
    * @memberof TestCase
    */
   timeout?: number;
+  /**
+   * If True, students see only pass/fail status and point impact — not the test name, logs, or explanation.
+   * @type {boolean}
+   * @memberof TestCase
+   */
+  hidden?: boolean;
+  /**
+   * Learning objectives this test is associated with.
+   * @type {Array<number>}
+   * @memberof TestCase
+   */
+  learningObjectives?: Array<number>;
 }
 
 /**
@@ -10382,6 +10577,18 @@ export interface TestCaseStudent {
    * @memberof TestCaseStudent
    */
   rubricItem?: number | null;
+  /**
+   * If True, students see only pass/fail status and point impact — not the test name, logs, or explanation.
+   * @type {boolean}
+   * @memberof TestCaseStudent
+   */
+  hidden?: boolean;
+  /**
+   * Learning objectives this test is associated with.
+   * @type {Array<number>}
+   * @memberof TestCaseStudent
+   */
+  learningObjectives?: Array<number>;
 }
 /**
  *
@@ -10905,6 +11112,21 @@ export interface VerifyResetTokenResponse {
    */
   email?: string;
 }
+/**
+ * * `always` - Always show
+ * * `on_pass` - Show when tests pass
+ * * `on_fail` - Show when tests fail
+ * * `never` - Admin only
+ * @export
+ * @enum {string}
+ */
+export enum VisibilityModeEnum {
+  Always = 'always',
+  OnPass = 'on_pass',
+  OnFail = 'on_fail',
+  Never = 'never',
+}
+
 /**
  *
  * @export

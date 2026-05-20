@@ -12,6 +12,7 @@ apis/CoursesApi.ts
 apis/DashboardApi.ts
 apis/FilesApi.ts
 apis/ImpersonateApi.ts
+apis/LearningObjectivesApi.ts
 apis/LogsApi.ts
 apis/OrganizationsApi.ts
 apis/OttApi.ts
@@ -46,6 +47,7 @@ docs/AIUsageBreakdown.md
 docs/AIUsageBucket.md
 docs/AIUsageSummary.md
 docs/ActivateCipResponse.md
+docs/AggregationModeEnum.md
 docs/AiCoursePolicyEnum.md
 docs/AiFeaturesApi.md
 docs/AiFeaturesList200ResponseInner.md
@@ -103,7 +105,6 @@ docs/CapabilitiesResponseCapabilitiesMap.md
 docs/CeleryCheck.md
 docs/CheckSSOAvailabilityResponse.md
 docs/CheckStatusNewAdminUserResponse.md
-docs/CodeExecutionRequest.md
 docs/Comment.md
 docs/CommentTemplate.md
 docs/CommentTemplatesApi.md
@@ -144,7 +145,6 @@ docs/EnvironmentRollbackResponse.md
 docs/EnvironmentRunAllResponse.md
 docs/EnvironmentRunResponse.md
 docs/EnvironmentStatusResponse.md
-docs/ExecutionResult.md
 docs/FileExecutionRequest.md
 docs/FilesApi.md
 docs/GenerateAIAssistanceResponse.md
@@ -155,12 +155,16 @@ docs/GenerateOTTResponse.md
 docs/GranularityEnum.md
 docs/HandleValidationResponse.md
 docs/HealthCheck.md
+docs/HiddenTestSummary.md
 docs/ImpersonateApi.md
 docs/ImpersonateRequest.md
 docs/JWT.md
 docs/JwtOttResponse.md
 docs/LanguageEnum.md
 docs/LastSolutionRunEnum.md
+docs/LearningObjective.md
+docs/LearningObjectiveSummary.md
+docs/LearningObjectivesApi.md
 docs/LogDumpRequest.md
 docs/LogErrorRequest.md
 docs/LogHappinessRequest.md
@@ -170,8 +174,6 @@ docs/MainOrgSSOConfig.md
 docs/MaintenanceBannerResponse.md
 docs/MigrationCheck.md
 docs/ModelFile.md
-docs/NotebookCellExecutionRequest.md
-docs/NotebookExecutionRequest.md
 docs/NullEnum.md
 docs/OrgSSOConfig.md
 docs/Organization.md
@@ -203,6 +205,7 @@ docs/PatchedEnvironmentBuildRequest.md
 docs/PatchedEnvironmentRunAllRequest.md
 docs/PatchedEnvironmentRunRequest.md
 docs/PatchedFile.md
+docs/PatchedLearningObjective.md
 docs/PatchedMaintenanceBanner.md
 docs/PatchedOrganization.md
 docs/PatchedOrganizationAISettingsUpdate.md
@@ -213,6 +216,7 @@ docs/PatchedRubricComment.md
 docs/PatchedSection.md
 docs/PatchedSubmission.md
 docs/PatchedSubmissionFile.md
+docs/PatchedSubmissionFileEditSave.md
 docs/PatchedSubmissionTest.md
 docs/PatchedSuggestedComment.md
 docs/PatchedSystemPromptVariant.md
@@ -255,6 +259,7 @@ docs/Submission.md
 docs/SubmissionCheckPermissionResponse.md
 docs/SubmissionConsoleData.md
 docs/SubmissionFile.md
+docs/SubmissionFileEdit.md
 docs/SubmissionFileStudentUpload.md
 docs/SubmissionFileWithNestedComments.md
 docs/SubmissionFilesApi.md
@@ -307,6 +312,7 @@ docs/VerifyRegistrationTokenRequest.md
 docs/VerifyRegistrationTokenResponse.md
 docs/VerifyResetTokenRequest.md
 docs/VerifyResetTokenResponse.md
+docs/VisibilityModeEnum.md
 docs/Webhook.md
 docs/WebhooksApi.md
 index.ts

@@ -18,6 +18,7 @@ import {
   DashboardApi,
   FilesApi,
   ImpersonateApi,
+  LearningObjectivesApi,
   LogsApi,
   OrganizationsApi,
   OttApi,
@@ -82,6 +83,7 @@ export const coursesApi = new CoursesApi(apiClientConfig);
 export const dashboardApi = new DashboardApi(apiClientConfig);
 export const filesApi = new FilesApi(apiClientConfig);
 export const impersonateApi = new ImpersonateApi(apiClientConfig);
+export const learningObjectivesApi = new LearningObjectivesApi(apiClientConfig);
 export const logsApi = new LogsApi(apiClientConfig);
 export const organizationsApi = new OrganizationsApi(apiClientConfig);
 export const ottApi = new OttApi(apiClientConfig);

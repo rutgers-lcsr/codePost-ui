@@ -8,6 +8,7 @@ import type {
   SubmissionCheckPermissionResponse,
   StudentSubmission,
   SubmissionConsoleData,
+  SubmissionFileInstructorEdit,
 } from '../api-client';
 import type { FileType } from '../utils/file';
 import { getFileContent } from '../utils/file';
@@ -161,6 +162,19 @@ export class Submission {
 
     return [data, files, comments, commentRubricComments];
   };
+
+  public static saveInstructorEdit = (
+    submissionId: number,
+    fileId: number,
+    data: string,
+  ): Promise<SubmissionFileInstructorEdit> =>
+    submissionsApi.saveInstructorEditPartialUpdate({
+      id: submissionId,
+      patchedSubmissionFileInstructorEditSave: {
+        fileId,
+        data,
+      },
+    });
 }
 
 export const getSubmissionFileContent = getFileContent;

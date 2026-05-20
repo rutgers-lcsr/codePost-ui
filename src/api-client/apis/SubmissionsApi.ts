@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * codePost API
- *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
+ *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install codepost ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
  *
  * The version of the OpenAPI document: 3.0.0
  *
@@ -18,10 +18,12 @@ import type {
   GenerateAIAssistanceResponse,
   GenerateFileSuggestionsRequest,
   PatchedSubmission,
+  PatchedSubmissionFileEditSave,
   StudentSubmission,
   Submission,
   SubmissionCheckPermissionResponse,
   SubmissionConsoleData,
+  SubmissionFileEdit,
   SubmissionHistory,
   SubmissionPartnerLinkResponse,
   SubmissionSummary,
@@ -160,6 +162,11 @@ export interface RemovePartnerRetrieveRequest {
 
 export interface RetrieveRequest {
   id: number;
+}
+
+export interface SaveFileEditPartialUpdateRequest {
+  id: number;
+  patchedSubmissionFileEditSave?: PatchedSubmissionFileEditSave;
 }
 
 export interface SubmissionTestsListRequest {
@@ -1211,6 +1218,69 @@ export class SubmissionsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Submission> {
     const response = await this.retrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Create or update a persisted edit for a submission file. Course admins may always save edits; graders may save only when the assignment\'s `gradersCanEditSubmissions` flag is True.
+   */
+  async saveFileEditPartialUpdateRaw(
+    requestParameters: SaveFileEditPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SubmissionFileEdit>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling saveFileEditPartialUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/submissions/{id}/saveFileEdit/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['patchedSubmissionFileEditSave'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Create or update a persisted edit for a submission file. Course admins may always save edits; graders may save only when the assignment\'s `gradersCanEditSubmissions` flag is True.
+   */
+  async saveFileEditPartialUpdate(
+    requestParameters: SaveFileEditPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SubmissionFileEdit> {
+    const response = await this.saveFileEditPartialUpdateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

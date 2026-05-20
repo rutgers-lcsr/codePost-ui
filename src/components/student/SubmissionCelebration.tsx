@@ -1,17 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, Typography } from 'antd';
 import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'motion/react';
-import styles from './StudentConsole.module.scss';
 
-const CELEBRATION_MESSAGES = [
-  'Submitted!',
-  'Nice work!',
-  'You did it!',
-  'All done!',
-  "Ship it! 🚀",
-  'Boom! 💥',
-];
+const CELEBRATION_MESSAGES = ['Submitted!', 'Nice work!', 'You did it!', 'All done!', 'Ship it! 🚀', 'Boom! 💥'];
 
 function pickMessage(): string {
   return CELEBRATION_MESSAGES[Math.floor(Math.random() * CELEBRATION_MESSAGES.length)];
@@ -90,27 +83,47 @@ const SubmissionCelebration: React.FC<SubmissionCelebrationProps> = ({ trigger, 
     <AnimatePresence>
       {visible && (
         <motion.div
-          className={styles.celebrationOverlay}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={dismiss}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(4px)',
+          }}
         >
           <motion.div
-            className={styles.celebrationCard}
             initial={{ scale: 0.5, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: -20 }}
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: 16,
+              padding: '48px 40px 32px',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+              maxWidth: 360,
+            }}
           >
-            <div className={styles.celebrationEmoji}>🎉</div>
-            <h2 className={styles.celebrationMessage}>{msg}</h2>
-            <p className={styles.celebrationSubtext}>Your submission has been received.</p>
-            <button className={styles.celebrationDismiss} onClick={dismiss}>
-              Continue
-            </button>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+            <Typography.Title level={3} style={{ margin: '0 0 8px' }}>
+              {msg}
+            </Typography.Title>
+            <Typography.Text type="secondary">Your submission has been received.</Typography.Text>
+            <div style={{ marginTop: 24 }}>
+              <Button type="primary" onClick={dismiss}>
+                Continue
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
       )}

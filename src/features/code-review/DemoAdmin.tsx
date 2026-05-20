@@ -2186,7 +2186,13 @@ const DemoAdminNav: React.FC<{ activeKey: string; onSelect: (key: string) => voi
   activeKey,
   onSelect,
   collapsed,
-}) => (
+}) => {
+  const [openKeys, setOpenKeys] = React.useState<string[]>(collapsed ? [] : ['assignments', 'course-settings']);
+  React.useEffect(() => {
+    setOpenKeys(collapsed ? [] : ['assignments', 'course-settings']);
+  }, [collapsed]);
+
+  return (
   <div
     style={{
       display: 'flex',
@@ -2199,7 +2205,8 @@ const DemoAdminNav: React.FC<{ activeKey: string; onSelect: (key: string) => voi
     <div>
       <Menu
         theme="dark"
-        defaultOpenKeys={['assignments', 'course-settings']}
+        openKeys={openKeys}
+        onOpenChange={(keys) => setOpenKeys(keys as string[])}
         selectedKeys={[activeKey]}
         mode="inline"
         onClick={(e) => onSelect(e.key)}
@@ -2271,7 +2278,8 @@ const DemoAdminNav: React.FC<{ activeKey: string; onSelect: (key: string) => voi
       )}
     </div>
   </div>
-);
+  );
+};
 
 // ===========================================================================
 // Main Component

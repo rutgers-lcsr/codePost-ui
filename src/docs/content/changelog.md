@@ -10,7 +10,7 @@ order: 20
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 (current)
 
 ---
 
@@ -30,9 +30,87 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - Allow Assignments to be assigned to graders per problem instead of per submission.
 - Allow PDF only assignments for non-code-based courses.
 
-### Feature changes
+---
 
-- Editing a submission current doesn't save anywhere, but we plan on adding a "Save" function to editing to allow graders/instructors to modify a students submission and run test on the modified code without affecting the student's original submission. We also plan on showing differences between the original and modified code to make it easier for graders to keep track of their changes. As well as allow students to view the changes made by graders to their code.
+## v3.4.0 — Testing Framework Improvements & Persisted File Edits
+
+> **Highlight**: Hidden test cases, learning objectives that aggregate across tests, new `hidden` / `objectives` parameters in the testing framework, and persisted edits to student submission files.
+
+### New: Hidden Test Cases
+
+Instructors can now mark any test case as **hidden**. Students see only whether the test passed or failed and how it affected their score — the test name, logs, and explanation are stripped before the response leaves the server. Graders and admins continue to see full output in the code review panel.
+
+This is useful for:
+
+- Anti-cheating tests that should not be reverse-engineered from output.
+- Edge-case tests that you want to grade against but not reveal to students until after publishing.
+
+### New: Learning Objectives
+
+Each assignment can now define **learning objectives** that are linked to one or more test cases. Objectives let you communicate _what_ a student demonstrated (or missed) rather than just listing individual test results.
+
+Each objective is configured with:
+
+- A short identifier (`shortId`) that can be referenced from your test scripts.
+- A display name and optional longer description.
+- A **visibility mode** controlling when students see the objective:
+  - `Always show`
+  - `Show when tests pass`
+  - `Show when tests fail`
+  - `Admin only`
+- An **aggregation mode** controlling how the objective's "met" status and score are computed from its linked tests:
+  - `All linked tests must pass`
+  - `At least one linked test must pass`
+  - `Percentage of linked tests that pass`
+  - `Weighted by test point values`
+
+Objectives are returned alongside test results in the student feedback panel and gated by their visibility mode.
+
+### New: `hidden` and `objectives` Parameters in the Testing Framework
+
+Both parameters are recognized by the test parser for every supported language.
+
+For languages with first-class test decorators/annotations, pass them directly:
+
+```python
+# Python / Notebook Python
+@test(name="Handles empty input", points=2, hidden=True, objectives=["edge-cases"])
+def test_empty(): ...
+```
+
+```java
+// Java / JShell
+@Test(name = "Handles empty input", points = 2, hidden = true, objectives = {"edge-cases"})
+public void testEmpty() { ... }
+```
+
+For languages without decorators (R, C/C++, JS/TS/Node, Ruby, PHP), place an `@codepost` directive in the comment directly above the test:
+
+```js
+// @codepost hidden objectives=recursion,edge-cases
+test("Handles deep recursion", 2, "...", function () { ... });
+```
+
+The parser supports `//`, `#`, `--`, and `/* */` comment styles. Any objective `shortId` referenced in a script that doesn't yet exist on the assignment is **auto-created** the first time the script is synced — you can then edit its display name, description, visibility, and aggregation in the Learning Objectives UI.
+
+See the updated [Testing Guide](/docs/testing-guide) for the full syntax reference.
+
+### New: Persisted Submission File Edits
+
+Edits made by instructors and graders to a submission file in the code review panel are now **saved server-side** and survive page reloads. Previously, edits were lost when navigating away. The saved edit is associated with the user who last modified it and is delivered with the submission payload.
+
+**Who can edit**:
+
+- **Course admins / instructors** can always save edits.
+- **Graders** can save edits only when the assignment's **Graders can edit submissions** setting is enabled.
+
+The student's original uploaded file is never modified — the edit is stored alongside it.
+
+### New: Mobile Improvements
+
+Added new mobile pages for students graders and instructors with a simplified layout optimized for smaller screens. Students can view their grades directly from the mobile webpage, and instructors can view activity and change assignment settings on the go.
+
+---
 
 ## v3.3.0 — AI Assistance, Dashboards & PDF Commenting
 

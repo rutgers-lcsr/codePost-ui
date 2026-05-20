@@ -23,6 +23,8 @@ import RoleMenu from '../core/RoleMenu';
 
 import Grader from './Grader';
 import GraderDashboard from './GraderDashboard';
+import MobileGraderConsole from './MobileGraderConsole';
+import useShowMobileConsole from '../core/useShowMobileConsole';
 
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { encodeForLink } from '../core/URLutils';
@@ -49,6 +51,7 @@ const GraderCourseRouter = ComponentManager(Grader, getDefaultPanel);
 /** Renders dashboard or redirects to stored course */
 const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
   const { initialCourses, user, handleLogout } = props;
+  const showMobile = useShowMobileConsole();
 
   // If a stored course exists and is in the list, redirect to it
   const storedID = LOCAL_SETTINGS.defaultCourse.getter();
@@ -66,6 +69,17 @@ const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
   }
 
   // Render the dashboard
+  if (showMobile) {
+    return (
+      <MobileGraderConsole
+        courses={initialCourses}
+        userEmail={user.email!}
+        defaultPanel={getDefaultPanel}
+        user={user}
+      />
+    );
+  }
+
   const header = (
     <CPFlex
       left={[<CourseMenu key="course" courses={initialCourses} currentCourse={undefined} base="grader" />]}
@@ -101,6 +115,21 @@ const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
 
 /** Top-level grader router — dashboard at index, course views at /:name/:period */
 const GraderManager: React.FC<IGraderManagerProps> = (props) => {
+  const { initialCourses, user } = props;
+  const showMobile = useShowMobileConsole();
+
+  // On mobile, always show the mobile console regardless of route
+  if (showMobile) {
+    return (
+      <MobileGraderConsole
+        courses={initialCourses}
+        userEmail={user.email!}
+        defaultPanel={getDefaultPanel}
+        user={user}
+      />
+    );
+  }
+
   return (
     <Routes>
       {/* Dashboard index */}

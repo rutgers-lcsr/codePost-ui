@@ -29,6 +29,18 @@ This guide helps graders and TAs work efficiently in codePost while staying alig
 > [!IMPORTANT]
 > Finalized submissions are ready for instructor release, but students still do not see feedback until the assignment is published.
 
+## Editing student submission files
+
+You can edit a student's submission file directly in the Code Console — for example, to fix a stray syntax error so you can re-run tests against the rest of their code, or to demonstrate a small change inline.
+
+- Edits are **saved server-side per file** as soon as you save, so they survive page reloads and are visible to other graders/instructors on the same submission.
+- The **original student submission is never modified**. Your edit is stored alongside the file; the student's uploaded version is preserved untouched.
+- Each saved edit records who last modified it.
+- **Graders** can only save edits when the instructor has enabled **Graders can edit submissions** in the assignment settings. Course admins and instructors can always save edits.
+
+> [!IMPORTANT]
+> Check your course's policy before making functional changes to a student's code. For most courses, file edits are appropriate for debugging/probing only, not for adding code the student didn't write.
+
 ## Using comments effectively
 
 - Be specific: reference behavior, location, and fix direction.

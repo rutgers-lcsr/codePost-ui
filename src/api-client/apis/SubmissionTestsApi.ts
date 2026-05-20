@@ -3,7 +3,7 @@
 /* eslint-disable */
 /**
  * codePost API
- *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install git+https://github.com/rutgers-lcsr/codepost-python.git ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
+ *  An API for administrators to mine course data and automate common tasks.  ## Quick Start  ### Installation  ```bash pip install codepost ```  ### Basic Usage (Python SDK)  ```python from codepost import CodePost, Comment  client = CodePost(api_key=\"YOUR_API_KEY\")  # Create a course with kwargs shorthand course = client.courses.create(name=\"CS101\", period=\"Fall 2026\")  # Create an assignment assignment = client.assignments.create(     name=\"Homework 1\",     course=course.id,     points=100, )  # Create submission + upload files in one call submission = client.submissions.create_with_files(     assignment=assignment.id,     students=[\"student@example.com\"],     files=[         {\"name\": \"main.py\", \"data\": \"print(\'hello\')\", \"extension\": \".py\"},     ], )  # Add inline feedback file_id = client.submissions.retrieve(submission.id).files[0].id client.comments.create(     Comment(         file=file_id,         text=\"Nice work\",         start_line=1,         end_line=1,         point_delta=1,     ) )  # Finalize and export grades client.submissions.bulk_finalize([submission.id], grader=\"ta@example.com\") rows = client.assignments.submissions.export_grades(assignment_id=assignment.id) print(rows[0]) ```  See the [Python SDK Repository](https://github.com/rutgers-lcsr/codepost-python) for more examples.
  *
  * The version of the OpenAPI document: 3.0.0
  *
@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type { PatchedSubmissionTest, SubmissionTest } from '../models/index';
 
 export interface CreateRequest {
-  submissionTest: Omit<SubmissionTest, 'id' | 'testCategory' | 'created' | 'modified'>;
+  submissionTest: Omit<SubmissionTest, 'id' | 'testCategory' | 'created' | 'modified' | 'hiddenSummary'>;
 }
 
 export interface DestroyRequest {
@@ -26,7 +26,7 @@ export interface DestroyRequest {
 
 export interface PartialUpdateRequest {
   id: number;
-  patchedSubmissionTest?: Omit<PatchedSubmissionTest, 'id' | 'testCategory' | 'created' | 'modified'>;
+  patchedSubmissionTest?: Omit<PatchedSubmissionTest, 'id' | 'testCategory' | 'created' | 'modified' | 'hiddenSummary'>;
 }
 
 export interface RetrieveRequest {
@@ -35,7 +35,7 @@ export interface RetrieveRequest {
 
 export interface UpdateRequest {
   id: number;
-  submissionTest: Omit<SubmissionTest, 'id' | 'testCategory' | 'created' | 'modified'>;
+  submissionTest: Omit<SubmissionTest, 'id' | 'testCategory' | 'created' | 'modified' | 'hiddenSummary'>;
 }
 
 /**

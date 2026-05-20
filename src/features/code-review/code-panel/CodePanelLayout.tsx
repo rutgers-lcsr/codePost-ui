@@ -5,6 +5,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../../../components/
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';
 
 import ErrorBoundary from '../../../components/core/ErrorBoundary';
+import { fileTypeRegistry } from '../formats';
 import SplitScreen from '../../../components/utils/SplitScreen.js';
 import type { FileType } from '../../../utils/file';
 // import { Divider } from 'antd';
@@ -16,11 +17,16 @@ interface ICodePanelLayoutProps extends IWithWindowWatcherProps {
   zoom: number;
   updateVerticalOffset: (updater: (oldValue: number) => number) => void;
   isEditMode?: boolean;
+  isDiffMode?: boolean;
 }
 
 export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const isDarkTheme = consoleThemes.dark === consoleTheme;
+
+  // Only Monaco-based files manage their own internal scrolling.
+  // Inline-edit types (e.g. notebooks) need the parent container to scroll.
+  const usesMonacoEdit = React.useMemo(() => fileTypeRegistry.detect(props.file).editMode === 'monaco', [props.file]);
 
   const onHighlightClick = React.useCallback(
     (e: React.MouseEvent) => {
@@ -88,8 +94,8 @@ export const LayoutCodePanel: React.FC<ICodePanelLayoutProps> = (props) => {
                   position: 'relative',
                   minWidth: '300px',
                   height: '100%',
-                  paddingBottom: props.isEditMode ? 0 : '20em',
-                  overflowY: props.isEditMode ? 'hidden' : undefined,
+                  paddingBottom: (props.isEditMode || props.isDiffMode) && usesMonacoEdit ? 0 : '20em',
+                  overflowY: (props.isEditMode || props.isDiffMode) && usesMonacoEdit ? 'hidden' : undefined,
                 }}
               >
                 {/* Toolbar */}

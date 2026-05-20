@@ -8,7 +8,8 @@ import { GradeCode } from './CodeContent';
  */
 const ConnectedGradeCode = React.memo((props: React.ComponentProps<typeof GradeCode> & { fileId: number }) => {
   const temporaryContent = useCodeConsoleStore((s) => s.temporaryFileContent[props.fileId]);
-  return <GradeCode {...props} temporaryContent={temporaryContent} />;
+  const isDiffMode = useCodeConsoleStore((s) => s.isDiffMode);
+  return <GradeCode {...props} temporaryContent={temporaryContent} isDiffMode={isDiffMode} />;
 });
 
 export default ConnectedGradeCode;

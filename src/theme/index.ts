@@ -10,7 +10,7 @@ import { colors } from './colors';
  */
 const themeConfig: ThemeConfig = {
   token: {
-    fontFamily: 'Avenir Next, Lato, sans-serif',
+    fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
     colorPrimary: '#198665',
     colorLink: '#1473ccff',
     colorSuccess: colors.brandPrimary,

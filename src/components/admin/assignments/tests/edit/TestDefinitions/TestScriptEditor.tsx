@@ -287,6 +287,24 @@ export const TestScriptEditor = (props: IProps) => {
                 range: getRangeWithAt(model, position),
               },
               {
+                label: '@test (hidden)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText:
+                  '@test(name="${1:Test Name}", points=${2:1}, hidden=True)\ndef test_${3:function}():\n\t${4:pass}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Define a hidden test — students see only pass/fail and point impact',
+                range: getRangeWithAt(model, position),
+              },
+              {
+                label: '@test (with objectives)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText:
+                  '@test(name="${1:Test Name}", points=${2:1}, objectives=["${3:objective-id}"])\ndef test_${4:function}():\n\t${5:pass}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Define a test linked to learning objectives',
+                range: getRangeWithAt(model, position),
+              },
+              {
                 label: 'assert_plots_generated',
                 kind: monacoApi.languages.CompletionItemKind.Function,
                 insertText: 'assert_plots_generated(${1:1})',
@@ -347,6 +365,24 @@ export const TestScriptEditor = (props: IProps) => {
                 range: getRangeWithAt(model, position),
               },
               {
+                label: '@Test (hidden)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText:
+                  '@Test(name="${1:Test Name}", points=${2:1}, hidden=true)\npublic double ${3:testFunction}() {\n\t${4:// test code}\n\treturn ${5:0.0};\n}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Define a hidden test — students see only pass/fail and point impact',
+                range: getRangeWithAt(model, position),
+              },
+              {
+                label: '@Test (with objectives)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText:
+                  '@Test(name="${1:Test Name}", points=${2:1}, objectives={"${3:objective-id}"})\npublic double ${4:testFunction}() {\n\t${5:// test code}\n\treturn ${6:0.0};\n}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Define a test linked to learning objectives',
+                range: getRangeWithAt(model, position),
+              },
+              {
                 label: 'assertTrue',
                 kind: monacoApi.languages.CompletionItemKind.Method,
                 insertText: 'assertTrue(${1:condition});',
@@ -399,6 +435,14 @@ export const TestScriptEditor = (props: IProps) => {
               documentation: 'Define a Node/JS test with points and description/message',
               range: getRangeWithAt(model, position),
             },
+            {
+              label: '// @codepost (hidden + objectives)',
+              kind: monacoApi.languages.CompletionItemKind.Snippet,
+              insertText: '// @codepost hidden objectives=${1:objective-id}',
+              insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'Add this comment above a test to mark it hidden and/or link learning objectives',
+              range: getStandardRange(model, position),
+            },
           ],
         };
       },
@@ -446,6 +490,14 @@ export const TestScriptEditor = (props: IProps) => {
                 insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                 documentation: 'Define an R test with points and description/message',
                 range: getRangeWithAt(model, position),
+              },
+              {
+                label: '# @codepost (hidden + objectives)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText: '# @codepost hidden objectives=${1:objective-id}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Add this comment above a test to mark it hidden and/or link learning objectives',
+                range: standardRange,
               },
             ],
           };
@@ -510,6 +562,14 @@ export const TestScriptEditor = (props: IProps) => {
               documentation: 'Define a new codePost test case with description and timeout (C/C++)',
               range: getRangeWithAt(model, position),
             },
+            {
+              label: '// @codepost (hidden + objectives)',
+              kind: monacoApi.languages.CompletionItemKind.Snippet,
+              insertText: '// @codepost hidden objectives=${1:objective-id}',
+              insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'Add this comment above a test to mark it hidden and/or link learning objectives',
+              range: getStandardRange(model, position),
+            },
           ],
         };
       },
@@ -552,6 +612,14 @@ export const TestScriptEditor = (props: IProps) => {
                 documentation: 'Define a Ruby test with points and description/message',
                 range: getRangeWithAt(model, position),
               },
+              {
+                label: '# @codepost (hidden + objectives)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText: '# @codepost hidden objectives=${1:objective-id}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Add this comment above a test to mark it hidden and/or link learning objectives',
+                range: getStandardRange(model, position),
+              },
             ],
           };
         },
@@ -590,6 +658,14 @@ export const TestScriptEditor = (props: IProps) => {
                 insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                 documentation: 'Define a PHP test with points and description/message',
                 range: getRangeWithAt(model, position),
+              },
+              {
+                label: '// @codepost (hidden + objectives)',
+                kind: monacoApi.languages.CompletionItemKind.Snippet,
+                insertText: '// @codepost hidden objectives=${1:objective-id}',
+                insertTextRules: monacoApi.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: 'Add this comment above a test to mark it hidden and/or link learning objectives',
+                range: getStandardRange(model, position),
               },
             ],
           };

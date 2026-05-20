@@ -234,6 +234,9 @@ export interface ICodeConsoleState {
   /** Whether the user is temporarily editing a file */
   isEditMode: boolean;
 
+  /** Whether the saved-vs-current diff view is visible */
+  isDiffMode: boolean;
+
   /**
    * Temporary content for files being edited
    * Key: File ID

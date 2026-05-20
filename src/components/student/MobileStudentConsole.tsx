@@ -1,26 +1,30 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
+  ArrowLeftOutlined,
   BookOutlined,
-  CalendarOutlined,
   CheckCircleFilled,
   ClockCircleOutlined,
   EyeOutlined,
   FireFilled,
   HomeFilled,
+  SettingOutlined,
   UploadOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
+import { Avatar, Badge, Card, Empty, Flex, Progress, Spin, Statistic, Tag, Typography } from 'antd';
+import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import { AnimatePresence, motion } from 'motion/react';
 
-import { Course } from '../../api-client';
+import { Course, User } from '../../api-client';
 import { Assignment } from '../../types/common';
+import { Submission } from '../../api-client';
 import { SubmissionStatus } from './submissionStatus';
-import { encodedCourseLink } from '../core/CourseMenu';
-import { CodePostDate } from '../utils/CodepostDate';
-import { useStudentData, getSubmissionStatusFor } from './useStudentData';
+import { useStudentData, getSubmissionStatusFor, GroupedSections } from './useStudentData';
 import styles from './MobileStudentConsole.module.scss';
+
+const { Title, Text } = Typography;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Types                                                                     */
@@ -30,9 +34,10 @@ interface MobileStudentConsoleProps {
   courses: Course[];
   userEmail: string;
   studentSections: number[];
+  user: User;
 }
 
-type MobileTab = 'home' | 'courses';
+type MobileTab = 'home' | 'courses' | 'settings';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Helpers                                                                   */
@@ -52,6 +57,12 @@ function getRelativeDueDate(dueDate: string): { text: string; urgent: boolean } 
   return { text: '', urgent: false };
 }
 
+function formatDueDate(date: string | null | undefined): string {
+  if (!date) return 'No due date';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
@@ -59,12 +70,277 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
+function getStatusTag(status: SubmissionStatus): React.ReactNode {
+  switch (status) {
+    case SubmissionStatus.SUBMITTED:
+      return <Tag color="success">Viewed</Tag>;
+    case SubmissionStatus.PENDING:
+      return <Tag color="processing">New Feedback</Tag>;
+    case SubmissionStatus.NOT_REVIEWED:
+      return <Tag color="warning">In Review</Tag>;
+    case SubmissionStatus.NO_SUBMISSION:
+      return <Tag color="default">Not Submitted</Tag>;
+    case SubmissionStatus.NOT_PUBLISHED:
+      return <Tag color="default">Not Published</Tag>;
+    default:
+      return <Tag>Unknown</Tag>;
+  }
+}
+
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Component                                                                 */
+/* Assignment row — shared within CourseDetail sections                      */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, userEmail, studentSections }) => {
+const AssignmentCard: React.FC<{
+  assignment: Assignment;
+  submissions: Record<number, Submission[]>;
+  viewsBySubmission: Record<number, boolean>;
+  idx: number;
+}> = ({ assignment, submissions, viewsBySubmission, idx }) => {
+  const sub = submissions[assignment.id]?.[0];
+  const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
+  const dueRel = assignment.uploadDueDate ? getRelativeDueDate(assignment.uploadDueDate) : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.18, delay: idx * 0.025 }}
+    >
+      <Card size="small" hoverable>
+        <Flex justify="space-between" align="flex-start" gap={8}>
+          <Text strong style={{ fontSize: 14, flex: 1, minWidth: 0 }}>
+            {assignment.name}
+          </Text>
+          {getStatusTag(status)}
+        </Flex>
+
+        <Flex gap={12} wrap style={{ marginTop: 6 }}>
+          {assignment.uploadDueDate && (
+            <Text type={dueRel?.urgent ? 'danger' : 'secondary'} style={{ fontSize: 12 }}>
+              <ClockCircleOutlined /> {dueRel?.text || formatDueDate(assignment.uploadDueDate)}
+            </Text>
+          )}
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            <BookOutlined /> {assignment.points} pts
+          </Text>
+        </Flex>
+
+        {sub && sub.grade != null && !assignment.hideGrades && (
+          <Flex style={{ marginTop: 6 }} gap={8}>
+            <Tag color="green">
+              {sub.grade}/{assignment.points}
+            </Tag>
+            {sub.isFinalized && (
+              <Tag color="success" icon={<CheckCircleFilled />}>
+                Finalized
+              </Tag>
+            )}
+          </Flex>
+        )}
+
+        {status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload && (
+          <Text type="secondary" style={{ fontSize: 12, marginTop: 6, display: 'block' }}>
+            <UploadOutlined /> Ready to submit
+          </Text>
+        )}
+        {status === SubmissionStatus.PENDING && (
+          <Text type="success" style={{ fontSize: 12, marginTop: 6, display: 'block' }}>
+            <EyeOutlined /> New feedback available
+          </Text>
+        )}
+      </Card>
+    </motion.div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Section block — collapsible group of assignments                          */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const SectionBlock: React.FC<{
+  title: string;
+  count: number;
+  defaultOpen?: boolean;
+  accentColor?: string;
+  children: React.ReactNode;
+}> = ({ title, count, defaultOpen = true, accentColor = '#1677ff', children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+
+  if (count === 0) return null;
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          width: '100%',
+          background: 'none',
+          border: 'none',
+          padding: '4px 0 10px',
+          cursor: 'pointer',
+          textAlign: 'left',
+        }}
+      >
+        <span
+          style={{
+            width: 3,
+            height: 16,
+            borderRadius: 2,
+            background: accentColor,
+            flexShrink: 0,
+          }}
+        />
+        <Text strong style={{ fontSize: 13, flex: 1 }}>
+          {title}
+        </Text>
+        <Badge count={count} size="small" color={accentColor} style={{ marginRight: 4 }} />
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {open ? '▾' : '▸'}
+        </Text>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <Flex vertical gap={8}>
+              {children}
+            </Flex>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Course Detail Sub-Component                                               */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const CourseDetail: React.FC<{
+  course: Course;
+  onBack: () => void;
+  submissions: Record<number, Submission[]>;
+  viewsBySubmission: Record<number, boolean>;
+  sections: GroupedSections | null;
+  progress: { completed: number; total: number; percent: number };
+}> = ({ course, onBack, submissions, viewsBySubmission, sections, progress }) => {
+  // Merge dueToday + dueSoon + upcoming into a single "Upcoming" group
+  const upcomingAll = useMemo(() => {
+    if (!sections) return [];
+    return [...sections.dueToday, ...sections.dueSoon, ...sections.upcoming];
+  }, [sections]);
+
+  const totalVisible = upcomingAll.length + (sections?.completed.length ?? 0);
+
+  return (
+    <div className={styles.scrollContent}>
+      {/* Header */}
+      <Flex align="center" gap={12} style={{ marginBottom: 16 }}>
+        <button type="button" className={styles.backButton} onClick={onBack} aria-label="Back">
+          <ArrowLeftOutlined />
+        </button>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Title level={4} style={{ margin: 0 }} ellipsis>
+            {course.name}
+          </Title>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {course.period}
+          </Text>
+        </div>
+      </Flex>
+
+      {/* Progress bar — matches desktop "Course progress · X%" header */}
+      {progress.total > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <Flex justify="space-between" style={{ marginBottom: 4 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Course progress · {Math.round(progress.percent)}%
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {progress.completed} of {progress.total} completed
+            </Text>
+          </Flex>
+          <Progress
+            percent={progress.percent}
+            showInfo={false}
+            size="small"
+            status={progress.percent === 100 ? 'success' : 'active'}
+          />
+        </div>
+      )}
+
+      {totalVisible === 0 && !sections?.unpublished?.length ? (
+        <Empty description="No assignments yet" />
+      ) : (
+        <>
+          {/* Upcoming */}
+          <SectionBlock title="Upcoming" count={upcomingAll.length} accentColor="#1677ff">
+            {upcomingAll.map((a, i) => (
+              <AssignmentCard
+                key={a.id}
+                assignment={a}
+                submissions={submissions}
+                viewsBySubmission={viewsBySubmission}
+                idx={i}
+              />
+            ))}
+          </SectionBlock>
+
+          {/* Completed */}
+          <SectionBlock title="Completed" count={sections?.completed.length ?? 0} accentColor="#52c41a">
+            {(sections?.completed ?? []).map((a, i) => (
+              <AssignmentCard
+                key={a.id}
+                assignment={a}
+                submissions={submissions}
+                viewsBySubmission={viewsBySubmission}
+                idx={i}
+              />
+            ))}
+          </SectionBlock>
+
+          {/* Not Yet Published */}
+          <SectionBlock
+            title="Not Yet Published"
+            count={sections?.unpublished?.length ?? 0}
+            defaultOpen={false}
+            accentColor="#8c8c8c"
+          >
+            {(sections?.unpublished ?? []).map((a, i) => (
+              <AssignmentCard
+                key={a.id}
+                assignment={a}
+                submissions={submissions}
+                viewsBySubmission={viewsBySubmission}
+                idx={i}
+              />
+            ))}
+          </SectionBlock>
+        </>
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Main Component                                                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, userEmail, studentSections, user }) => {
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
   const {
     submissions,
@@ -77,8 +353,10 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
 
   const isLoading = isLoadingAssignments || isLoadingSubmissions;
 
-  /* ── Aggregate cross-course data ─────────────────────────────────────── */
+  const firstName = userEmail.split('@')[0].split('.')[0];
+  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
+  /* ── Aggregate data ──────────────────────────────────────────────────── */
   const { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments } =
     useMemo(() => {
       const dueThisWeek: Array<{ assignment: Assignment; course: Course }> = [];
@@ -122,100 +400,74 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
       return { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments };
     }, [courses, getGroupedSections, submissions, viewsBySubmission]);
 
-  /* ── Display name ─────────────────────────────────────────────────────── */
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-
-  /* ── Render: Home tab ─────────────────────────────────────────────────── */
+  /* ── Home ────────────────────────────────────────────────────────────── */
 
   const renderHome = () => (
     <div className={styles.scrollContent}>
-      {/* Hero greeting */}
-      <header className={styles.hero}>
-        <motion.h1
-          className={styles.heroTitle}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {getGreeting()},<br />
-          {displayName}
-        </motion.h1>
-        <motion.p
-          className={styles.heroSubtitle}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
+      {/* Greeting */}
+      <div style={{ marginBottom: 20 }}>
+        <Tag color="green" style={{ marginBottom: 8 }}>
+          Student
+        </Tag>
+        <Title level={3} style={{ margin: 0 }}>
+          {getGreeting()}, {displayName}
+        </Title>
+        <Text type="secondary">
           {isLoading ? 'Loading…' : `${courses.length} course${courses.length === 1 ? '' : 's'} this term`}
-        </motion.p>
-      </header>
+        </Text>
+      </div>
 
-      {/* Stats ring */}
+      {/* Stats row */}
       {!isLoading && (
-        <motion.div
-          className={styles.statsRow}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05 }}
-        >
-          <div className={styles.statChip} data-variant="urgent">
-            <span className={styles.statValue}>{totalDueToday}</span>
-            <span className={styles.statLabel}>Due today</span>
-          </div>
-          <div className={styles.statChip} data-variant="feedback">
-            <span className={styles.statValue}>
-              {totalPendingFeedback}
-              {totalPendingFeedback > 0 && <span className={styles.dot} />}
-            </span>
-            <span className={styles.statLabel}>Feedback</span>
-          </div>
-          <div className={styles.statChip} data-variant="done">
-            <span className={styles.statValue}>{totalCompleted}</span>
-            <span className={styles.statLabel}>Done</span>
-          </div>
-          <div className={styles.statChip} data-variant="progress">
-            <span className={styles.statValue}>
-              {totalAssignments > 0 ? Math.round((totalCompleted / totalAssignments) * 100) : 0}%
-            </span>
-            <span className={styles.statLabel}>Progress</span>
-          </div>
-        </motion.div>
+        <Card size="small" style={{ marginBottom: 20 }}>
+          <Flex justify="space-around">
+            <Statistic
+              title="Due today"
+              value={totalDueToday}
+              valueStyle={{ fontSize: 20, color: totalDueToday > 0 ? '#ff4d4f' : undefined }}
+            />
+            <Statistic
+              title="Feedback"
+              value={totalPendingFeedback}
+              valueStyle={{ fontSize: 20, color: totalPendingFeedback > 0 ? '#1677ff' : undefined }}
+              suffix={totalPendingFeedback > 0 ? <Badge status="processing" /> : undefined}
+            />
+            <Statistic title="Done" value={totalCompleted} valueStyle={{ fontSize: 20 }} />
+            <Statistic
+              title="Progress"
+              value={totalAssignments > 0 ? Math.round((totalCompleted / totalAssignments) * 100) : 0}
+              suffix="%"
+              valueStyle={{ fontSize: 20 }}
+            />
+          </Flex>
+        </Card>
       )}
 
-      {/* Loading skeleton */}
       {isLoading && (
-        <div className={styles.skeletonGroup}>
-          {[1, 2, 3].map((i) => (
-            <div key={i} className={styles.skeleton} />
-          ))}
-        </div>
+        <Flex justify="center" style={{ padding: 48 }}>
+          <Spin tip="Loading your courses…" />
+        </Flex>
       )}
 
-      {/* Due this week */}
+      {/* Due soon section */}
       {!isLoading && dueThisWeek.length > 0 && (
-        <motion.section
-          className={styles.section}
-          aria-label={`Due this week — ${dueThisWeek.length} assignments`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1 }}
-        >
-          <div className={styles.sectionHead}>
-            <FireFilled className={styles.sectionIconUrgent} />
-            <h2 className={styles.sectionTitle}>Due Soon</h2>
-            <span className={styles.badge}>{dueThisWeek.length}</span>
-          </div>
-          <div className={styles.cardStack}>
+        <div style={{ marginBottom: 20 }}>
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <FireFilled style={{ color: '#ff4d4f' }} />
+            <Text strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Due Soon
+            </Text>
+            <Badge count={dueThisWeek.length} size="small" />
+          </Flex>
+
+          <Flex vertical gap={8}>
             <AnimatePresence>
               {dueThisWeek.map(({ assignment, course }) => {
-                const sub = submissions[assignment.id]?.[0];
-                const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
                 const dueRel = assignment.uploadDueDate
                   ? getRelativeDueDate(assignment.uploadDueDate)
                   : { text: '', urgent: false };
-                const link = encodedCourseLink('student', course);
 
                 return (
                   <motion.div
@@ -225,202 +477,251 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Link to={link} className={styles.taskCard} data-urgent={dueRel.urgent}>
-                      <div className={styles.taskCardBody}>
-                        <span className={styles.taskName}>{assignment.name}</span>
-                        <span className={styles.taskCourse}>{course.name}</span>
-                      </div>
-                      <div className={styles.taskCardMeta}>
-                        {dueRel.text && (
-                          <span className={styles.taskDue} data-urgent={dueRel.urgent}>
-                            <ClockCircleOutlined /> {dueRel.text}
-                          </span>
-                        )}
-                        {!dueRel.text && assignment.uploadDueDate && (
-                          <span className={styles.taskDue}>
-                            <CalendarOutlined /> <CodePostDate datetime={assignment.uploadDueDate} />
-                          </span>
-                        )}
-                        {status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload ? (
-                          <span className={styles.actionChip} data-action="upload">
-                            <UploadOutlined /> Upload
-                          </span>
-                        ) : (
-                          <span className={styles.actionChip} data-action="view">
-                            <EyeOutlined /> View
-                          </span>
-                        )}
-                      </div>
-                    </Link>
+                    <Card
+                      size="small"
+                      hoverable
+                      onClick={() => {
+                        setSelectedCourseId(course.id);
+                        setActiveTab('courses');
+                      }}
+                    >
+                      <Flex justify="space-between" align="center">
+                        <div>
+                          <Text strong>{assignment.name}</Text>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {course.name}
+                          </Text>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          {dueRel.text && (
+                            <Tag color={dueRel.urgent ? 'error' : 'default'} style={{ margin: 0 }}>
+                              <ClockCircleOutlined /> {dueRel.text}
+                            </Tag>
+                          )}
+                        </div>
+                      </Flex>
+                    </Card>
                   </motion.div>
                 );
               })}
             </AnimatePresence>
-          </div>
-        </motion.section>
+          </Flex>
+        </div>
       )}
 
-      {/* New Feedback */}
+      {/* New feedback section */}
       {!isLoading && pendingFeedback.length > 0 && (
-        <motion.section
-          className={styles.section}
-          aria-label={`New feedback — ${pendingFeedback.length} assignments`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15 }}
-        >
-          <div className={styles.sectionHead}>
-            <EyeOutlined className={styles.sectionIconFeedback} />
-            <h2 className={styles.sectionTitle}>New Feedback</h2>
-            <span className={styles.badge}>{pendingFeedback.length}</span>
-          </div>
-          <div className={styles.cardStack}>
+        <div style={{ marginBottom: 20 }}>
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <EyeOutlined style={{ color: '#1677ff' }} />
+            <Text strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              New Feedback
+            </Text>
+            <Badge count={pendingFeedback.length} size="small" color="blue" />
+          </Flex>
+
+          <Flex vertical gap={8}>
             <AnimatePresence>
-              {pendingFeedback.map(({ assignment, course }) => {
-                const link = encodedCourseLink('student', course);
-                return (
-                  <motion.div
-                    key={assignment.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.2 }}
+              {pendingFeedback.map(({ assignment, course }) => (
+                <motion.div
+                  key={assignment.id}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card
+                    size="small"
+                    hoverable
+                    onClick={() => {
+                      setSelectedCourseId(course.id);
+                      setActiveTab('courses');
+                    }}
                   >
-                    <Link to={link} className={styles.taskCard} data-variant="feedback">
-                      <div className={styles.taskCardBody}>
-                        <span className={styles.taskName}>
-                          {assignment.name}
-                          <span className={styles.dot} />
-                        </span>
-                        <span className={styles.taskCourse}>{course.name}</span>
+                    <Flex justify="space-between" align="center">
+                      <div>
+                        <Text strong>{assignment.name}</Text>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {course.name}
+                        </Text>
                       </div>
-                      <div className={styles.taskCardMeta}>
-                        <span className={styles.actionChip} data-action="feedback">
-                          <EyeOutlined /> View
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+                      <Tag color="processing">
+                        <EyeOutlined /> View
+                      </Tag>
+                    </Flex>
+                  </Card>
+                </motion.div>
+              ))}
             </AnimatePresence>
-          </div>
-        </motion.section>
+          </Flex>
+        </div>
       )}
 
-      {/* All caught up state */}
+      {/* All caught up */}
       {!isLoading && dueThisWeek.length === 0 && pendingFeedback.length === 0 && (
-        <motion.div
-          className={styles.caughtUp}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          <CheckCircleFilled className={styles.caughtUpIcon} />
-          <span className={styles.caughtUpText}>All caught up!</span>
-          <span className={styles.caughtUpSubtext}>No assignments due this week.</span>
-        </motion.div>
+        <Card style={{ textAlign: 'center', padding: '32px 0' }}>
+          <CheckCircleFilled style={{ fontSize: 36, color: '#52c41a', marginBottom: 12 }} />
+          <br />
+          <Text strong style={{ fontSize: 16 }}>
+            All caught up!
+          </Text>
+          <br />
+          <Text type="secondary">No assignments due this week.</Text>
+        </Card>
       )}
     </div>
   );
 
-  /* ── Render: Courses tab ──────────────────────────────────────────────── */
+  /* ── Courses ─────────────────────────────────────────────────────────── */
 
-  const renderCourses = () => (
-    <div className={styles.scrollContent}>
-      <header className={styles.tabHeader}>
-        <h1 className={styles.tabTitle}>Courses</h1>
-      </header>
+  const renderCourses = () => {
+    if (selectedCourse) {
+      const sections = getGroupedSections(selectedCourse.id);
+      const progress = getProgress(selectedCourse.id);
+      return (
+        <CourseDetail
+          course={selectedCourse}
+          onBack={() => setSelectedCourseId(null)}
+          submissions={submissions}
+          viewsBySubmission={viewsBySubmission}
+          sections={sections}
+          progress={progress}
+        />
+      );
+    }
 
-      {isLoading && (
-        <div className={styles.skeletonGroup}>
-          {[1, 2].map((i) => (
-            <div key={i} className={styles.skeletonCard} />
-          ))}
-        </div>
-      )}
+    return (
+      <div className={styles.scrollContent}>
+        <Title level={4} style={{ marginBottom: 4 }}>
+          Courses
+        </Title>
+        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+          {courses.filter((c) => !c.archived).length} active course
+          {courses.filter((c) => !c.archived).length === 1 ? '' : 's'}
+        </Text>
 
-      {!isLoading && (
-        <div className={styles.courseList}>
-          <AnimatePresence>
-            {courses
-              .filter((c) => !c.archived)
-              .map((course, idx) => {
-                const progress = getProgress(course.id);
-                const sections = getGroupedSections(course.id);
-                const link = encodedCourseLink('student', course);
+        {isLoading ? (
+          <Flex justify="center" style={{ padding: 48 }}>
+            <Spin />
+          </Flex>
+        ) : (
+          <Flex vertical gap={10}>
+            <AnimatePresence>
+              {courses
+                .filter((c) => !c.archived)
+                .map((course, idx) => {
+                  const progress = getProgress(course.id);
+                  const sections = getGroupedSections(course.id);
+                  const dueSoonCount = sections ? sections.dueToday.length + sections.dueSoon.length : 0;
 
-                // Next due assignment
-                let nextDue: { name: string; text: string } | null = null;
-                if (sections) {
-                  const next = [...sections.dueToday, ...sections.dueSoon, ...sections.upcoming][0];
-                  if (next?.uploadDueDate) {
-                    const rel = getRelativeDueDate(next.uploadDueDate);
-                    nextDue = { name: next.name, text: rel.text || 'Upcoming' };
-                  } else if (next) {
-                    nextDue = { name: next.name, text: 'Upcoming' };
-                  }
-                }
+                  return (
+                    <motion.div
+                      key={course.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2, delay: idx * 0.04 }}
+                    >
+                      <Card size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
+                        <Flex justify="space-between" align="flex-start">
+                          <Text strong>{course.name}</Text>
+                          <Tag>{course.period}</Tag>
+                        </Flex>
 
-                return (
-                  <motion.div
-                    key={course.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, delay: idx * 0.04 }}
-                  >
-                    <Link to={link} className={styles.courseCard}>
-                      <div className={styles.courseCardTop}>
-                        <h3 className={styles.courseName}>{course.name}</h3>
-                        <span className={styles.coursePeriod}>{course.period}</span>
-                      </div>
-
-                      {progress.total > 0 && (
-                        <div className={styles.progressBlock}>
-                          <div className={styles.progressMeta}>
-                            <span>{Math.round(progress.percent)}% complete</span>
-                            <span>
-                              {progress.completed}/{progress.total}
-                            </span>
-                          </div>
-                          <div
-                            className={styles.progressTrack}
-                            role="progressbar"
-                            aria-valuenow={progress.percent}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          >
-                            <div
-                              className={styles.progressFill}
-                              style={{ width: `${Math.max(progress.percent, 3)}%` }}
+                        {progress.total > 0 && (
+                          <div style={{ marginTop: 10 }}>
+                            <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                {Math.round(progress.percent)}% complete
+                              </Text>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                {progress.completed}/{progress.total}
+                              </Text>
+                            </Flex>
+                            <Progress
+                              percent={progress.percent}
+                              showInfo={false}
+                              size="small"
+                              status={progress.percent === 100 ? 'success' : 'active'}
                             />
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {nextDue && (
-                        <div className={styles.courseNext}>
-                          <CalendarOutlined />
-                          <span className={styles.courseNextName}>{nextDue.name}</span>
-                          <span className={styles.courseNextDue}>{nextDue.text}</span>
-                        </div>
-                      )}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-          </AnimatePresence>
-        </div>
-      )}
+                        {dueSoonCount > 0 && (
+                          <Tag color="warning" style={{ marginTop: 8 }}>
+                            <WarningOutlined /> {dueSoonCount} due soon
+                          </Tag>
+                        )}
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+            </AnimatePresence>
+          </Flex>
+        )}
+      </div>
+    );
+  };
+
+  /* ── Settings ────────────────────────────────────────────────────────── */
+
+  const renderSettings = () => (
+    <div className={styles.scrollContent}>
+      <Title level={4} style={{ marginBottom: 16 }}>
+        Settings
+      </Title>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex gap={12} align="center">
+          <Avatar size={44} style={{ background: '#198665', flexShrink: 0 }}>
+            {displayName.charAt(0).toUpperCase()}
+          </Avatar>
+          <div style={{ minWidth: 0 }}>
+            <Text strong>{displayName}</Text>
+            <br />
+            <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+              {userEmail}
+            </Text>
+            <br />
+            <Tag color="green" style={{ marginTop: 4 }}>
+              Student
+            </Tag>
+          </div>
+        </Flex>
+      </Card>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex vertical gap={8}>
+          <Flex justify="space-between">
+            <Text type="secondary">Courses</Text>
+            <Text>{courses.filter((c) => !c.archived).length} active</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Assignments</Text>
+            <Text>{totalAssignments} total</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Completed</Text>
+            <Text>{totalCompleted}</Text>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {renderRoleSwitcher(user, 'student')}
+
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        To change account settings, access the full desktop version of codePost. Mobile view is read-only for account
+        management.
+      </Text>
     </div>
   );
 
-  /* ── Shell ────────────────────────────────────────────────────────────── */
+  /* ── Shell ───────────────────────────────────────────────────────────── */
 
   return (
     <div className={styles.mobileShell}>
-      {/* Content area with momentum scroll */}
       <main className={styles.main}>
         <AnimatePresence mode="wait">
           {activeTab === 'home' && (
@@ -447,31 +748,62 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
               {renderCourses()}
             </motion.div>
           )}
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className={styles.tabPanel}
+            >
+              {renderSettings()}
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
-      {/* Bottom navigation */}
+      {/* Bottom nav — custom since antd doesn't have a mobile tab bar */}
       <nav className={styles.bottomNav} aria-label="Main navigation">
         <button
+          type="button"
           className={styles.navItem}
-          data-active={activeTab === 'home'}
+          data-active={activeTab === 'home' ? 'true' : 'false'}
           onClick={() => setActiveTab('home')}
           aria-label="Home"
-          aria-current={activeTab === 'home' ? 'page' : undefined}
         >
-          <HomeFilled className={styles.navIcon} />
+          <span className={styles.navIconWrap}>
+            <HomeFilled className={styles.navIcon} />
+            {totalDueToday > 0 && activeTab !== 'home' && (
+              <span className={styles.navDot} aria-label={`${totalDueToday} due today`}>
+                {totalDueToday}
+              </span>
+            )}
+          </span>
           <span className={styles.navLabel}>Home</span>
-          {totalDueToday > 0 && activeTab !== 'home' && <span className={styles.navBadge}>{totalDueToday}</span>}
         </button>
         <button
+          type="button"
           className={styles.navItem}
-          data-active={activeTab === 'courses'}
-          onClick={() => setActiveTab('courses')}
+          data-active={activeTab === 'courses' ? 'true' : 'false'}
+          onClick={() => {
+            setActiveTab('courses');
+            setSelectedCourseId(null);
+          }}
           aria-label="Courses"
-          aria-current={activeTab === 'courses' ? 'page' : undefined}
         >
           <BookOutlined className={styles.navIcon} />
           <span className={styles.navLabel}>Courses</span>
+        </button>
+        <button
+          type="button"
+          className={styles.navItem}
+          data-active={activeTab === 'settings' ? 'true' : 'false'}
+          onClick={() => setActiveTab('settings')}
+          aria-label="Settings"
+        >
+          <SettingOutlined className={styles.navIcon} />
+          <span className={styles.navLabel}>Settings</span>
         </button>
       </nav>
     </div>

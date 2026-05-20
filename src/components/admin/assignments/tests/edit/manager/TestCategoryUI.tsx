@@ -6,6 +6,7 @@ import { AssignmentFileType, AssignmentType, TestCategoryType } from '../../../.
 import { File as CodePostFile } from '../../../../../../utils/file';
 import { TestScriptEditor } from '../TestDefinitions/TestScriptEditor';
 import { TestResourceManager } from './TestResourceManager';
+import { LearningObjectivesPanel } from './LearningObjectivesPanel';
 import { assignmentsApi, assignmentFilesApi, testCategoriesApi } from '../../../../../../api-client/clients';
 import type { PatchedTestCategory } from '../../../../../../api-client';
 
@@ -227,6 +228,9 @@ export const TestCategoryUI = (props: IProps) => {
           </Button>
         </div>
       </div>
+
+      {/* Learning Objectives */}
+      <LearningObjectivesPanel assignmentId={props.assignment.id} />
 
       <Divider style={{ margin: '10px 0' }} />
 

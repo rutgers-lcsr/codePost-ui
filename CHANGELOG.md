@@ -12,6 +12,28 @@ The format is inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0
 
 ---
 
+## [3.4.0] — Testing Framework Improvements
+
+### Added
+
+- **Hidden test cases** — instructors can now mark test cases as `hidden`. The student-facing test results view shows only pass/fail and point impact for hidden tests; the test name, logs, and explanation are stripped server-side. Graders and admins continue to see full output.
+- **Learning Objectives** — added per-assignment learning objectives that can be attached to one or more test cases. Each objective supports:
+  - A configurable **visibility mode** for students: `Always show`, `Show when tests pass`, `Show when tests fail`, or `Admin only`.
+  - A configurable **aggregation mode**: `All linked tests must pass`, `At least one linked test must pass`, `Percentage of tests passed`, or `Points-weighted`.
+  - Objectives are returned alongside test results in the student feedback panel, gated by visibility mode.
+- **New test parameters in the testing framework** — both decorator/annotation forms and inline comment directives:
+  - Python / Notebook Python: `@test(..., hidden=True, objectives=["recursion"])`.
+  - Java / JShell: `@Test(..., hidden=true, objectives={"recursion"})`.
+  - R, C/C++, JS/TS/Node, Ruby, PHP: `@codepost hidden objectives=recursion,edge-cases` in the comment directly above the test.
+  - Objectives referenced by `shortId` that don't yet exist are auto-created on the assignment when the script syncs.
+- **Persisted edits to submission files** — edits made in the code review panel are now saved server-side via `PATCH /submissions/{id}/saveFileEdit/` and survive page reloads. Course admins may always save edits; graders may save only when the assignment's **Graders can edit submissions** setting is enabled. Previously, edits were lost when navigating away.
+- **Mobile-friendly dashboards** — added admin/grader/student dashboard views with responsive layouts and mobile-specific optimizations.
+
+### Changed
+
+- **Testing Guide docs** — `/docs/testing-guide` now documents the `hidden` and `objectives` parameters and the `@codepost` directive syntax for non-Python/Java languages.
+- **Test Category Preview** — the parser preview now surfaces the parsed `hidden` flag and `objectives` list so authors can confirm metadata before saving.
+
 ## [3.3.0] — AI Assistance, Dashboards & PDF Commenting
 
 ### Added

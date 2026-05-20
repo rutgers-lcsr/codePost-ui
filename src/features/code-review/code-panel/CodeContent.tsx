@@ -89,12 +89,12 @@ export interface ICodeContentCoreProps {
 }
 
 export interface ICodeContentEditProps {
-  commentCounter: number;
-  addComment: (comment: CommentType, file: FileType) => void;
+  commentCounter?: number;
+  addComment?: (comment: CommentType, file: FileType) => void;
   assignmentFile?: AssignmentFileType;
-  cursorMode: boolean;
-  showCursor: CURSOR_DOMAIN;
-  updateCursorDomain: (domain: CURSOR_DOMAIN) => void;
+  cursorMode?: boolean;
+  showCursor?: CURSOR_DOMAIN;
+  updateCursorDomain?: (domain: CURSOR_DOMAIN) => void;
   onCursorChange?: (cursor: ICursorType) => void;
   onUpdateCommentLocation?: (
     commentId: number,
@@ -103,9 +103,10 @@ export interface ICodeContentEditProps {
     newStartChar: number,
     newEndChar: number,
   ) => void;
-  isEditMode: boolean;
+  isEditMode?: boolean;
+  isDiffMode?: boolean;
   temporaryContent?: string;
-  onContentChange: (content: string) => void;
+  onContentChange?: (content: string) => void;
 }
 
 type CodeContentProps = ICodeContentCoreProps & ICodeContentEditProps;
@@ -113,6 +114,13 @@ type CodeContentProps = ICodeContentCoreProps & ICodeContentEditProps;
 const CodeContent: React.FC<CodeContentProps> = (props) => {
   const { consoleTheme } = React.useContext(ConsoleThemeContext);
   const wordWrap = useCodeConsoleStore((s) => s.wordWrap);
+  const commentCounter = props.commentCounter ?? -1;
+  const cursorMode = props.cursorMode ?? false;
+  const showCursor = props.showCursor ?? CURSOR_DOMAIN.CODE_HIDDEN;
+  const updateCursorDomain = props.updateCursorDomain ?? (() => {});
+  const isEditMode = props.isEditMode ?? false;
+  const isDiffMode = props.isDiffMode ?? false;
+  const onContentChange = props.onContentChange ?? (() => {});
   const fileWithId = props.file as FileType & { id?: number };
   const fileKey = fileWithId.id ?? props.file.name;
 
@@ -141,7 +149,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
 
   const addCommentAndIncrement = React.useCallback(
     (comment: CommentType, file: FileType) => {
-      props.addComment(comment, file);
+      props.addComment?.(comment, file);
     },
     [props],
   );
@@ -281,7 +289,7 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   const underlayPaddingLeft = React.useMemo(() => {
     if (wordWrap) {
       // Use em-based calc to exactly match the syntax layer's hanging indent
-      return `calc(${gutterWidthEm} + 20px)`;
+      return `calc(${gutterWidthEm} + 7px)`;
     }
     return `${lineNumberPadding()}px`;
   }, [wordWrap, gutterWidthEm, lineNumberPadding]);
@@ -290,31 +298,31 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
   // File types with editMode 'monaco' use a standalone CodeWindow (Monaco editor).
   // File types with editMode 'inline' handle editing within their own renderer
   // (e.g. Jupyter embeds Monaco editors per-cell inside the Markdown component).
-  if (props.isEditMode) {
-    if (fileType.editMode === 'monaco') {
-      return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {a11yLiveRegion}
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <React.Suspense fallback={<LazyFallback />}>
-              <CodeWindow
-                code={props.temporaryContent ?? fileContent}
-                name={props.file.name}
-                onChange={props.onContentChange}
-                height="100%"
-              />
-            </React.Suspense>
-          </div>
-          {props.executionResult && (
-            <CodeExecutionOutput
-              file={props.file}
-              executionResult={props.executionResult}
-              onClearOutputs={props.onClearOutputs}
+  if ((isEditMode || isDiffMode) && fileType.editMode === 'monaco') {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {a11yLiveRegion}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <React.Suspense fallback={<LazyFallback />}>
+            <CodeWindow
+              code={props.temporaryContent ?? fileContent}
+              originalCode={fileContent}
+              showDiff={isDiffMode}
+              name={props.file.name}
+              onChange={isEditMode ? onContentChange : undefined}
+              height="100%"
             />
-          )}
+          </React.Suspense>
         </div>
-      );
-    }
+        {props.executionResult && (
+          <CodeExecutionOutput
+            file={props.file}
+            executionResult={props.executionResult}
+            onClearOutputs={props.onClearOutputs}
+          />
+        )}
+      </div>
+    );
   }
 
   // Render binary file types (download card + hex viewer).
@@ -378,16 +386,17 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
                 readOnly={props.readOnly}
                 user={props.user}
                 onHighlightClick={props.onHighlightClick}
-                commentCounter={props.commentCounter}
+                commentCounter={commentCounter}
                 addComment={addCommentAndIncrement}
                 assignmentFile={props.assignmentFile}
-                cursorMode={props.cursorMode}
-                showCursor={props.showCursor}
-                updateCursorDomain={props.updateCursorDomain}
+                cursorMode={cursorMode}
+                showCursor={showCursor}
+                updateCursorDomain={updateCursorDomain}
                 executionResult={props.executionResult}
                 onClearOutputs={props.onClearOutputs}
-                isEditMode={props.isEditMode}
-                onContentChange={props.onContentChange}
+                isEditMode={isEditMode}
+                isDiffMode={isDiffMode}
+                onContentChange={onContentChange}
                 temporaryContent={props.temporaryContent}
               />
             </React.Suspense>
@@ -423,14 +432,15 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
               readOnly={props.readOnly}
               user={props.user}
               onHighlightClick={props.onHighlightClick}
-              commentCounter={props.commentCounter}
+              commentCounter={commentCounter}
               addComment={addCommentAndIncrement}
               assignmentFile={props.assignmentFile}
-              cursorMode={props.cursorMode}
-              showCursor={props.showCursor}
-              updateCursorDomain={props.updateCursorDomain}
-              isEditMode={props.isEditMode}
-              onContentChange={props.onContentChange}
+              cursorMode={cursorMode}
+              showCursor={showCursor}
+              updateCursorDomain={updateCursorDomain}
+              isEditMode={isEditMode}
+              isDiffMode={isDiffMode}
+              onContentChange={onContentChange}
               temporaryContent={props.temporaryContent}
             />
           </React.Suspense>
@@ -482,16 +492,17 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
             readOnly={props.readOnly}
             user={props.user}
             onHighlightClick={props.onHighlightClick}
-            commentCounter={props.commentCounter}
+            commentCounter={commentCounter}
             addComment={addCommentAndIncrement}
             assignmentFile={props.assignmentFile}
-            cursorMode={props.cursorMode}
-            showCursor={props.showCursor}
-            updateCursorDomain={props.updateCursorDomain}
+            cursorMode={cursorMode}
+            showCursor={showCursor}
+            updateCursorDomain={updateCursorDomain}
             onCursorChange={props.onCursorChange}
             onUpdateCommentLocation={props.onUpdateCommentLocation}
-            isEditMode={props.isEditMode}
-            onContentChange={props.onContentChange}
+            isEditMode={isEditMode}
+            isDiffMode={isDiffMode}
+            onContentChange={onContentChange}
             temporaryContent={props.temporaryContent}
           />
         </div>
@@ -510,7 +521,9 @@ const CodeContent: React.FC<CodeContentProps> = (props) => {
 };
 
 // Read-only wrapper component for student view
-const StudentCodeWrapper: React.FC<ICodeContentCoreProps> = (props) => {
+const StudentCodeWrapper: React.FC<
+  ICodeContentCoreProps & Pick<ICodeContentEditProps, 'temporaryContent' | 'isDiffMode'>
+> = (props) => {
   const noop = React.useCallback(() => {
     // No-op function for read-only mode
   }, []);
@@ -525,6 +538,7 @@ const StudentCodeWrapper: React.FC<ICodeContentCoreProps> = (props) => {
       showCursor={CURSOR_DOMAIN.CODE_HIDDEN}
       updateCursorDomain={noop}
       isEditMode={false}
+      isDiffMode={props.isDiffMode ?? false}
       onContentChange={noop}
     />
   );

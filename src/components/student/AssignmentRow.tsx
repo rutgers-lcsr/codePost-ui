@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 import React, { useCallback, useState } from 'react';
-import { Tooltip } from 'antd';
+import { Button, Flex, Tag, Tooltip, Typography } from 'antd';
 import {
   DownOutlined,
   UploadOutlined,
@@ -11,7 +11,6 @@ import {
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { CodePostDate } from '../utils/CodepostDate';
-import styles from './StudentConsole.module.scss';
 import { SubmissionStatus } from './submissionStatus';
 
 interface AssignmentRowProps {
@@ -35,20 +34,20 @@ interface AssignmentRowProps {
   isUrgent?: boolean;
   hideGrades?: boolean;
   hideDueDate?: boolean;
-  onViewFeedback?: () => void;
-  onViewFiles?: () => void;
+  onViewFeedback?: (e: React.MouseEvent) => void;
+  onViewFiles?: (e: React.MouseEvent) => void;
   onUpload?: () => void;
   onAddFiles?: () => void;
   onDownload?: () => void;
   disabled?: boolean;
 }
 
-const statusPillClass: Record<SubmissionStatus, string> = {
-  [SubmissionStatus.SUBMITTED]: styles.statusPillSuccess,
-  [SubmissionStatus.PENDING]: styles.statusPillWarning,
-  [SubmissionStatus.NOT_REVIEWED]: styles.statusPillNeutral,
-  [SubmissionStatus.NOT_PUBLISHED]: styles.statusPillMuted,
-  [SubmissionStatus.NO_SUBMISSION]: styles.statusPillDanger,
+const statusTagColor: Record<SubmissionStatus, string> = {
+  [SubmissionStatus.SUBMITTED]: 'success',
+  [SubmissionStatus.PENDING]: 'warning',
+  [SubmissionStatus.NOT_REVIEWED]: 'default',
+  [SubmissionStatus.NOT_PUBLISHED]: 'default',
+  [SubmissionStatus.NO_SUBMISSION]: 'error',
 };
 
 const statusLabel: Record<SubmissionStatus, string> = {
@@ -59,12 +58,12 @@ const statusLabel: Record<SubmissionStatus, string> = {
   [SubmissionStatus.NO_SUBMISSION]: 'No submission',
 };
 
-const rowAccentClass: Record<SubmissionStatus, string> = {
-  [SubmissionStatus.SUBMITTED]: styles.rowAccentSuccess,
-  [SubmissionStatus.PENDING]: styles.rowAccentWarning,
-  [SubmissionStatus.NOT_REVIEWED]: styles.rowAccentNeutral,
-  [SubmissionStatus.NOT_PUBLISHED]: styles.rowAccentMuted,
-  [SubmissionStatus.NO_SUBMISSION]: styles.rowAccentDanger,
+const statusAccentColor: Record<SubmissionStatus, string> = {
+  [SubmissionStatus.SUBMITTED]: '#52c41a',
+  [SubmissionStatus.PENDING]: '#faad14',
+  [SubmissionStatus.NOT_REVIEWED]: '#d9d9d9',
+  [SubmissionStatus.NOT_PUBLISHED]: '#f0f0f0',
+  [SubmissionStatus.NO_SUBMISSION]: '#ff4d4f',
 };
 
 function getRelativeDueDate(dueDate: string): { text: string; urgent: boolean } {
@@ -140,16 +139,16 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
     if (relative.text) {
       dueDateFragment = (
         <Tooltip title={<CodePostDate datetime={dueDate} />}>
-          <span className={relative.urgent ? styles.rowDueDateUrgent : styles.rowDueDate}>
+          <Typography.Text type={relative.urgent ? 'danger' : 'secondary'} style={{ fontSize: 12 }}>
             <CalendarOutlined /> {relative.text}
-          </span>
+          </Typography.Text>
         </Tooltip>
       );
     } else {
       dueDateFragment = (
-        <span className={styles.rowDueDate}>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
           <CalendarOutlined /> <CodePostDate datetime={dueDate} />
-        </span>
+        </Typography.Text>
       );
     }
   }
@@ -157,59 +156,77 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   // Grade
   let gradeContent: React.ReactNode = null;
   if (hideGrades) {
-    gradeContent = <span className={styles.rowGradeEmpty} />;
+    gradeContent = null;
   } else if ((status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && hasGrade) {
     gradeContent = (
-      <span className={styles.rowGrade}>
+      <Typography.Text strong style={{ fontSize: 14, whiteSpace: 'nowrap' }}>
         {grade}/{maxPoints}
-      </span>
+      </Typography.Text>
     );
   } else if (hasGrade && status === SubmissionStatus.NOT_REVIEWED) {
-    gradeContent = <span className={styles.rowGradeEmpty}>--</span>;
-  } else {
-    gradeContent = <span className={styles.rowGradeEmpty} />;
+    gradeContent = (
+      <Typography.Text type="secondary" style={{ fontSize: 14 }}>
+        --
+      </Typography.Text>
+    );
   }
 
   // Primary action — always visible
+  const handleAuxClick = (cb: ((e: React.MouseEvent) => void) | undefined) => (e: React.MouseEvent) => {
+    // Middle-click — invoke the callback so the parent can open in a new tab
+    if (e.button === 1 && cb) {
+      e.preventDefault();
+      e.stopPropagation();
+      cb(e);
+    }
+  };
+
   let primaryAction: React.ReactNode = null;
   if ((status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && onViewFeedback) {
     primaryAction = (
-      <button
-        className={styles.btnPrimaryBrand}
+      <Button
+        type="primary"
+        size="small"
+        icon={<EyeOutlined />}
         onClick={(e) => {
           e.stopPropagation();
-          onViewFeedback();
+          onViewFeedback(e);
         }}
+        onAuxClick={handleAuxClick(onViewFeedback)}
         aria-label={`View feedback for ${assignmentName}`}
       >
-        <EyeOutlined /> View Feedback
-      </button>
+        View Feedback
+      </Button>
     );
   } else if (status === SubmissionStatus.NOT_REVIEWED && onViewFiles) {
     primaryAction = (
-      <button
-        className={styles.btnSecondary}
+      <Button
+        size="small"
+        icon={<EyeOutlined />}
         onClick={(e) => {
           e.stopPropagation();
-          onViewFiles();
+          onViewFiles(e);
         }}
+        onAuxClick={handleAuxClick(onViewFiles)}
         aria-label={`View files for ${assignmentName}`}
       >
-        <EyeOutlined /> View Files
-      </button>
+        View Files
+      </Button>
     );
   } else if (status === SubmissionStatus.NO_SUBMISSION && allowStudentUpload && onUpload) {
     primaryAction = (
-      <button
-        className={styles.btnPrimaryAccent}
+      <Button
+        type="primary"
+        size="small"
+        icon={<UploadOutlined />}
         onClick={(e) => {
           e.stopPropagation();
           onUpload();
         }}
         aria-label={`Upload ${assignmentName}`}
       >
-        <UploadOutlined /> Upload
-      </button>
+        Upload
+      </Button>
     );
   }
 
@@ -218,60 +235,66 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   if (showUpload && allowStudentUpload && onUpload && status !== SubmissionStatus.NO_SUBMISSION) {
     secondaryButtons.push(
       <Tooltip key="reupload" title={hasExistingSubmission && liveFeedbackMode ? 'Replace submission' : 'Re-upload'}>
-        <button
-          className={styles.btnGroupIcon}
+        <Button
+          size="small"
+          icon={<UploadOutlined />}
           onClick={(e) => {
             e.stopPropagation();
             onUpload();
           }}
           aria-label={`Upload ${assignmentName}`}
-        >
-          <UploadOutlined />
-        </button>
+        />
       </Tooltip>,
     );
   }
   if (showAddFiles && onAddFiles) {
     secondaryButtons.push(
       <Tooltip key="addfiles" title="Add or update files">
-        <button
-          className={styles.btnGroupIcon}
+        <Button
+          size="small"
+          icon={<PlusOutlined />}
           onClick={(e) => {
             e.stopPropagation();
             onAddFiles();
           }}
           aria-label={`Add files to ${assignmentName}`}
-        >
-          <PlusOutlined />
-        </button>
+        />
       </Tooltip>,
     );
   }
   if (hasDownload && onDownload) {
     secondaryButtons.push(
       <Tooltip key="download" title="Download assignment files">
-        <button
-          className={styles.btnGroupIcon}
+        <Button
+          size="small"
+          icon={<DownloadOutlined />}
           onClick={(e) => {
             e.stopPropagation();
             onDownload();
           }}
           aria-label={`Download ${assignmentName}`}
-        >
-          <DownloadOutlined />
-        </button>
+        />
       </Tooltip>,
     );
   }
 
   return (
     <div
-      className={`${disabled ? styles.rowDisabled : styles.row} ${rowAccentClass[status]}`}
       role="article"
       aria-label={assignmentName}
+      style={{
+        borderRadius: 8,
+        border: '1px solid #f0f0f0',
+        borderLeft: `3px solid ${statusAccentColor[status]}`,
+        padding: '12px 16px',
+        opacity: disabled ? 0.5 : 1,
+        pointerEvents: disabled ? 'none' : undefined,
+        background: '#fff',
+      }}
     >
-      <div
-        className={styles.rowMain}
+      <Flex
+        align="center"
+        gap={12}
         onClick={hasStatsContent ? toggle : undefined}
         onKeyDown={hasStatsContent ? handleKeyDown : undefined}
         role={hasStatsContent ? 'button' : undefined}
@@ -279,60 +302,60 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
         aria-expanded={hasStatsContent ? expanded : undefined}
         style={{ cursor: hasStatsContent && !disabled ? 'pointer' : 'default' }}
       >
-        {/* Left: name + subline (pill, due date) */}
-        <div className={styles.rowIdentity}>
-          <div className={styles.rowNameBlock}>
-            <h3 className={styles.rowName}>
+        {/* Left: name + subline */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Flex align="center" gap={6}>
+            <Typography.Text strong ellipsis style={{ fontSize: 14 }}>
               {assignmentName}
-              {status === SubmissionStatus.PENDING && (
-                <span className={styles.notificationDot} aria-label="Grade available" />
-              )}
-            </h3>
-            <div className={styles.rowSubline}>
-              <span className={statusPillClass[status]}>{statusLabel[status]}</span>
-              {dueDateFragment}
-              {uploadDate && status !== SubmissionStatus.NO_SUBMISSION && (
-                <span className={styles.rowDueDate}>
-                  Submitted <CodePostDate datetime={uploadDate} />
-                </span>
-              )}
-            </div>
-          </div>
-          {hasStatsContent && (
-            <DownOutlined className={expanded ? styles.rowChevronOpen : styles.rowChevron} aria-hidden="true" />
-          )}
+            </Typography.Text>
+            {status === SubmissionStatus.PENDING && (
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: '#faad14',
+                  display: 'inline-block',
+                  flexShrink: 0,
+                }}
+                aria-label="Grade available"
+              />
+            )}
+          </Flex>
+          <Flex align="center" gap={8} wrap="wrap" style={{ marginTop: 4 }}>
+            <Tag color={statusTagColor[status]} style={{ margin: 0 }}>
+              {statusLabel[status]}
+            </Tag>
+            {dueDateFragment}
+            {uploadDate && status !== SubmissionStatus.NO_SUBMISSION && (
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                Submitted <CodePostDate datetime={uploadDate} />
+              </Typography.Text>
+            )}
+          </Flex>
         </div>
 
         {/* Center: grade */}
-        <div>{gradeContent}</div>
+        {gradeContent && <div style={{ flexShrink: 0 }}>{gradeContent}</div>}
 
         {/* Right: action group */}
-        <div className={styles.rowActions}>
-          {primaryAction || secondaryButtons.length > 0 ? (
-            primaryAction ? (
-              <div className={styles.btnGroup} role="group" aria-label="Assignment actions">
-                {primaryAction}
-                {secondaryButtons}
-              </div>
-            ) : secondaryButtons.length === 1 && hasDownload && onDownload ? (
-              <button
-                className={styles.btnSecondary}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDownload();
-                }}
-                aria-label={`Download ${assignmentName}`}
-              >
-                <DownloadOutlined /> Download
-              </button>
-            ) : (
-              <div className={styles.btnGroup} role="group" aria-label="Assignment actions">
-                {secondaryButtons}
-              </div>
-            )
-          ) : null}
-        </div>
-      </div>
+        <Flex gap={4} align="center" style={{ flexShrink: 0 }}>
+          {primaryAction}
+          {secondaryButtons}
+          {hasStatsContent && (
+            <DownOutlined
+              style={{
+                fontSize: 12,
+                color: '#8c8c8c',
+                transition: 'transform 0.25s',
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                marginLeft: 4,
+              }}
+              aria-hidden="true"
+            />
+          )}
+        </Flex>
+      </Flex>
 
       {/* Expandable stats panel */}
       <AnimatePresence initial={false}>
@@ -344,16 +367,26 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div className={styles.rowDetail}>
-              <div className={styles.detailBlock}>
-                <span className={styles.detailLabel}>Class Stats</span>
-                <span className={styles.detailValue}>
+            <Flex
+              gap={16}
+              style={{
+                paddingTop: 12,
+                marginTop: 12,
+                borderTop: '1px solid #f0f0f0',
+              }}
+            >
+              <div>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Class Stats
+                </Typography.Text>
+                <br />
+                <Typography.Text style={{ fontSize: 13 }}>
                   {meanGrade && `Mean: ${meanGrade}/${maxPoints}`}
                   {meanGrade && medianGrade && ' · '}
                   {medianGrade && `Median: ${medianGrade}/${maxPoints}`}
-                </span>
+                </Typography.Text>
               </div>
-            </div>
+            </Flex>
           </motion.div>
         )}
       </AnimatePresence>

@@ -12,14 +12,13 @@ import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   FireOutlined,
-  InboxOutlined,
   LeftOutlined,
   SettingOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Modal, Spin, message } from 'antd';
+import { Button, Empty, Flex, Modal, Progress, Skeleton, Spin, Tag, Typography, message } from 'antd';
 
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
@@ -61,7 +60,6 @@ import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 import AssignmentRow from './AssignmentRow';
 import { SubmissionStatus } from './submissionStatus';
 import AssignmentSection from './AssignmentSection';
-import styles from './StudentConsole.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
 import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
 import {
@@ -202,6 +200,18 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   useEffect(() => {
     document.title = 'codePost - Student Console';
   }, []);
+
+  // Fetch assignment-level permissions when assignments load
+  const fetchAssignmentCapabilities = usePermissionsStore((s) => s.fetchAssignmentCapabilities);
+  useEffect(() => {
+    if (currentCourseAssignments.length === 0) return;
+    for (const assignment of currentCourseAssignments) {
+      const key = `assignment:${assignment.id}`;
+      if (!usePermissionsStore.getState().cache[key]) {
+        fetchAssignmentCapabilities(assignment.id);
+      }
+    }
+  }, [currentCourseAssignments, fetchAssignmentCapabilities]);
 
   // Handle upload shortcut
   useEffect(() => {
@@ -502,14 +512,21 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           disabled={isDisabled}
           onViewFeedback={
             (status === SubmissionStatus.SUBMITTED || status === SubmissionStatus.PENDING) && submission
-              ? () => {
-                  markViewed(submission).then(() => openSubmissionInSameTab(submission.id));
+              ? (e) => {
+                  const newTab = e.button === 1;
+                  markViewed(submission).then(() =>
+                    newTab ? openSubmission(submission.id) : openSubmissionInSameTab(submission.id),
+                  );
                 }
               : undefined
           }
           onViewFiles={
             status === SubmissionStatus.NOT_REVIEWED && submission
-              ? () => openSubmissionInSameTab(submission.id)
+              ? (e) => {
+                  const newTab = e.button === 1;
+                  if (newTab) openSubmission(submission.id);
+                  else openSubmissionInSameTab(submission.id);
+                }
               : undefined
           }
           onUpload={
@@ -575,20 +592,21 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   let studentContent;
   if (!currentCourse) {
     studentContent = (
-      <div className={styles.console}>
-        <div className={styles.emptyState}>
-          <InboxOutlined className={styles.emptyIcon} />
-          <h2 className={styles.emptyTitle}>Select a course</h2>
-          <p className={styles.emptySubtext}>Choose a course from the menu above to view your assignments.</p>
-        </div>
+      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
+        <Flex justify="center" align="center" style={{ minHeight: 400 }}>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="Choose a course from the menu above to view your assignments."
+          />
+        </Flex>
       </div>
     );
   } else if (isLoadingAssignments) {
     studentContent = (
-      <div className={styles.console}>
-        <div className={styles.loadingState}>
+      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
+        <Flex justify="center" align="center" style={{ minHeight: 400 }}>
           <Spin size="large" />
-        </div>
+        </Flex>
       </div>
     );
   } else {
@@ -618,63 +636,53 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     const hasAssignments = !isLoading && assignmentList.length > 0 && groupedSections;
 
     studentContent = (
-      <div className={styles.console}>
+      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
         {/* Header */}
-        <header className={styles.header}>
-          <div className={styles.headerTop}>
-            <div>
-              <h1 className={styles.courseName}>{currentCourse.name}</h1>
-              <p className={styles.coursePeriod}>{currentCourse.period}</p>
-            </div>
-            <div className={styles.headerMeta}>
-              {lateDayCredits && (
-                <div className={styles.lateCreditsPill}>
-                  <ClockCircleOutlined /> {lateDayCredits}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          {hasAssignments && progress.total > 0 && (
-            <div className={styles.progressBar}>
-              <div className={styles.progressLabel}>
-                <span className={styles.progressText}>Course progress &middot; {Math.round(progress.percent)}%</span>
-                <span className={styles.progressCount}>
-                  {progress.completed} of {progress.total} completed
-                </span>
-              </div>
-              <div
-                className={styles.progressTrack}
-                role="progressbar"
-                aria-valuenow={progress.percent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div className={styles.progressFill} style={{ width: `${Math.max(progress.percent, 2)}%` }} />
-              </div>
-            </div>
-          )}
-        </header>
-
-        {/* Loading skeleton */}
-        {isLoading && (
+        <Flex justify="space-between" align="flex-start" style={{ marginBottom: 24 }}>
           <div>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className={styles.skeleton} style={{ marginBottom: 8 }} />
-            ))}
+            <Typography.Title level={3} style={{ margin: 0 }}>
+              {currentCourse.name}
+            </Typography.Title>
+            {currentCourse.period && <Typography.Text type="secondary">{currentCourse.period}</Typography.Text>}
+          </div>
+          {lateDayCredits && (
+            <Tag icon={<ClockCircleOutlined />} color="blue">
+              {lateDayCredits}
+            </Tag>
+          )}
+        </Flex>
+
+        {/* Progress bar */}
+        {hasAssignments && progress.total > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
+              <Typography.Text type="secondary">
+                Course progress &middot; {Math.round(progress.percent)}%
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {progress.completed} of {progress.total} completed
+              </Typography.Text>
+            </Flex>
+            <Progress
+              percent={Math.round(progress.percent)}
+              showInfo={false}
+              strokeColor="#52c41a"
+              size={['100%', 8]}
+            />
           </div>
         )}
 
+        {/* Loading skeleton */}
+        {isLoading && <Skeleton active paragraph={{ rows: 6 }} />}
+
         {/* Empty state */}
         {isEmpty && (
-          <div className={styles.emptyState}>
-            <InboxOutlined className={styles.emptyIcon} />
-            <h2 className={styles.emptyTitle}>No assignments yet</h2>
-            <p className={styles.emptySubtext}>
-              Your instructor hasn&apos;t published any assignments for this course yet. Check back later.
-            </p>
-          </div>
+          <Flex justify="center" align="center" style={{ minHeight: 300 }}>
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Your instructor hasn't published any assignments for this course yet. Check back later."
+            />
+          </Flex>
         )}
 
         {/* Assignment sections */}
@@ -825,7 +833,10 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         role={USER_TYPE.STUDENT}
       />
       <SubmissionCelebration trigger={showCelebration} onComplete={() => setShowCelebration(false)} />
-      <button className={styles.celebrationDebugBtn} onClick={() => setShowCelebration(true)}>
+      <button
+        style={{ position: 'fixed', bottom: 8, right: 8, opacity: 0.3, fontSize: 10 }}
+        onClick={() => setShowCelebration(true)}
+      >
         🎉 Test Celebration
       </button>
     </div>

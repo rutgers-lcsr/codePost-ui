@@ -16,5 +16,6 @@ Read-only serializer for SubmissionFile that nests full Comment objects (includi
 | `hiddenBeforePublish` | boolean                                                |
 | `created`             | string                                                 |
 | `modified`            | string                                                 |
+| `edit`                | [SubmissionFileEdit](SubmissionFileEdit.md)            |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

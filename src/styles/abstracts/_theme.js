@@ -68,7 +68,7 @@ const headerHeight = 64; // px
 
 // --------------- FONTS --------------- //
 
-const fontMain = 'Avenir Next, Lato, sans-serif';
+const fontMain = "'Plus Jakarta Sans', system-ui, sans-serif";
 const fontCode = 'AndaleMono, PT Mono, monospace';
 const fontLogo = 'Muli, Lato, sans-serif';
 

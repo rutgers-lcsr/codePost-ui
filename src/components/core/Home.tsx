@@ -1,28 +1,24 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-/**********************************************************************************************************************/
-/* Imports
-/**********************************************************************************************************************/
 
-/* react imports */
 import * as React from 'react';
-
-/* antd imports */
 import { AuditOutlined, TeamOutlined } from '@ant-design/icons';
-
-/* other library imports */
+import { Card, Flex, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 import { GrUserAdmin } from 'react-icons/gr';
 
-/* codePost imports */
 import PeripheralPageLayout from './layouts/PeripheralPageLayout';
 import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 import styles from './Home.module.scss';
 
 import type { UserType } from '../../types/models';
 
-/**********************************************************************************************************************/
+const { Title, Text } = Typography;
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Types                                                                     */
+/* ────────────────────────────────────────────────────────────────────────── */
 
 interface IProps {
   isStudent: boolean;
@@ -38,8 +34,7 @@ interface ConsoleItem {
   description: string;
   icon: React.JSX.Element;
   linkTo: string;
-  cardClass: string;
-  iconClass: string;
+  color: string;
 }
 
 /* ── Helpers ────────────────────────────────────────────────────────────── */
@@ -66,56 +61,51 @@ const Home = (props: IProps) => {
       props.isStudent
         ? {
             key: 'student',
-            title: 'Student Console',
+            title: 'Student',
             description: 'View assignments, submissions, and feedback',
-            icon: <PiStudentFill />,
+            icon: <PiStudentFill style={{ fontSize: 28 }} />,
             linkTo: '/student',
-            cardClass: styles.consoleCardBrand,
-            iconClass: styles.consoleCardIconBrand,
+            color: '#198665',
           }
         : null,
       props.isGrader
         ? {
             key: 'grader',
-            title: 'Grader Console',
+            title: 'Grader',
             description: 'Review submissions and provide feedback',
-            icon: <AuditOutlined />,
+            icon: <AuditOutlined style={{ fontSize: 28 }} />,
             linkTo: '/grader',
-            cardClass: styles.consoleCardAccent,
-            iconClass: styles.consoleCardIconAccent,
+            color: '#1677ff',
           }
         : null,
       props.isAdmin
         ? {
             key: 'admin',
-            title: 'Admin Console',
+            title: 'Admin',
             description: 'Manage courses, assignments, and rosters',
-            icon: <PiChalkboardTeacherFill />,
+            icon: <PiChalkboardTeacherFill style={{ fontSize: 28 }} />,
             linkTo: '/admin',
-            cardClass: styles.consoleCardFocus,
-            iconClass: styles.consoleCardIconFocus,
+            color: '#722ed1',
           }
         : null,
       platformCaps.access_admin_dashboard
         ? {
             key: 'dashboard',
-            title: 'Staff Console',
+            title: 'Staff',
             description: 'Platform analytics and administration',
-            icon: <GrUserAdmin />,
+            icon: <GrUserAdmin style={{ fontSize: 28 }} />,
             linkTo: '/dashboard',
-            cardClass: styles.consoleCardWarning,
-            iconClass: styles.consoleCardIconWarning,
+            color: '#fa8c16',
           }
         : null,
       platformCaps.manage_organization
         ? {
             key: 'org',
-            title: 'Organization Console',
+            title: 'Organization',
             description: 'Organization settings and member management',
-            icon: <TeamOutlined />,
+            icon: <TeamOutlined style={{ fontSize: 28 }} />,
             linkTo: '/organization',
-            cardClass: styles.consoleCardNeutral,
-            iconClass: styles.consoleCardIconNeutral,
+            color: '#595959',
           }
         : null,
     ] satisfies (ConsoleItem | null)[]
@@ -125,21 +115,20 @@ const Home = (props: IProps) => {
     <PeripheralPageLayout user={props.user} handleLogout={props.handleLogout} background="var(--sc-warm-bg)">
       <div className={styles.home}>
         {/* ── Greeting ──────────────────────────────────────────────────── */}
-        <div className={styles.greeting} role="heading" aria-level={1}>
-          <p className={styles.roleLabel}>codePost</p>
-          <h1 className={styles.greetingTitle}>
+        <div style={{ marginBottom: 32 }}>
+          <Title level={2} style={{ margin: 0 }}>
             {getGreeting()}, {getDisplayName(props.user)}
-          </h1>
-          <p className={styles.greetingSubtitle}>Select a console to continue</p>
-        </div>
-
-        {/* ── Section header ────────────────────────────────────────────── */}
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Your Consoles</h2>
-          <span className={styles.sectionCount}>{consoles.length}</span>
+          </Title>
+          <Text type="secondary">Select a role to continue</Text>
         </div>
 
         {/* ── Console cards ─────────────────────────────────────────────── */}
+        <Flex align="center" gap={8} style={{ marginBottom: 16 }}>
+          <Title level={5} style={{ margin: 0 }}>
+            Your Roles
+          </Title>
+        </Flex>
+
         <div className={styles.consoleGrid}>
           {consoles.map((item, i) => (
             <motion.div
@@ -148,10 +137,34 @@ const Home = (props: IProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.08 + i * 0.06, ease: [0.4, 0, 0.2, 1] }}
             >
-              <Link to={item.linkTo} className={item.cardClass} aria-label={`Open ${item.title}`}>
-                <div className={item.iconClass}>{item.icon}</div>
-                <h3 className={styles.consoleCardName}>{item.title}</h3>
-                <p className={styles.consoleCardDescription}>{item.description}</p>
+              <Link to={item.linkTo} style={{ textDecoration: 'none' }} aria-label={`Open ${item.title}`}>
+                <Card hoverable style={{ height: '100%' }}>
+                  <Flex vertical gap={12}>
+                    <Flex align="center" gap={12}>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 12,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: `${item.color}10`,
+                          color: item.color,
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                      <div>
+                        <Text strong style={{ fontSize: 16 }}>
+                          {item.title}
+                        </Text>
+                        <br />
+                      </div>
+                    </Flex>
+                    <Text type="secondary">{item.description}</Text>
+                  </Flex>
+                </Card>
               </Link>
             </motion.div>
           ))}

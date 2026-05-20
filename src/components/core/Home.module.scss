@@ -1,240 +1,25 @@
 /* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software. */
-/* Home — Welcome / Console Selector */
 
-@use '../../styles/abstracts/student-console-tokens';
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONTAINER
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* Home — Console Selector. Minimal layout only. Components use Ant Design. */
 
 .home {
-  max-width: 1100px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: var(--sc-space-2xl) var(--sc-space-xl);
-  font-family: var(--sc-font-body);
-  color: var(--sc-ink);
+  padding: 64px 40px;
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   GREETING HEADER
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.greeting {
-  margin-bottom: var(--sc-space-3xl);
-}
-
-.roleLabel {
-  font-family: var(--sc-font-body);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--sc-brand);
-  margin: 0 0 var(--sc-space-sm);
-}
-
-.greetingTitle {
-  font-family: var(--sc-font-display);
-  font-size: var(--sc-text-2xl);
-  font-weight: 500;
-  color: var(--sc-ink);
-  margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  font-optical-sizing: auto;
-}
-
-.greetingSubtitle {
-  font-size: var(--sc-text-base);
-  color: var(--sc-ink-muted);
-  margin: var(--sc-space-xs) 0 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   SECTION HEADER
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--sc-space-md);
-  margin-bottom: var(--sc-space-lg);
-  padding-bottom: var(--sc-space-md);
-  border-bottom: 2px solid var(--sc-divider);
-}
-
-.sectionTitle {
-  font-family: var(--sc-font-body);
-  font-size: var(--sc-text-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--sc-ink-muted);
-  margin: 0;
-}
-
-.sectionCount {
-  font-size: var(--sc-text-xs);
-  color: var(--sc-ink-muted);
-  background: var(--sc-warm-elevated);
-  padding: 3px 10px;
-  border-radius: var(--sc-radius-pill);
-  font-weight: 700;
-  border: 1px solid var(--sc-border-light);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONSOLE GRID
-   ═══════════════════════════════════════════════════════════════════════════ */
 
 .consoleGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--sc-space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   CONSOLE CARD — Base
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.consoleCard {
-  background: var(--sc-warm-surface);
-  border: 1px solid var(--sc-border-light);
-  border-radius: var(--sc-radius-lg);
-  padding: var(--sc-space-xl) var(--sc-space-xl) var(--sc-space-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sc-space-md);
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition:
-    border-color var(--sc-duration-fast) var(--sc-ease),
-    box-shadow var(--sc-duration-fast) var(--sc-ease),
-    transform var(--sc-duration-fast) var(--sc-ease);
-}
-
-.consoleCard:hover {
-  border-color: var(--sc-border);
-  box-shadow: var(--sc-shadow-lg);
-  transform: translateY(-2px);
-}
-
-.consoleCard:focus-visible {
-  outline: 2px solid var(--sc-focus);
-  outline-offset: 2px;
-}
-
-/* ── Accent variants ─────────────────────────────────────────────────── */
-
-.consoleCardBrand {
-  composes: consoleCard;
-  border-left: 3px solid var(--sc-brand);
-}
-
-.consoleCardAccent {
-  composes: consoleCard;
-  border-left: 3px solid var(--sc-accent);
-}
-
-.consoleCardFocus {
-  composes: consoleCard;
-  border-left: 3px solid var(--sc-focus);
-}
-
-.consoleCardWarning {
-  composes: consoleCard;
-  border-left: 3px solid var(--sc-status-warning);
-}
-
-.consoleCardNeutral {
-  composes: consoleCard;
-  border-left: 3px solid var(--sc-ink-faint);
-}
-
-/* ── Card inner elements ─────────────────────────────────────────────── */
-
-.consoleCardIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--sc-radius-md);
-  font-size: 24px;
-  flex-shrink: 0;
-  transition: background-color var(--sc-duration-fast) var(--sc-ease);
-}
-
-.consoleCardIconBrand {
-  composes: consoleCardIcon;
-  background: var(--sc-brand-light);
-  color: var(--sc-brand);
-}
-
-.consoleCardIconAccent {
-  composes: consoleCardIcon;
-  background: var(--sc-accent-light);
-  color: var(--sc-accent);
-}
-
-.consoleCardIconFocus {
-  composes: consoleCardIcon;
-  background: var(--sc-focus-light);
-  color: var(--sc-focus);
-}
-
-.consoleCardIconWarning {
-  composes: consoleCardIcon;
-  background: var(--sc-status-warning-bg);
-  color: var(--sc-status-warning);
-}
-
-.consoleCardIconNeutral {
-  composes: consoleCardIcon;
-  background: var(--sc-status-neutral-bg);
-  color: var(--sc-status-neutral);
-}
-
-.consoleCardName {
-  font-family: var(--sc-font-display);
-  font-size: var(--sc-text-lg);
-  font-weight: 500;
-  color: var(--sc-ink);
-  margin: 0;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-.consoleCardDescription {
-  font-size: var(--sc-text-sm);
-  color: var(--sc-ink-muted);
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .home {
-    padding: var(--sc-space-lg);
-  }
-
-  .greetingTitle {
-    font-size: var(--sc-text-xl);
+    padding: 24px 16px;
   }
 
   .consoleGrid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .consoleCard,
-  .consoleCard:hover {
-    transition: none;
-    transform: none;
   }
 }

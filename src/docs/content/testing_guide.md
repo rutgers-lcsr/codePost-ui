@@ -61,6 +61,125 @@ The parser extracts (when present):
 - `description` (optional)
 - `points`
 - `timeout` (optional; defaults to `30` seconds when omitted)
+- `objectives` (optional; for learning outcome tracking)
+- `hidden` (optional; if true, test is hidden from students)
+
+### Hidden tests and objectives syntax
+
+- **Python**: use decorator keywords directly (for example, `hidden=True`, `objectives=["LO1", "LO2"]`).
+- **Java**: use annotation parameters directly (for example, `hidden=true`, `objectives={"LO1", "LO2"}`).
+- **R, C/C++, Node/JS/TS, Ruby, PHP**: add a parser directive comment directly above the test definition:
+  - `@codepost hidden`
+  - `@codepost objectives=LO1,LO2`
+  - Combined: `@codepost hidden objectives=LO1,LO2`
+
+The directive is recognized on `//`, `#`, `--`, and `/* */` comment lines, and may appear up to three lines above the test definition (the parser stops at the first non-comment line).
+
+> [!NOTE]
+> For non-Python/Java languages, `hidden` and `objectives` are parser metadata (sync-time), not runtime test-function parameters. They are read once when the test category is saved and persisted on the test case record.
+
+## Hidden tests
+
+A **hidden** test contributes to a student's score exactly like a normal test, but the student-facing test results endpoint strips its name, logs, and explanation before responding. Graders and admins continue to see full output in the code-review panel.
+
+Use hidden tests when you want to grade against behavior that should not be reverse-engineered from output — anti-cheating probes, edge-cases reserved for after publishing, or autograder traps.
+
+### Marking a test hidden
+
+```python
+# Python — decorator keyword
+@test(name="Reject negative input", points=2, hidden=True)
+def test_reject_negative(): ...
+```
+
+```java
+// Java — annotation parameter
+@Test(name = "Reject negative input", points = 2, hidden = true)
+public void testRejectNegative() { ... }
+```
+
+```js
+// JS / TS — @codepost directive above the test
+// @codepost hidden
+test("Reject negative input", 2, "...", function () { ... });
+```
+
+### What students see
+
+- The test counts toward the category's `maxPoints` exactly as it would otherwise.
+- The student receives **pass/fail** and the resulting point delta only.
+- Test name, logs, captured stdout/stderr, and explanation are blanked.
+
+## Learning Objectives
+
+**Learning Objectives** let you communicate *what* a student demonstrated — not just which tests passed. Each objective is defined per assignment and linked to one or more test cases. The student feedback panel shows objectives alongside test results, gated by the objective's visibility settings.
+
+### Defining an objective
+
+You can create objectives explicitly through the assignment UI, or implicitly by referencing them in a test script. The first time a test script references an objective `shortId` that does not yet exist on the assignment, codePost auto-creates the objective with a default display name derived from the `shortId` — you can then edit its name, description, visibility, and aggregation in the Learning Objectives UI.
+
+```python
+@test(name="Reverses a list of length n", points=3, objectives=["recursion", "lists"])
+def test_reverse(): ...
+```
+
+```js
+// @codepost objectives=recursion,lists
+test("Reverses a list of length n", 3, "...", function () { ... });
+```
+
+### Visibility modes
+
+Each objective has a **visibility mode** controlling when students see it:
+
+| Mode        | When students see this objective                              |
+| ----------- | ------------------------------------------------------------- |
+| `always`    | On every submission, regardless of pass/fail.                 |
+| `on_pass`   | Only when **all** linked tests for this objective pass.       |
+| `on_fail`   | Only when **at least one** linked test for this objective fails. |
+| `never`     | Hidden from students entirely — visible only to staff.        |
+
+Staff (graders, course admins) always see every objective, regardless of visibility.
+
+### Aggregation modes
+
+Each objective also has an **aggregation mode** controlling how its `met` status and `score` are computed across linked tests:
+
+| Mode              | Met when…                                              | Score                                       |
+| ----------------- | ------------------------------------------------------ | ------------------------------------------- |
+| `all`             | Every linked test passes.                              | `1.0` if all pass, otherwise fraction passed |
+| `any`             | At least one linked test passes.                       | `1.0` if any pass, otherwise `0.0`           |
+| `percentage`      | 100% of linked tests pass.                             | `passed_count / total_count`                |
+| `points_weighted` | All weighted points earned.                            | `earned_points / total_points` across linked tests |
+
+### What the API returns
+
+`GET /submissions/{id}/submissionTestResults/` now includes a `learningObjectives` array in the response:
+
+```json
+{
+  "submissionTests": [...],
+  "logs": "...",
+  "learningObjectives": [
+    {
+      "id": 12,
+      "shortId": "recursion",
+      "name": "Recursion",
+      "description": "Uses recursion to solve list-processing problems.",
+      "met": false,
+      "score": 0.5,
+      "aggregationMode": "percentage"
+    }
+  ]
+}
+```
+
+For student views, objectives whose `visibilityMode` does not match the submission's state are filtered out server-side.
+
+### Managing objectives via the API
+
+- `GET /assignments/{id}/learningObjectives/` — list all objectives for an assignment (course staff).
+- `GET/POST/PATCH/DELETE /learningObjectives/` — CRUD for objectives (course admin for writes; course staff for reads).
 
 ## Language syntax reference
 

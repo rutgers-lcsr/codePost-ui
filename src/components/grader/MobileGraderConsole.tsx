@@ -1,13 +1,26 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOutlined, FolderOutlined, InboxOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  ArrowLeftOutlined,
+  BookOutlined,
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  HomeFilled,
+  InboxOutlined,
+  SettingOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
+import { Avatar, Card, Empty, Flex, Progress, Segmented, Spin, Statistic, Tag, Typography } from 'antd';
 import { AnimatePresence, motion } from 'motion/react';
 
-import { Course } from '../../api-client';
-import { encodedCourseLink } from '../core/CourseMenu';
+import { Course, User } from '../../api-client';
+import { Assignment } from '../../types/common';
+import { useAssignmentsQuery } from '../admin/hooks/useAssignmentsQuery';
+import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import styles from './MobileGraderConsole.module.scss';
+
+const { Title, Text } = Typography;
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Types                                                                     */
@@ -17,11 +30,27 @@ interface MobileGraderConsoleProps {
   courses: Course[];
   userEmail: string;
   defaultPanel: (course: Course) => string;
+  user: User;
 }
+
+type MobileTab = 'home' | 'courses' | 'settings';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Helpers                                                                   */
 /* ────────────────────────────────────────────────────────────────────────── */
+
+function getGradingProgress(a: Assignment): number {
+  const total =
+    (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0) + (a.submissions_unclaimed_count ?? 0);
+  if (total === 0) return 0;
+  return Math.round(((a.submissions_finalized_count ?? 0) / total) * 100);
+}
+
+function formatDueDate(date: string | null | undefined): string {
+  if (!date) return 'No due date';
+  const d = new Date(date);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -31,278 +60,434 @@ function getGreeting(): string {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
-/* Component                                                                 */
+/* Course Detail                                                             */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, userEmail, defaultPanel }) => {
-  const [searchText, setSearchText] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
-  const [showArchived, setShowArchived] = useState(false);
+const CourseDetail: React.FC<{
+  course: Course;
+  onBack: () => void;
+}> = ({ course, onBack }) => {
+  const { data: assignments = [], isLoading } = useAssignmentsQuery(course);
+  const [filter, setFilter] = useState<'all' | 'active' | 'done'>('all');
+
+  const filteredAssignments = useMemo(() => {
+    if (filter === 'all') return assignments;
+    if (filter === 'done') return assignments.filter((a) => getGradingProgress(a) === 100);
+    return assignments.filter((a) => getGradingProgress(a) < 100);
+  }, [assignments, filter]);
+
+  const totalUnclaimed = assignments.reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0);
+  const totalInProgress = assignments.reduce((sum, a) => sum + (a.submissions_inprogress_count ?? 0), 0);
+  const totalFinalized = assignments.reduce((sum, a) => sum + (a.submissions_finalized_count ?? 0), 0);
+
+  return (
+    <div className={styles.scrollContent}>
+      {/* Header */}
+      <Flex align="center" gap={12} style={{ marginBottom: 20 }}>
+        <button type="button" className={styles.backButton} onClick={onBack} aria-label="Back">
+          <ArrowLeftOutlined />
+        </button>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Title level={4} style={{ margin: 0 }} ellipsis>
+            {course.name}
+          </Title>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {course.period}
+          </Text>
+        </div>
+      </Flex>
+
+      {/* Quick stats */}
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex justify="space-around">
+          <Statistic
+            title="Unclaimed"
+            value={totalUnclaimed}
+            valueStyle={{ fontSize: 18, color: totalUnclaimed > 0 ? '#fa8c16' : undefined }}
+          />
+          <Statistic title="In Progress" value={totalInProgress} valueStyle={{ fontSize: 18 }} />
+          <Statistic title="Finalized" value={totalFinalized} valueStyle={{ fontSize: 18, color: '#52c41a' }} />
+        </Flex>
+      </Card>
+
+      {/* Filter */}
+      <Segmented
+        block
+        value={filter}
+        onChange={(val) => setFilter(val as 'all' | 'active' | 'done')}
+        options={[
+          { label: `All (${assignments.length})`, value: 'all' },
+          { label: 'Active', value: 'active' },
+          { label: 'Done', value: 'done' },
+        ]}
+        style={{ marginBottom: 16 }}
+      />
+
+      {/* Loading */}
+      {isLoading && (
+        <Flex justify="center" style={{ padding: 48 }}>
+          <Spin />
+        </Flex>
+      )}
+
+      {/* Assignments */}
+      {!isLoading && filteredAssignments.length > 0 ? (
+        <Flex vertical gap={10}>
+          <AnimatePresence>
+            {filteredAssignments.map((assignment, idx) => {
+              const progress = getGradingProgress(assignment);
+              const unclaimed = assignment.submissions_unclaimed_count ?? 0;
+
+              return (
+                <motion.div
+                  key={assignment.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, delay: idx * 0.03 }}
+                >
+                  <Card size="small">
+                    <Flex justify="space-between" align="flex-start" gap={8}>
+                      <Text strong style={{ fontSize: 14 }}>
+                        {assignment.name}
+                      </Text>
+                      {progress === 100 ? (
+                        <Tag color="success" icon={<CheckCircleFilled />}>
+                          Done
+                        </Tag>
+                      ) : unclaimed > 0 ? (
+                        <Tag color="warning">{unclaimed} unclaimed</Tag>
+                      ) : (
+                        <Tag color="processing">In Progress</Tag>
+                      )}
+                    </Flex>
+
+                    <Flex gap={12} style={{ marginTop: 6, marginBottom: 10 }}>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <ClockCircleOutlined /> {formatDueDate(assignment.uploadDueDate)}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        <BookOutlined /> {assignment.points} pts
+                      </Text>
+                    </Flex>
+
+                    {/* Progress bar */}
+                    <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        Grading progress
+                      </Text>
+                      <Text strong style={{ fontSize: 11 }}>
+                        {progress}%
+                      </Text>
+                    </Flex>
+                    <Progress
+                      percent={progress}
+                      showInfo={false}
+                      size="small"
+                      status={progress === 100 ? 'success' : 'active'}
+                    />
+
+                    {/* Breakdown */}
+                    <Flex gap={12} style={{ marginTop: 6 }}>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        {assignment.submissions_finalized_count ?? 0} finalized
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        {assignment.submissions_inprogress_count ?? 0} in progress
+                      </Text>
+                      {unclaimed > 0 && (
+                        <Text type="warning" style={{ fontSize: 11 }}>
+                          <WarningOutlined /> {unclaimed} unclaimed
+                        </Text>
+                      )}
+                    </Flex>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </Flex>
+      ) : (
+        !isLoading && <Empty description={filter === 'all' ? 'No assignments' : `No ${filter} assignments`} />
+      )}
+    </div>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Main Component                                                            */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, userEmail, user }) => {
+  const [activeTab, setActiveTab] = useState<MobileTab>('home');
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
   const firstName = userEmail.split('@')[0].split('.')[0];
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  /* ── Organize courses ────────────────────────────────────────────────── */
+  const activeCourses = useMemo(() => courses.filter((c) => !c.archived), [courses]);
+  const archivedCourses = useMemo(() => courses.filter((c) => c.archived), [courses]);
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
-  const { activeCourses, archivedCourses, totalAssignments, uniquePeriods } = useMemo(() => {
-    const sortCourses = (a: Course, b: Course) => {
-      const nameCompare = a.name.localeCompare(b.name);
-      return nameCompare !== 0 ? nameCompare : a.period.localeCompare(b.period);
-    };
+  /* ── Home ────────────────────────────────────────────────────────────── */
 
-    const active = courses.filter((c) => !c.archived).sort(sortCourses);
-    const archived = courses.filter((c) => c.archived).sort(sortCourses);
+  const renderHome = () => (
+    <div className={styles.scrollContent}>
+      <div style={{ marginBottom: 20 }}>
+        <Tag color="blue" style={{ marginBottom: 8 }}>
+          Grader
+        </Tag>
+        <Title level={3} style={{ margin: 0 }}>
+          {getGreeting()}, {displayName}
+        </Title>
+        <Text type="secondary">
+          {activeCourses.length} active course{activeCourses.length === 1 ? '' : 's'}
+        </Text>
+      </div>
 
-    let totalAssignments = 0;
-    for (const course of active) {
-      totalAssignments += course.assignments?.length ?? 0;
-    }
+      {/* Stats */}
+      <Card size="small" style={{ marginBottom: 20 }}>
+        <Flex justify="space-around">
+          <Statistic title="Courses" value={activeCourses.length} valueStyle={{ fontSize: 20 }} />
+          <Statistic title="Active" value={activeCourses.length} valueStyle={{ fontSize: 20, color: '#1677ff' }} />
+          <Statistic title="Archived" value={archivedCourses.length} valueStyle={{ fontSize: 20 }} />
+        </Flex>
+      </Card>
 
-    const periods = new Set<string>();
-    for (const c of courses) {
-      if (c.period) periods.add(c.period);
-    }
+      {/* Course list for quick access */}
+      {activeCourses.length > 0 ? (
+        <div>
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <InboxOutlined style={{ color: '#198665' }} />
+            <Text strong style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Your Courses
+            </Text>
+          </Flex>
 
-    return {
-      activeCourses: active,
-      archivedCourses: archived,
-      totalAssignments,
-      uniquePeriods: [...periods].sort((a, b) => a.localeCompare(b)),
-    };
-  }, [courses]);
-
-  /* ── Filtered courses ────────────────────────────────────────────────── */
-
-  const filteredActive = useMemo(() => {
-    return activeCourses.filter((c) => {
-      if (selectedPeriod && c.period !== selectedPeriod) return false;
-      if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
-    });
-  }, [activeCourses, searchText, selectedPeriod]);
-
-  const filteredArchived = useMemo(() => {
-    return archivedCourses.filter((c) => {
-      if (selectedPeriod && c.period !== selectedPeriod) return false;
-      if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
-    });
-  }, [archivedCourses, searchText, selectedPeriod]);
-
-  /* ── Empty state ─────────────────────────────────────────────────────── */
-
-  if (courses.length === 0) {
-    return (
-      <div className={styles.mobileShell}>
-        <div className={styles.emptyState}>
-          <InboxOutlined className={styles.emptyIcon} />
-          <h2 className={styles.emptyTitle}>No courses yet</h2>
-          <p className={styles.emptySubtext}>You haven&apos;t been added as a grader to any courses yet.</p>
+          <Flex vertical gap={8}>
+            {activeCourses.map((course) => (
+              <Card
+                key={course.id}
+                size="small"
+                hoverable
+                onClick={() => {
+                  setSelectedCourseId(course.id);
+                  setActiveTab('courses');
+                }}
+              >
+                <Flex justify="space-between" align="center">
+                  <div>
+                    <Text strong>{course.name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {course.period}
+                    </Text>
+                  </div>
+                  <Tag>{(course.assignments ?? []).length} assignments</Tag>
+                </Flex>
+              </Card>
+            ))}
+          </Flex>
         </div>
+      ) : (
+        <Empty description="No active courses" />
+      )}
+    </div>
+  );
+
+  /* ── Courses ─────────────────────────────────────────────────────────── */
+
+  const renderCourses = () => {
+    if (selectedCourse) {
+      return <CourseDetail course={selectedCourse} onBack={() => setSelectedCourseId(null)} />;
+    }
+
+    return (
+      <div className={styles.scrollContent}>
+        <Title level={4} style={{ marginBottom: 4 }}>
+          Courses
+        </Title>
+        <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+          {activeCourses.length} active, {archivedCourses.length} archived
+        </Text>
+
+        <Flex vertical gap={10}>
+          {activeCourses.map((course, idx) => (
+            <motion.div
+              key={course.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: idx * 0.04 }}
+            >
+              <Card size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
+                <Flex justify="space-between" align="center">
+                  <div>
+                    <Text strong>{course.name}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {course.period}
+                    </Text>
+                  </div>
+                  <Tag>{(course.assignments ?? []).length} assignments</Tag>
+                </Flex>
+              </Card>
+            </motion.div>
+          ))}
+
+          {archivedCourses.length > 0 && (
+            <>
+              <Text type="secondary" strong style={{ marginTop: 12, fontSize: 12 }}>
+                ARCHIVED
+              </Text>
+              {archivedCourses.map((course) => (
+                <Card key={course.id} size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
+                  <Flex justify="space-between" align="center">
+                    <div>
+                      <Text type="secondary">{course.name}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {course.period}
+                      </Text>
+                    </div>
+                    <Tag>Archived</Tag>
+                  </Flex>
+                </Card>
+              ))}
+            </>
+          )}
+        </Flex>
       </div>
     );
-  }
+  };
 
-  /* ── Render ──────────────────────────────────────────────────────────── */
+  /* ── Settings ────────────────────────────────────────────────────────── */
+
+  const renderSettings = () => (
+    <div className={styles.scrollContent}>
+      <Title level={4} style={{ marginBottom: 16 }}>
+        Settings
+      </Title>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex gap={12} align="center">
+          <Avatar size={44} style={{ background: '#1677ff', flexShrink: 0 }}>
+            {displayName.charAt(0).toUpperCase()}
+          </Avatar>
+          <div style={{ minWidth: 0 }}>
+            <Text strong>{displayName}</Text>
+            <br />
+            <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+              {userEmail}
+            </Text>
+            <br />
+            <Tag color="blue" style={{ marginTop: 4 }}>
+              Grader
+            </Tag>
+          </div>
+        </Flex>
+      </Card>
+
+      <Card size="small" style={{ marginBottom: 16 }}>
+        <Flex vertical gap={8}>
+          <Flex justify="space-between">
+            <Text type="secondary">Active Courses</Text>
+            <Text>{activeCourses.length}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text type="secondary">Archived Courses</Text>
+            <Text>{archivedCourses.length}</Text>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {renderRoleSwitcher(user, 'grader')}
+
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        To change account settings or manage grading preferences, access the full desktop version of codePost.
+      </Text>
+    </div>
+  );
+
+  /* ── Shell ───────────────────────────────────────────────────────────── */
 
   return (
     <div className={styles.mobileShell}>
-      <div className={styles.scrollContent}>
-        {/* ── Header ──────────────────────────────────────────────────────── */}
-        <header className={styles.hero}>
-          <span className={styles.roleChip}>Grader</span>
-          <motion.h1
-            className={styles.heroTitle}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {getGreeting()},<br />
-            {displayName}
-          </motion.h1>
-          <motion.p
-            className={styles.heroSubtitle}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
-            {activeCourses.length} active course{activeCourses.length === 1 ? '' : 's'} &middot; {totalAssignments}{' '}
-            assignment{totalAssignments === 1 ? '' : 's'}
-          </motion.p>
-        </header>
-
-        {/* ── Stats ──────────────────────────────────────────────────────── */}
-        <motion.div
-          className={styles.statsRow}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.05 }}
-        >
-          <div className={styles.statChip} data-variant="brand">
-            <span className={styles.statValue}>{activeCourses.length}</span>
-            <span className={styles.statLabel}>Active</span>
-          </div>
-          <div className={styles.statChip} data-variant="accent">
-            <span className={styles.statValue}>{totalAssignments}</span>
-            <span className={styles.statLabel}>Assignments</span>
-          </div>
-          <div className={styles.statChip} data-variant="neutral">
-            <span className={styles.statValue}>{archivedCourses.length}</span>
-            <span className={styles.statLabel}>Archived</span>
-          </div>
-        </motion.div>
-
-        {/* ── Search + Period Filters ─────────────────────────────────────── */}
-        {(courses.length > 3 || uniquePeriods.length > 1) && (
-          <div className={styles.filterBlock}>
-            {courses.length > 3 && (
-              <div className={styles.searchWrap}>
-                <SearchOutlined className={styles.searchIcon} />
-                <input
-                  className={styles.searchInput}
-                  type="text"
-                  placeholder="Search courses…"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  aria-label="Search courses"
-                />
-              </div>
-            )}
-            {uniquePeriods.length > 1 && (
-              <div className={styles.periodScroll} role="group" aria-label="Filter by period">
-                {uniquePeriods.map((period) => (
-                  <button
-                    key={period}
-                    type="button"
-                    className={styles.periodPill}
-                    data-active={selectedPeriod === period}
-                    onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
-                    aria-pressed={selectedPeriod === period}
-                  >
-                    {period}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Active courses ─────────────────────────────────────────────── */}
-        {filteredActive.length > 0 && (
-          <motion.section
-            className={styles.section}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.1 }}
-          >
-            <div className={styles.sectionHead}>
-              <BookOutlined className={styles.sectionIcon} />
-              <h2 className={styles.sectionTitle}>Your Courses</h2>
-              <span className={styles.badge}>{filteredActive.length}</span>
-            </div>
-            <div className={styles.courseList}>
-              <AnimatePresence>
-                {filteredActive.map((course, idx) => (
-                  <motion.div
-                    key={course.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, delay: idx * 0.03 }}
-                  >
-                    <Link to={encodedCourseLink('grader', course, defaultPanel(course))} className={styles.courseCard}>
-                      <div className={styles.courseCardTop}>
-                        <h3 className={styles.courseName}>{course.name}</h3>
-                        <span className={styles.coursePeriod}>{course.period}</span>
-                      </div>
-                      <div className={styles.courseCardBottom}>
-                        <span className={styles.courseStat}>
-                          <BookOutlined /> {course.assignments?.length ?? 0} assignment
-                          {(course.assignments?.length ?? 0) === 1 ? '' : 's'}
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </motion.section>
-        )}
-
-        {/* ── Archived toggle ────────────────────────────────────────────── */}
-        {filteredArchived.length > 0 && (
-          <motion.section
-            className={styles.section}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.15 }}
-          >
-            <button
-              type="button"
-              className={styles.archivedToggle}
-              onClick={() => setShowArchived(!showArchived)}
-              aria-expanded={showArchived}
+      <main className={styles.main}>
+        <AnimatePresence mode="wait">
+          {activeTab === 'home' && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+              className={styles.tabPanel}
             >
-              <FolderOutlined className={styles.archivedToggleIcon} />
-              <span>Archived ({filteredArchived.length})</span>
-              <span className={styles.archivedChevron} data-open={showArchived}>
-                ›
-              </span>
-            </button>
+              {renderHome()}
+            </motion.div>
+          )}
+          {activeTab === 'courses' && (
+            <motion.div
+              key="courses"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className={styles.tabPanel}
+            >
+              {renderCourses()}
+            </motion.div>
+          )}
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className={styles.tabPanel}
+            >
+              {renderSettings()}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
-            <AnimatePresence>
-              {showArchived && (
-                <motion.div
-                  className={styles.courseList}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  {filteredArchived.map((course, idx) => (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.03 }}
-                    >
-                      <Link
-                        to={encodedCourseLink('grader', course, defaultPanel(course))}
-                        className={styles.courseCard}
-                        data-archived="true"
-                      >
-                        <div className={styles.courseCardTop}>
-                          <h3 className={styles.courseName}>{course.name}</h3>
-                          <span className={styles.archivedBadge}>Archived</span>
-                        </div>
-                        <div className={styles.courseCardBottom}>
-                          <span className={styles.courseStat}>
-                            <BookOutlined /> {course.assignments?.length ?? 0} assignment
-                            {(course.assignments?.length ?? 0) === 1 ? '' : 's'}
-                          </span>
-                          <span className={styles.coursePeriodSmall}>{course.period}</span>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.section>
-        )}
-
-        {/* ── No results ─────────────────────────────────────────────────── */}
-        {searchText && filteredActive.length === 0 && filteredArchived.length === 0 && (
-          <div className={styles.emptyState}>
-            <SearchOutlined className={styles.emptyIcon} />
-            <h2 className={styles.emptyTitle}>No courses found</h2>
-            <p className={styles.emptySubtext}>Try a different search term.</p>
-          </div>
-        )}
-      </div>
+      <nav className={styles.bottomNav} aria-label="Main navigation">
+        <button
+          type="button"
+          className={styles.navItem}
+          data-active={activeTab === 'home' ? 'true' : 'false'}
+          onClick={() => setActiveTab('home')}
+          aria-label="Home"
+        >
+          <HomeFilled className={styles.navIcon} />
+          <span className={styles.navLabel}>Home</span>
+        </button>
+        <button
+          type="button"
+          className={styles.navItem}
+          data-active={activeTab === 'courses' ? 'true' : 'false'}
+          onClick={() => {
+            setActiveTab('courses');
+            setSelectedCourseId(null);
+          }}
+          aria-label="Courses"
+        >
+          <BookOutlined className={styles.navIcon} />
+          <span className={styles.navLabel}>Courses</span>
+        </button>
+        <button
+          type="button"
+          className={styles.navItem}
+          data-active={activeTab === 'settings' ? 'true' : 'false'}
+          onClick={() => setActiveTab('settings')}
+          aria-label="Settings"
+        >
+          <SettingOutlined className={styles.navIcon} />
+          <span className={styles.navLabel}>Settings</span>
+        </button>
+      </nav>
     </div>
   );
 };

@@ -1,6 +1,20 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useEffect, useState, useContext, useCallback, useMemo } from 'react';
-import { Button, Card, Collapse, Divider, Image, Progress, Typography, message, Badge, Alert, Tag, Tooltip, Popover } from 'antd';
+import {
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  Image,
+  Progress,
+  Typography,
+  message,
+  Badge,
+  Alert,
+  Tag,
+  Tooltip,
+  Popover,
+} from 'antd';
 import {
   CheckCircleFilled,
   CloseCircleFilled,
@@ -14,6 +28,8 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
+  HiddenTestSummary,
+  LearningObjectiveSummary,
   RubricCategory,
   RubricComment,
   SubmissionTest,
@@ -45,6 +61,9 @@ interface TestsListProps {
 interface TestItem {
   definition: TestCase;
   result?: SubmissionTest;
+  // Set on synthetic "Hidden Tests" rows the server returns for students. When present,
+  // the card is rendered as a non-runnable consolidated summary instead of an individual test.
+  hiddenSummary?: HiddenTestSummary;
 }
 
 interface ParsedTestResult {
@@ -305,6 +324,8 @@ const TestsList: React.FC<TestsListProps> = ({
   );
   const canRunTests = capRunAutograder ?? !isStudent;
 
+  const [learningObjectives, setLearningObjectives] = useState<LearningObjectiveSummary[]>([]);
+
   const fetchResults = async () => {
     if (demoMode) {
       return;
@@ -315,6 +336,8 @@ const TestsList: React.FC<TestsListProps> = ({
       const nextResults = data.submissionTests || [];
       setResults(nextResults);
       setStoreTests(getLatestSubmissionTests(nextResults));
+      const objectives = data.learningObjectives || [];
+      setLearningObjectives(objectives);
     } catch (error) {
       console.error('Failed to load test results', error);
     }
@@ -408,6 +431,29 @@ const TestsList: React.FC<TestsListProps> = ({
     return { definition: test, result };
   });
 
+  // The student-facing testResults endpoint replaces each hidden-test row with a synthetic
+  // per-category summary that has `testCase=null` and `hiddenSummary` populated. The student's
+  // test-case listing intentionally omits hidden tests, so these summaries don't get matched
+  // to a definition above. Inject one TestItem per synthetic row so they render inline in the
+  // appropriate category panel.
+  results
+    .filter((r): r is SubmissionTest & { hiddenSummary: HiddenTestSummary } => !!r.hiddenSummary)
+    .forEach((r) => {
+      combinedTests.push({
+        definition: {
+          // Negative id mirrors the server-side sentinel; nothing else collides with it.
+          id: r.id,
+          testCategory: r.testCategory,
+          description: r.hiddenSummary.label,
+          hidden: true,
+          pointsPass: r.hiddenSummary.pointsTotal,
+          pointsFail: 0,
+        } as unknown as TestCase,
+        result: r,
+        hiddenSummary: r.hiddenSummary,
+      });
+    });
+
   const getParsedResults = (result?: SubmissionTest): ParsedTestResult[] => {
     if (!result) return [];
 
@@ -496,10 +542,20 @@ const TestsList: React.FC<TestsListProps> = ({
     failed: 'Failed',
   };
 
-  // Calculate summary stats in a single pass
-  const totalTests = combinedTests.length;
+  // Calculate summary stats in a single pass. Synthetic 'Hidden tests' rows expand into
+  // their underlying passed/failed counts so the top-of-panel badges still reflect the true
+  // number of tests behind the row.
+  const totalTests = combinedTests.reduce(
+    (acc, t) => acc + (t.hiddenSummary ? t.hiddenSummary.totalCount : 1),
+    0,
+  );
   const stats = combinedTests.reduce(
     (acc, t) => {
+      if (t.hiddenSummary) {
+        acc.passed += t.hiddenSummary.passedCount;
+        acc.failed += t.hiddenSummary.totalCount - t.hiddenSummary.passedCount;
+        return acc;
+      }
       acc[getOutcome(t.result)]++;
       return acc;
     },
@@ -534,19 +590,22 @@ const TestsList: React.FC<TestsListProps> = ({
   const mdComponents = useMemo(
     () => ({
       p: ({ children }: { children?: React.ReactNode }) => <p style={{ margin: 0 }}>{children}</p>,
-      ul: ({ children }: { children?: React.ReactNode }) => (
-        <ul style={{ margin: '4px 0 0 16px' }}>{children}</ul>
-      ),
-      ol: ({ children }: { children?: React.ReactNode }) => (
-        <ol style={{ margin: '4px 0 0 16px' }}>{children}</ol>
-      ),
+      ul: ({ children }: { children?: React.ReactNode }) => <ul style={{ margin: '4px 0 0 16px' }}>{children}</ul>,
+      ol: ({ children }: { children?: React.ReactNode }) => <ol style={{ margin: '4px 0 0 16px' }}>{children}</ol>,
       img: ({ src, alt }: { src?: string; alt?: string }) => (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
           <Image
             src={src}
             alt={alt}
-            style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 4, marginTop: 4, display: 'block', objectFit: 'contain' }}
+            style={{
+              maxWidth: '100%',
+              maxHeight: 400,
+              borderRadius: 4,
+              marginTop: 4,
+              display: 'block',
+              objectFit: 'contain',
+            }}
           />
         </div>
       ),
@@ -566,19 +625,66 @@ const TestsList: React.FC<TestsListProps> = ({
           overflowWrap: 'anywhere',
         }}
       >
-        <ReactMarkdown
-          remarkPlugins={mdRemarkPlugins}
-          urlTransform={mdUrlTransform}
-          components={mdComponents}
-        >
+        <ReactMarkdown remarkPlugins={mdRemarkPlugins} urlTransform={mdUrlTransform} components={mdComponents}>
           {rawMessage}
         </ReactMarkdown>
       </div>
     );
   };
 
+  const renderHiddenSummaryCard = (item: TestItem) => {
+    const summary = item.hiddenSummary!;
+    const { passedCount, totalCount, pointsEarned, pointsTotal } = summary;
+    const allPassed = passedCount === totalCount && totalCount > 0;
+    const noneRan = totalCount === 0;
+    const outcome: TestOutcome = noneRan ? 'not-run' : allPassed ? 'passed' : passedCount > 0 ? 'partial' : 'failed';
+    const statusColor = statusColors[outcomeColorKey(outcome)];
+    const StatusIcon = outcomeIcons[outcome];
+
+    return (
+      <Card
+        key={item.definition.id}
+        size="small"
+        style={getCardStyle(item.result)}
+        bodyStyle={{ padding: '12px 16px' }}
+        hoverable={false}
+        data-testid="hidden-tests-summary"
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ paddingTop: 2 }}>
+            <StatusIcon style={{ fontSize: 24, color: statusColor.main }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
+                <Text strong style={{ fontSize: 13, display: 'block', lineHeight: '1.4', color: consoleTheme.text }}>
+                  {summary.label || 'Hidden tests'}
+                </Text>
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2, color: mutedText }}>
+                  {passedCount} of {totalCount} hidden test{totalCount === 1 ? '' : 's'} passed
+                </Text>
+                <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 2, color: mutedText }}>
+                  Hidden tests count toward your grade. Individual test names, logs, and explanations are not shown.
+                </Text>
+              </div>
+              <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                <Text strong style={{ fontSize: 13, color: allPassed ? '#52c41a' : consoleTheme.text }}>
+                  {pointsEarned} / {pointsTotal} pts
+                </Text>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   const renderTestCard = (item: TestItem, suppressMessages = false) => {
+    if (item.hiddenSummary) {
+      return renderHiddenSummaryCard(item);
+    }
     const { definition, result } = item;
+    const isHidden = !!definition.hidden && isStudent;
     let parsedResults = getParsedResults(result);
     const isRunning = runningTestIds.has(definition.id);
     const outcome = getOutcome(result);
@@ -704,11 +810,12 @@ const TestsList: React.FC<TestsListProps> = ({
             >
               <div style={{ flex: 1, marginRight: 8, minWidth: 0 }}>
                 <Text strong style={{ fontSize: 13, display: 'block', lineHeight: '1.4', color: consoleTheme.text }}>
-                  {definition.description || `Test ${definition.id}`}
+                  {isHidden ? 'Hidden Test' : definition.description || `Test ${definition.id}`}
                 </Text>
 
                 {/* Parsed Description Override (if different) */}
-                {parsedResults.length === 1 &&
+                {!isHidden &&
+                  parsedResults.length === 1 &&
                   parsedResults[0].description &&
                   parsedResults[0].description !== definition.description && (
                     <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2, color: mutedText }}>
@@ -774,6 +881,7 @@ const TestsList: React.FC<TestsListProps> = ({
 
             {/* Rubric Linkage Badge */}
             {(() => {
+              if (isHidden) return null;
               if (!definition.rubricItem || !rubricCategories) return null;
               const itemDetails = rubricCategories
                 .flatMap((c) => (c.rubricComments as unknown as RubricComment[]) || [])
@@ -800,7 +908,7 @@ const TestsList: React.FC<TestsListProps> = ({
             })()}
 
             {/* Sub-results list (Multiple subtests) */}
-            {parsedResults.length > 1 && (
+            {!isHidden && parsedResults.length > 1 && (
               <Collapse
                 ghost
                 size="small"
@@ -845,7 +953,8 @@ const TestsList: React.FC<TestsListProps> = ({
             )}
 
             {/* Error Message */}
-            {!suppressMessages &&
+            {!isHidden &&
+              !suppressMessages &&
               parsedResults.length === 1 &&
               primaryParsedResult?.error &&
               !syntaxInsight.hasSyntaxIssue && (
@@ -867,7 +976,7 @@ const TestsList: React.FC<TestsListProps> = ({
               )}
 
             {/* Syntax/Parse Error Hint */}
-            {!result?.passed && syntaxInsight.hasSyntaxIssue && syntaxInsight.hasSyntaxLinkedFailure && (
+            {!isHidden && !result?.passed && syntaxInsight.hasSyntaxIssue && syntaxInsight.hasSyntaxLinkedFailure && (
               <div style={{ marginTop: 8 }}>
                 <Alert
                   type="warning"
@@ -896,12 +1005,10 @@ const TestsList: React.FC<TestsListProps> = ({
         </div>
 
         {/* Default Message / Feedback (Tuple Return) — full card width */}
-        {!suppressMessages && parsedResults.length === 1 && showTupleMessage && (
+        {!isHidden && !suppressMessages && parsedResults.length === 1 && showTupleMessage && (
           <>
             <Divider style={{ margin: '8px 0 0' }} />
-            <div style={{ padding: '8px 16px 4px' }}>
-              {renderMarkdownMessage(primaryParsedResult?.message || '')}
-            </div>
+            <div style={{ padding: '8px 16px 4px' }}>{renderMarkdownMessage(primaryParsedResult?.message || '')}</div>
           </>
         )}
       </Card>
@@ -909,7 +1016,7 @@ const TestsList: React.FC<TestsListProps> = ({
   };
 
   const renderCategoryLogs = (items: TestItem[], hasScriptError = false) => {
-    const itemsWithLogs = items.filter((item) => item.result?.logs);
+    const itemsWithLogs = items.filter((item) => item.result?.logs && !(item.definition.hidden && isStudent));
     if (itemsWithLogs.length === 0) return null;
 
     const logEntries = (
@@ -999,11 +1106,17 @@ const TestsList: React.FC<TestsListProps> = ({
 
     const renderCategoryHeader = (category: TestCategory | undefined, title: string, items: TestItem[]) => {
       const totalPoints = items.reduce((sum, item) => {
+        if (item.hiddenSummary) {
+          return sum + item.hiddenSummary.pointsEarned;
+        }
         const pr = getParsedResults(item.result)[0];
         return sum + (pr ? pr.score : 0);
       }, 0);
 
       const totalMax = items.reduce((sum, item) => {
+        if (item.hiddenSummary) {
+          return sum + item.hiddenSummary.pointsTotal;
+        }
         const pr = getParsedResults(item.result)[0];
         return sum + (pr ? pr.maxScore : item.definition.pointsPass || 0);
       }, 0);
@@ -1279,6 +1392,27 @@ const TestsList: React.FC<TestsListProps> = ({
             />
           ))}
       </div>
+
+      {/* Learning Objectives */}
+      {learningObjectives.length > 0 && (
+        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {learningObjectives.map((obj) => {
+            const showScore = obj.aggregationMode === 'percentage' || obj.aggregationMode === 'points_weighted';
+            const scoreLabel = showScore ? ` (${Math.round(obj.score * 100)}%)` : '';
+            return (
+              <Tag
+                key={obj.id}
+                color={obj.met ? 'success' : obj.score > 0 ? 'warning' : 'error'}
+                style={{ fontSize: 12, padding: '2px 8px' }}
+                title={obj.description || undefined}
+              >
+                {obj.met ? '✓' : '✗'} {obj.name}
+                {scoreLabel}
+              </Tag>
+            );
+          })}
+        </div>
+      )}
 
       {/* Progress Bar */}
       {totalTests > 0 && (
