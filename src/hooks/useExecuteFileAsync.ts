@@ -55,8 +55,8 @@ export const useExecuteFileAsync = () => {
     }
 
     try {
-      const payload = await autograderApi.executeFileCreate({
-        fileExecutionRequest: {
+      const payload = await autograderApi.executeFileAsyncCreate({
+        asyncExecutionRequest: {
           fileId,
           timeout: options.timeout,
           forceExecute: options.forceExecute ?? options.force_execute,

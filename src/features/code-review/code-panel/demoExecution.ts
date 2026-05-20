@@ -107,6 +107,7 @@ const buildResultForTest = (
         message: passed ? `Simulated execution passed on run ${runNonce}.` : undefined,
       },
     ],
+    hiddenSummary: null,
   };
 };
 

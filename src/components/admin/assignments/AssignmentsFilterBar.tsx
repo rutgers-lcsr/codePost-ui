@@ -4,8 +4,8 @@
 /**********************************************************************************************************************/
 
 import React, { useCallback } from 'react';
-import { Badge, DatePicker, Input, Select, Tag, Tooltip, Typography } from 'antd';
-import { CloseCircleOutlined, FilterOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { DatePicker, Input, Select, Tag, Tooltip, Typography } from 'antd';
+import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 
 const { Text } = Typography;

@@ -39,7 +39,8 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
   const [numPages, setPages] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { addComment, commentCounter, comments, file, readOnly, user } = props;
+  const { addComment, comments, file, readOnly, user } = props;
+  const commentCounter = props.commentCounter ?? -1;
 
   const hasInitialWidth = useRef(false);
   // Prevents the click handler from firing right after a text selection (mouseup fires first, then click)
@@ -167,7 +168,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         color: '',
       };
 
-      addComment(newComment, file);
+      addComment?.(newComment, file);
       setHoveredCommentId?.(newComment.id);
     },
     [addComment, commentCounter, file, readOnly, setHoveredCommentId, user],
@@ -272,7 +273,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
         color: '',
       };
 
-      addComment(newComment, file);
+      addComment?.(newComment, file);
       setHoveredCommentId?.(newComment.id);
       setDragRect(null);
     },
@@ -406,7 +407,7 @@ export const Pdf = (props: ICodeContentCoreProps & ICodeContentEditProps) => {
       // Suppress the click event that will fire after this mouseup
       suppressNextClickRef.current = true;
 
-      addComment(newComment, file);
+      addComment?.(newComment, file);
       setHoveredCommentId?.(newComment.id);
 
       // Clear the native selection so it doesn't linger

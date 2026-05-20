@@ -7,7 +7,7 @@ import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_c
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { submissionKeys } from '../../../lib/queryKeys';
 import { Submission as SubmissionService } from '../../../services/submission';
-import type { SubmissionConsoleData, SubmissionFile, SubmissionFileInstructorEdit } from '../../../api-client';
+import type { SubmissionConsoleData, SubmissionFile, SubmissionFileEdit } from '../../../api-client';
 import { fileTypeRegistry } from '../formats';
 import { brandColors } from '../../../theme/colors';
 import ExecuteFileButton from './ExecuteFileButton';
@@ -55,7 +55,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
   const isDiffMode = useCodeConsoleStore((s) => s.isDiffMode);
   const currentSubmissionId = useCodeConsoleStore((s) => s.submission?.id ?? s.readOnlySubmission?.id);
   const selectedSubmissionFile = selectedFile as SubmissionFile | undefined;
-  const hasSavedInstructorEdit = selectedSubmissionFile?.instructorEdit?.data !== undefined;
+  const hasSavedInstructorEdit = selectedSubmissionFile?.edit?.data !== undefined;
   const canEditSubmission =
     !!submissionCaps.grade_submission && (capIsAdmin || !!assignment?.gradersCanEditSubmissions);
 
@@ -81,7 +81,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
             ...old,
             files: old.files.map((file) =>
               file.id === selectedFile.id
-                ? { ...file, instructorEdit: savedEdit as SubmissionFileInstructorEdit }
+                ? { ...file, edit: savedEdit as SubmissionFileEdit }
                 : file,
             ),
           };
@@ -104,7 +104,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
     if (!isEditMode && store.temporaryFileContent[selectedFile.id] === undefined) {
       store.setTemporaryFileContent(
         selectedFile.id,
-        selectedSubmissionFile?.instructorEdit?.data ?? selectedFile.data ?? '',
+        selectedSubmissionFile?.edit?.data ?? selectedFile.data ?? '',
       );
     }
 
@@ -112,7 +112,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
       store.setIsDiffMode(false);
     }
     store.setIsEditMode(!isEditMode);
-  }, [isEditMode, selectedFile, selectedSubmissionFile?.instructorEdit?.data]);
+  }, [isEditMode, selectedFile, selectedSubmissionFile?.edit?.data]);
 
   // Track whether edit mode was already active before diff turned it on,
   // so we can restore the prior state when diff is toggled off.
@@ -128,7 +128,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
       if (store.temporaryFileContent[selectedFile.id] === undefined) {
         store.setTemporaryFileContent(
           selectedFile.id,
-          selectedSubmissionFile?.instructorEdit?.data ?? selectedFile.data ?? '',
+          selectedSubmissionFile?.edit?.data ?? selectedFile.data ?? '',
         );
       }
       store.setIsEditMode(true);
@@ -143,7 +143,7 @@ const ConsoleToolbar: React.FC<ConsoleToolbarProps> = ({
     }
 
     store.setIsDiffMode(nextIsDiffMode);
-  }, [canEditSubmission, selectedFile, selectedSubmissionFile?.instructorEdit?.data]);
+  }, [canEditSubmission, selectedFile, selectedSubmissionFile?.edit?.data]);
 
   const tbBtnBase: React.CSSProperties = {
     height: 28,

@@ -278,7 +278,7 @@ const Code = (props: CodePropsWithoutComments) => {
       color: '',
     };
 
-    props.addComment(newComment, props.file);
+    props.addComment?.(newComment, props.file);
     props.updateCursorDomain(CURSOR_DOMAIN.CODE_HIDDEN);
 
     // FIXME: we can come up with a better solution

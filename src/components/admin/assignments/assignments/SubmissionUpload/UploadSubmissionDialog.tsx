@@ -652,6 +652,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           created: now,
           modified: now,
           isError: test.isError,
+          hiddenSummary: null,
         }));
 
         setSubmissionTests(mappedResults);

@@ -248,6 +248,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -2,
@@ -259,6 +260,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -3,
@@ -270,6 +272,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: true,
+    hiddenSummary: null,
   },
   {
     id: -4,
@@ -281,6 +284,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -5,
@@ -292,6 +296,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: true,
+    hiddenSummary: null,
   },
   {
     id: -6,
@@ -303,6 +308,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -7,
@@ -314,6 +320,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -8,
@@ -325,6 +332,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: false,
+    hiddenSummary: null,
   },
   {
     id: -9,
@@ -336,6 +344,7 @@ const demoTests: SubmissionTestType[] = [
     created: '2026-01-01T00:00:00.000Z',
     modified: '2026-01-01T00:00:00.000Z',
     isError: true,
+    hiddenSummary: null,
   },
 ];
 

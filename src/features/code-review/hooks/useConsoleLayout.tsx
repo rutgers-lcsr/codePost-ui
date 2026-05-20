@@ -439,7 +439,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
             onHighlightClick={config.isFilesOnly ? (_e) => {} : onHighlightClick}
             executionResult={executionResult}
             onClearOutputs={props.handleClearOutputs}
-            temporaryContent={(selectedFile as SubmissionFile | undefined)?.instructorEdit?.data}
+            temporaryContent={(selectedFile as SubmissionFile | undefined)?.edit?.data}
             isDiffMode={isDiffMode}
           />
         );

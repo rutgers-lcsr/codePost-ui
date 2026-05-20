@@ -284,7 +284,7 @@ export function useConsoleLoader({
           testCases: {},
           tests: [],
           isStudent: true,
-          hideGrades: assignment.hideGrades ?? false,
+          hideGrades: assignment!.hideGrades ?? false,
         }));
 
         break;
@@ -331,8 +331,8 @@ export function useConsoleLoader({
 
         temporaryFileContent = Object.fromEntries(
           (consoleData.files ?? [])
-            .filter((file: SubmissionConsoleData['files'][number]) => file.instructorEdit?.data !== undefined)
-            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.instructorEdit.data]),
+            .filter((file: SubmissionConsoleData['files'][number]) => file.edit?.data !== undefined)
+            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.edit.data]),
         );
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
@@ -379,7 +379,7 @@ export function useConsoleLoader({
             simulatingStudent || (submission?.students !== undefined && submission.students.indexOf(userEmail) > -1),
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
-          hideGrades: assignment.hideGrades ?? false,
+          hideGrades: assignment!.hideGrades ?? false,
         }));
 
         if (assignment && assignment.liveFeedbackMode) {
@@ -450,8 +450,8 @@ export function useConsoleLoader({
 
         temporaryFileContent = Object.fromEntries(
           (consoleData?.files ?? [])
-            .filter((file: SubmissionConsoleData['files'][number]) => file.instructorEdit?.data !== undefined)
-            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.instructorEdit.data]),
+            .filter((file: SubmissionConsoleData['files'][number]) => file.edit?.data !== undefined)
+            .map((file: SubmissionConsoleData['files'][number]) => [file.id, file.edit.data]),
         );
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
@@ -549,7 +549,7 @@ export function useConsoleLoader({
           aiFeatureStatus,
           panelType: panelTypeOverride !== undefined ? panelTypeOverride : prev.panelType,
           activeSiderKey: activeSiderKeyOverride ?? prev.activeSiderKey,
-          hideGrades: assignment.hideGrades ?? false,
+          hideGrades: assignment!.hideGrades ?? false,
         }));
         break;
       }

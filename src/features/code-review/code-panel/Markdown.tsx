@@ -363,7 +363,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
 
     const pendingPayload = pendingNotebookPayloadRef.current;
     if (pendingPayload !== null) {
-      onContentChange(pendingPayload);
+      onContentChange?.(pendingPayload);
       pendingNotebookPayloadRef.current = null;
     }
   }, [onContentChange]);
@@ -408,7 +408,7 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
         notebookSyncTimeoutRef.current = window.setTimeout(() => {
           const pendingPayload = pendingNotebookPayloadRef.current;
           if (pendingPayload !== null) {
-            onContentChange(pendingPayload);
+            onContentChange?.(pendingPayload);
             pendingNotebookPayloadRef.current = null;
           }
           notebookSyncTimeoutRef.current = null;
@@ -656,8 +656,8 @@ const Markdown = (props: ICodeContentCoreProps & ICodeContentEditProps & IMarkdo
       onMouseUp: handleBlockMouseUp,
       onKeyDown: handleBlockKeyDown,
       isJupyter,
-      isEditMode: props.isEditMode,
-      isDiffMode: props.isDiffMode,
+      isEditMode: props.isEditMode ?? false,
+      isDiffMode: props.isDiffMode ?? false,
       cellDiffEntries,
       onCellContentChange,
     }),
@@ -1497,7 +1497,7 @@ const MarkdownDiv = (props: MarkdownNodeProps) => {
           {diffEntry?.originalSource !== undefined && (
             <CellDiffOriginal
               originalSource={diffEntry.originalSource}
-              status={diffStatus!}
+              status={diffStatus as 'modified' | 'added' | 'removed'}
               language={cellType === 'code' ? 'python' : undefined}
               markdownTheme={markdownTheme}
               syntaxHighlightTheme={syntaxHighlightTheme}

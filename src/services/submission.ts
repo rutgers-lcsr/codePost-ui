@@ -8,7 +8,7 @@ import type {
   SubmissionCheckPermissionResponse,
   StudentSubmission,
   SubmissionConsoleData,
-  SubmissionFileInstructorEdit,
+  SubmissionFileEdit,
 } from '../api-client';
 import type { FileType } from '../utils/file';
 import { getFileContent } from '../utils/file';
@@ -167,10 +167,10 @@ export class Submission {
     submissionId: number,
     fileId: number,
     data: string,
-  ): Promise<SubmissionFileInstructorEdit> =>
-    submissionsApi.saveInstructorEditPartialUpdate({
+  ): Promise<SubmissionFileEdit> =>
+    submissionsApi.saveFileEditPartialUpdate({
       id: submissionId,
-      patchedSubmissionFileInstructorEditSave: {
+      patchedSubmissionFileEditSave: {
         fileId,
         data,
       },
