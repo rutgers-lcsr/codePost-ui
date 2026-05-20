@@ -214,7 +214,7 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
         >
           <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <Title level={5} style={{ margin: 0 }}>
+            <Title level={3} style={{ margin: 0, fontSize: 16 }}>
               Your Courses
             </Title>
             <Tag>{filteredActive.length}</Tag>
@@ -257,7 +257,7 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
         >
           <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
             <FolderOutlined style={{ color: '#999' }} />
-            <Title level={5} style={{ margin: 0 }}>
+            <Title level={3} style={{ margin: 0, fontSize: 16 }}>
               Archived
             </Title>
             <Tag>{filteredArchived.length}</Tag>
