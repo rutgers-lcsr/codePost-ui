@@ -34,7 +34,7 @@ When an assignment allows student uploads, students can submit their work direct
 
 ### Replacing a Submission
 
-You can replace your submission at any time before the deadline or before grading begins. Simply upload new files - they will replace your previous submission.
+You can replace your submission at any time before the deadline (or before grading begins, if the assignment has no deadline). Simply upload new files — they will replace your previous submission.
 
 ---
 
@@ -71,7 +71,7 @@ submissions.zip
 
 ### Troubleshooting Uploads
 
-- **File Size Limit**: Individual uploads are capped (typ. 100MB). For larger files (e.g., datasets), use **Instructor Resources**.
+- **File Size Limit**: Individual files are capped at **10 MB**. For larger files (e.g., datasets, reference inputs), use **Instructor Resources** or attach a [Data Set](/docs/instructor-environment-testing#data-sets) to the assignment.
 - **Forbidden Extensions**: If a file fails, check if the assignment restriction excludes it (e.g., no `.exe`).
 - **Encoding Errors**: Ensure filenames use standard UTF-8 characters.
 

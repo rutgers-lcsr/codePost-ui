@@ -116,7 +116,7 @@ codePost is optimized for desktop usage on:
 - Safari
 - Edge
 
-**Mobile Support**: The Student Console is mobile-friendly for checking grades, but the Code Console (grading/reviewing) requires a desktop screen for the best experience.
+**Mobile Support**: The Student, Grader, and Admin dashboards all have dedicated mobile views — checking grades, reviewing your queue, and skimming course activity all work from a phone or tablet. The Code Console (active grading, leaving inline comments, editing files) is still designed for a desktop screen and works best there.
 
 ## Running Assignments
 

@@ -33,9 +33,31 @@ You can perform the following actions on users:
 
 You can also search for specific users by email using the search bar.
 
+### Pending admin requests
+
+When someone signs up as an **instructor** with an email that matches your organization, their account is created with pending verification — they cannot log in or create courses until an admin approves them.
+
+1. Open the **Pending Admins** tab in your organization dashboard. The tab shows a count badge when there are open requests.
+2. Each row shows the user's email, name, signup date, and the organization they signed up under.
+3. Click **Approve** to activate the account. The user immediately gains the ability to create courses and modify rosters, and receives an activation email.
+4. Click **Deny** to reject the request. The user is removed; nothing is sent.
+
+> [!IMPORTANT]
+> Approval is irreversible in the sense that the user is now an active instructor — if they shouldn't be, you can demote them, remove their access from specific courses, or remove them from the organization entirely. Deny **before** approving when in doubt.
+
+### Impersonating users
+
+For support and debugging, organization admins can impersonate users within their own organization. Impersonation issues a fresh JWT and logs the event as an **audit** record (visible in system logs, not in the course Activity Log).
+
+**Permission scope:**
+
+- **Org admins / staff / superusers:** can impersonate any user in the organization.
+- **Course admins:** can only impersonate students and graders in courses they administer.
+- **Course-scoped requests (API keys):** can only impersonate members of the scoped course.
+
 #### Users
 
-Users are the backbone of the codePost system. Users can be added to the organization by adding there email to a course. A user will automaitcally be created next time they sign-in. If an Organization uses SSO, codePost assumes SSO handles user authentication.
+Users are the backbone of the codePost system. Users can be added to the organization by adding their email to a course. A user will automatically be created next time they sign in. If an Organization uses SSO, codePost assumes SSO handles user authentication.
 
 ## Managing Courses
 
@@ -58,12 +80,16 @@ The **Settings** tab allows you to configure global preferences, particularly se
 
 ### Email Settings
 
-- **Allowed Email Domain:** Restrict organization membership to a specific email domain (e.g., `university.edu`).
+- **Primary Email Domain:** The default domain associated with this organization (e.g., `university.edu`). Used to route SSO logins and to set the default sender for organization emails.
 
   > [!IMPORTANT]
-  > Email Domain is used to create new users via SSO, please make sure that your users Email Domain is valid and an email to that user via a domain is delieverable.
+  > The primary domain is used to create new users via SSO — make sure the domain is valid and deliverable, and that your IdP issues identities under that domain.
 
-- **Send Welcome Emails:** Toggle whether users added via roster upload receive welcome emails by default.
+- **Allowed Email Domains:** A list of **additional** domains that should also map to this organization. Useful when an institution has multiple valid email domains (e.g. `rutgers.edu` plus the student subdomain `scarletmail.rutgers.edu`, or `university.edu` plus an affiliated college). A user signing in via SSO with any of these domains is routed to your org.
+
+  Edit the list inline in the Settings tab — comma- or newline-separated. Adding a domain takes effect immediately for new logins; existing users are not migrated automatically.
+
+- **Send Welcome Emails:** When on, users added via roster upload receive a welcome email with their account details. When off, accounts are still created but no email is sent — useful when you handle onboarding through a separate channel (e.g. LMS announcement). Course admins can also override this per course in Course Settings.
 
 ### Single Sign-On (SSO)
 

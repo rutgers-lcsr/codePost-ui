@@ -17,8 +17,11 @@ codePost works best on modern desktop browsers. We support the latest versions o
 - Safari
 - Microsoft Edge
 
-> [!NOTE]
-> Mobile browsers are not currently fully supported for the Code Console.
+### Mobile
+
+codePost ships dedicated mobile views for the **Student**, **Grader**, and **Admin** dashboards — checking grades, reviewing your queue, and skimming course activity all work from a phone or tablet browser.
+
+The **Code Console** (per-submission grading, leaving inline comments, editing files) is designed for a desktop screen. On mobile it falls back to a read-only-style view; for active grading you'll still want a laptop or desktop.
 
 ## Creating an Account
 

@@ -68,6 +68,8 @@ Upload submissions, download grades, and automate workflows via the [Python SDK]
 - [Programmatic Comments & SDK](/docs/programmatic-comments)
 - [Testing Guide](/docs/testing-guide)
 - [Features Guide](/docs/features)
+- [Course Activity Log](/docs/activity-log)
+- [Webhooks](/docs/webhooks)
 - [FAQ](/docs/faq)
 - [Changelog](/docs/changelog)
 

@@ -29,6 +29,41 @@ This guide helps graders and TAs work efficiently in codePost while staying alig
 > [!IMPORTANT]
 > Finalized submissions are ready for instructor release, but students still do not see feedback until the assignment is published.
 
+## Reviewing Jupyter notebooks
+
+`.ipynb` files render in the Code Console as a notebook view — code cells, Markdown cells, and outputs (including images and rich displays) appear in the same order the student saw them.
+
+- **Inline comments** attach to individual code cells. Hover a cell and click the comment icon, or place the cursor in a cell and press `Enter`.
+- **Cell outputs** are rendered as-is from the notebook file. If a student didn't re-run the notebook before submitting, the outputs may be stale — flag this in feedback when scoring requires verified outputs.
+- **Markdown cells** render with code blocks, math, and images. If an image is referenced by a path that wasn't uploaded with the notebook, it shows as broken.
+
+> [!TIP]
+> If you need to verify that a student's notebook actually produces the outputs shown, use the **Auto-Run** output panel — the autograder re-executes the notebook fresh and shows you what it actually produces, not what was saved in the file.
+
+## Reviewing PDFs
+
+PDFs (problem sets, written work) render with a built-in PDF viewer. Two kinds of comments are supported:
+
+- **Text-offset comments** — select text inside the PDF, then leave a comment. The selection is highlighted in-place for the student.
+- **Region comments** — `ALT` + drag a rectangle over any area of the page (figures, diagrams, handwritten work). The region is outlined and the comment attaches to that bounding box.
+
+Region comments are the right choice for scanned handwritten work, diagrams, or anything where text selection isn't reliable. In the comment sidebar, region and text comments are interleaved by page order, not by selection time.
+
+## Reviewing binary files
+
+If a student submits a binary file (e.g. `.jar`, `.class`, `.exe`, `.docx`, compiled artifacts), the Code Console shows a **Binary Preview** panel instead of opening it in the code editor — those files aren't human-readable text and would garble the editor.
+
+The panel shows:
+
+- File name, size, and detected MIME type
+- A **Download** button to save the file locally
+- A **View as Hex** toggle that switches the panel into a side-scrollable hex/ASCII viewer
+
+Use **View as Hex** when you need to confirm what a student actually submitted (e.g. checking magic bytes, spotting an empty file padded with whitespace, verifying a file isn't just a renamed text file). Use **Download** when you need to run the artifact locally to grade it.
+
+> [!NOTE]
+> The hex viewer is read-only — there is no way to annotate or comment on byte ranges. For grading feedback on binary submissions, leave a general comment on the submission rather than an inline one. Plans for more granular binary feedback are in the roadmap.
+
 ## Editing student submission files
 
 You can edit a student's submission file directly in the Code Console — for example, to fix a stray syntax error so you can re-run tests against the rest of their code, or to demonstrate a small change inline.

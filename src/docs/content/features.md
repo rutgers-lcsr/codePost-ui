@@ -33,43 +33,6 @@ When enabled:
 > [!IMPORTANT]
 > Enable anonymous grading before grading begins. Graders who have already seen submissions will have seen the student names.
 
-<!-- ## Plagiarism Detection (MOSS)
-
-codePost integrates with Stanford's MOSS (Measure Of Software Similarity) to detect potential plagiarism.
-
-### What is MOSS?
-
-MOSS is an automatic system for detecting software plagiarism. It compares all submissions against each other and external sources to identify similar code.
-
-### Running MOSS
-
-1. Go to **Admin Console > Assignments**
-2. Select your assignment
-3. Click **MOSS** in the sidebar
-4. Configure options:
-   - Select files to analyze
-   - Set similarity threshold
-   - Include/exclude base files (starter code)
-5. Click **Run MOSS**
-
-### Interpreting Results
-
-MOSS reports show:
-
-- **Similarity percentage** between pairs of submissions
-- **Highlighted code** showing matching sections
-- **Line-by-line comparison** of similar code
-
-> [!WARNING]
-> High similarity doesn't always mean plagiarism. Students may have similar code due to following the same instructions or using common algorithms. Always review flagged submissions manually.
-
-### Best Practices
-
-- Run MOSS after all submissions are collected
-- Exclude provided starter code from analysis
-- Review results in context of assignment requirements
-- Document your findings before taking action -->
-
 ---
 
 ## Supported Languages
@@ -84,7 +47,7 @@ The codePost auto-run environment supports many programming languages. See [Envi
 
 #### May work
 
-The following are lanuages which some features may not work as expected
+The following are languages where some features may not work as expected:
 
 - C/C++
 - JavaScript/Node.js

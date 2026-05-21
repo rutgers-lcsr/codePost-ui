@@ -285,6 +285,39 @@ The assignments table shows live counts: **total**, **finalized**, **in-progress
 
 ---
 
+## Assignment analytics
+
+Each assignment has an **Analytics** view that surfaces aggregated views of grading progress and student performance. Open it from **Assignments > {name} > Analytics**.
+
+You need the `view_assignment_statistics` capability — course admins have it by default.
+
+### What's shown
+
+| Panel                  | What it answers                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Grade Distribution** | Histogram of final grades across all finalized submissions. Bucket count is configurable (default 10).                         |
+| **Grader Workload**    | Submissions claimed, in-progress, and finalized per grader. Useful for spotting overloaded TAs.                                |
+| **Grading Timeline**   | How fast grading progressed day by day. Helps you forecast when grading will be complete.                                      |
+| **Test Results**       | Per-test-case pass/fail counts across all submissions. Surface tests that everyone failed (broken test?) or nobody failed.     |
+| **Rubric Usage**       | Which rubric comments were applied how often. Identifies dead rubric items or ones that need a clearer name.                   |
+| **Score by Category**  | Average score per rubric category. Shows which areas (Correctness, Style, etc.) students struggled with.                       |
+| **Grader Consistency** | Variance in scores across graders for similar work. Useful for calibration discussions.                                        |
+| **Submission Attempts** | How many times each student re-uploaded before the deadline.                                                                   |
+| **Time to Grade**      | Median and distribution of how long each submission spent between upload and finalization.                                     |
+| **Late Submissions**   | Count of late submissions, broken down by how many days late.                                                                  |
+| **Feedback Depth**     | Distribution of comment counts per submission. Spot graders whose feedback is unusually thin or unusually verbose.             |
+
+### When to look
+
+- **Mid-grading** — check Grader Workload and Grading Timeline weekly to rebalance assignments or move the publish date.
+- **Before publishing** — review Grade Distribution and Grader Consistency to catch outliers and miscalibrations before students see grades.
+- **After publishing** — Rubric Usage and Test Results inform what to update for the next term's clone.
+
+> [!TIP]
+> Save a screenshot of the Grade Distribution and Grader Consistency panels right before publish — they're useful evidence when a student or department later asks "how did the class actually do?"
+
+---
+
 ## Grader alignment
 
 Before grading starts, confirm:
