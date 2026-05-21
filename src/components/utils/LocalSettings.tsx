@@ -185,6 +185,11 @@ const defaultPageSize = {
 // default value: false
 const wordWrap = generateSettingFunctions('wordWrap', false, booleanIParser, booleanOParser);
 
+// key: sidebarCollapsed
+// return type: boolean. If true, the admin/grader console sidebar starts collapsed.
+// defalut value: true
+const sidebarCollapsed = generateSettingFunctions('sidebarCollapsed', true, booleanIParser, booleanOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -203,6 +208,7 @@ const LOCAL_SETTINGS = {
   autograderInstructionsVisible,
   sendMeAConfirmationEmail,
   defaultPageSize,
+  sidebarCollapsed,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };

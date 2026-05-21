@@ -23,6 +23,8 @@ import layoutVars from '../../../styles/layout/_layoutVars';
 import useFixedWindow from '../../core/useFixedWindow';
 import useWindowSize from '../../core/useWindowSize';
 
+import { LOCAL_SETTINGS } from '../../utils/LocalSettings';
+
 const { Header, Sider } = Layout;
 
 /**********************************************************************************************************************/
@@ -38,12 +40,13 @@ interface ICPLayoutAdminProps {
 }
 
 const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
-  const [collapsed, setCollapsed] = React.useState(true);
+  const [collapsed, setCollapsed] = React.useState(LOCAL_SETTINGS.sidebarCollapsed.getter());
   const windowSize = useWindowSize();
   useFixedWindow();
 
   const onCollapse = (c: boolean) => {
     setCollapsed(c);
+    LOCAL_SETTINGS.sidebarCollapsed.setter(c);
   };
 
   const siderWidth =
