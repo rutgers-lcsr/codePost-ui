@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
 /* codePost imports */
@@ -197,7 +198,33 @@ function remarkMarkTopLevel() {
 }
 
 const REMARK_PLUGINS = [remarkGfm, remarkMarkTopLevel];
-const REHYPE_PLUGINS = [rehypeRaw];
+// Extend the default sanitize schema to keep the attributes the renderer relies on
+// (data-* hooks used by remarkMarkTopLevel, className for syntax-highlight blocks)
+// while still stripping event handlers, javascript: URLs, and other XSS vectors.
+// rehypeRaw must run first so any embedded HTML is parsed into the hast tree;
+// rehypeSanitize then walks the tree and removes anything not in the allow-list.
+const SANITIZE_SCHEMA: typeof defaultSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [
+      ...(defaultSchema.attributes?.['*'] ?? []),
+      'className',
+      ['data*', /.*/],
+    ],
+  },
+  // Allow base64-encoded inline images (Jupyter outputs, FE-constructed data URIs).
+  // `data:` is risky on most attributes (srcdoc, href, etc.) but on <img src>/<source src>
+  // the browser will only render image bytes, not execute script.
+  protocols: {
+    ...defaultSchema.protocols,
+    src: [...(defaultSchema.protocols?.src ?? []), 'data'],
+  },
+};
+const REHYPE_PLUGINS: NonNullable<React.ComponentProps<typeof ReactMarkdown>['rehypePlugins']> = [
+  rehypeRaw,
+  [rehypeSanitize, SANITIZE_SCHEMA],
+];
 const NOTEBOOK_CHANGE_DEBOUNCE_MS = 150;
 const VIDEO_DOMAINS = ['youtube.com', 'vimeo.com', 'dailymotion.com', 'wistia.com', 'vidyard.com'];
 

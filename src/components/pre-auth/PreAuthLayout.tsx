@@ -21,6 +21,12 @@ interface IProps {
   isLoggedIn: boolean;
 }
 
+// Only allow redirects to same-origin paths. Reject protocol-relative ("//evil.com"),
+// absolute URLs, and anything else that could land the user on a third-party site
+// with their newly-stored token.
+const isSameOriginPath = (value: string): boolean =>
+  value.startsWith('/') && !value.startsWith('//');
+
 class PreAuthLayout extends React.Component<IProps> {
   public componentDidMount() {
     // Calendly widget setup
@@ -33,9 +39,9 @@ class PreAuthLayout extends React.Component<IProps> {
     head!.appendChild(script);
     head!.appendChild(link);
     const { token, redirect } = qs.parse(window.location.search);
-    if (token && redirect) {
+    if (token && typeof redirect === 'string' && isSameOriginPath(redirect)) {
       window.localStorage.setItem('token', token as string);
-      window.location = redirect as string & Location;
+      window.location.assign(redirect);
     }
   }
 

@@ -353,9 +353,11 @@ export function useConsoleLoader({
         testCases.forEach((testCase) => {
           (caseObj[testCase.testCategory] ??= []).push(testCase);
         });
-        tests = submission.tests
-          ? await Promise.all(submission.tests.map((id) => submissionTestsApi.retrieve({ id })))
-          : [];
+        // Students cannot fetch hidden SubmissionTests by id (server returns 403 by
+        // design). Use the testResults action instead — it returns the same shape but
+        // collapses each hidden test into a per-category summary row.
+        const testResults = await SubmissionService.readTestResults(submission.id);
+        tests = (testResults.submissionTests ?? []) as unknown as SubmissionTestType[];
 
         // then store it in state
         setState((prev) => ({

@@ -22,7 +22,8 @@ import { Document, Page } from 'react-pdf';
 
 import { pdfjs } from 'react-pdf';
 import { FileOutlined } from '@ant-design/icons';
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+import { pdfWorkerUrl } from '../../features/code-review/code-panel/pdfWorkerUrl';
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 const { Sider, Content } = Layout;
 
