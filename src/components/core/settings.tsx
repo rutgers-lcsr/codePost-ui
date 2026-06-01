@@ -174,7 +174,7 @@ class Settings extends Component<IProps, IState> {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+                href={`${process.env.REACT_APP_API_URL ?? ''}/api/schema/elements/`}
               >
                 retrieve a course
               </a>{' '}
@@ -182,7 +182,7 @@ class Settings extends Component<IProps, IState> {
               <a
                 target="_blank"
                 rel="noopener noreferrer"
-                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+                href={`${process.env.REACT_APP_API_URL ?? ''}/api/schema/elements/`}
               >
                 codePost SDK
               </a>
@@ -309,7 +309,7 @@ class Settings extends Component<IProps, IState> {
             <div>
               This token can be used to authenticate yourself with the
               <a
-                href="https://codepost-api.cs.rutgers.edu/api/schema/elements/"
+                href={`${process.env.REACT_APP_API_URL ?? ''}/api/schema/elements/`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
