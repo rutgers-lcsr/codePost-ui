@@ -2,9 +2,14 @@
 # Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 set -e
 
+# Origins allowed to embed this site in an iframe (CSP frame-ancestors).
+# Default mirrors the API's core/middleware.py; override per-deployment.
+: "${CSP_FRAME_ANCESTORS:="'self' https://*.cs.rutgers.edu"}"
+export CSP_FRAME_ANCESTORS
+
 # Substitute environment variables into the nginx config template.
 # Only substitute our custom variables — leave nginx's own $variables intact.
-envsubst '${NGINX_SERVER_NAME} ${REACT_APP_API_URL}' \
+envsubst '${NGINX_SERVER_NAME} ${REACT_APP_API_URL} ${CSP_FRAME_ANCESTORS}' \
   < /etc/nginx/templates/nginx.conf.template \
   > /etc/nginx/nginx.conf
 
@@ -21,6 +26,7 @@ fi
 
 echo "[entrypoint] NGINX_SERVER_NAME=${NGINX_SERVER_NAME:-localhost}"
 echo "[entrypoint] REACT_APP_API_URL=${REACT_APP_API_URL:-__CODEPOST_API_URL_PLACEHOLDER__}"
+echo "[entrypoint] CSP_FRAME_ANCESTORS=${CSP_FRAME_ANCESTORS}"
 echo "[entrypoint] Nginx config generated. Starting nginx..."
 
 # Ensure nginx user can write to runtime directories.
