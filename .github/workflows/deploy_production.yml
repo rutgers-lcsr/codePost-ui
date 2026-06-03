@@ -7,14 +7,16 @@
 # Release flow:
 #   1. Run "Create Release Branch" workflow to cut release/<version> from main
 #   2. Test on the release branch (CI runs automatically)
-#   3. Run THIS workflow with ref=release/<version> and version=<version>
-#   4. Tests run against the release branch, then deploys to production,
-#      creates a git tag v<version>, and creates a GitHub Release
+#   3. Run THIS workflow with the release/<version> branch selected
+#   4. Tests run against the selected branch, then deploys to production,
+#      creates a git tag v<version>, and creates a GitHub Release.
+#      The version is derived from the branch name (release/3.4.0 -> 3.4.0).
 #
 # Hotfix flow:
 #   1. Fix the bug on main first
-#   2. Cherry-pick the fix onto the active release branch
-#   3. Re-run THIS workflow with the same ref and an incremented patch version
+#   2. Cherry-pick the fix onto the active release branch (incrementing the
+#      patch version in the branch name as needed)
+#   3. Re-run THIS workflow with that release branch selected
 #
 # Note: Deploy the API first, then the UI. The API deploy_production workflow
 # triggers update-api-client.yml to regenerate the TypeScript client if the
@@ -26,13 +28,6 @@ name: Deploy Production with Docker
 
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'Branch or tag to deploy (e.g., release/3.4.0)'
-        required: true
-      version:
-        description: 'Version tag to create after deploy (e.g., 3.4.0)'
-        required: true
 
 concurrency:
   group: deploy-production
@@ -41,8 +36,6 @@ concurrency:
 jobs:
   tests:
     uses: ./.github/workflows/test_codepost_ui.yml
-    with:
-      ref: ${{ inputs.ref }}
 
   deploy:
     needs: [tests]
@@ -53,8 +46,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          ref: ${{ inputs.ref }}
 
       - name: Set up Certs
         run: |
@@ -91,19 +82,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.ref }}
           fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
       - name: Create and push version tag
         run: |
-          git tag "v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ inputs.version }}" \
-            --target "${{ inputs.ref }}" \
-            --title "v${{ inputs.version }}" \
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --target "${{ github.ref_name }}" \
+            --title "v${{ steps.version.outputs.version }}" \
             --generate-notes
