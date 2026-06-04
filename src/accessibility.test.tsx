@@ -219,20 +219,13 @@ describe('Accessibility', () => {
     // expect(results).toHaveNoViolations();
   }, 30000);
 
-  it('should contain all Demo Landing content within landmarks', async () => {
-    // Scoped to the landmark rules fixed by wrapping the page in <main>.
-    // (DemoLanding has a separate, pre-existing heading-order issue tracked elsewhere.)
+  it('should have no violations on Demo Landing page', async () => {
     const { container } = render(
       <MemoryRouter>
         <DemoLanding />
       </MemoryRouter>,
     );
-    document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
-    const results = await axe(container, {
-      runOnly: { type: 'rule' as const, values: ['region', 'landmark-one-main'] },
-      resultTypes: ['violations'] as const,
-      elementRef: false,
-    });
+    const results = await stripStylesAndRunAxe(container);
     expect(results.violations).toHaveLength(0);
   }, 30000);
 

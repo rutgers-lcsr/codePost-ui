@@ -301,7 +301,12 @@ const AutograderModule: React.FC = () => {
             <Progress
               percent={pct}
               status={failed > 0 ? 'exception' : passed === allTests.length ? 'success' : 'active'}
-              format={() => `${totalScore}/${totalMax}`}
+              // antd's exception-state text red (#f64852) is only 3.5:1; use a darker red (5.6:1) when failing.
+              format={() => (
+                <span style={{ color: failed > 0 ? '#cf1322' : undefined }}>
+                  {totalScore}/{totalMax}
+                </span>
+              )}
               strokeColor={passed === allTests.length ? statusColors.passed.main : undefined}
               aria-label={`Overall test score: ${totalScore} of ${totalMax} points`}
             />

@@ -182,7 +182,7 @@ const DemoLanding: React.FC = () => {
             borderRadius: 12,
           }}
         >
-          <Title level={4} style={{ marginBottom: 8 }}>
+          <Title level={2} style={{ marginBottom: 8, fontSize: 20 }}>
             What&apos;s in the demo?
           </Title>
           <Paragraph style={{ color: 'rgba(0,0,0,0.55)', maxWidth: 700, margin: '0 auto', lineHeight: 1.7 }}>
@@ -260,7 +260,9 @@ const DemoCard: React.FC<DemoCardProps> = ({
       >
         {icon}
       </div>
-      <Title level={4} style={{ marginBottom: 2 }}>
+      {/* h2 (not h4) so the heading outline goes h1 → h2 with no skipped level.
+          fontSize keeps the original h4 visual size. */}
+      <Title level={2} style={{ marginBottom: 2, fontSize: 20 }}>
         {title}
       </Title>
       <Text type="secondary">{subtitle}</Text>

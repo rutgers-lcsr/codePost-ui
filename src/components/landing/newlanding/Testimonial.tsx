@@ -322,7 +322,8 @@ const Testimonials = () => {
           href={`${CLIENT_URL}/testimonials`}
           target="_blank"
           type="link"
-          style={{ fontWeight: 600, fontSize: 20, float: 'right', marginTop: 10, marginBottom: 25 }}
+          // color overrides antd's link green (#3d8f76, 3.9:1) with the darker brand link green (5.8:1 on white)
+          style={{ color: '#0d7354', fontWeight: 600, fontSize: 20, float: 'right', marginTop: 10, marginBottom: 25 }}
           className="testimonials-link"
         >
           View all testimonials
