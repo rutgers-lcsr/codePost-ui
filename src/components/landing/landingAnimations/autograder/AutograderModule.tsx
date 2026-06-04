@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 import { Collapse, Segmented, Typography, Badge, Progress, Card, Button } from 'antd';
 import { CheckCircleFilled, CloseCircleFilled, CaretRightOutlined, PlayCircleOutlined } from '@ant-design/icons';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 // ── Status colors matching real TestsList ───────────────────────────
 const statusColors = {
-  passed: { main: '#389e0d', bg: '#f6ffed', border: '#b7eb8f' },
+  passed: { main: '#237804', bg: '#f6ffed', border: '#b7eb8f' },
   failed: { main: '#cf1322', bg: '#fff1f0', border: '#ffa39e' },
   default: { main: '#595959', bg: '#fafafa', border: '#d9d9d9' },
 };
@@ -145,7 +145,7 @@ const TestCard: React.FC<{ test: TestDef; visible: boolean }> = ({ test, visible
               >
                 {test.score}/{test.maxScore} pts
               </div>
-              <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{test.passed ? 'Passed' : 'Failed'}</div>
+              <div style={{ fontSize: 10, color: '#595959', marginTop: 2 }}>{test.passed ? 'Passed' : 'Failed'}</div>
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ const CategoryHeader: React.FC<{ category: TestCategory }> = ({ category }) => {
         >
           {category.name}
         </Text>
-        <Text code style={{ fontSize: 10, marginTop: 2, color: '#999' }}>
+        <Text code style={{ fontSize: 10, marginTop: 2, color: '#595959' }}>
           {category.targetFileName}
         </Text>
       </div>
@@ -277,9 +277,11 @@ const AutograderModule: React.FC = () => {
             background: '#fafafa',
           }}
         >
-          <Title level={5} style={{ margin: 0, fontSize: 14 }}>
+          {/* Styled as a heading but not a semantic <h5>: this demo widget is embedded in
+              marketing/docs pages where an h5 here skips heading levels (heading-order). */}
+          <Text strong style={{ fontSize: 14 }}>
             Test Results
-          </Title>
+          </Text>
           <Button type="primary" icon={<PlayCircleOutlined />} size="small">
             Run All
           </Button>

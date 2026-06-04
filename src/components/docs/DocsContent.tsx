@@ -388,6 +388,16 @@ const DocsContent: React.FC = () => {
       );
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    input: ({ node: _node, ...props }: any) => {
+      // GFM task-list checkboxes render as bare disabled <input>s with no label.
+      // react-markdown v10 no longer passes `checked` to the `li`, so give the
+      // checkbox itself a discernible name to satisfy the `label` a11y rule.
+      if (props.type === 'checkbox') {
+        return <input {...props} aria-label={props.checked ? 'Completed checklist item' : 'Incomplete checklist item'} />;
+      }
+      return <input {...props} />;
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blockquote: ({ node: _node, children, ...props }: any) => {
       // Check for GitHub-style alerts: [!NOTE], [!TIP], [!WARNING], [!IMPORTANT], [!CAUTION]
 

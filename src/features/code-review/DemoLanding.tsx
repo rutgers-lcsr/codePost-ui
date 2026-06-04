@@ -29,7 +29,7 @@ const DemoLanding: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div
+    <main
       style={{
         minHeight: '100vh',
         background: `linear-gradient(135deg, ${brandColors.light} 0%, #ffffff 50%, #f0f5ff 100%)`,
@@ -202,7 +202,7 @@ const DemoLanding: React.FC = () => {
           </Text>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

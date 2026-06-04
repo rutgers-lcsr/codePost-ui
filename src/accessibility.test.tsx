@@ -16,6 +16,7 @@ import Student from './components/student/Student';
 import GraderManager from './components/grader/GraderManager';
 import AdminManager from './components/admin/AdminManager';
 import CodeConsole from './features/code-review/CodeConsole';
+import DemoLanding from './features/code-review/DemoLanding';
 
 // Marketing Page Imports
 import Landing from './components/landing/LandingABTest';
@@ -216,6 +217,23 @@ describe('Accessibility', () => {
     // Skip axe check for now as runtime error persists
     // const results = await axe(container, axeConfig);
     // expect(results).toHaveNoViolations();
+  }, 30000);
+
+  it('should contain all Demo Landing content within landmarks', async () => {
+    // Scoped to the landmark rules fixed by wrapping the page in <main>.
+    // (DemoLanding has a separate, pre-existing heading-order issue tracked elsewhere.)
+    const { container } = render(
+      <MemoryRouter>
+        <DemoLanding />
+      </MemoryRouter>,
+    );
+    document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
+    const results = await axe(container, {
+      runOnly: { type: 'rule' as const, values: ['region', 'landmark-one-main'] },
+      resultTypes: ['violations'] as const,
+      elementRef: false,
+    });
+    expect(results.violations).toHaveLength(0);
   }, 30000);
 
   describe('Marketing Pages', () => {

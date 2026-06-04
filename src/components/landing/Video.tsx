@@ -6,6 +6,8 @@
 /* react imports */
 import queryString from 'query-string';
 import * as React from 'react';
+
+// TODO: Look into if we need Wistia at all for the landing page.
 import { WistiaPlayer } from '@wistia/wistia-player-react';
 
 import {

@@ -162,7 +162,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ data, visible, hovered, onMou
           borderTop: '1px solid rgb(232,232,232)',
           fontSize: 11,
           fontStyle: 'italic',
-          color: '#888',
+          color: '#595959',
         }}
       >
         Author: {data.author}
@@ -185,7 +185,7 @@ const CodeTab: React.FC<{ hoveredLine: number | null; onHoverLine: (l: number | 
       style={googlecode}
       showLineNumbers
       wrapLines
-      lineNumberStyle={{ fontSize: 10, color: '#999', minWidth: '2em' }}
+      lineNumberStyle={{ fontSize: 10, color: '#595959', minWidth: '2em' }}
       lineProps={(n) => {
         const isHighlighted = CODE_HIGHLIGHT_LINES.includes(n);
         const isHovered = hoveredLine === n;
@@ -231,7 +231,7 @@ const JupyterTab: React.FC<{ hoveredLine: number | null; onHoverLine: (l: number
       style={googlecode}
       showLineNumbers
       wrapLines
-      lineNumberStyle={{ fontSize: 10, color: '#999', minWidth: '2em' }}
+      lineNumberStyle={{ fontSize: 10, color: '#595959', minWidth: '2em' }}
       lineProps={(n) => {
         const isHighlighted = JUPYTER_HIGHLIGHT_LINES.includes(n);
         const isHovered = hoveredLine === n;
