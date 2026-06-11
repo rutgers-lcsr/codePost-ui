@@ -27,6 +27,7 @@ import { registrationApi, tokenAuthApi, tokenRefreshApi } from './api-client/cli
 import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 
 import { normalizeUser } from './utils/normalizeUser';
+import { resolveSafeRedirectPath } from './utils/auth';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import ChangeLog from './components/pre-auth/ChangeLog';
@@ -157,8 +158,9 @@ Firefox:
 
       // If redirect URL is provided, redirect after token is set.
       // Only allow relative paths to prevent open redirect attacks.
-      if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')) {
-        window.location.href = redirectUrl;
+      const safePath = redirectUrl && resolveSafeRedirectPath(redirectUrl);
+      if (safePath) {
+        window.location.href = safePath;
       }
     } else {
       // Check for error in URL

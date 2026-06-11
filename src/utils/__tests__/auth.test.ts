@@ -7,7 +7,7 @@ vi.mock('../../components/utils/LocalSettings', () => ({
   clearLocalSettings: vi.fn(),
 }));
 
-import { getAuthToken, getDecodedTokenPayload } from '../auth';
+import { getAuthToken, getDecodedTokenPayload, resolveSafeRedirectPath } from '../auth';
 
 // Helper to build a mock JWT (header.payload.signature)
 function buildMockJwt(payload: Record<string, unknown>): string {
@@ -64,6 +64,33 @@ describe('getDecodedTokenPayload', () => {
   it('returns null for a malformed token', () => {
     vi.mocked(localStorage.getItem).mockReturnValue('not-a-jwt');
     expect(getDecodedTokenPayload()).toBeNull();
+  });
+});
+
+describe('resolveSafeRedirectPath', () => {
+  it('accepts a relative path', () => {
+    expect(resolveSafeRedirectPath('/code/39/')).toBe('/code/39/');
+  });
+
+  it('preserves query string and hash', () => {
+    expect(resolveSafeRedirectPath('/grader/cs111?tab=tests#top')).toBe('/grader/cs111?tab=tests#top');
+  });
+
+  it('rejects an absolute URL, even on the same host', () => {
+    expect(resolveSafeRedirectPath('https://dev-codepost-1.cs.rutgers.edu/code/39/')).toBeNull();
+    expect(resolveSafeRedirectPath('https://evil.com/code/39/')).toBeNull();
+  });
+
+  it('rejects a protocol-relative URL', () => {
+    expect(resolveSafeRedirectPath('//evil.com/code/39/')).toBeNull();
+  });
+
+  it('rejects a backslash protocol-relative variant', () => {
+    expect(resolveSafeRedirectPath('/\\evil.com/code/39/')).toBeNull();
+  });
+
+  it('rejects a path without a leading slash', () => {
+    expect(resolveSafeRedirectPath('code/39/')).toBeNull();
   });
 });
 

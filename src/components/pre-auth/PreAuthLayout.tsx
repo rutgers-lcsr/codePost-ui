@@ -10,6 +10,7 @@ import qs from 'query-string';
 
 import LandingHeader from '../landing/LandingHeader';
 import PreAuthFooter from './PreAuthFooter';
+import { resolveSafeRedirectPath } from '../../utils/auth';
 
 /* ant imports */
 import { Layout } from 'antd';
@@ -20,12 +21,6 @@ interface IProps {
   children: React.ReactNode;
   isLoggedIn: boolean;
 }
-
-// Only allow redirects to same-origin paths. Reject protocol-relative ("//evil.com"),
-// absolute URLs, and anything else that could land the user on a third-party site
-// with their newly-stored token.
-const isSameOriginPath = (value: string): boolean =>
-  value.startsWith('/') && !value.startsWith('//');
 
 class PreAuthLayout extends React.Component<IProps> {
   public componentDidMount() {
@@ -39,9 +34,12 @@ class PreAuthLayout extends React.Component<IProps> {
     head!.appendChild(script);
     head!.appendChild(link);
     const { token, redirect } = qs.parse(window.location.search);
-    if (token && typeof redirect === 'string' && isSameOriginPath(redirect)) {
-      window.localStorage.setItem('token', token as string);
-      window.location.assign(redirect);
+    if (token && typeof redirect === 'string') {
+      const safePath = resolveSafeRedirectPath(redirect);
+      if (safePath) {
+        window.localStorage.setItem('token', token as string);
+        window.location.assign(safePath);
+      }
     }
   }
 

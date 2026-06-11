@@ -76,6 +76,21 @@ export async function tryRefreshToken(): Promise<boolean> {
 }
 
 /**
+ * Validate a `redirect` query-param value as a safe relative path.
+ *
+ * Only relative paths ("/code/39/") are accepted; absolute URLs,
+ * protocol-relative ("//evil.com"), and backslash variants ("/\evil.com",
+ * which browsers normalize to "//") are rejected so a newly-stored token
+ * can't leak off-site. Returns the path to navigate to, or null if unsafe.
+ */
+export function resolveSafeRedirectPath(value: string): string | null {
+  if (value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/\\')) {
+    return value;
+  }
+  return null;
+}
+
+/**
  * Redirect to login page
  */
 export function redirectToLogin(): void {
