@@ -56,6 +56,7 @@ const StudentManager: React.FC<IStudentManagerProps> = (props) => {
         userEmail={user.email!}
         studentSections={user.studentSections}
         user={user}
+        onLogout={handleLogout}
       />
     );
   }

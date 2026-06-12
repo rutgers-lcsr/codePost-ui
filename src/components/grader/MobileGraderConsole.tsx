@@ -8,16 +8,18 @@ import {
   ClockCircleOutlined,
   HomeFilled,
   InboxOutlined,
+  LogoutOutlined,
   SettingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Avatar, Card, Empty, Flex, Progress, Segmented, Spin, Statistic, Tag, Typography } from 'antd';
-import { AnimatePresence, motion } from 'motion/react';
+import { Avatar, Button, Card, Empty, Flex, Progress, Segmented, Spin, Statistic, Tag, Typography } from 'antd';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 
 import { Course, User } from '../../api-client';
 import { Assignment } from '../../types/common';
 import { useAssignmentsQuery } from '../admin/hooks/useAssignmentsQuery';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
+import { clickableProps } from '../core/clickable';
 import styles from './MobileGraderConsole.module.scss';
 
 const { Title, Text } = Typography;
@@ -29,8 +31,8 @@ const { Title, Text } = Typography;
 interface MobileGraderConsoleProps {
   courses: Course[];
   userEmail: string;
-  defaultPanel: (course: Course) => string;
   user: User;
+  onLogout: () => void;
 }
 
 type MobileTab = 'home' | 'courses' | 'settings';
@@ -210,6 +212,12 @@ const CourseDetail: React.FC<{
       ) : (
         !isLoading && <Empty description={filter === 'all' ? 'No assignments' : `No ${filter} assignments`} />
       )}
+
+      {!isLoading && (
+        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 16 }}>
+          To claim and grade submissions, use the desktop version of codePost.
+        </Text>
+      )}
     </div>
   );
 };
@@ -218,12 +226,13 @@ const CourseDetail: React.FC<{
 /* Main Component                                                            */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, userEmail, user }) => {
+const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, userEmail, user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  // Only greet by name when the email local part looks like a name (netIDs like "mk1800" read oddly)
+  const localPart = userEmail.split('@')[0].split('.')[0];
+  const displayName = /^[a-z]+$/i.test(localPart) ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : null;
 
   const activeCourses = useMemo(() => courses.filter((c) => !c.archived), [courses]);
   const archivedCourses = useMemo(() => courses.filter((c) => c.archived), [courses]);
@@ -238,7 +247,8 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
           Grader
         </Tag>
         <Title level={3} style={{ margin: 0 }}>
-          {getGreeting()}, {displayName}
+          {getGreeting()}
+          {displayName ? `, ${displayName}` : ''}
         </Title>
         <Text type="secondary">
           {activeCourses.length} active course{activeCourses.length === 1 ? '' : 's'}
@@ -248,7 +258,7 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
       {/* Stats */}
       <Card size="small" style={{ marginBottom: 20 }}>
         <Flex justify="space-around">
-          <Statistic title="Courses" value={activeCourses.length} valueStyle={{ fontSize: 20 }} />
+          <Statistic title="Courses" value={courses.length} valueStyle={{ fontSize: 20 }} />
           <Statistic title="Active" value={activeCourses.length} valueStyle={{ fontSize: 20, color: '#1677ff' }} />
           <Statistic title="Archived" value={archivedCourses.length} valueStyle={{ fontSize: 20 }} />
         </Flex>
@@ -270,10 +280,10 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
                 key={course.id}
                 size="small"
                 hoverable
-                onClick={() => {
+                {...clickableProps(() => {
                   setSelectedCourseId(course.id);
                   setActiveTab('courses');
-                }}
+                })}
               >
                 <Flex justify="space-between" align="center">
                   <div>
@@ -319,7 +329,7 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: idx * 0.04 }}
             >
-              <Card size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
+              <Card size="small" hoverable {...clickableProps(() => setSelectedCourseId(course.id))}>
                 <Flex justify="space-between" align="center">
                   <div>
                     <Text strong>{course.name}</Text>
@@ -340,7 +350,7 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
                 ARCHIVED
               </Text>
               {archivedCourses.map((course) => (
-                <Card key={course.id} size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
+                <Card key={course.id} size="small" hoverable {...clickableProps(() => setSelectedCourseId(course.id))}>
                   <Flex justify="space-between" align="center">
                     <div>
                       <Text type="secondary">{course.name}</Text>
@@ -371,10 +381,10 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
       <Card size="small" style={{ marginBottom: 16 }}>
         <Flex gap={12} align="center">
           <Avatar size={44} style={{ background: '#1677ff', flexShrink: 0 }}>
-            {displayName.charAt(0).toUpperCase()}
+            {(displayName ?? userEmail).charAt(0).toUpperCase()}
           </Avatar>
           <div style={{ minWidth: 0 }}>
-            <Text strong>{displayName}</Text>
+            <Text strong>{displayName ?? localPart}</Text>
             <br />
             <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
               {userEmail}
@@ -402,6 +412,10 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
 
       {renderRoleSwitcher(user, 'grader')}
 
+      <Button danger block icon={<LogoutOutlined />} onClick={onLogout} style={{ marginBottom: 16 }}>
+        Log Out
+      </Button>
+
       <Text type="secondary" style={{ fontSize: 12 }}>
         To change account settings or manage grading preferences, access the full desktop version of codePost.
       </Text>
@@ -411,84 +425,89 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
   /* ── Shell ───────────────────────────────────────────────────────────── */
 
   return (
-    <div className={styles.mobileShell}>
-      <main className={styles.main}>
-        <AnimatePresence mode="wait">
-          {activeTab === 'home' && (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderHome()}
-            </motion.div>
-          )}
-          {activeTab === 'courses' && (
-            <motion.div
-              key="courses"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderCourses()}
-            </motion.div>
-          )}
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderSettings()}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+    <MotionConfig reducedMotion="user">
+      <div className={styles.mobileShell}>
+        <main className={styles.main}>
+          <AnimatePresence mode="wait">
+            {activeTab === 'home' && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderHome()}
+              </motion.div>
+            )}
+            {activeTab === 'courses' && (
+              <motion.div
+                key="courses"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderCourses()}
+              </motion.div>
+            )}
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderSettings()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
 
-      <nav className={styles.bottomNav} aria-label="Main navigation">
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'home' ? 'true' : 'false'}
-          onClick={() => setActiveTab('home')}
-          aria-label="Home"
-        >
-          <HomeFilled className={styles.navIcon} />
-          <span className={styles.navLabel}>Home</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'courses' ? 'true' : 'false'}
-          onClick={() => {
-            setActiveTab('courses');
-            setSelectedCourseId(null);
-          }}
-          aria-label="Courses"
-        >
-          <BookOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Courses</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'settings' ? 'true' : 'false'}
-          onClick={() => setActiveTab('settings')}
-          aria-label="Settings"
-        >
-          <SettingOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Settings</span>
-        </button>
-      </nav>
-    </div>
+        <nav className={styles.bottomNav} aria-label="Main navigation">
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'home' ? 'true' : 'false'}
+            aria-current={activeTab === 'home' ? 'page' : undefined}
+            onClick={() => setActiveTab('home')}
+            aria-label="Home"
+          >
+            <HomeFilled className={styles.navIcon} />
+            <span className={styles.navLabel}>Home</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'courses' ? 'true' : 'false'}
+            aria-current={activeTab === 'courses' ? 'page' : undefined}
+            onClick={() => {
+              setActiveTab('courses');
+              setSelectedCourseId(null);
+            }}
+            aria-label="Courses"
+          >
+            <BookOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Courses</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'settings' ? 'true' : 'false'}
+            aria-current={activeTab === 'settings' ? 'page' : undefined}
+            onClick={() => setActiveTab('settings')}
+            aria-label="Settings"
+          >
+            <SettingOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Settings</span>
+          </button>
+        </nav>
+      </div>
+    </MotionConfig>
   );
 };
 

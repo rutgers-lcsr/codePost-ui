@@ -58,14 +58,6 @@ const statusLabel: Record<SubmissionStatus, string> = {
   [SubmissionStatus.NO_SUBMISSION]: 'No submission',
 };
 
-const statusAccentColor: Record<SubmissionStatus, string> = {
-  [SubmissionStatus.SUBMITTED]: '#52c41a',
-  [SubmissionStatus.PENDING]: '#faad14',
-  [SubmissionStatus.NOT_REVIEWED]: '#d9d9d9',
-  [SubmissionStatus.NOT_PUBLISHED]: '#f0f0f0',
-  [SubmissionStatus.NO_SUBMISSION]: '#ff4d4f',
-};
-
 function getRelativeDueDate(dueDate: string): { text: string; urgent: boolean } {
   const now = new Date();
   const due = new Date(dueDate);
@@ -285,7 +277,6 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
       style={{
         borderRadius: 8,
         border: '1px solid #f0f0f0',
-        borderLeft: `3px solid ${statusAccentColor[status]}`,
         padding: '12px 16px',
         opacity: disabled ? 0.5 : 1,
         pointerEvents: disabled ? 'none' : undefined,

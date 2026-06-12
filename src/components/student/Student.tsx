@@ -18,10 +18,11 @@ import {
 } from '@ant-design/icons';
 
 /* antd imports */
-import { Button, Empty, Flex, Modal, Progress, Skeleton, Spin, Tag, Typography, message } from 'antd';
+import { Badge, Button, Card, Empty, Flex, Modal, Skeleton, Spin, Statistic, Tag, Typography, message } from 'antd';
 
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
+import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
@@ -60,6 +61,7 @@ import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 import AssignmentRow from './AssignmentRow';
 import { SubmissionStatus } from './submissionStatus';
 import AssignmentSection from './AssignmentSection';
+import styles from './Student.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
 import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
 import {
@@ -468,14 +470,24 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
   }, [currentCourse, currentCourseAssignments, submissions, getSubmissionStatus]);
 
-  // Progress calculation
-  const progress = useMemo(() => {
-    if (!groupedSections) return { completed: 0, total: 0, percent: 0 };
-    const total = groupedSections.all.filter(
-      (a) => getSubmissionStatus(a, submissions[a.id]?.[0]) !== SubmissionStatus.NOT_PUBLISHED,
-    ).length;
-    const done = groupedSections.completed.length;
-    return { completed: done, total, percent: total > 0 ? (done / total) * 100 : 0 };
+  // Summary stats (mirrors the dashboard's summary card)
+  const stats = useMemo(() => {
+    if (!groupedSections) return { dueToday: 0, newFeedback: 0, completed: 0, total: 0, percent: 0 };
+    let newFeedback = 0;
+    let total = 0;
+    for (const a of groupedSections.all) {
+      const status = getSubmissionStatus(a, submissions[a.id]?.[0]);
+      if (status !== SubmissionStatus.NOT_PUBLISHED) total++;
+      if (status === SubmissionStatus.PENDING) newFeedback++;
+    }
+    const completed = groupedSections.completed.length;
+    return {
+      dueToday: groupedSections.dueToday.length,
+      newFeedback,
+      completed,
+      total,
+      percent: total > 0 ? (completed / total) * 100 : 0,
+    };
   }, [groupedSections, submissions, getSubmissionStatus]);
 
   // Build a row for an assignment (shared renderer)
@@ -592,7 +604,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   let studentContent;
   if (!currentCourse) {
     studentContent = (
-      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
+      <div className={styles.console}>
         <Flex justify="center" align="center" style={{ minHeight: 400 }}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -603,7 +615,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     );
   } else if (isLoadingAssignments) {
     studentContent = (
-      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
+      <div className={styles.console}>
         <Flex justify="center" align="center" style={{ minHeight: 400 }}>
           <Spin size="large" />
         </Flex>
@@ -636,40 +648,58 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     const hasAssignments = !isLoading && assignmentList.length > 0 && groupedSections;
 
     studentContent = (
-      <div style={{ maxWidth: 1200, width: '100%', margin: '0 auto', padding: '48px 64px 64px', boxSizing: 'border-box', minWidth: 0 }}>
+      <div className={styles.console}>
         {/* Header */}
-        <Flex justify="space-between" align="flex-start" style={{ marginBottom: 24 }}>
-          <div>
-            <Typography.Title level={3} style={{ margin: 0 }}>
-              {currentCourse.name}
-            </Typography.Title>
-            {currentCourse.period && <Typography.Text type="secondary">{currentCourse.period}</Typography.Text>}
-          </div>
-          {lateDayCredits && (
-            <Tag icon={<ClockCircleOutlined />} color="blue">
-              {lateDayCredits}
-            </Tag>
-          )}
-        </Flex>
+        <header style={{ marginBottom: 24 }}>
+          <Flex justify="space-between" align="flex-start">
+            <div>
+              <Typography.Title level={2} style={{ margin: 0, fontSize: 28 }}>
+                {currentCourse.name}
+              </Typography.Title>
+              {currentCourse.period && (
+                <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                  {currentCourse.period}
+                </Typography.Text>
+              )}
+            </div>
+            {lateDayCredits && (
+              <Tag icon={<ClockCircleOutlined />} color="blue">
+                {lateDayCredits}
+              </Tag>
+            )}
+          </Flex>
+        </header>
 
-        {/* Progress bar */}
-        {hasAssignments && progress.total > 0 && (
-          <div style={{ marginBottom: 32 }}>
-            <Flex justify="space-between" align="center" style={{ marginBottom: 4 }}>
-              <Typography.Text type="secondary">
-                Course progress &middot; {Math.round(progress.percent)}%
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {progress.completed} of {progress.total} completed
-              </Typography.Text>
-            </Flex>
-            <Progress
-              percent={Math.round(progress.percent)}
-              showInfo={false}
-              strokeColor="#52c41a"
-              size={['100%', 8]}
-            />
-          </div>
+        {/* Summary stats */}
+        {hasAssignments && stats.total > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <Card style={{ marginBottom: 32, padding: '8px 0' }}>
+              <Flex justify="space-evenly" wrap="wrap" gap={24} style={{ maxWidth: 600, margin: '0 auto' }}>
+                <Statistic
+                  title="Due today"
+                  value={stats.dueToday}
+                  valueStyle={{ color: stats.dueToday > 0 ? '#ff4d4f' : undefined }}
+                />
+                <Statistic
+                  title="New feedback"
+                  value={stats.newFeedback}
+                  valueStyle={{ color: stats.newFeedback > 0 ? '#1677ff' : undefined }}
+                  suffix={stats.newFeedback > 0 ? <Badge status="processing" /> : undefined}
+                />
+                <Statistic
+                  title="Completed"
+                  value={stats.completed}
+                  suffix={`/ ${stats.total}`}
+                  valueStyle={{ color: '#198665' }}
+                />
+                <Statistic title="Progress" value={Math.round(stats.percent)} suffix="%" />
+              </Flex>
+            </Card>
+          </motion.div>
         )}
 
         {/* Loading skeleton */}
@@ -833,12 +863,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         role={USER_TYPE.STUDENT}
       />
       <SubmissionCelebration trigger={showCelebration} onComplete={() => setShowCelebration(false)} />
-      <button
-        style={{ position: 'fixed', bottom: 8, right: 8, opacity: 0.3, fontSize: 10 }}
-        onClick={() => setShowCelebration(true)}
-      >
-        🎉 Test Celebration
-      </button>
     </div>
   );
 };

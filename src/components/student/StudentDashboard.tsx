@@ -129,7 +129,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         totalCompleted += sections.completed.length;
         totalDueToday += sections.dueToday.length;
 
-        for (const a of [...sections.dueToday, ...sections.dueSoon]) {
+        for (const a of [...sections.overdue, ...sections.dueToday, ...sections.dueSoon]) {
           dueThisWeek.push({ assignment: a, course });
         }
 
@@ -162,7 +162,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         map[course.id] = null;
         continue;
       }
-      const next = [...sections.dueToday, ...sections.dueSoon, ...sections.upcoming][0];
+      const next = [...sections.overdue, ...sections.dueToday, ...sections.dueSoon, ...sections.upcoming][0];
       if (next?.uploadDueDate) {
         const rel = getRelativeDueDate(next.uploadDueDate);
         map[course.id] = { name: next.name, dueText: rel.text || 'Upcoming' };

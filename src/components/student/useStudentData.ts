@@ -91,6 +91,7 @@ export function getSubmissionStatusFor(
 /* ────────────────────────────────────────────────────────────────────────── */
 
 export interface GroupedSections {
+  overdue: Assignment[];
   dueToday: Assignment[];
   dueSoon: Assignment[];
   upcoming: Assignment[];
@@ -210,6 +211,7 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
       const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
       const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+      const overdue: Assignment[] = [];
       const dueToday: Assignment[] = [];
       const dueSoon: Assignment[] = [];
       const upcoming: Assignment[] = [];
@@ -230,14 +232,17 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
           completed.push(assignment);
         } else if (assignment.uploadDueDate) {
           const dueDate = new Date(assignment.uploadDueDate);
-          if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
-            if (dueDate <= endOfToday) {
+          if (dueDate < now) {
+            // Past due date — overdue if no submission, due today if within last 24h
+            if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
               dueToday.push(assignment);
-            } else if (dueDate <= weekFromNow) {
-              dueSoon.push(assignment);
             } else {
-              upcoming.push(assignment);
+              overdue.push(assignment);
             }
+          } else if (dueDate <= endOfToday) {
+            dueToday.push(assignment);
+          } else if (dueDate <= weekFromNow) {
+            dueSoon.push(assignment);
           } else {
             upcoming.push(assignment);
           }
@@ -246,7 +251,7 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
         }
       }
 
-      return { dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
+      return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
     },
     [assignments, submissions, viewsBySubmission],
   );

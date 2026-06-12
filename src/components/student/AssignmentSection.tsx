@@ -58,7 +58,7 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 24 }}
         >
           <Flex
             align="center"
@@ -68,24 +68,18 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
             role="button"
             tabIndex={0}
             aria-expanded={!collapsed}
-            style={{
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: 8,
-              background: 'rgba(0, 0, 0, 0.02)',
-              userSelect: 'none',
-            }}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
           >
-            <span style={{ color: iconColor, fontSize: 16 }} aria-hidden="true">
+            <span style={{ color: iconColor }} aria-hidden="true">
               {icon}
             </span>
-            <Typography.Text strong style={{ flex: 1 }}>
+            <Typography.Title level={5} style={{ margin: 0 }}>
               {title}
-            </Typography.Text>
-            <Badge count={count} color={iconColor} overflowCount={999} />
+            </Typography.Title>
+            <Badge count={count} size="small" color={iconColor} overflowCount={999} />
             <DownOutlined
               style={{
-                fontSize: 12,
+                fontSize: 11,
                 color: '#8c8c8c',
                 transition: 'transform 0.25s',
                 transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
@@ -112,7 +106,7 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
                       transition: { staggerChildren: 0.06 },
                     },
                   }}
-                  style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 12 }}
                 >
                   {React.Children.map(children, (child) => (
                     <motion.div

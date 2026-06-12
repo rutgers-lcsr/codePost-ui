@@ -75,7 +75,7 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
 
   // Render the dashboard
   if (showMobile) {
-    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} />;
+    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} onLogout={handleLogout} />;
   }
 
   const header = (
@@ -113,12 +113,12 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
 
 /** Top-level admin router — dashboard at index, course views at /:name/:period */
 const AdminManager: React.FC<IAdminManagerProps> = (props) => {
-  const { initialCourses, user } = props;
+  const { initialCourses, user, handleLogout } = props;
   const showMobile = useShowMobileConsole();
 
   // On mobile, always show the mobile console regardless of route
   if (showMobile) {
-    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} />;
+    return <MobileAdminConsole courses={initialCourses} userEmail={user.email!} user={user} onLogout={handleLogout} />;
   }
 
   return (

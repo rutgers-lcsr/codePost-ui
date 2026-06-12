@@ -82,7 +82,8 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  /* #595959 keeps WCAG AA contrast for the 10px labels (≈7:1 on white) */
+  color: #595959;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.2s;
 

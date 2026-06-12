@@ -1,7 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   ArrowLeftOutlined,
   BellOutlined,
@@ -14,6 +13,7 @@ import {
   FolderOutlined,
   HomeOutlined,
   InboxOutlined,
+  LogoutOutlined,
   RiseOutlined,
   SearchOutlined,
   SettingOutlined,
@@ -25,12 +25,14 @@ import {
 import {
   Avatar,
   Badge,
+  Button,
   Card,
   Collapse,
   DatePicker,
   Empty,
   Flex,
   Input,
+  message,
   Progress,
   Segmented,
   Spin,
@@ -40,7 +42,7 @@ import {
   Timeline,
   Typography,
 } from 'antd';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 
@@ -48,11 +50,11 @@ import { Course, CourseAuditEvent, User } from '../../api-client';
 import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
 import { assignmentKeys } from '../../lib/queryKeys';
-import { encodedCourseLink } from '../core/CourseMenu';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAssignmentsQuery } from './hooks/useAssignmentsQuery';
 import { CourseAuditLogService } from '../../services/courseAuditLog';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
+import { clickableProps } from '../core/clickable';
 import styles from './MobileAdminConsole.module.scss';
 
 const { Title, Text } = Typography;
@@ -65,6 +67,7 @@ interface MobileAdminConsoleProps {
   courses: Course[];
   userEmail: string;
   user: User;
+  onLogout: () => void;
 }
 
 type NavTab = 'home' | 'activity' | 'settings';
@@ -95,7 +98,8 @@ function formatDueDate(dateStr: string | null | undefined): string {
 }
 
 function getGradingProgress(a: Assignment): number {
-  const total = (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0);
+  const total =
+    (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0) + (a.submissions_unclaimed_count ?? 0);
   if (total === 0) return 0;
   return Math.round(((a.submissions_finalized_count ?? 0) / total) * 100);
 }
@@ -137,7 +141,7 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
         await assignmentsApi.partialUpdate({ id: assignmentId, patchedAssignment: patch });
         queryClient.invalidateQueries({ queryKey: assignmentKeys.list(course.id) });
       } catch {
-        /* noop */
+        message.error('Could not save changes. Check your connection and try again.');
       } finally {
         setSavingField(null);
       }
@@ -164,14 +168,6 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
   const totalUnclaimed = assignments.reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0);
 
   const isSaving = (id: number, field: string) => savingField === `${id}-${field}`;
-
-  /* Quick nav links ──────────────────────────────────────────────────────── */
-  const quickLinks: { label: string; icon: React.ReactNode; path: string }[] = [
-    { label: 'Assignments', icon: <BookOutlined />, path: 'assignments/overview' },
-    { label: 'Roster', icon: <TeamOutlined />, path: 'roster/students' },
-    { label: 'Submissions', icon: <InboxOutlined />, path: 'submissions/by_student' },
-    { label: 'Settings', icon: <SettingOutlined />, path: 'settings' },
-  ];
 
   return (
     <div className={styles.scrollContent}>
@@ -235,16 +231,6 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
         </Flex>
       </Card>
 
-      {/* Quick navigation links to real course pages */}
-      <div className={styles.quickNavRow}>
-        {quickLinks.map((link) => (
-          <Link key={link.path} to={encodedCourseLink('admin', course, link.path)} className={styles.quickNavButton}>
-            <span className={styles.quickNavIcon}>{link.icon}</span>
-            <span className={styles.quickNavLabel}>{link.label}</span>
-          </Link>
-        ))}
-      </div>
-
       {/* Assignment filter + search */}
       <Segmented
         block
@@ -271,9 +257,11 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
 
       {/* Assignment list */}
       {isLoading ? (
-        <Flex justify="center" style={{ padding: 40 }}>
+        <Flex vertical align="center" gap={8} style={{ padding: 40 }}>
           <Spin />
-          <Text type="secondary" style={{ fontSize: 13, marginTop: 8 }}>Loading assignments…</Text>
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Loading assignments…
+          </Text>
         </Flex>
       ) : filteredAssignments.length > 0 ? (
         <Flex vertical gap={10}>
@@ -438,7 +426,7 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                                 style={{ width: '100%' }}
                                 value={a.uploadDueDate ? dayjs(a.uploadDueDate) : null}
                                 onChange={(date) => {
-                                  if (date) handleUpdateAssignment(a.id, { uploadDueDate: date.toISOString() });
+                                  handleUpdateAssignment(a.id, { uploadDueDate: date ? date.toISOString() : null });
                                 }}
                                 placeholder="Set due date"
                               />
@@ -456,7 +444,9 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                                     size="small"
                                     checked={!!a.allowStudentUpload}
                                     loading={isSaving(a.id, 'allowStudentUpload')}
-                                    onChange={(checked) => handleUpdateAssignment(a.id, { allowStudentUpload: checked })}
+                                    onChange={(checked) =>
+                                      handleUpdateAssignment(a.id, { allowStudentUpload: checked })
+                                    }
                                   />
                                 </Flex>
                                 <Flex justify="space-between" align="center">
@@ -481,14 +471,6 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                                 </Flex>
                               </Flex>
                             </div>
-
-                            {/* Open in full admin */}
-                            <Link
-                              to={encodedCourseLink('admin', course, 'assignments/overview')}
-                              className={styles.openFullLink}
-                            >
-                              Open full assignment manager →
-                            </Link>
                           </Flex>
                         ),
                       },
@@ -547,6 +529,9 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
 /* ActivityFeed                                                              */
 /* ────────────────────────────────────────────────────────────────────────── */
 
+/** "All courses" only polls this many courses to limit mobile requests */
+const MAX_FEED_COURSES = 5;
+
 const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
   const [events, setEvents] = useState<(CourseAuditEvent & { courseName?: string })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -583,17 +568,21 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
     setLoading(true);
 
     const fetchEvents = async () => {
-      const targets = selectedCourseId ? activeCourses.filter((c) => c.id === selectedCourseId) : activeCourses.slice(0, 5);
-      const allEvents: (CourseAuditEvent & { courseName?: string })[] = [];
+      const targets = selectedCourseId
+        ? activeCourses.filter((c) => c.id === selectedCourseId)
+        : activeCourses.slice(0, MAX_FEED_COURSES);
 
-      for (const course of targets) {
-        try {
-          const result = await CourseAuditLogService.list(course.id, { pageSize: 10 });
-          allEvents.push(...(result.results ?? []).map((e) => ({ ...e, courseName: course.name })));
-        } catch {
-          /* skip */
-        }
-      }
+      const perCourse = await Promise.all(
+        targets.map(async (course) => {
+          try {
+            const result = await CourseAuditLogService.list(course.id, { pageSize: 10 });
+            return (result.results ?? []).map((e) => ({ ...e, courseName: course.name }));
+          } catch {
+            return [];
+          }
+        }),
+      );
+      const allEvents = perCourse.flat();
 
       if (!cancelled) {
         allEvents.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
@@ -603,7 +592,9 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
     };
 
     fetchEvents();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [activeCourses, selectedCourseId]);
 
   return (
@@ -613,6 +604,9 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
       </Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
         Recent events across your courses
+        {selectedCourseId === null && activeCourses.length > MAX_FEED_COURSES
+          ? ` (showing the first ${MAX_FEED_COURSES} — pick a course below to see the rest)`
+          : ''}
       </Text>
 
       {/* Course filter */}
@@ -621,7 +615,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
           <Tag
             color={selectedCourseId === null ? 'blue' : undefined}
             style={{ cursor: 'pointer' }}
-            onClick={() => setSelectedCourseId(null)}
+            {...clickableProps(() => setSelectedCourseId(null))}
           >
             All courses
           </Tag>
@@ -630,7 +624,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
               key={c.id}
               color={selectedCourseId === c.id ? 'blue' : undefined}
               style={{ cursor: 'pointer' }}
-              onClick={() => setSelectedCourseId(selectedCourseId === c.id ? null : c.id)}
+              {...clickableProps(() => setSelectedCourseId(selectedCourseId === c.id ? null : c.id))}
             >
               {c.name}
             </Tag>
@@ -653,7 +647,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
           <Tag
             color={selectedEventType === null ? 'purple' : undefined}
             style={{ cursor: 'pointer' }}
-            onClick={() => setSelectedEventType(null)}
+            {...clickableProps(() => setSelectedEventType(null))}
           >
             All events
           </Tag>
@@ -662,7 +656,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
               key={type}
               color={selectedEventType === type ? 'purple' : undefined}
               style={{ cursor: 'pointer' }}
-              onClick={() => setSelectedEventType(selectedEventType === type ? null : type)}
+              {...clickableProps(() => setSelectedEventType(selectedEventType === type ? null : type))}
             >
               {formatEventType(type)}
             </Tag>
@@ -671,9 +665,11 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
       )}
 
       {loading ? (
-        <Flex justify="center" style={{ padding: 48 }}>
+        <Flex vertical align="center" gap={8} style={{ padding: 48 }}>
           <Spin />
-          <Text type="secondary" style={{ fontSize: 13, marginTop: 8 }}>Loading activity…</Text>
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Loading activity…
+          </Text>
         </Flex>
       ) : filteredEvents.length > 0 ? (
         <Timeline
@@ -724,17 +720,19 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
 /* Main Component                                                            */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEmail, user }) => {
+const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEmail, user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [searchText, setSearchText] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
   const { stats, activeCourses, archivedCourses } = useAdminDashboardData(courses);
+  const selectedCourse = courses.find((c) => c.id === selectedCourseId) ?? null;
 
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  // Only greet by name when the email local part looks like a name (netIDs like "mk1800" read oddly)
+  const localPart = userEmail.split('@')[0].split('.')[0];
+  const displayName = /^[a-z]+$/i.test(localPart) ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : null;
 
   const uniquePeriods = useMemo(() => {
     const periods = new Set<string>();
@@ -760,50 +758,30 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
     });
   }, [archivedCourses, searchText, selectedPeriod]);
 
-  /* ── Empty / no courses ─────────────────────────────────────────────── */
-
-  if (courses.length === 0) {
-    return (
-      <div className={styles.mobileShell}>
-        <main className={styles.main}>
-          <div className={styles.scrollContent}>
-            <Empty
-              image={<InboxOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-              description={
-                <div>
-                  <Text strong>No courses yet</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Create your first course from a desktop browser to get started.
-                  </Text>
-                </div>
-              }
-            />
-          </div>
-        </main>
-        <nav className={styles.bottomNav} aria-label="Main navigation">
-          <button type="button" className={styles.navItem} data-active="true" aria-label="Home">
-            <HomeOutlined className={styles.navIcon} />
-            <span className={styles.navLabel}>Home</span>
-          </button>
-          <button type="button" className={styles.navItem} aria-label="Activity">
-            <BellOutlined className={styles.navIcon} />
-            <span className={styles.navLabel}>Activity</span>
-          </button>
-          <button type="button" className={styles.navItem} aria-label="Settings">
-            <SettingOutlined className={styles.navIcon} />
-            <span className={styles.navLabel}>Settings</span>
-          </button>
-        </nav>
-      </div>
-    );
-  }
-
   /* ── Home tab ────────────────────────────────────────────────────────── */
 
   const renderHome = () => {
+    if (courses.length === 0) {
+      return (
+        <div className={styles.scrollContent}>
+          <Empty
+            image={<InboxOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
+            description={
+              <div>
+                <Text strong>No courses yet</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Create your first course from a desktop browser to get started.
+                </Text>
+              </div>
+            }
+          />
+        </div>
+      );
+    }
+
     if (selectedCourse) {
-      return <CourseDetail course={selectedCourse} onBack={() => setSelectedCourse(null)} />;
+      return <CourseDetail course={selectedCourse} onBack={() => setSelectedCourseId(null)} />;
     }
 
     return (
@@ -814,7 +792,8 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
             Admin
           </Tag>
           <Title level={3} style={{ margin: 0 }}>
-            {getGreeting()}, {displayName}
+            {getGreeting()}
+            {displayName ? `, ${displayName}` : ''}
           </Title>
           <Text type="secondary">
             {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'} · {stats.totalStudents} students
@@ -824,7 +803,11 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
         {/* Summary stats */}
         <Card size="small" style={{ marginBottom: 20 }}>
           <Flex justify="space-around">
-            <Statistic title="Active" value={stats.activeCourses} styles={{ content: { fontSize: 20, color: '#722ed1' } }} />
+            <Statistic
+              title="Active"
+              value={stats.activeCourses}
+              styles={{ content: { fontSize: 20, color: '#722ed1' } }}
+            />
             <Statistic title="Students" value={stats.totalStudents} styles={{ content: { fontSize: 20 } }} />
             <Statistic title="Assignments" value={stats.totalAssignments} styles={{ content: { fontSize: 20 } }} />
             <Statistic title="Archived" value={stats.archivedCourses} styles={{ content: { fontSize: 20 } }} />
@@ -852,7 +835,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                     key={period}
                     color={selectedPeriod === period ? 'purple' : undefined}
                     style={{ cursor: 'pointer' }}
-                    onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
+                    {...clickableProps(() => setSelectedPeriod(selectedPeriod === period ? null : period))}
                   >
                     {period}
                   </Tag>
@@ -886,7 +869,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                     <Card
                       size="small"
                       hoverable
-                      onClick={() => setSelectedCourse(course)}
+                      {...clickableProps(() => setSelectedCourseId(course.id))}
                       className={styles.courseCard}
                     >
                       <Flex justify="space-between" align="flex-start" gap={8}>
@@ -903,23 +886,6 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                           <BookOutlined /> {course.assignments?.length ?? 0} assignments
                         </Text>
                       </Flex>
-                      {/* Quick links inline on card */}
-                      <Flex gap={6} style={{ marginTop: 10 }} wrap>
-                        {[
-                          { label: 'Assignments', path: 'assignments/overview' },
-                          { label: 'Roster', path: 'roster/students' },
-                          { label: 'Submissions', path: 'submissions/by_student' },
-                        ].map((link) => (
-                          <Link
-                            key={link.path}
-                            to={encodedCourseLink('admin', course, link.path)}
-                            onClick={(e) => e.stopPropagation()}
-                            className={styles.inlineLink}
-                          >
-                            {link.label}
-                          </Link>
-                        ))}
-                      </Flex>
                     </Card>
                   </motion.div>
                 ))}
@@ -934,7 +900,8 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
             <Card
               size="small"
               style={{ cursor: 'pointer' }}
-              onClick={() => setShowArchived((v) => !v)}
+              aria-expanded={showArchived}
+              {...clickableProps(() => setShowArchived((v) => !v))}
             >
               <Flex justify="space-between" align="center">
                 <Flex align="center" gap={8}>
@@ -961,7 +928,12 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                 >
                   <Flex vertical gap={8} style={{ marginTop: 8 }}>
                     {filteredArchived.map((course) => (
-                      <Card key={course.id} size="small" hoverable onClick={() => setSelectedCourse(course)}>
+                      <Card
+                        key={course.id}
+                        size="small"
+                        hoverable
+                        {...clickableProps(() => setSelectedCourseId(course.id))}
+                      >
                         <Flex justify="space-between" align="center">
                           <Text type="secondary">{course.name}</Text>
                           <Tag>Archived</Tag>
@@ -1001,10 +973,10 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
       <Card size="small" style={{ marginBottom: 16 }}>
         <Flex gap={12} align="center">
           <Avatar size={44} style={{ background: '#722ed1', flexShrink: 0 }}>
-            {displayName.charAt(0).toUpperCase()}
+            {(displayName ?? userEmail).charAt(0).toUpperCase()}
           </Avatar>
           <div style={{ minWidth: 0 }}>
-            <Text strong>{displayName}</Text>
+            <Text strong>{displayName ?? localPart}</Text>
             <br />
             <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
               {userEmail}
@@ -1044,6 +1016,10 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
 
       {renderRoleSwitcher(user, 'admin')}
 
+      <Button danger block icon={<LogoutOutlined />} onClick={onLogout} style={{ marginBottom: 16 }}>
+        Log Out
+      </Button>
+
       <Text type="secondary" style={{ fontSize: 12 }}>
         For full account management — password changes, notification preferences, rubric editing, and bulk roster
         changes — use the desktop version.
@@ -1054,84 +1030,89 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
   /* ── Shell ─────────────────────────────────────────────────────────────── */
 
   return (
-    <div className={styles.mobileShell}>
-      <main className={styles.main}>
-        <AnimatePresence mode="wait">
-          {activeTab === 'home' && (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.18 }}
-              className={styles.tabPanel}
-            >
-              {renderHome()}
-            </motion.div>
-          )}
-          {activeTab === 'activity' && (
-            <motion.div
-              key="activity"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.18 }}
-              className={styles.tabPanel}
-            >
-              <ActivityFeed courses={courses} />
-            </motion.div>
-          )}
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.18 }}
-              className={styles.tabPanel}
-            >
-              {renderSettings()}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+    <MotionConfig reducedMotion="user">
+      <div className={styles.mobileShell}>
+        <main className={styles.main}>
+          <AnimatePresence mode="wait">
+            {activeTab === 'home' && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.18 }}
+                className={styles.tabPanel}
+              >
+                {renderHome()}
+              </motion.div>
+            )}
+            {activeTab === 'activity' && (
+              <motion.div
+                key="activity"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.18 }}
+                className={styles.tabPanel}
+              >
+                <ActivityFeed courses={courses} />
+              </motion.div>
+            )}
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.18 }}
+                className={styles.tabPanel}
+              >
+                {renderSettings()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
 
-      <nav className={styles.bottomNav} aria-label="Main navigation">
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'home' ? 'true' : 'false'}
-          onClick={() => {
-            setActiveTab('home');
-            setSelectedCourse(null);
-          }}
-          aria-label="Home"
-        >
-          <HomeOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Home</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'activity' ? 'true' : 'false'}
-          onClick={() => setActiveTab('activity')}
-          aria-label="Activity"
-        >
-          <BellOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Activity</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'settings' ? 'true' : 'false'}
-          onClick={() => setActiveTab('settings')}
-          aria-label="Settings"
-        >
-          <SettingOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Settings</span>
-        </button>
-      </nav>
-    </div>
+        <nav className={styles.bottomNav} aria-label="Main navigation">
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'home' ? 'true' : 'false'}
+            aria-current={activeTab === 'home' ? 'page' : undefined}
+            onClick={() => {
+              setActiveTab('home');
+              setSelectedCourseId(null);
+            }}
+            aria-label="Home"
+          >
+            <HomeOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Home</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'activity' ? 'true' : 'false'}
+            aria-current={activeTab === 'activity' ? 'page' : undefined}
+            onClick={() => setActiveTab('activity')}
+            aria-label="Activity"
+          >
+            <BellOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Activity</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'settings' ? 'true' : 'false'}
+            aria-current={activeTab === 'settings' ? 'page' : undefined}
+            onClick={() => setActiveTab('settings')}
+            aria-label="Settings"
+          >
+            <SettingOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Settings</span>
+          </button>
+        </nav>
+      </div>
+    </MotionConfig>
   );
 };
 

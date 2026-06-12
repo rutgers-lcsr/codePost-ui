@@ -82,7 +82,8 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  /* #595959 keeps WCAG AA contrast for the 10px labels (≈7:1 on white) */
+  color: #595959;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.2s;
 
@@ -100,83 +101,10 @@
   font-weight: 600;
 }
 
-/* ── Quick navigation row (course detail) ────────────────────────────────── */
-
-.quickNavRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.quickNavButton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 6px;
-  background: #f9f0ff;
-  border: 1px solid #efdbff;
-  border-radius: 10px;
-  text-decoration: none;
-  color: #722ed1;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active {
-    background: #efdbff;
-  }
-}
-
-.quickNavIcon {
-  font-size: 16px;
-}
-
-.quickNavLabel {
-  font-size: 11px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* ── "Open in full" link inside assignment collapse ──────────────────────── */
-
-.openFullLink {
-  display: block;
-  text-align: center;
-  font-size: 13px;
-  color: #722ed1;
-  text-decoration: none;
-  padding: 6px 0;
-
-  &:active {
-    opacity: 0.7;
-  }
-}
-
 /* ── Course card (home tab) ──────────────────────────────────────────────── */
 
 .courseCard {
   cursor: pointer;
-}
-
-/* ── Inline quick links on course cards ─────────────────────────────────── */
-
-.inlineLink {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 12px;
-  background: #f0f0f0;
-  font-size: 12px;
-  color: #555;
-  text-decoration: none;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active {
-    background: #e0e0e0;
-  }
 }
 
 /* ── Reduced motion ──────────────────────────────────────────────────────── */

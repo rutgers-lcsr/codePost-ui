@@ -70,14 +70,7 @@ const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
 
   // Render the dashboard
   if (showMobile) {
-    return (
-      <MobileGraderConsole
-        courses={initialCourses}
-        userEmail={user.email!}
-        defaultPanel={getDefaultPanel}
-        user={user}
-      />
-    );
+    return <MobileGraderConsole courses={initialCourses} userEmail={user.email!} user={user} onLogout={handleLogout} />;
   }
 
   const header = (
@@ -115,19 +108,12 @@ const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
 
 /** Top-level grader router — dashboard at index, course views at /:name/:period */
 const GraderManager: React.FC<IGraderManagerProps> = (props) => {
-  const { initialCourses, user } = props;
+  const { initialCourses, user, handleLogout } = props;
   const showMobile = useShowMobileConsole();
 
   // On mobile, always show the mobile console regardless of route
   if (showMobile) {
-    return (
-      <MobileGraderConsole
-        courses={initialCourses}
-        userEmail={user.email!}
-        defaultPanel={getDefaultPanel}
-        user={user}
-      />
-    );
+    return <MobileGraderConsole courses={initialCourses} userEmail={user.email!} user={user} onLogout={handleLogout} />;
   }
 
   return (

@@ -9,13 +9,15 @@ import {
   EyeOutlined,
   FireFilled,
   HomeFilled,
+  LogoutOutlined,
   SettingOutlined,
   UploadOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Avatar, Badge, Card, Empty, Flex, Progress, Spin, Statistic, Tag, Typography } from 'antd';
+import { Avatar, Badge, Button, Card, Empty, Flex, Progress, Spin, Statistic, Tag, Typography } from 'antd';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
-import { AnimatePresence, motion } from 'motion/react';
+import { clickableProps } from '../core/clickable';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 
 import { Course, User } from '../../api-client';
 import { Assignment } from '../../types/common';
@@ -35,6 +37,7 @@ interface MobileStudentConsoleProps {
   userEmail: string;
   studentSections: number[];
   user: User;
+  onLogout: () => void;
 }
 
 type MobileTab = 'home' | 'courses' | 'settings';
@@ -73,7 +76,7 @@ function getGreeting(): string {
 function getStatusTag(status: SubmissionStatus): React.ReactNode {
   switch (status) {
     case SubmissionStatus.SUBMITTED:
-      return <Tag color="success">Viewed</Tag>;
+      return <Tag color="success">Feedback Viewed</Tag>;
     case SubmissionStatus.PENDING:
       return <Tag color="processing">New Feedback</Tag>;
     case SubmissionStatus.NOT_REVIEWED:
@@ -175,6 +178,7 @@ const SectionBlock: React.FC<{
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -242,7 +246,7 @@ const CourseDetail: React.FC<{
     return [...sections.dueToday, ...sections.dueSoon, ...sections.upcoming];
   }, [sections]);
 
-  const totalVisible = upcomingAll.length + (sections?.completed.length ?? 0);
+  const totalVisible = upcomingAll.length + (sections?.overdue.length ?? 0) + (sections?.completed.length ?? 0);
 
   return (
     <div className={styles.scrollContent}>
@@ -285,6 +289,19 @@ const CourseDetail: React.FC<{
         <Empty description="No assignments yet" />
       ) : (
         <>
+          {/* Past Due */}
+          <SectionBlock title="Past Due" count={sections?.overdue.length ?? 0} accentColor="#ff4d4f">
+            {(sections?.overdue ?? []).map((a, i) => (
+              <AssignmentCard
+                key={a.id}
+                assignment={a}
+                submissions={submissions}
+                viewsBySubmission={viewsBySubmission}
+                idx={i}
+              />
+            ))}
+          </SectionBlock>
+
           {/* Upcoming */}
           <SectionBlock title="Upcoming" count={upcomingAll.length} accentColor="#1677ff">
             {upcomingAll.map((a, i) => (
@@ -338,9 +355,18 @@ const CourseDetail: React.FC<{
 /* Main Component                                                            */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, userEmail, studentSections, user }) => {
+const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({
+  courses,
+  userEmail,
+  studentSections,
+  user,
+  onLogout,
+}) => {
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+
+  // Archived courses are hidden everywhere on mobile — don't fetch their data either
+  const activeCourses = useMemo(() => courses.filter((c) => !c.archived), [courses]);
 
   const {
     submissions,
@@ -349,12 +375,13 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
     isLoadingSubmissions,
     getGroupedSections,
     getProgress,
-  } = useStudentData(courses, userEmail, studentSections);
+  } = useStudentData(activeCourses, userEmail, studentSections);
 
   const isLoading = isLoadingAssignments || isLoadingSubmissions;
 
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  // Only greet by name when the email local part looks like a name (netIDs like "mk1800" read oddly)
+  const localPart = userEmail.split('@')[0].split('.')[0];
+  const displayName = /^[a-z]+$/i.test(localPart) ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : null;
 
   /* ── Aggregate data ──────────────────────────────────────────────────── */
   const { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments } =
@@ -366,7 +393,7 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
       let totalCompleted = 0;
       let totalAssignments = 0;
 
-      for (const course of courses) {
+      for (const course of activeCourses) {
         const sections = getGroupedSections(course.id);
         if (!sections) continue;
 
@@ -377,7 +404,7 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
         totalCompleted += sections.completed.length;
         totalDueToday += sections.dueToday.length;
 
-        for (const a of [...sections.dueToday, ...sections.dueSoon]) {
+        for (const a of [...sections.overdue, ...sections.dueToday, ...sections.dueSoon]) {
           dueThisWeek.push({ assignment: a, course });
         }
 
@@ -398,9 +425,9 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
       });
 
       return { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments };
-    }, [courses, getGroupedSections, submissions, viewsBySubmission]);
+    }, [activeCourses, getGroupedSections, submissions, viewsBySubmission]);
 
-  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
+  const selectedCourse = activeCourses.find((c) => c.id === selectedCourseId);
 
   /* ── Home ────────────────────────────────────────────────────────────── */
 
@@ -412,10 +439,11 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
           Student
         </Tag>
         <Title level={3} style={{ margin: 0 }}>
-          {getGreeting()}, {displayName}
+          {getGreeting()}
+          {displayName ? `, ${displayName}` : ''}
         </Title>
         <Text type="secondary">
-          {isLoading ? 'Loading…' : `${courses.length} course${courses.length === 1 ? '' : 's'} this term`}
+          {isLoading ? 'Loading…' : `${activeCourses.length} course${activeCourses.length === 1 ? '' : 's'} this term`}
         </Text>
       </div>
 
@@ -480,10 +508,10 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
                     <Card
                       size="small"
                       hoverable
-                      onClick={() => {
+                      {...clickableProps(() => {
                         setSelectedCourseId(course.id);
                         setActiveTab('courses');
-                      }}
+                      })}
                     >
                       <Flex justify="space-between" align="center">
                         <div>
@@ -534,10 +562,10 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
                   <Card
                     size="small"
                     hoverable
-                    onClick={() => {
+                    {...clickableProps(() => {
                       setSelectedCourseId(course.id);
                       setActiveTab('courses');
-                    }}
+                    })}
                   >
                     <Flex justify="space-between" align="center">
                       <div>
@@ -598,8 +626,8 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
           Courses
         </Title>
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-          {courses.filter((c) => !c.archived).length} active course
-          {courses.filter((c) => !c.archived).length === 1 ? '' : 's'}
+          {activeCourses.length} active course
+          {activeCourses.length === 1 ? '' : 's'}
         </Text>
 
         {isLoading ? (
@@ -609,55 +637,53 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
         ) : (
           <Flex vertical gap={10}>
             <AnimatePresence>
-              {courses
-                .filter((c) => !c.archived)
-                .map((course, idx) => {
-                  const progress = getProgress(course.id);
-                  const sections = getGroupedSections(course.id);
-                  const dueSoonCount = sections ? sections.dueToday.length + sections.dueSoon.length : 0;
+              {activeCourses.map((course, idx) => {
+                const progress = getProgress(course.id);
+                const sections = getGroupedSections(course.id);
+                const dueSoonCount = sections ? sections.dueToday.length + sections.dueSoon.length : 0;
 
-                  return (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2, delay: idx * 0.04 }}
-                    >
-                      <Card size="small" hoverable onClick={() => setSelectedCourseId(course.id)}>
-                        <Flex justify="space-between" align="flex-start">
-                          <Text strong>{course.name}</Text>
-                          <Tag>{course.period}</Tag>
-                        </Flex>
+                return (
+                  <motion.div
+                    key={course.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, delay: idx * 0.04 }}
+                  >
+                    <Card size="small" hoverable {...clickableProps(() => setSelectedCourseId(course.id))}>
+                      <Flex justify="space-between" align="flex-start">
+                        <Text strong>{course.name}</Text>
+                        <Tag>{course.period}</Tag>
+                      </Flex>
 
-                        {progress.total > 0 && (
-                          <div style={{ marginTop: 10 }}>
-                            <Flex justify="space-between" style={{ marginBottom: 2 }}>
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {Math.round(progress.percent)}% complete
-                              </Text>
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {progress.completed}/{progress.total}
-                              </Text>
-                            </Flex>
-                            <Progress
-                              percent={progress.percent}
-                              showInfo={false}
-                              size="small"
-                              status={progress.percent === 100 ? 'success' : 'active'}
-                            />
-                          </div>
-                        )}
+                      {progress.total > 0 && (
+                        <div style={{ marginTop: 10 }}>
+                          <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {Math.round(progress.percent)}% complete
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {progress.completed}/{progress.total}
+                            </Text>
+                          </Flex>
+                          <Progress
+                            percent={progress.percent}
+                            showInfo={false}
+                            size="small"
+                            status={progress.percent === 100 ? 'success' : 'active'}
+                          />
+                        </div>
+                      )}
 
-                        {dueSoonCount > 0 && (
-                          <Tag color="warning" style={{ marginTop: 8 }}>
-                            <WarningOutlined /> {dueSoonCount} due soon
-                          </Tag>
-                        )}
-                      </Card>
-                    </motion.div>
-                  );
-                })}
+                      {dueSoonCount > 0 && (
+                        <Tag color="warning" style={{ marginTop: 8 }}>
+                          <WarningOutlined /> {dueSoonCount} due soon
+                        </Tag>
+                      )}
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
           </Flex>
         )}
@@ -676,10 +702,10 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
       <Card size="small" style={{ marginBottom: 16 }}>
         <Flex gap={12} align="center">
           <Avatar size={44} style={{ background: '#198665', flexShrink: 0 }}>
-            {displayName.charAt(0).toUpperCase()}
+            {(displayName ?? userEmail).charAt(0).toUpperCase()}
           </Avatar>
           <div style={{ minWidth: 0 }}>
-            <Text strong>{displayName}</Text>
+            <Text strong>{displayName ?? localPart}</Text>
             <br />
             <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
               {userEmail}
@@ -696,7 +722,7 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
         <Flex vertical gap={8}>
           <Flex justify="space-between">
             <Text type="secondary">Courses</Text>
-            <Text>{courses.filter((c) => !c.archived).length} active</Text>
+            <Text>{activeCourses.length} active</Text>
           </Flex>
           <Flex justify="space-between">
             <Text type="secondary">Assignments</Text>
@@ -711,6 +737,10 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
 
       {renderRoleSwitcher(user, 'student')}
 
+      <Button danger block icon={<LogoutOutlined />} onClick={onLogout} style={{ marginBottom: 16 }}>
+        Log Out
+      </Button>
+
       <Text type="secondary" style={{ fontSize: 12 }}>
         To change account settings, access the full desktop version of codePost. Mobile view is read-only for account
         management.
@@ -721,92 +751,97 @@ const MobileStudentConsole: React.FC<MobileStudentConsoleProps> = ({ courses, us
   /* ── Shell ───────────────────────────────────────────────────────────── */
 
   return (
-    <div className={styles.mobileShell}>
-      <main className={styles.main}>
-        <AnimatePresence mode="wait">
-          {activeTab === 'home' && (
-            <motion.div
-              key="home"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderHome()}
-            </motion.div>
-          )}
-          {activeTab === 'courses' && (
-            <motion.div
-              key="courses"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderCourses()}
-            </motion.div>
-          )}
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className={styles.tabPanel}
-            >
-              {renderSettings()}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Bottom nav — custom since antd doesn't have a mobile tab bar */}
-      <nav className={styles.bottomNav} aria-label="Main navigation">
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'home' ? 'true' : 'false'}
-          onClick={() => setActiveTab('home')}
-          aria-label="Home"
-        >
-          <span className={styles.navIconWrap}>
-            <HomeFilled className={styles.navIcon} />
-            {totalDueToday > 0 && activeTab !== 'home' && (
-              <span className={styles.navDot} aria-label={`${totalDueToday} due today`}>
-                {totalDueToday}
-              </span>
+    <MotionConfig reducedMotion="user">
+      <div className={styles.mobileShell}>
+        <main className={styles.main}>
+          <AnimatePresence mode="wait">
+            {activeTab === 'home' && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderHome()}
+              </motion.div>
             )}
-          </span>
-          <span className={styles.navLabel}>Home</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'courses' ? 'true' : 'false'}
-          onClick={() => {
-            setActiveTab('courses');
-            setSelectedCourseId(null);
-          }}
-          aria-label="Courses"
-        >
-          <BookOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Courses</span>
-        </button>
-        <button
-          type="button"
-          className={styles.navItem}
-          data-active={activeTab === 'settings' ? 'true' : 'false'}
-          onClick={() => setActiveTab('settings')}
-          aria-label="Settings"
-        >
-          <SettingOutlined className={styles.navIcon} />
-          <span className={styles.navLabel}>Settings</span>
-        </button>
-      </nav>
-    </div>
+            {activeTab === 'courses' && (
+              <motion.div
+                key="courses"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderCourses()}
+              </motion.div>
+            )}
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className={styles.tabPanel}
+              >
+                {renderSettings()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+
+        {/* Bottom nav — custom since antd doesn't have a mobile tab bar */}
+        <nav className={styles.bottomNav} aria-label="Main navigation">
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'home' ? 'true' : 'false'}
+            aria-current={activeTab === 'home' ? 'page' : undefined}
+            onClick={() => setActiveTab('home')}
+            aria-label="Home"
+          >
+            <span className={styles.navIconWrap}>
+              <HomeFilled className={styles.navIcon} />
+              {totalDueToday > 0 && activeTab !== 'home' && (
+                <span className={styles.navDot} aria-label={`${totalDueToday} due today`}>
+                  {totalDueToday}
+                </span>
+              )}
+            </span>
+            <span className={styles.navLabel}>Home</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'courses' ? 'true' : 'false'}
+            aria-current={activeTab === 'courses' ? 'page' : undefined}
+            onClick={() => {
+              setActiveTab('courses');
+              setSelectedCourseId(null);
+            }}
+            aria-label="Courses"
+          >
+            <BookOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Courses</span>
+          </button>
+          <button
+            type="button"
+            className={styles.navItem}
+            data-active={activeTab === 'settings' ? 'true' : 'false'}
+            aria-current={activeTab === 'settings' ? 'page' : undefined}
+            onClick={() => setActiveTab('settings')}
+            aria-label="Settings"
+          >
+            <SettingOutlined className={styles.navIcon} />
+            <span className={styles.navLabel}>Settings</span>
+          </button>
+        </nav>
+      </div>
+    </MotionConfig>
   );
 };
 
