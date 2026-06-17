@@ -74,12 +74,36 @@ export function restoreLocalStorage(): void {
 }
 
 /**
+ * Module-level singleton Proxies (one per api name) so that the default,
+ * non-override stubs have STABLE identity across every `createApiClientsMock()` call.
+ *
+ * Under `isolate: false`, consumer modules (stores, services) `import` these api
+ * singletons once and are then shared across all test files in a worker. Vitest runs
+ * every file's `vi.mock` factory before any tests, so if each factory produced fresh
+ * proxy objects, a consumer imported while one file's mock was active would capture
+ * that object, while another file would later configure stubs on a DIFFERENT object —
+ * the consumer then calls one stub while the test configures another, producing
+ * order-dependent flakes (e.g. a fetched capabilities map coming back empty). Sharing
+ * one proxy per api fixes this: methods are auto-stubbed lazily at call time, so the
+ * consumer and the test always resolve the same `vi.fn()`.
+ *
+ * Note: only the non-override case is shared. Explicit overrides and `apiClientConfig`
+ * stay per-call (each file declares its own exact shape / basePath), matching the
+ * original behavior — those consumers are not shared across files with conflicting
+ * expectations.
+ */
+const _sharedApis: Record<string, unknown> = {};
+
+/**
  * Creates a mock factory for `api-client/clients` that stubs **every** exported
  * API singleton as a Proxy returning `vi.fn()` for any accessed method.
  *
  * This avoids the `isolate: false` problem where multiple test files each mock
  * `api-client/clients` with only the subset of keys they need — if two such files
  * land in the same thread, the second factory wins and the first loses its stubs.
+ * Default (non-override) api objects have stable identity across calls (see
+ * `_sharedApis` above) so that a consumer captured under one file's mock still
+ * resolves the current file's lazily-created stubs.
  *
  * Usage:
  * ```ts
@@ -155,17 +179,21 @@ export function createApiClientsMock(overrides: Record<string, unknown> = {}): R
       // Tests that pass overrides are declaring the exact shape they need.
       mock[name] = explicit;
     } else {
-      // No override: Proxy returns vi.fn() for any property access,
-      // so the mock is compatible with any consumer.
-      const target: Record<string | symbol, unknown> = {};
-      mock[name] = new Proxy(target, {
-        get(t, prop) {
-          if (prop in t) return t[prop];
-          const stub = vi.fn();
-          t[prop] = stub;
-          return stub;
-        },
-      });
+      // No override: reuse a stable per-name Proxy so shared consumers (imported
+      // once under isolate:false) always resolve the same lazily-created vi.fn()
+      // that the current test configures. Created once, reused on every call.
+      if (!_sharedApis[name]) {
+        const target: Record<string | symbol, unknown> = {};
+        _sharedApis[name] = new Proxy(target, {
+          get(t, prop) {
+            if (prop in t) return t[prop];
+            const stub = vi.fn();
+            t[prop] = stub;
+            return stub;
+          },
+        });
+      }
+      mock[name] = _sharedApis[name];
     }
   }
 

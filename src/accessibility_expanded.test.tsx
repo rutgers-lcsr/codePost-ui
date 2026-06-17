@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import React from 'react';
@@ -17,77 +17,16 @@ import ManageAssignments from './components/admin/assignments/ManageAssignments'
 import Dashboard from './components/codepost-admin/Dashboard';
 
 import { mockOrganization, mockCourse as mockCourseBase, mockUser as mockUserBase, makeAssignment } from './test-utils';
+import { organizationsApi, coursesApi, usersApi, registrationApi, systemApi } from './api-client/clients';
 
 const mockCourse = mockCourseBase;
 const mockAssignment = makeAssignment();
 const mockUser = { ...mockUserBase, apiToken: 'api-token-123' };
 
-// Mocks
-vi.mock('./api-client/clients', () =>
-  createApiClientsMock({
-    organizationsApi: {
-      retrieve: vi.fn(() => Promise.resolve(mockOrganization)),
-      list: vi.fn(() => Promise.resolve([mockOrganization])),
-      usersRetrieve: vi.fn(() => Promise.resolve([])),
-    },
-    coursesApi: {
-      list: vi.fn(() => Promise.resolve([mockCourse])),
-      retrieve: vi.fn(() => Promise.resolve(mockCourse)),
-      aiSettingsRetrieve: vi.fn(() =>
-        Promise.resolve({
-          id: 1,
-          aiEnabled: false,
-          aiDisabled: false,
-          aiCommentsEnabled: false,
-          aiCommentsDisabled: false,
-          orgAiAvailable: false,
-          aiUseOwnSettings: false,
-          aiProvider: null,
-          aiBaseUrl: '',
-          aiModel: '',
-          hasApiKey: false,
-          apiKeyHint: null,
-          aiTokenRates: {},
-          defaultTokenRates: {},
-        }),
-      ),
-      aiSettingsPartialUpdate: vi.fn(() => Promise.resolve({ id: 1, aiEnabled: false })),
-      aiUsageRetrieve: vi.fn(() =>
-        Promise.resolve({
-          totalRequests: 0,
-          totalInputTokens: 0,
-          totalOutputTokens: 0,
-          totalCost: 0,
-          timeSeries: [],
-          breakdown: [],
-        }),
-      ),
-      rosterRetrieve: vi.fn(() =>
-        Promise.resolve({
-          id: 1,
-          organization: 1,
-          name: mockCourse.name,
-          period: mockCourse.period,
-          courseAdmins: [],
-          students: [],
-          graders: [],
-        }),
-      ),
-      rosterPartialUpdate: vi.fn(() => Promise.resolve({})),
-    },
-    usersApi: {
-      requestAPITokenCreate: vi.fn(() => Promise.resolve({ ...mockUser, apiToken: 'token' })),
-      mePartialUpdate: vi.fn(() => Promise.resolve(mockUser)),
-      list: vi.fn(() => Promise.resolve([])),
-    },
-    registrationApi: {
-      emailPasswordResetCreate: vi.fn(() => Promise.resolve({ success: true })),
-    },
-    systemApi: {
-      healthRetrieve: vi.fn(() => Promise.resolve({ database: 'Connected', celery: 'Running' })),
-    },
-  }),
-);
+// Mocks. Use the shared-proxy mock (no per-api overrides) so the api singletons
+// keep a stable identity across test files under `isolate: false`; the concrete
+// responses these components need are configured at runtime in `beforeEach` below.
+vi.mock('./api-client/clients', () => createApiClientsMock());
 
 vi.mock('./services/user', () => ({
   UserIO: {
@@ -244,6 +183,59 @@ const runAxe = async (container: HTMLElement) => {
 };
 
 describe.sequential('Expanded Accessibility Audit', () => {
+  // Configure the shared api stubs each test (see the `vi.mock` note above).
+  beforeEach(() => {
+    vi.mocked(organizationsApi.retrieve).mockResolvedValue(mockOrganization as never);
+    vi.mocked(organizationsApi.list).mockResolvedValue([mockOrganization] as never);
+    vi.mocked(organizationsApi.usersRetrieve).mockResolvedValue([] as never);
+
+    vi.mocked(coursesApi.list).mockResolvedValue([mockCourse] as never);
+    vi.mocked(coursesApi.retrieve).mockResolvedValue(mockCourse as never);
+    vi.mocked(coursesApi.aiSettingsRetrieve).mockResolvedValue({
+      id: 1,
+      aiEnabled: false,
+      aiDisabled: false,
+      aiCommentsEnabled: false,
+      aiCommentsDisabled: false,
+      orgAiAvailable: false,
+      aiUseOwnSettings: false,
+      aiProvider: null,
+      aiBaseUrl: '',
+      aiModel: '',
+      hasApiKey: false,
+      apiKeyHint: null,
+      aiTokenRates: {},
+      defaultTokenRates: {},
+    } as never);
+    vi.mocked(coursesApi.aiSettingsPartialUpdate).mockResolvedValue({ id: 1, aiEnabled: false } as never);
+    vi.mocked(coursesApi.aiUsageRetrieve).mockResolvedValue({
+      totalRequests: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCost: 0,
+      timeSeries: [],
+      breakdown: [],
+    } as never);
+    vi.mocked(coursesApi.rosterRetrieve).mockResolvedValue({
+      id: 1,
+      organization: 1,
+      name: mockCourse.name,
+      period: mockCourse.period,
+      courseAdmins: [],
+      students: [],
+      graders: [],
+    } as never);
+    vi.mocked(coursesApi.rosterPartialUpdate).mockResolvedValue({} as never);
+
+    vi.mocked(usersApi.requestAPITokenCreate).mockResolvedValue({ ...mockUser, apiToken: 'token' } as never);
+    vi.mocked(usersApi.mePartialUpdate).mockResolvedValue(mockUser as never);
+    vi.mocked(usersApi.list).mockResolvedValue([] as never);
+
+    vi.mocked(registrationApi.emailPasswordResetCreate).mockResolvedValue({ success: true } as never);
+
+    vi.mocked(systemApi.healthRetrieve).mockResolvedValue({ database: 'Connected', celery: 'Running' } as never);
+  });
+
   it('should have no violations on User Settings page', async () => {
     const { container } = await renderWithRouter(<Settings {...mockSettingsProps} />);
     const results = await runAxe(container);
