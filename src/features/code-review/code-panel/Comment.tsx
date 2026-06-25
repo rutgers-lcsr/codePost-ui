@@ -1270,8 +1270,8 @@ const Comment: React.FC<ICommentProps> = (props) => {
               gap: '12px',
             }}
           >
-            <Space size={8} wrap>
-              <Typography.Text strong>
+            <Space size={8} wrap style={{ minWidth: 0 }}>
+              <Typography.Text strong style={{ wordBreak: 'break-word' }}>
                 {rubricCategoryTitle || 'Rubric Comment'}
                 {props.rubricComment.text && ` | ${props.rubricComment.text}`}
               </Typography.Text>
