@@ -30,13 +30,17 @@ import type {
   CapabilitiesResponse,
   Comment,
   GenerateDescriptionResponse,
+  GenerateQuizQuestionsRequest,
+  GenerateQuizQuestionsResponse,
   LearningObjective,
   PaginatedSubmissionHistoryList,
   PaginatedSubmissionList,
   PaginatedSubmissionWithTestsList,
   PatchedAssignment,
+  Quiz,
   StudentSubmission,
   Submission,
+  SuggestedQuizQuestion,
 } from '../models/index';
 
 export interface AnalyticsRetrieveRequest {
@@ -97,6 +101,11 @@ export interface GenerateDescriptionCreateRequest {
   id: number;
 }
 
+export interface GenerateQuizQuestionsCreateRequest {
+  id: number;
+  generateQuizQuestionsRequest?: GenerateQuizQuestionsRequest;
+}
+
 export interface GenerateTestCreateRequest {
   id: number;
   assignmentGenerateTest: AssignmentGenerateTest;
@@ -123,6 +132,10 @@ export interface PartialUpdateRequest {
 }
 
 export interface QueueLengthRetrieveRequest {
+  id: number;
+}
+
+export interface QuizzesListRequest {
   id: number;
 }
 
@@ -193,6 +206,10 @@ export interface SubmissionsListRequest {
   page?: number;
   pageSize?: number;
   student?: string;
+}
+
+export interface SuggestedQuizQuestionsListRequest {
+  id: number;
 }
 
 export interface UpdateRequest {
@@ -892,6 +909,69 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+   */
+  async generateQuizQuestionsCreateRaw(
+    requestParameters: GenerateQuizQuestionsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GenerateQuizQuestionsResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateQuizQuestionsCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/assignments/{id}/generateQuizQuestions/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['generateQuizQuestionsRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+   */
+  async generateQuizQuestionsCreate(
+    requestParameters: GenerateQuizQuestionsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GenerateQuizQuestionsResponse> {
+    const response = await this.generateQuizQuestionsCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * Generate an AI-powered test script for a file in this assignment.  Request body: - target_filename: str (required) - Name of the file to test (e.g., \'main.py\') - context_file_id: int (optional) - ID of an AssignmentFile to use as context (Solution/Starter) - context_file_name: str (optional) - Name of an AssignmentFile (if ID not provided) - language: str (optional) - Target language (python, java, etc.)
    */
   async generateTestCreateRaw(
@@ -1189,6 +1269,66 @@ export class AssignmentsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<AssignmentQueueLengthResponse> {
     const response = await this.queueLengthRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * List the quizzes attached to this assignment (staff only).
+   */
+  async quizzesListRaw(
+    requestParameters: QuizzesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<Quiz>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling quizzesList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/assignments/{id}/quizzes/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * List the quizzes attached to this assignment (staff only).
+   */
+  async quizzesList(
+    requestParameters: QuizzesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<Quiz>> {
+    const response = await this.quizzesListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -1775,6 +1915,66 @@ export class AssignmentsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<PaginatedSubmissionList> {
     const response = await this.submissionsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * List pending AI quiz-question suggestions for this assignment (staff only).
+   */
+  async suggestedQuizQuestionsListRaw(
+    requestParameters: SuggestedQuizQuestionsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<SuggestedQuizQuestion>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling suggestedQuizQuestionsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/assignments/{id}/suggestedQuizQuestions/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * List pending AI quiz-question suggestions for this assignment (staff only).
+   */
+  async suggestedQuizQuestionsList(
+    requestParameters: SuggestedQuizQuestionsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<SuggestedQuizQuestion>> {
+    const response = await this.suggestedQuizQuestionsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

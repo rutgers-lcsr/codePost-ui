@@ -1,6 +1,6 @@
 # StatusDfeEnum
 
-- `ok` - ok _ `warning` - warning _ `error` - error
+- `ok` - ok * `warning` - warning * `error` - error
 
 ## Properties
 

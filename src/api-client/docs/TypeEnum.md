@@ -1,6 +1,6 @@
 # TypeEnum
 
-- `io` - io _ `io_cli` - io_cli _ `unit` - unit _ `shell` - shell _ `file` - file _ `external` - external _ `script` - script
+- `io` - io * `io_cli` - io_cli * `unit` - unit * `shell` - shell * `file` - file * `external` - external * `script` - script
 
 ## Properties
 

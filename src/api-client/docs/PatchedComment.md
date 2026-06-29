@@ -3,7 +3,7 @@
 ## Properties
 
 | Name            | Type            |
-| --------------- | --------------- | -------- |
+| --------------- | --------------- |
 | `id`            | number          |
 | `text`          | string          |
 | `pointDelta`    | number          |

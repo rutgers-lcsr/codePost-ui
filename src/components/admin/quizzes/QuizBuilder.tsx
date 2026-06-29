@@ -1,0 +1,662 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+import * as React from 'react';
+import {
+  Button,
+  Card,
+  DatePicker,
+  Empty,
+  Flex,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
+import dayjs from 'dayjs';
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  RetweetOutlined,
+} from '@ant-design/icons';
+import { useQueryClient } from '@tanstack/react-query';
+import CPButton from '../../core/CPButton';
+import { quizzesApi, quizQuestionsApi, quizQuestionGroupsApi } from '../../../api-client/clients';
+import {
+  Course,
+  Quiz,
+  QuizQuestion,
+  QuizQuestionGroup,
+  QuizAssignmentTriggerEnum,
+  QuizShowAnswersEnum,
+  QuizPassingScoreUnitEnum,
+} from '../../../api-client';
+import { quizKeys } from '../../../lib/queryKeys';
+import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
+import { useCourseQuestions, useQuizMembership, useQuizDetail, useQuestionBanks } from './queries';
+import { typeMeta } from './questionMeta';
+import AddQuestionsModal from './AddQuestionsModal';
+import GroupEditorModal from './GroupEditorModal';
+import MarkdownField from './MarkdownField';
+
+const { Text } = Typography;
+
+interface IProps {
+  course: Course;
+  quiz: Quiz;
+}
+
+// A unified row in the quiz-contents table: either a fixed question or a random draw.
+type ContentRow =
+  | { key: string; kind: 'question'; qq: QuizQuestion; position: number }
+  | { key: string; kind: 'group'; group: QuizQuestionGroup };
+
+// Per-row points override: commits on blur / Enter (not every keystroke) and
+// disables while the PATCH is in flight. Needs its own component because a
+// Table column `render` can't hold per-row hook state.
+const PointsOverrideInput: React.FC<{
+  base: number;
+  value: number | null;
+  onCommit: (v: number | null) => Promise<void>;
+}> = ({ base, value, onCommit }) => {
+  const [local, setLocal] = React.useState<number | null>(value ?? base);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    setLocal(value ?? base);
+  }, [value, base]);
+
+  const commit = async () => {
+    const next = local == null ? null : Number(local);
+    if ((next ?? null) === (value ?? null)) return;
+    setSaving(true);
+    try {
+      await onCommit(next);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Tooltip title={`Default: ${base}. Override for this quiz.`}>
+      <InputNumber
+        size="small"
+        min={0}
+        style={{ width: 72 }}
+        value={local}
+        disabled={saving}
+        onChange={(v) => setLocal(v == null ? null : Number(v))}
+        onBlur={commit}
+        onPressEnter={commit}
+      />
+    </Tooltip>
+  );
+};
+
+const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
+  const queryClient = useQueryClient();
+  const { data: liveQuiz } = useQuizDetail(quiz.id);
+  const { data: membership = [], isLoading } = useQuizMembership(quiz.id);
+  const { data: questions = [] } = useCourseQuestions(course.id);
+  const { data: banks = [] } = useQuestionBanks(course.id);
+  const { data: assignments = [] } = useAssignmentsQuery(course);
+
+  const current = liveQuiz ?? quiz;
+  const groups = React.useMemo(() => current.questionGroups ?? [], [current.questionGroups]);
+
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [groupOpen, setGroupOpen] = React.useState(false);
+  const [editingGroup, setEditingGroup] = React.useState<QuizQuestionGroup | null>(null);
+
+  // --- Quiz settings (title / description / attached assignment) ---
+  const [title, setTitle] = React.useState(current.title);
+  const [description, setDescription] = React.useState(current.description ?? '');
+  const [assignmentId, setAssignmentId] = React.useState<number | undefined>(current.assignment ?? undefined);
+  const [savingSettings, setSavingSettings] = React.useState(false);
+  // --- Availability + standard options ---
+  const TRIGGER_DEFAULT = QuizAssignmentTriggerEnum.During;
+  const SHOW_DEFAULT = QuizShowAnswersEnum.AfterSubmit;
+  const [assignmentTrigger, setAssignmentTrigger] = React.useState(current.assignmentTrigger || TRIGGER_DEFAULT);
+  const [availableFrom, setAvailableFrom] = React.useState<string | null>(current.availableFrom ?? null);
+  const [availableUntil, setAvailableUntil] = React.useState<string | null>(current.availableUntil ?? null);
+  const [timeLimitMinutes, setTimeLimitMinutes] = React.useState<number | null>(current.timeLimitMinutes ?? null);
+  const [attemptsAllowed, setAttemptsAllowed] = React.useState<number>(current.attemptsAllowed ?? 1);
+  const [shuffleQuestions, setShuffleQuestions] = React.useState<boolean>(current.shuffleQuestions ?? false);
+  const [showCorrectAnswers, setShowCorrectAnswers] = React.useState(current.showCorrectAnswers || SHOW_DEFAULT);
+  const [passingScore, setPassingScore] = React.useState<number | null>(current.passingScore ?? null);
+  const UNIT_DEFAULT = QuizPassingScoreUnitEnum.Percent;
+  const [passingScoreUnit, setPassingScoreUnit] = React.useState(current.passingScoreUnit || UNIT_DEFAULT);
+  const [isPublished, setIsPublished] = React.useState<boolean>(current.isPublished ?? false);
+
+  // Reset all settings state when switching quizzes. (Keyed on id so an unrelated
+  // detail refetch doesn't clobber in-progress edits.)
+  React.useEffect(() => {
+    setTitle(current.title);
+    setDescription(current.description ?? '');
+    setAssignmentId(current.assignment ?? undefined);
+    setAssignmentTrigger(current.assignmentTrigger || TRIGGER_DEFAULT);
+    setAvailableFrom(current.availableFrom ?? null);
+    setAvailableUntil(current.availableUntil ?? null);
+    setTimeLimitMinutes(current.timeLimitMinutes ?? null);
+    setAttemptsAllowed(current.attemptsAllowed ?? 1);
+    setShuffleQuestions(current.shuffleQuestions ?? false);
+    setShowCorrectAnswers(current.showCorrectAnswers || SHOW_DEFAULT);
+    setPassingScore(current.passingScore ?? null);
+    setPassingScoreUnit(current.passingScoreUnit || UNIT_DEFAULT);
+    setIsPublished(current.isPublished ?? false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current.id]);
+
+  const settingsDirty =
+    title !== current.title ||
+    (description ?? '') !== (current.description ?? '') ||
+    (assignmentId ?? null) !== (current.assignment ?? null) ||
+    assignmentTrigger !== (current.assignmentTrigger || TRIGGER_DEFAULT) ||
+    (availableFrom ?? null) !== (current.availableFrom ?? null) ||
+    (availableUntil ?? null) !== (current.availableUntil ?? null) ||
+    (timeLimitMinutes ?? null) !== (current.timeLimitMinutes ?? null) ||
+    attemptsAllowed !== (current.attemptsAllowed ?? 1) ||
+    shuffleQuestions !== (current.shuffleQuestions ?? false) ||
+    showCorrectAnswers !== (current.showCorrectAnswers || SHOW_DEFAULT) ||
+    (passingScore ?? null) !== (current.passingScore ?? null) ||
+    passingScoreUnit !== (current.passingScoreUnit || UNIT_DEFAULT) ||
+    isPublished !== (current.isPublished ?? false);
+
+  const handleSaveSettings = async () => {
+    if (!title.trim()) {
+      message.warning('A quiz needs a title.');
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      await quizzesApi.partialUpdate({
+        id: quiz.id!,
+        patchedQuiz: {
+          title: title.trim(),
+          description,
+          assignment: assignmentId ?? null,
+          assignmentTrigger,
+          availableFrom,
+          availableUntil,
+          timeLimitMinutes,
+          attemptsAllowed,
+          shuffleQuestions,
+          showCorrectAnswers,
+          passingScore,
+          passingScoreUnit,
+          isPublished,
+        },
+      });
+      message.success('Quiz settings saved.');
+      queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
+      queryClient.invalidateQueries({ queryKey: quizKeys.list(course.id!) });
+    } catch (err) {
+      const e = err as { body?: { title?: string[]; detail?: string } };
+      message.error(e?.body?.title?.[0] ?? e?.body?.detail ?? 'Failed to save quiz settings.');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // --- Question membership ---
+  const questionsById = React.useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
+  const bankNameById = React.useMemo(() => new Map(banks.map((b) => [b.id, b.name])), [banks]);
+  const orderedQuestions = React.useMemo(
+    () => [...membership].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0)),
+    [membership],
+  );
+  const orderedGroups = React.useMemo(() => [...groups].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0)), [groups]);
+
+  const invalidateMembership = () => {
+    queryClient.invalidateQueries({ queryKey: quizKeys.membership(quiz.id!) });
+    queryClient.invalidateQueries({ queryKey: quizKeys.list(course.id!) });
+  };
+  const invalidateGroups = () => {
+    queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
+    queryClient.invalidateQueries({ queryKey: quizKeys.list(course.id!) });
+  };
+
+  const handleMove = async (position: number, dir: -1 | 1) => {
+    const target = position + dir;
+    if (target < 0 || target >= orderedQuestions.length) return;
+    const a = orderedQuestions[position];
+    const b = orderedQuestions[target];
+    try {
+      await Promise.all([
+        quizQuestionsApi.partialUpdate({ id: a.id!, patchedQuizQuestion: { sortKey: b.sortKey ?? target } }),
+        quizQuestionsApi.partialUpdate({ id: b.id!, patchedQuizQuestion: { sortKey: a.sortKey ?? position } }),
+      ]);
+      invalidateMembership();
+    } catch {
+      message.error('Failed to reorder.');
+    }
+  };
+
+  const handleRemoveQuestion = (qq: QuizQuestion) => {
+    Modal.confirm({
+      title: 'Remove this question from the quiz?',
+      content: 'The question stays in its bank — only its membership in this quiz is removed.',
+      okText: 'Remove',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await quizQuestionsApi.destroy({ id: qq.id! });
+          message.success('Removed from quiz.');
+          invalidateMembership();
+        } catch {
+          message.error('Failed to remove question.');
+        }
+      },
+    });
+  };
+
+  const handlePointsOverride = async (qq: QuizQuestion, value: number | null) => {
+    try {
+      await quizQuestionsApi.partialUpdate({ id: qq.id!, patchedQuizQuestion: { pointsOverride: value } });
+      invalidateMembership();
+    } catch {
+      message.error('Failed to update points.');
+    }
+  };
+
+  // --- Random draws ---
+  const openCreateGroup = () => {
+    setEditingGroup(null);
+    setGroupOpen(true);
+  };
+  const openEditGroup = (g: QuizQuestionGroup) => {
+    setEditingGroup(g);
+    setGroupOpen(true);
+  };
+  const handleDeleteGroup = (g: QuizQuestionGroup) => {
+    Modal.confirm({
+      title: 'Remove this random draw?',
+      content: 'The bank and its questions are unaffected — only this draw is removed from the quiz.',
+      okText: 'Remove',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await quizQuestionGroupsApi.destroy({ id: g.id! });
+          message.success('Random draw removed.');
+          invalidateGroups();
+        } catch {
+          message.error('Failed to remove the random draw.');
+        }
+      },
+    });
+  };
+
+  // --- Unified quiz-contents rows: questions first, then random draws ---
+  const rows: ContentRow[] = [
+    ...orderedQuestions.map((qq, i) => ({ key: `q-${qq.id}`, kind: 'question' as const, qq, position: i })),
+    ...orderedGroups.map((g) => ({ key: `g-${g.id}`, kind: 'group' as const, group: g })),
+  ];
+
+  const columns = [
+    {
+      title: '#',
+      key: 'order',
+      width: 48,
+      render: (_: unknown, row: ContentRow) =>
+        row.kind === 'question' ? row.position + 1 : <RetweetOutlined style={{ color: '#198665' }} />,
+    },
+    {
+      title: 'Type',
+      key: 'type',
+      width: 140,
+      render: (_: unknown, row: ContentRow) => {
+        if (row.kind === 'group') return <Tag color="green">Random draw</Tag>;
+        const meta = typeMeta(questionsById.get(row.qq.question)?.questionType);
+        return <Tag color={meta.color}>{meta.label}</Tag>;
+      },
+    },
+    {
+      title: 'Content',
+      key: 'content',
+      render: (_: unknown, row: ContentRow) => {
+        if (row.kind === 'group') {
+          const g = row.group;
+          return (
+            <Text>
+              {g.name ? `${g.name} — ` : ''}
+              Draw <b>{g.pickCount ?? 1}</b> random from <b>{bankNameById.get(g.bank) ?? `bank #${g.bank}`}</b>
+            </Text>
+          );
+        }
+        const q = questionsById.get(row.qq.question);
+        const text = q?.text ?? `Question #${row.qq.question}`;
+        return <Text>{text.length > 90 ? `${text.slice(0, 90)}…` : text}</Text>;
+      },
+    },
+    {
+      title: 'Points',
+      key: 'points',
+      width: 110,
+      render: (_: unknown, row: ContentRow) => {
+        if (row.kind === 'group') {
+          const g = row.group;
+          return (
+            <Text type="secondary">
+              {g.pickCount ?? 1} × {g.pointsPerQuestion ?? 1}
+            </Text>
+          );
+        }
+        const base = questionsById.get(row.qq.question)?.points;
+        return (
+          <PointsOverrideInput
+            base={base ?? 1}
+            value={row.qq.pointsOverride ?? null}
+            onCommit={(v) => handlePointsOverride(row.qq, v)}
+          />
+        );
+      },
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 120,
+      render: (_: unknown, row: ContentRow) => {
+        if (row.kind === 'group') {
+          return (
+            <Space.Compact size="small">
+              <Button
+                size="small"
+                aria-label="Edit random draw"
+                title="Edit random draw"
+                icon={<EditOutlined />}
+                onClick={() => openEditGroup(row.group)}
+              />
+              <Button
+                size="small"
+                danger
+                aria-label="Remove random draw"
+                title="Remove random draw"
+                icon={<DeleteOutlined />}
+                onClick={() => handleDeleteGroup(row.group)}
+              />
+            </Space.Compact>
+          );
+        }
+        return (
+          <Space.Compact size="small">
+            <Button
+              size="small"
+              aria-label="Move up"
+              title="Move up"
+              icon={<ArrowUpOutlined />}
+              disabled={row.position === 0}
+              onClick={() => handleMove(row.position, -1)}
+            />
+            <Button
+              size="small"
+              aria-label="Move down"
+              title="Move down"
+              icon={<ArrowDownOutlined />}
+              disabled={row.position === orderedQuestions.length - 1}
+              onClick={() => handleMove(row.position, 1)}
+            />
+            <Button
+              size="small"
+              danger
+              aria-label="Remove from quiz"
+              title="Remove from quiz"
+              icon={<DeleteOutlined />}
+              onClick={() => handleRemoveQuestion(row.qq)}
+            />
+          </Space.Compact>
+        );
+      },
+    },
+  ];
+
+  const assignmentOptions = assignments.map((a) => ({ value: a.id, label: a.name }));
+  const totalItems = orderedQuestions.length + orderedGroups.length;
+
+  return (
+    <>
+      {/* Quiz settings */}
+      <Card
+        title={
+          <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+            Quiz Settings
+          </Typography.Title>
+        }
+        extra={
+          <CPButton cpType="primary" onClick={handleSaveSettings} disabled={!settingsDirty} loading={savingSettings}>
+            Save
+          </CPButton>
+        }
+        style={{ marginBottom: 16 }}
+      >
+        <Flex vertical gap={12}>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Title
+            </Text>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={128} />
+          </div>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Attached assignment
+            </Text>
+            <Select
+              allowClear
+              placeholder="Not attached - Attach to an assignment to control availability"
+              style={{ minWidth: 280 }}
+              value={assignmentId}
+              onChange={(v) => setAssignmentId(v)}
+              options={assignmentOptions}
+            />
+          </div>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Availability
+            </Text>
+            {assignmentId ? (
+              <Select
+                style={{ minWidth: 280 }}
+                value={assignmentTrigger}
+                onChange={setAssignmentTrigger}
+                options={[
+                  { value: QuizAssignmentTriggerEnum.During, label: 'During the assignment' },
+                  { value: QuizAssignmentTriggerEnum.AfterAssignment, label: 'After the assignment closes' },
+                  { value: QuizAssignmentTriggerEnum.AfterSubmission, label: 'After the student submits' },
+                  { value: QuizAssignmentTriggerEnum.AfterFeedback, label: 'After feedback is released' },
+                ]}
+              />
+            ) : (
+              <Flex gap={8} wrap>
+                <DatePicker
+                  showTime
+                  placeholder="Opens at"
+                  value={availableFrom ? dayjs(availableFrom) : null}
+                  onChange={(d) => setAvailableFrom(d ? d.toISOString() : null)}
+                />
+                <DatePicker
+                  showTime
+                  placeholder="Closes at"
+                  value={availableUntil ? dayjs(availableUntil) : null}
+                  onChange={(d) => setAvailableUntil(d ? d.toISOString() : null)}
+                />
+              </Flex>
+            )}
+          </div>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              Description (Markdown)
+            </Text>
+            <MarkdownField
+              value={description}
+              onChange={setDescription}
+              courseId={course.id!}
+              minRows={3}
+              placeholder="What this quiz covers — supports Markdown and images…"
+            />
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Appears on the quiz page when the student is taking the quiz. Can be used to provide instructions or
+              context for the quiz.
+            </Text>
+          </div>
+
+          <Flex gap={16} wrap align="end">
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Time limit (min)
+              </Text>
+              <InputNumber
+                min={1}
+                placeholder="Untimed"
+                style={{ width: 130 }}
+                value={timeLimitMinutes ?? undefined}
+                onChange={(v) => setTimeLimitMinutes(v ?? null)}
+              />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Attempts (0 = ∞)
+              </Text>
+              <InputNumber
+                min={0}
+                style={{ width: 110 }}
+                value={attemptsAllowed}
+                onChange={(v) => setAttemptsAllowed(v ?? 1)}
+              />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Show correct answers
+              </Text>
+              <Select
+                style={{ width: 180 }}
+                value={showCorrectAnswers}
+                onChange={setShowCorrectAnswers}
+                options={[
+                  { value: QuizShowAnswersEnum.Never, label: 'Never' },
+                  { value: QuizShowAnswersEnum.AfterSubmit, label: 'After submitting' },
+                  { value: QuizShowAnswersEnum.AfterClose, label: 'After the quiz closes' },
+                ]}
+              />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Passing score
+              </Text>
+              <Space.Compact>
+                <InputNumber
+                  min={0}
+                  max={passingScoreUnit === QuizPassingScoreUnitEnum.Percent ? 100 : undefined}
+                  placeholder="None"
+                  style={{ width: 110 }}
+                  value={passingScore ?? undefined}
+                  onChange={(v) => setPassingScore(v ?? null)}
+                />
+                <Select
+                  style={{ width: 100 }}
+                  value={passingScoreUnit}
+                  onChange={(u) => {
+                    setPassingScoreUnit(u);
+                    // Avoid a guaranteed 400: percent can't exceed 100.
+                    if (u === QuizPassingScoreUnitEnum.Percent && passingScore != null && passingScore > 100) {
+                      setPassingScore(100);
+                    }
+                  }}
+                  options={[
+                    { value: QuizPassingScoreUnitEnum.Percent, label: '%' },
+                    { value: QuizPassingScoreUnitEnum.Points, label: 'points' },
+                  ]}
+                />
+              </Space.Compact>
+            </div>
+          </Flex>
+
+          <Flex gap={24} align="center">
+            <Space>
+              <Switch checked={shuffleQuestions} onChange={setShuffleQuestions} />
+              <Text>Shuffle questions</Text>
+            </Space>
+            <Space>
+              <Switch checked={isPublished} onChange={setIsPublished} />
+              <Text>Published</Text>
+            </Space>
+          </Flex>
+        </Flex>
+      </Card>
+
+      {/* Quiz contents: fixed questions + random draws, unified */}
+      <Card
+        title={
+          <Flex align="center" gap={8}>
+            <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+              Questions
+            </Typography.Title>
+            <Tag color="blue">{orderedQuestions.length} fixed</Tag>
+            {orderedGroups.length > 0 && (
+              <Tag color="green">
+                {orderedGroups.length} random {orderedGroups.length === 1 ? 'draw' : 'draws'}
+              </Tag>
+            )}
+          </Flex>
+        }
+        extra={
+          <Space>
+            {/* To do make sure the instructor can preview the quiz */}
+            <CPButton cpType="link" icon={<EyeOutlined />} onClick={() => {}}>
+              Preview
+            </CPButton>
+            <CPButton cpType="secondary" icon={<RetweetOutlined />} onClick={openCreateGroup}>
+              Add Random Draw
+            </CPButton>
+            <CPButton cpType="primary" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>
+              Add Questions
+            </CPButton>
+          </Space>
+        }
+        styles={{ body: { padding: totalItems === 0 ? undefined : 0 } }}
+      >
+        {isLoading ? (
+          <Flex justify="center" style={{ padding: 40 }}>
+            <Spin />
+          </Flex>
+        ) : totalItems === 0 ? (
+          <Empty
+            description="Nothing in this quiz yet — add questions or a random draw from a bank"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            style={{ padding: 24 }}
+          />
+        ) : (
+          <Table dataSource={rows} columns={columns} rowKey="key" size="small" pagination={false} />
+        )}
+      </Card>
+
+      <AddQuestionsModal
+        open={addOpen}
+        courseId={course.id!}
+        quizId={quiz.id!}
+        existingQuestionIds={orderedQuestions.map((m) => m.question)}
+        nextSortKey={orderedQuestions.length ? Math.max(...orderedQuestions.map((m) => m.sortKey ?? 0)) + 1 : 0}
+        onClose={() => setAddOpen(false)}
+      />
+
+      <GroupEditorModal
+        open={groupOpen}
+        courseId={course.id!}
+        quizId={quiz.id!}
+        group={editingGroup}
+        nextSortKey={orderedGroups.length ? Math.max(...orderedGroups.map((g) => g.sortKey ?? 0)) + 1 : 0}
+        onClose={() => setGroupOpen(false)}
+      />
+    </>
+  );
+};
+
+export default QuizBuilder;

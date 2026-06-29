@@ -1,6 +1,6 @@
 # CoursesApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
 | Method                                                                                   | HTTP request                                  | Description |
 | ---------------------------------------------------------------------------------------- | --------------------------------------------- | ----------- |
@@ -24,6 +24,9 @@ All URIs are relative to _http://localhost_
 | [**destroy**](CoursesApi.md#destroy)                                                     | **DELETE** /courses/{id}/                     |             |
 | [**list**](CoursesApi.md#list)                                                           | **GET** /courses/                             |             |
 | [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                      |             |
+| [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/          |             |
+| [**questionsList**](CoursesApi.md#questionslist)                                         | **GET** /courses/{id}/questions/              |             |
+| [**quizzesList**](CoursesApi.md#quizzeslist)                                             | **GET** /courses/{id}/quizzes/                |             |
 | [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/     |             |
 | [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                        |             |
 | [**rosterMapPartialUpdate**](CoursesApi.md#rostermappartialupdate)                       | **PATCH** /courses/{id}/rosterMap/            |             |
@@ -1549,6 +1552,219 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## questionBanksList
+
+> Array&lt;QuestionBank&gt; questionBanksList(id)
+
+List the course\&#39;s quiz question banks (staff only).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { QuestionBanksListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies QuestionBanksListRequest;
+
+  try {
+    const data = await api.questionBanksList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;QuestionBank&gt;**](QuestionBank.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## questionsList
+
+> Array&lt;Question&gt; questionsList(id)
+
+List the course\&#39;s quiz questions (staff only).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { QuestionsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies QuestionsListRequest;
+
+  try {
+    const data = await api.questionsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;Question&gt;**](Question.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## quizzesList
+
+> Array&lt;Quiz&gt; quizzesList(id)
+
+List the course\&#39;s quizzes (staff only).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { QuizzesListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies QuizzesListRequest;
+
+  try {
+    const data = await api.quizzesList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;Quiz&gt;**](Quiz.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

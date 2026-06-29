@@ -1,6 +1,6 @@
 # GranularityEnum
 
-- `hourly` - hourly _ `daily` - daily _ `monthly` - monthly
+- `hourly` - hourly * `daily` - daily * `monthly` - monthly
 
 ## Properties
 

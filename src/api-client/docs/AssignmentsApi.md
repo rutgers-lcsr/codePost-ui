@@ -1,35 +1,38 @@
 # AssignmentsApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
-| Method                                                                           | HTTP request                                    | Description |
-| -------------------------------------------------------------------------------- | ----------------------------------------------- | ----------- |
-| [**analyticsRetrieve**](AssignmentsApi.md#analyticsretrieve)                     | **GET** /assignments/{id}/analytics/            |             |
-| [**beforeStudentUploadRetrieve**](AssignmentsApi.md#beforestudentuploadretrieve) | **GET** /assignments/{id}/beforeStudentUpload/  |             |
-| [**capabilitiesRetrieve**](AssignmentsApi.md#capabilitiesretrieve)               | **GET** /assignments/{id}/capabilities/         |             |
-| [**cloneCreate**](AssignmentsApi.md#clonecreate)                                 | **POST** /assignments/{id}/clone/               |             |
-| [**commentsList**](AssignmentsApi.md#commentslist)                               | **GET** /assignments/{id}/comments/             |             |
-| [**create**](AssignmentsApi.md#create)                                           | **POST** /assignments/                          |             |
-| [**datasetsList**](AssignmentsApi.md#datasetslist)                               | **GET** /assignments/{id}/datasets/             |             |
-| [**destroy**](AssignmentsApi.md#destroy)                                         | **DELETE** /assignments/{id}/                   |             |
-| [**downloadRetrieve**](AssignmentsApi.md#downloadretrieve)                       | **GET** /assignments/{id}/download/             |             |
-| [**drawUnassignedList**](AssignmentsApi.md#drawunassignedlist)                   | **GET** /assignments/{id}/drawUnassigned/       |             |
-| [**generateDescriptionCreate**](AssignmentsApi.md#generatedescriptioncreate)     | **POST** /assignments/{id}/generateDescription/ |             |
-| [**generateTestCreate**](AssignmentsApi.md#generatetestcreate)                   | **POST** /assignments/{id}/generateTest/        |             |
-| [**learningObjectivesList**](AssignmentsApi.md#learningobjectiveslist)           | **GET** /assignments/{id}/learningObjectives/   |             |
-| [**list**](AssignmentsApi.md#list)                                               | **GET** /assignments/                           |             |
-| [**partialUpdate**](AssignmentsApi.md#partialupdate)                             | **PATCH** /assignments/{id}/                    |             |
-| [**queueLengthRetrieve**](AssignmentsApi.md#queuelengthretrieve)                 | **GET** /assignments/{id}/queueLength/          |             |
-| [**retrieve**](AssignmentsApi.md#retrieve)                                       | **GET** /assignments/{id}/                      |             |
-| [**rubricRetrieve**](AssignmentsApi.md#rubricretrieve)                           | **GET** /assignments/{id}/rubric/               |             |
-| [**studentTestsRetrieve**](AssignmentsApi.md#studenttestsretrieve)               | **GET** /assignments/{id}/studentTests/         |             |
-| [**studentUploadCreate**](AssignmentsApi.md#studentuploadcreate)                 | **POST** /assignments/{id}/studentUpload/       |             |
-| [**studentUploadPartialUpdate**](AssignmentsApi.md#studentuploadpartialupdate)   | **PATCH** /assignments/{id}/studentUpload/      |             |
-| [**studentUploadRetrieve**](AssignmentsApi.md#studentuploadretrieve)             | **GET** /assignments/{id}/studentUpload/        |             |
-| [**submissionHistoriesList**](AssignmentsApi.md#submissionhistorieslist)         | **GET** /assignments/{id}/submissionHistories/  |             |
-| [**submissionTestsList**](AssignmentsApi.md#submissiontestslist)                 | **GET** /assignments/{id}/submissionTests/      |             |
-| [**submissionsList**](AssignmentsApi.md#submissionslist)                         | **GET** /assignments/{id}/submissions/          |             |
-| [**update**](AssignmentsApi.md#update)                                           | **PUT** /assignments/{id}/                      |             |
+| Method                                                                           | HTTP request                                      | Description |
+| -------------------------------------------------------------------------------- | ------------------------------------------------- | ----------- |
+| [**analyticsRetrieve**](AssignmentsApi.md#analyticsretrieve)                     | **GET** /assignments/{id}/analytics/              |             |
+| [**beforeStudentUploadRetrieve**](AssignmentsApi.md#beforestudentuploadretrieve) | **GET** /assignments/{id}/beforeStudentUpload/    |             |
+| [**capabilitiesRetrieve**](AssignmentsApi.md#capabilitiesretrieve)               | **GET** /assignments/{id}/capabilities/           |             |
+| [**cloneCreate**](AssignmentsApi.md#clonecreate)                                 | **POST** /assignments/{id}/clone/                 |             |
+| [**commentsList**](AssignmentsApi.md#commentslist)                               | **GET** /assignments/{id}/comments/               |             |
+| [**create**](AssignmentsApi.md#create)                                           | **POST** /assignments/                            |             |
+| [**datasetsList**](AssignmentsApi.md#datasetslist)                               | **GET** /assignments/{id}/datasets/               |             |
+| [**destroy**](AssignmentsApi.md#destroy)                                         | **DELETE** /assignments/{id}/                     |             |
+| [**downloadRetrieve**](AssignmentsApi.md#downloadretrieve)                       | **GET** /assignments/{id}/download/               |             |
+| [**drawUnassignedList**](AssignmentsApi.md#drawunassignedlist)                   | **GET** /assignments/{id}/drawUnassigned/         |             |
+| [**generateDescriptionCreate**](AssignmentsApi.md#generatedescriptioncreate)     | **POST** /assignments/{id}/generateDescription/   |             |
+| [**generateQuizQuestionsCreate**](AssignmentsApi.md#generatequizquestionscreate) | **POST** /assignments/{id}/generateQuizQuestions/ |             |
+| [**generateTestCreate**](AssignmentsApi.md#generatetestcreate)                   | **POST** /assignments/{id}/generateTest/          |             |
+| [**learningObjectivesList**](AssignmentsApi.md#learningobjectiveslist)           | **GET** /assignments/{id}/learningObjectives/     |             |
+| [**list**](AssignmentsApi.md#list)                                               | **GET** /assignments/                             |             |
+| [**partialUpdate**](AssignmentsApi.md#partialupdate)                             | **PATCH** /assignments/{id}/                      |             |
+| [**queueLengthRetrieve**](AssignmentsApi.md#queuelengthretrieve)                 | **GET** /assignments/{id}/queueLength/            |             |
+| [**quizzesList**](AssignmentsApi.md#quizzeslist)                                 | **GET** /assignments/{id}/quizzes/                |             |
+| [**retrieve**](AssignmentsApi.md#retrieve)                                       | **GET** /assignments/{id}/                        |             |
+| [**rubricRetrieve**](AssignmentsApi.md#rubricretrieve)                           | **GET** /assignments/{id}/rubric/                 |             |
+| [**studentTestsRetrieve**](AssignmentsApi.md#studenttestsretrieve)               | **GET** /assignments/{id}/studentTests/           |             |
+| [**studentUploadCreate**](AssignmentsApi.md#studentuploadcreate)                 | **POST** /assignments/{id}/studentUpload/         |             |
+| [**studentUploadPartialUpdate**](AssignmentsApi.md#studentuploadpartialupdate)   | **PATCH** /assignments/{id}/studentUpload/        |             |
+| [**studentUploadRetrieve**](AssignmentsApi.md#studentuploadretrieve)             | **GET** /assignments/{id}/studentUpload/          |             |
+| [**submissionHistoriesList**](AssignmentsApi.md#submissionhistorieslist)         | **GET** /assignments/{id}/submissionHistories/    |             |
+| [**submissionTestsList**](AssignmentsApi.md#submissiontestslist)                 | **GET** /assignments/{id}/submissionTests/        |             |
+| [**submissionsList**](AssignmentsApi.md#submissionslist)                         | **GET** /assignments/{id}/submissions/            |             |
+| [**suggestedQuizQuestionsList**](AssignmentsApi.md#suggestedquizquestionslist)   | **GET** /assignments/{id}/suggestedQuizQuestions/ |             |
+| [**update**](AssignmentsApi.md#update)                                           | **PUT** /assignments/{id}/                        |             |
 
 ## analyticsRetrieve
 
@@ -827,6 +830,83 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## generateQuizQuestionsCreate
+
+> GenerateQuizQuestionsResponse generateQuizQuestionsCreate(id, generateQuizQuestionsRequest)
+
+Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AssignmentsApi,
+} from '';
+import type { GenerateQuizQuestionsCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+    // GenerateQuizQuestionsRequest (optional)
+    generateQuizQuestionsRequest: ...,
+  } satisfies GenerateQuizQuestionsCreateRequest;
+
+  try {
+    const data = await api.generateQuizQuestionsCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                             | Type                                                            | Description                                         | Notes                     |
+| -------------------------------- | --------------------------------------------------------------- | --------------------------------------------------- | ------------------------- |
+| **id**                           | `number`                                                        | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+| **generateQuizQuestionsRequest** | [GenerateQuizQuestionsRequest](GenerateQuizQuestionsRequest.md) |                                                     | [Optional]                |
+
+### Return type
+
+[**GenerateQuizQuestionsResponse**](GenerateQuizQuestionsResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## generateTestCreate
 
 > AssignmentGenerateTestResponse generateTestCreate(id, assignmentGenerateTest)
@@ -1169,6 +1249,77 @@ example().catch(console.error);
 ### Return type
 
 [**AssignmentQueueLengthResponse**](AssignmentQueueLengthResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## quizzesList
+
+> Array&lt;Quiz&gt; quizzesList(id)
+
+List the quizzes attached to this assignment (staff only).
+
+### Example
+
+```ts
+import { Configuration, AssignmentsApi } from '';
+import type { QuizzesListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+  } satisfies QuizzesListRequest;
+
+  try {
+    const data = await api.quizzesList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;Quiz&gt;**](Quiz.md)
 
 ### Authorization
 
@@ -1847,6 +1998,77 @@ example().catch(console.error);
 ### Return type
 
 [**PaginatedSubmissionList**](PaginatedSubmissionList.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## suggestedQuizQuestionsList
+
+> Array&lt;SuggestedQuizQuestion&gt; suggestedQuizQuestionsList(id)
+
+List pending AI quiz-question suggestions for this assignment (staff only).
+
+### Example
+
+```ts
+import { Configuration, AssignmentsApi } from '';
+import type { SuggestedQuizQuestionsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new AssignmentsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment.
+    id: 56,
+  } satisfies SuggestedQuizQuestionsListRequest;
+
+  try {
+    const data = await api.suggestedQuizQuestionsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;SuggestedQuizQuestion&gt;**](SuggestedQuizQuestion.md)
 
 ### Authorization
 

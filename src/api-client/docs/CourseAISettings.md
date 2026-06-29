@@ -5,7 +5,7 @@ Serializer for course AI configuration. Admin-only access.
 ## Properties
 
 | Name                 | Type                                  |
-| -------------------- | ------------------------------------- | ------------ | ------------ |
+| -------------------- | ------------------------------------- |
 | `id`                 | number                                |
 | `aiProvider`         | string                                |
 | `aiApiKey`           | string                                |

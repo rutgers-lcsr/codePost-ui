@@ -3,7 +3,7 @@
 ## Properties
 
 | Name      | Type                          |
-| --------- | ----------------------------- | ---------------- |
+| --------- | ----------------------------- |
 | `results` | Array&lt;{ [key: string]: any | undefined; }&gt; |
 | `total`   | number                        |
 | `page`    | number                        |

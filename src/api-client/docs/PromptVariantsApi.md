@@ -1,6 +1,6 @@
 # PromptVariantsApi
 
-All URIs are relative to _http://localhost_
+All URIs are relative to *http://localhost*
 
 | Method                                                                | HTTP request                             | Description |
 | --------------------------------------------------------------------- | ---------------------------------------- | ----------- |
@@ -708,7 +708,7 @@ example().catch(console.error);
 ### Parameters
 
 | Name            | Type                  | Description   | Notes |
-| --------------- | --------------------- | ------------- | ----- | ---------- |
+| --------------- | --------------------- | ------------- | ----- |
 | **requestBody** | `{ [key: string]: any | undefined; }` |       | [Optional] |
 
 ### Return type

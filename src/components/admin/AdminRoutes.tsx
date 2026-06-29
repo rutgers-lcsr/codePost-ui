@@ -9,6 +9,7 @@ const CourseSettingsPanel = lazy(() => import('./settings/CourseSettingsPanel'))
 const WebhooksPanel = lazy(() => import('./settings/WebhooksPanel'));
 const SubmissionsManager = lazy(() => import('./submissions/SubmissionsManager'));
 const ActivityLog = lazy(() => import('./activity-log/ActivityLog'));
+const QuizzesManager = lazy(() => import('./quizzes/QuizzesManager'));
 import ErrorBoundary from '../core/ErrorBoundary';
 
 /* types */
@@ -189,6 +190,7 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
             />
           }
         />
+        <Route path="quizzes/*" element={<QuizzesManager course={props.course} />} />
         <Route path="settings/webhooks" element={<WebhooksPanel currentCourse={props.course} />} />
         <Route
           path="activity-log"

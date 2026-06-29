@@ -1,6 +1,6 @@
 # Status4a6Enum
 
-- `draft` - Draft _ `active` - Active _ `candidate` - Candidate \* `retired` - Retired
+- `draft` - Draft * `active` - Active * `candidate` - Candidate * `retired` - Retired
 
 ## Properties
 

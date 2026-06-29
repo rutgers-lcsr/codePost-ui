@@ -20,6 +20,17 @@ export const assignmentKeys = {
   apiKeys: (courseId: number) => ['courses', courseId, 'apiKeys'] as const,
 };
 
+export const quizKeys = {
+  banks: (courseId: number) => ['quizzes', 'banks', courseId] as const,
+  bankQuestions: (bankId: number) => ['quizzes', 'bankQuestions', bankId] as const,
+  courseQuestions: (courseId: number) => ['quizzes', 'courseQuestions', courseId] as const,
+  list: (courseId: number) => ['quizzes', 'list', courseId] as const,
+  membership: (quizId: number) => ['quizzes', 'membership', quizId] as const,
+  detail: (quizId: number) => ['quizzes', 'detail', quizId] as const,
+  suggestions: (assignmentId: number) => ['quizzes', 'suggestions', assignmentId] as const,
+  regeneration: (questionId: number) => ['quizzes', 'regeneration', questionId] as const,
+};
+
 export const studentKeys = {
   courseData: (courseId: number) => ['student', 'courseData', courseId] as const,
   assignments: (courseId: number) => ['student', 'assignments', courseId] as const,

@@ -1,6 +1,6 @@
 # LastSolutionRunEnum
 
-- `0` - Passed _ `1` - Failed _ `2` - Error \* `3` - Never run
+- `0` - Passed * `1` - Failed * `2` - Error * `3` - Never run
 
 ## Properties
 

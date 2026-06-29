@@ -1,6 +1,6 @@
 # SeverityEnum
 
-- `info` - info _ `warning` - warning _ `critical` - critical
+- `info` - info * `warning` - warning * `critical` - critical
 
 ## Properties
 

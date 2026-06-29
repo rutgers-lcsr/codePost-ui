@@ -3,7 +3,7 @@
 ## Properties
 
 | Name       | Type            |
-| ---------- | --------------- | -------- |
+| ---------- | --------------- |
 | `name`     | string          |
 | `id`       | number          |
 | `course`   | number          |

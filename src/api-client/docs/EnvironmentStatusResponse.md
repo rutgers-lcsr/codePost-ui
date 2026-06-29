@@ -3,7 +3,7 @@
 ## Properties
 
 | Name                 | Type                          |
-| -------------------- | ----------------------------- | ---------------- |
+| -------------------- | ----------------------------- |
 | `environmentId`      | number                        |
 | `autoDetect`         | boolean                       |
 | `currentVersion`     | number                        |

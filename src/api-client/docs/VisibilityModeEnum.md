@@ -1,6 +1,6 @@
 # VisibilityModeEnum
 
-- `always` - Always show _ `on_pass` - Show when tests pass _ `on_fail` - Show when tests fail \* `never` - Admin only
+- `always` - Always show * `on_pass` - Show when tests pass * `on_fail` - Show when tests fail * `never` - Admin only
 
 ## Properties
 

@@ -26,6 +26,13 @@ import {
   PromptFeedbackApi,
   PromptTypesApi,
   PromptVariantsApi,
+  QuestionBanksApi,
+  QuestionsApi,
+  QuizImagesApi,
+  QuizImportJobsApi,
+  QuizQuestionGroupsApi,
+  QuizQuestionsApi,
+  QuizzesApi,
   RegistrationApi,
   RubricCategoriesApi,
   RubricCommentsApi,
@@ -35,6 +42,7 @@ import {
   SubmissionTestsApi,
   SubscribeApi,
   SuggestedCommentsApi,
+  SuggestedQuizQuestionsApi,
   SystemApi,
   TestCasesApi,
   TestCategoriesApi,
@@ -91,6 +99,13 @@ export const promptExperimentsApi = new PromptExperimentsApi(apiClientConfig);
 export const promptFeedbackApi = new PromptFeedbackApi(apiClientConfig);
 export const promptTypesApi = new PromptTypesApi(apiClientConfig);
 export const promptVariantsApi = new PromptVariantsApi(apiClientConfig);
+export const questionBanksApi = new QuestionBanksApi(apiClientConfig);
+export const questionsApi = new QuestionsApi(apiClientConfig);
+export const quizImagesApi = new QuizImagesApi(apiClientConfig);
+export const quizImportJobsApi = new QuizImportJobsApi(apiClientConfig);
+export const quizQuestionGroupsApi = new QuizQuestionGroupsApi(apiClientConfig);
+export const quizQuestionsApi = new QuizQuestionsApi(apiClientConfig);
+export const quizzesApi = new QuizzesApi(apiClientConfig);
 export const registrationApi = new RegistrationApi(apiClientConfig);
 export const rubricCategoriesApi = new RubricCategoriesApi(apiClientConfig);
 export const rubricCommentsApi = new RubricCommentsApi(apiClientConfig);
@@ -100,6 +115,7 @@ export const submissionsApi = new SubmissionsApi(apiClientConfig);
 export const submissionTestsApi = new SubmissionTestsApi(apiClientConfig);
 export const subscribeApi = new SubscribeApi(apiClientConfig);
 export const suggestedCommentsApi = new SuggestedCommentsApi(apiClientConfig);
+export const suggestedQuizQuestionsApi = new SuggestedQuizQuestionsApi(apiClientConfig);
 export const systemApi = new SystemApi(apiClientConfig);
 export const testCasesApi = new TestCasesApi(apiClientConfig);
 export const testCategoriesApi = new TestCategoriesApi(apiClientConfig);

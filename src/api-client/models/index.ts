@@ -239,6 +239,19 @@ export interface AIUsageSummary {
 /**
  *
  * @export
+ * @interface AcceptSuggestionRequest
+ */
+export interface AcceptSuggestionRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof AcceptSuggestionRequest
+   */
+  bankId?: number;
+}
+/**
+ *
+ * @export
  * @interface ActivateCipResponse
  */
 export interface ActivateCipResponse {
@@ -1855,6 +1868,44 @@ export interface AsyncTaskResponse {
    * @memberof AsyncTaskResponse
    */
   status: string;
+}
+/**
+ *
+ * @export
+ * @interface BankCopyRequest
+ */
+export interface BankCopyRequest {
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof BankCopyRequest
+   */
+  questionIds: Array<number>;
+  /**
+   *
+   * @type {number}
+   * @memberof BankCopyRequest
+   */
+  bankId: number;
+}
+/**
+ *
+ * @export
+ * @interface BankQuestionsRequest
+ */
+export interface BankQuestionsRequest {
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof BankQuestionsRequest
+   */
+  questionIds: Array<number>;
+  /**
+   *
+   * @type {number}
+   * @memberof BankQuestionsRequest
+   */
+  bankId: number;
 }
 /**
  * Request body for ``POST /capabilities/batch/``.
@@ -4549,6 +4600,50 @@ export interface GenerateOTTResponse {
    * @memberof GenerateOTTResponse
    */
   expiresAt: string;
+}
+/**
+ *
+ * @export
+ * @interface GenerateQuizQuestionsRequest
+ */
+export interface GenerateQuizQuestionsRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof GenerateQuizQuestionsRequest
+   */
+  numQuestions?: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof GenerateQuizQuestionsRequest
+   */
+  questionTypes?: Array<string>;
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateQuizQuestionsRequest
+   */
+  instructions?: string;
+}
+/**
+ *
+ * @export
+ * @interface GenerateQuizQuestionsResponse
+ */
+export interface GenerateQuizQuestionsResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateQuizQuestionsResponse
+   */
+  taskId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateQuizQuestionsResponse
+   */
+  status: string;
 }
 /**
  * * `hourly` - hourly
@@ -7308,6 +7403,482 @@ export interface PatchedPromptFeedback {
   readonly modified?: string;
 }
 /**
+ * A quiz question that lives in exactly one bank, with nested writable choices.
+ *
+ * Choices are synced atomically on create/update — a question and its options are
+ * authored as a unit (a multiple-choice question is meaningless without them).
+ * @export
+ * @interface PatchedQuestion
+ */
+export interface PatchedQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  readonly id?: number;
+  /**
+   * The related course_id (mirrors bank.course).
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  course?: number;
+  /**
+   * The bank this question belongs to (exactly one).
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  bank?: number;
+  /**
+   * The type of question.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof PatchedQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The question stem/prompt — single font (may contain HTML from Canvas).
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  text?: string;
+  /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  description?: string;
+  /**
+   * Point value of the question.
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  points?: number;
+  /**
+   * Feedback shown regardless of answer.
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  generalFeedback?: string;
+  /**
+   * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  language?: string | null;
+  /**
+   * For code questions: optional starter code shown to students.
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  starterCode?: string | null;
+  /**
+   * For code questions: optional reference solution (authoring-only, not auto-graded).
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  referenceSolution?: string | null;
+  /**
+   * Where this question originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof PatchedQuestion
+   */
+  readonly source?: QuizSourceEnum;
+  /**
+   * The staff user who authored/accepted this question.
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  readonly createdBy?: number | null;
+  /**
+   *
+   * @type {Array<QuestionChoice>}
+   * @memberof PatchedQuestion
+   */
+  choices?: Array<QuestionChoice>;
+  /**
+   * Staff-internal metadata (Canvas IDs, AI provenance). Never shown to students.
+   * @type {string}
+   * @memberof PatchedQuestion
+   */
+  readonly metadata?: string;
+}
+
+/**
+ *
+ * @export
+ * @interface PatchedQuestionBank
+ */
+export interface PatchedQuestionBank {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuestionBank
+   */
+  readonly id?: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof PatchedQuestionBank
+   */
+  course?: number;
+  /**
+   * The name of the question bank.
+   * @type {string}
+   * @memberof PatchedQuestionBank
+   */
+  name?: string;
+  /**
+   * Optional description of the bank.
+   * @type {string}
+   * @memberof PatchedQuestionBank
+   */
+  description?: string;
+  /**
+   * Assignments this bank serves. Auto-added when the bank is used in a quiz attached to an assignment; editable by instructors. Used as AI-generation context.
+   * @type {Array<number>}
+   * @memberof PatchedQuestionBank
+   */
+  assignments?: Array<number>;
+  /**
+   * Where this bank originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof PatchedQuestionBank
+   */
+  readonly source?: QuizSourceEnum;
+  /**
+   * The staff user who created this bank.
+   * @type {number}
+   * @memberof PatchedQuestionBank
+   */
+  readonly createdBy?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuestionBank
+   */
+  readonly questionCount?: number;
+}
+
+/**
+ *
+ * @export
+ * @interface PatchedQuiz
+ */
+export interface PatchedQuiz {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  readonly id?: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  course?: number;
+  /**
+   * The assignment this quiz is attached to, if any.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  assignment?: number | null;
+  /**
+   * The quiz title.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  title?: string;
+  /**
+   * Optional quiz description.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  description?: string;
+  /**
+   * When an attached quiz becomes available, relative to the assignment lifecycle. Ignored for standalone quizzes.
+   *
+   * * `during` - During the assignment
+   * * `after_assignment` - After the assignment closes
+   * * `after_submission` - After the student submits
+   * * `after_feedback` - After feedback is released
+   * @type {QuizAssignmentTriggerEnum}
+   * @memberof PatchedQuiz
+   */
+  assignmentTrigger?: QuizAssignmentTriggerEnum;
+  /**
+   * Standalone quizzes: when the quiz opens.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  availableFrom?: string | null;
+  /**
+   * Standalone quizzes: when the quiz closes / is due.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  availableUntil?: string | null;
+  /**
+   * Time limit in minutes. Null = untimed.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  timeLimitMinutes?: number | null;
+  /**
+   * Number of attempts allowed. 0 = unlimited.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  attemptsAllowed?: number;
+  /**
+   * Randomize question order per attempt.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  shuffleQuestions?: boolean;
+  /**
+   * When students may see the correct answers.
+   *
+   * * `never` - Never
+   * * `after_submit` - After submitting
+   * * `after_close` - After the quiz closes
+   * @type {QuizShowAnswersEnum}
+   * @memberof PatchedQuiz
+   */
+  showCorrectAnswers?: QuizShowAnswersEnum;
+  /**
+   * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  passingScore?: number | null;
+  /**
+   * Whether passingScore is a percentage or an absolute point value.
+   *
+   * * `percent` - Percent
+   * * `points` - Points
+   * @type {QuizPassingScoreUnitEnum}
+   * @memberof PatchedQuiz
+   */
+  passingScoreUnit?: QuizPassingScoreUnitEnum;
+  /**
+   * If false the quiz is a draft (author-only); students only see published quizzes.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  isPublished?: boolean;
+  /**
+   *
+   * @type {Array<QuizQuestion>}
+   * @memberof PatchedQuiz
+   */
+  readonly quizQuestions?: Array<QuizQuestion>;
+  /**
+   *
+   * @type {Array<QuizQuestionGroup>}
+   * @memberof PatchedQuiz
+   */
+  readonly questionGroups?: Array<QuizQuestionGroup>;
+  /**
+   * Where this quiz originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof PatchedQuiz
+   */
+  readonly source?: QuizSourceEnum;
+  /**
+   * The staff user who created this quiz.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  readonly createdBy?: number | null;
+  /**
+   * Staff-internal metadata (Canvas IDs, etc.).
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  readonly metadata?: string;
+}
+
+/**
+ * Read-only view of a QTI / Common Cartridge import job (for status polling).
+ * @export
+ * @interface PatchedQuizImportJob
+ */
+export interface PatchedQuizImportJob {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly id?: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly course?: number;
+  /**
+   * Current status of the import job.
+   *
+   * * `pending` - Pending
+   * * `running` - Running
+   * * `completed` - Completed
+   * * `failed` - Failed
+   * @type {QuizImportJobStatusEnum}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly status?: QuizImportJobStatusEnum;
+  /**
+   * Celery task id for polling.
+   * @type {string}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly taskId?: string;
+  /**
+   * The bank imported questions land in. Created if absent.
+   * @type {number}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly targetBank?: number | null;
+  /**
+   * Number of quizzes created.
+   * @type {number}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly createdQuizCount?: number;
+  /**
+   * Number of questions created.
+   * @type {number}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly createdQuestionCount?: number;
+  /**
+   * Error detail if the job failed.
+   * @type {string}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly errorMessage?: string;
+  /**
+   * Per-item parse report, including skipped/unsupported types.
+   * @type {string}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly summary?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedQuizImportJob
+   */
+  readonly created?: string;
+}
+
+/**
+ * Membership of a Question in a Quiz, with ordering and optional point override.
+ * @export
+ * @interface PatchedQuizQuestion
+ */
+export interface PatchedQuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuizQuestion
+   */
+  readonly id?: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof PatchedQuizQuestion
+   */
+  quiz?: number;
+  /**
+   * The related question_id.
+   * @type {number}
+   * @memberof PatchedQuizQuestion
+   */
+  question?: number;
+  /**
+   * Order of this question within the quiz.
+   * @type {number}
+   * @memberof PatchedQuizQuestion
+   */
+  sortKey?: number;
+  /**
+   * Optional per-quiz point override. Null uses Question.points.
+   * @type {number}
+   * @memberof PatchedQuizQuestion
+   */
+  pointsOverride?: number | null;
+}
+/**
+ * A random-draw group on a quiz: pick N questions from a bank, each worth P points.
+ * @export
+ * @interface PatchedQuizQuestionGroup
+ */
+export interface PatchedQuizQuestionGroup {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  readonly id?: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  quiz?: number;
+  /**
+   * The bank questions are drawn from.
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  bank?: number;
+  /**
+   * Optional label for this group (e.g. 'Chapter 3 — pick 3').
+   * @type {string}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  name?: string;
+  /**
+   * How many questions to randomly draw from the bank.
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  pickCount?: number;
+  /**
+   * Points each drawn question is worth.
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  pointsPerQuestion?: number;
+  /**
+   * Order of this group within the quiz.
+   * @type {number}
+   * @memberof PatchedQuizQuestionGroup
+   */
+  sortKey?: number;
+}
+/**
  *
  * @export
  * @interface PatchedRubricCategory
@@ -7889,6 +8460,118 @@ export interface PatchedSuggestedComment {
    * @memberof PatchedSuggestedComment
    */
   readonly modified?: string;
+}
+
+/**
+ * An AI quiz-question suggestion. Staff-only. A pending suggestion's content may be
+ * edited (PATCH) before it is accepted into a real Question. ``status`` and the link
+ * fields are system-managed via the accept/reject actions.
+ * @export
+ * @interface PatchedSuggestedQuizQuestion
+ */
+export interface PatchedSuggestedQuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly id?: number;
+  /**
+   * The assignment this suggestion was generated for (fresh generation).
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly assignment?: number | null;
+  /**
+   * The existing question this suggestion was generated from (cross-semester refresh).
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly sourceQuestion?: number | null;
+  /**
+   * The suggested question type.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The suggested question stem/prompt.
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  text?: string;
+  /**
+   *
+   * @type {any}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  choicesData?: any | null;
+  /**
+   * Suggested point value.
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  points?: number;
+  /**
+   * For code suggestions: the language.
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  language?: string | null;
+  /**
+   * Suggested starter code.
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  starterCode?: string | null;
+  /**
+   * Suggested reference solution.
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  referenceSolution?: string | null;
+  /**
+   * Current status of this suggestion.
+   *
+   * * `pending` - Pending
+   * * `accepted` - Accepted
+   * * `rejected` - Rejected
+   * @type {SuggestedCommentStatusEnum}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly status?: SuggestedCommentStatusEnum;
+  /**
+   * The instructor who accepted this suggestion.
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly acceptedBy?: number | null;
+  /**
+   * The real Question created or updated when this suggestion was accepted.
+   * @type {number}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly acceptedQuestion?: number | null;
+  /**
+   * UUID grouping all suggestions from a single generation call.
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly generationBatch?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  readonly created?: string;
 }
 
 /**
@@ -8695,6 +9378,707 @@ export interface PromptTypesList200ResponseInner {
    * @memberof PromptTypesList200ResponseInner
    */
   description?: string;
+}
+/**
+ * A quiz question that lives in exactly one bank, with nested writable choices.
+ *
+ * Choices are synced atomically on create/update — a question and its options are
+ * authored as a unit (a multiple-choice question is meaningless without them).
+ * @export
+ * @interface Question
+ */
+export interface Question {
+  /**
+   *
+   * @type {number}
+   * @memberof Question
+   */
+  readonly id: number;
+  /**
+   * The related course_id (mirrors bank.course).
+   * @type {number}
+   * @memberof Question
+   */
+  course: number;
+  /**
+   * The bank this question belongs to (exactly one).
+   * @type {number}
+   * @memberof Question
+   */
+  bank: number;
+  /**
+   * The type of question.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof Question
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The question stem/prompt — single font (may contain HTML from Canvas).
+   * @type {string}
+   * @memberof Question
+   */
+  text: string;
+  /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof Question
+   */
+  description?: string;
+  /**
+   * Point value of the question.
+   * @type {number}
+   * @memberof Question
+   */
+  points?: number;
+  /**
+   * Feedback shown regardless of answer.
+   * @type {string}
+   * @memberof Question
+   */
+  generalFeedback?: string;
+  /**
+   * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
+   * @type {string}
+   * @memberof Question
+   */
+  language?: string | null;
+  /**
+   * For code questions: optional starter code shown to students.
+   * @type {string}
+   * @memberof Question
+   */
+  starterCode?: string | null;
+  /**
+   * For code questions: optional reference solution (authoring-only, not auto-graded).
+   * @type {string}
+   * @memberof Question
+   */
+  referenceSolution?: string | null;
+  /**
+   * Where this question originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof Question
+   */
+  readonly source: QuizSourceEnum;
+  /**
+   * The staff user who authored/accepted this question.
+   * @type {number}
+   * @memberof Question
+   */
+  readonly createdBy: number | null;
+  /**
+   *
+   * @type {Array<QuestionChoice>}
+   * @memberof Question
+   */
+  choices?: Array<QuestionChoice>;
+  /**
+   * Staff-internal metadata (Canvas IDs, AI provenance). Never shown to students.
+   * @type {string}
+   * @memberof Question
+   */
+  readonly metadata: string;
+}
+
+/**
+ *
+ * @export
+ * @interface QuestionBank
+ */
+export interface QuestionBank {
+  /**
+   *
+   * @type {number}
+   * @memberof QuestionBank
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof QuestionBank
+   */
+  course: number;
+  /**
+   * The name of the question bank.
+   * @type {string}
+   * @memberof QuestionBank
+   */
+  name: string;
+  /**
+   * Optional description of the bank.
+   * @type {string}
+   * @memberof QuestionBank
+   */
+  description?: string;
+  /**
+   * Assignments this bank serves. Auto-added when the bank is used in a quiz attached to an assignment; editable by instructors. Used as AI-generation context.
+   * @type {Array<number>}
+   * @memberof QuestionBank
+   */
+  assignments?: Array<number>;
+  /**
+   * Where this bank originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof QuestionBank
+   */
+  readonly source: QuizSourceEnum;
+  /**
+   * The staff user who created this bank.
+   * @type {number}
+   * @memberof QuestionBank
+   */
+  readonly createdBy: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof QuestionBank
+   */
+  readonly questionCount: number;
+}
+
+/**
+ *
+ * @export
+ * @interface QuestionChoice
+ */
+export interface QuestionChoice {
+  /**
+   *
+   * @type {number}
+   * @memberof QuestionChoice
+   */
+  id?: number;
+  /**
+   * The choice text (or accepted answer value).
+   * @type {string}
+   * @memberof QuestionChoice
+   */
+  text: string;
+  /**
+   * Whether this choice is a correct answer.
+   * @type {boolean}
+   * @memberof QuestionChoice
+   */
+  isCorrect?: boolean;
+  /**
+   * Order of this choice within the question.
+   * @type {number}
+   * @memberof QuestionChoice
+   */
+  sortKey?: number;
+  /**
+   * Optional per-choice feedback.
+   * @type {string}
+   * @memberof QuestionChoice
+   */
+  feedback?: string;
+}
+/**
+ * * `multiple_choice` - Multiple Choice (one correct)
+ * * `multiple_answers` - Multiple Answers (several correct)
+ * * `true_false` - True / False
+ * * `short_answer` - Short Answer
+ * * `essay` - Essay
+ * * `numerical` - Numerical
+ * * `code` - Code
+ * @export
+ * @enum {string}
+ */
+export enum QuestionTypeEnum {
+  MultipleChoice = 'multiple_choice',
+  MultipleAnswers = 'multiple_answers',
+  TrueFalse = 'true_false',
+  ShortAnswer = 'short_answer',
+  Essay = 'essay',
+  Numerical = 'numerical',
+  Code = 'code',
+}
+
+/**
+ *
+ * @export
+ * @interface Quiz
+ */
+export interface Quiz {
+  /**
+   *
+   * @type {number}
+   * @memberof Quiz
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof Quiz
+   */
+  course: number;
+  /**
+   * The assignment this quiz is attached to, if any.
+   * @type {number}
+   * @memberof Quiz
+   */
+  assignment?: number | null;
+  /**
+   * The quiz title.
+   * @type {string}
+   * @memberof Quiz
+   */
+  title: string;
+  /**
+   * Optional quiz description.
+   * @type {string}
+   * @memberof Quiz
+   */
+  description?: string;
+  /**
+   * When an attached quiz becomes available, relative to the assignment lifecycle. Ignored for standalone quizzes.
+   *
+   * * `during` - During the assignment
+   * * `after_assignment` - After the assignment closes
+   * * `after_submission` - After the student submits
+   * * `after_feedback` - After feedback is released
+   * @type {QuizAssignmentTriggerEnum}
+   * @memberof Quiz
+   */
+  assignmentTrigger?: QuizAssignmentTriggerEnum;
+  /**
+   * Standalone quizzes: when the quiz opens.
+   * @type {string}
+   * @memberof Quiz
+   */
+  availableFrom?: string | null;
+  /**
+   * Standalone quizzes: when the quiz closes / is due.
+   * @type {string}
+   * @memberof Quiz
+   */
+  availableUntil?: string | null;
+  /**
+   * Time limit in minutes. Null = untimed.
+   * @type {number}
+   * @memberof Quiz
+   */
+  timeLimitMinutes?: number | null;
+  /**
+   * Number of attempts allowed. 0 = unlimited.
+   * @type {number}
+   * @memberof Quiz
+   */
+  attemptsAllowed?: number;
+  /**
+   * Randomize question order per attempt.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  shuffleQuestions?: boolean;
+  /**
+   * When students may see the correct answers.
+   *
+   * * `never` - Never
+   * * `after_submit` - After submitting
+   * * `after_close` - After the quiz closes
+   * @type {QuizShowAnswersEnum}
+   * @memberof Quiz
+   */
+  showCorrectAnswers?: QuizShowAnswersEnum;
+  /**
+   * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
+   * @type {number}
+   * @memberof Quiz
+   */
+  passingScore?: number | null;
+  /**
+   * Whether passingScore is a percentage or an absolute point value.
+   *
+   * * `percent` - Percent
+   * * `points` - Points
+   * @type {QuizPassingScoreUnitEnum}
+   * @memberof Quiz
+   */
+  passingScoreUnit?: QuizPassingScoreUnitEnum;
+  /**
+   * If false the quiz is a draft (author-only); students only see published quizzes.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  isPublished?: boolean;
+  /**
+   *
+   * @type {Array<QuizQuestion>}
+   * @memberof Quiz
+   */
+  readonly quizQuestions: Array<QuizQuestion>;
+  /**
+   *
+   * @type {Array<QuizQuestionGroup>}
+   * @memberof Quiz
+   */
+  readonly questionGroups: Array<QuizQuestionGroup>;
+  /**
+   * Where this quiz originated (staff-internal provenance).
+   *
+   * * `manual` - Manually authored
+   * * `imported` - Imported
+   * * `ai` - Accepted from an AI suggestion
+   * @type {QuizSourceEnum}
+   * @memberof Quiz
+   */
+  readonly source: QuizSourceEnum;
+  /**
+   * The staff user who created this quiz.
+   * @type {number}
+   * @memberof Quiz
+   */
+  readonly createdBy: number | null;
+  /**
+   * Staff-internal metadata (Canvas IDs, etc.).
+   * @type {string}
+   * @memberof Quiz
+   */
+  readonly metadata: string;
+}
+
+/**
+ * * `during` - During the assignment
+ * * `after_assignment` - After the assignment closes
+ * * `after_submission` - After the student submits
+ * * `after_feedback` - After feedback is released
+ * @export
+ * @enum {string}
+ */
+export enum QuizAssignmentTriggerEnum {
+  During = 'during',
+  AfterAssignment = 'after_assignment',
+  AfterSubmission = 'after_submission',
+  AfterFeedback = 'after_feedback',
+}
+
+/**
+ * Read view of an uploaded description image. ``url`` is the public, token-based
+ * endpoint that renders inline in Markdown.
+ * @export
+ * @interface QuizImage
+ */
+export interface QuizImage {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizImage
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof QuizImage
+   */
+  course: number;
+  /**
+   * Unguessable public token used in the image URL.
+   * @type {string}
+   * @memberof QuizImage
+   */
+  readonly token: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizImage
+   */
+  readonly url: string;
+  /**
+   * Original filename.
+   * @type {string}
+   * @memberof QuizImage
+   */
+  readonly originalName: string;
+  /**
+   * Image MIME type.
+   * @type {string}
+   * @memberof QuizImage
+   */
+  readonly contentType: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizImage
+   */
+  readonly created: string;
+}
+/**
+ * Read-only view of a QTI / Common Cartridge import job (for status polling).
+ * @export
+ * @interface QuizImportJob
+ */
+export interface QuizImportJob {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizImportJob
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof QuizImportJob
+   */
+  readonly course: number;
+  /**
+   * Current status of the import job.
+   *
+   * * `pending` - Pending
+   * * `running` - Running
+   * * `completed` - Completed
+   * * `failed` - Failed
+   * @type {QuizImportJobStatusEnum}
+   * @memberof QuizImportJob
+   */
+  readonly status: QuizImportJobStatusEnum;
+  /**
+   * Celery task id for polling.
+   * @type {string}
+   * @memberof QuizImportJob
+   */
+  readonly taskId: string;
+  /**
+   * The bank imported questions land in. Created if absent.
+   * @type {number}
+   * @memberof QuizImportJob
+   */
+  readonly targetBank: number | null;
+  /**
+   * Number of quizzes created.
+   * @type {number}
+   * @memberof QuizImportJob
+   */
+  readonly createdQuizCount: number;
+  /**
+   * Number of questions created.
+   * @type {number}
+   * @memberof QuizImportJob
+   */
+  readonly createdQuestionCount: number;
+  /**
+   * Error detail if the job failed.
+   * @type {string}
+   * @memberof QuizImportJob
+   */
+  readonly errorMessage: string;
+  /**
+   * Per-item parse report, including skipped/unsupported types.
+   * @type {string}
+   * @memberof QuizImportJob
+   */
+  readonly summary: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizImportJob
+   */
+  readonly created: string;
+}
+
+/**
+ * * `pending` - Pending
+ * * `running` - Running
+ * * `completed` - Completed
+ * * `failed` - Failed
+ * @export
+ * @enum {string}
+ */
+export enum QuizImportJobStatusEnum {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+}
+
+/**
+ * * `percent` - Percent
+ * * `points` - Points
+ * @export
+ * @enum {string}
+ */
+export enum QuizPassingScoreUnitEnum {
+  Percent = 'percent',
+  Points = 'points',
+}
+
+/**
+ * Membership of a Question in a Quiz, with ordering and optional point override.
+ * @export
+ * @interface QuizQuestion
+ */
+export interface QuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizQuestion
+   */
+  readonly id: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof QuizQuestion
+   */
+  quiz: number;
+  /**
+   * The related question_id.
+   * @type {number}
+   * @memberof QuizQuestion
+   */
+  question: number;
+  /**
+   * Order of this question within the quiz.
+   * @type {number}
+   * @memberof QuizQuestion
+   */
+  sortKey?: number;
+  /**
+   * Optional per-quiz point override. Null uses Question.points.
+   * @type {number}
+   * @memberof QuizQuestion
+   */
+  pointsOverride?: number | null;
+}
+/**
+ * A random-draw group on a quiz: pick N questions from a bank, each worth P points.
+ * @export
+ * @interface QuizQuestionGroup
+ */
+export interface QuizQuestionGroup {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  readonly id: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  quiz: number;
+  /**
+   * The bank questions are drawn from.
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  bank: number;
+  /**
+   * Optional label for this group (e.g. 'Chapter 3 — pick 3').
+   * @type {string}
+   * @memberof QuizQuestionGroup
+   */
+  name?: string;
+  /**
+   * How many questions to randomly draw from the bank.
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  pickCount?: number;
+  /**
+   * Points each drawn question is worth.
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  pointsPerQuestion?: number;
+  /**
+   * Order of this group within the quiz.
+   * @type {number}
+   * @memberof QuizQuestionGroup
+   */
+  sortKey?: number;
+}
+/**
+ * * `never` - Never
+ * * `after_submit` - After submitting
+ * * `after_close` - After the quiz closes
+ * @export
+ * @enum {string}
+ */
+export enum QuizShowAnswersEnum {
+  Never = 'never',
+  AfterSubmit = 'after_submit',
+  AfterClose = 'after_close',
+}
+
+/**
+ * * `manual` - Manually authored
+ * * `imported` - Imported
+ * * `ai` - Accepted from an AI suggestion
+ * @export
+ * @enum {string}
+ */
+export enum QuizSourceEnum {
+  Manual = 'manual',
+  Imported = 'imported',
+  Ai = 'ai',
+}
+
+/**
+ *
+ * @export
+ * @interface RegenerateSuggestionRequest
+ */
+export interface RegenerateSuggestionRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof RegenerateSuggestionRequest
+   */
+  assignmentId?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof RegenerateSuggestionRequest
+   */
+  numQuestions?: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof RegenerateSuggestionRequest
+   */
+  questionTypes?: Array<string>;
+  /**
+   *
+   * @type {string}
+   * @memberof RegenerateSuggestionRequest
+   */
+  instructions?: string;
+}
+/**
+ *
+ * @export
+ * @interface RegenerateSuggestionResponse
+ */
+export interface RegenerateSuggestionResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof RegenerateSuggestionResponse
+   */
+  taskId: string;
+  /**
+   *
+   * @type {string}
+   * @memberof RegenerateSuggestionResponse
+   */
+  status: string;
 }
 /**
  *
@@ -10100,6 +11484,118 @@ export enum SuggestedCommentStatusEnum {
   Pending = 'pending',
   Accepted = 'accepted',
   Rejected = 'rejected',
+}
+
+/**
+ * An AI quiz-question suggestion. Staff-only. A pending suggestion's content may be
+ * edited (PATCH) before it is accepted into a real Question. ``status`` and the link
+ * fields are system-managed via the accept/reject actions.
+ * @export
+ * @interface SuggestedQuizQuestion
+ */
+export interface SuggestedQuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly id: number;
+  /**
+   * The assignment this suggestion was generated for (fresh generation).
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly assignment: number | null;
+  /**
+   * The existing question this suggestion was generated from (cross-semester refresh).
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly sourceQuestion: number | null;
+  /**
+   * The suggested question type.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof SuggestedQuizQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The suggested question stem/prompt.
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  text: string;
+  /**
+   *
+   * @type {any}
+   * @memberof SuggestedQuizQuestion
+   */
+  choicesData?: any | null;
+  /**
+   * Suggested point value.
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  points?: number;
+  /**
+   * For code suggestions: the language.
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  language?: string | null;
+  /**
+   * Suggested starter code.
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  starterCode?: string | null;
+  /**
+   * Suggested reference solution.
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  referenceSolution?: string | null;
+  /**
+   * Current status of this suggestion.
+   *
+   * * `pending` - Pending
+   * * `accepted` - Accepted
+   * * `rejected` - Rejected
+   * @type {SuggestedCommentStatusEnum}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly status: SuggestedCommentStatusEnum;
+  /**
+   * The instructor who accepted this suggestion.
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly acceptedBy: number | null;
+  /**
+   * The real Question created or updated when this suggestion was accepted.
+   * @type {number}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly acceptedQuestion: number | null;
+  /**
+   * UUID grouping all suggestions from a single generation call.
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly generationBatch: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  readonly created: string;
 }
 
 /**

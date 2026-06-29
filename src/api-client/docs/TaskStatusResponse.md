@@ -5,7 +5,7 @@ Response for task status check
 ## Properties
 
 | Name     | Type                                                            |
-| -------- | --------------------------------------------------------------- | ------------ |
+| -------- | --------------------------------------------------------------- |
 | `status` | [TaskStatusResponseStatusEnum](TaskStatusResponseStatusEnum.md) |
 | `result` | { [key: string]: any                                            | undefined; } |
 

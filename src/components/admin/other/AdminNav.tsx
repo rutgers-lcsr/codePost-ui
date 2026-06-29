@@ -5,6 +5,7 @@ import {
   AuditOutlined,
   ApiOutlined,
   FileTextOutlined,
+  FormOutlined,
   HistoryOutlined,
   InboxOutlined,
   PushpinOutlined,
@@ -81,6 +82,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
       return 'course-settings/webhooks';
     if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings/general';
 
+    if (/\/quizzes(?:\/|$)/.test(pathname)) return 'quizzes';
+
     if (/\/activity-log(?:\/|$)/.test(pathname)) return 'activity-log';
 
     if (/\/assignments\/rubrics(?:\/|$)/.test(pathname)) return 'assignments/rubrics';
@@ -127,6 +130,11 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
             //   label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
             // },
           ],
+        },
+        {
+          key: 'quizzes',
+          icon: <FormOutlined />,
+          label: <Link to={`${courseBaseURL}/quizzes`}>Quizzes</Link>,
         },
         {
           key: 'submissions',

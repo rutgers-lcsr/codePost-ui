@@ -5,7 +5,7 @@ Serializer for organization-level AI configuration.
 ## Properties
 
 | Name                 | Type                                        |
-| -------------------- | ------------------------------------------- | ------------ | ------------ |
+| -------------------- | ------------------------------------------- |
 | `id`                 | number                                      |
 | `aiProvider`         | string                                      |
 | `aiApiKey`           | string                                      |

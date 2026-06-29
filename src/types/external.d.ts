@@ -35,6 +35,23 @@ declare module 'lowlight' {
   export default lowlight;
 }
 
+// lowlight v3, installed under the `lowlight3` alias so it can coexist with the
+// v1 `lowlight` that react-syntax-highlighter (code-review) depends on. Used only
+// to give the TipTap CodeBlockLowlight extension a v3 highlighter instance.
+declare module 'lowlight3' {
+  type LowlightRoot = Record<string, unknown>;
+  type Lowlight = {
+    highlight: (language: string, value: string, options?: unknown) => LowlightRoot;
+    highlightAuto: (value: string, options?: unknown) => LowlightRoot;
+    listLanguages: () => string[];
+    register: (grammars: Record<string, unknown>) => void;
+    registered: (name: string) => boolean;
+  };
+  export function createLowlight(grammars?: Record<string, unknown>): Lowlight;
+  export const common: Record<string, unknown>;
+  export const all: Record<string, unknown>;
+}
+
 declare module 'lang-map' {
   const LangMap: {
     languages: (extension: string) => string[];

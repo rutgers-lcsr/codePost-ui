@@ -1,6 +1,6 @@
 # OverallEnum
 
-- `ok` - ok _ `degraded` - degraded _ `critical` - critical
+- `ok` - ok * `degraded` - degraded * `critical` - critical
 
 ## Properties
 

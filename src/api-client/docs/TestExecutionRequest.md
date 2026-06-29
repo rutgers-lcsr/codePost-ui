@@ -3,7 +3,7 @@
 ## Properties
 
 | Name            | Type                    |
-| --------------- | ----------------------- | ------------ |
+| --------------- | ----------------------- |
 | `testId`        | number                  |
 | `submissionId`  | number                  |
 | `fileOverrides` | { [key: string]: string | undefined; } |

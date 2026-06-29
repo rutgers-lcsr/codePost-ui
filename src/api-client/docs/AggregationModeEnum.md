@@ -1,6 +1,6 @@
 # AggregationModeEnum
 
-- `all` - All linked tests must pass _ `any` - At least one linked test must pass _ `percentage` - Percentage of linked tests that pass \* `points_weighted` - Weighted by test point values
+- `all` - All linked tests must pass * `any` - At least one linked test must pass * `percentage` - Percentage of linked tests that pass * `points_weighted` - Weighted by test point values
 
 ## Properties
 

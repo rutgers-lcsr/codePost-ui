@@ -1,6 +1,6 @@
 # PromptExperimentStatusEnum
 
-- `running` - Running _ `paused` - Paused _ `completed` - Completed
+- `running` - Running * `paused` - Paused * `completed` - Completed
 
 ## Properties
 

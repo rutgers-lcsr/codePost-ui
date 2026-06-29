@@ -3,7 +3,7 @@
 ## Properties
 
 | Name          | Type                          |
-| ------------- | ----------------------------- | ---------------- |
+| ------------- | ----------------------------- |
 | `attachments` | Array&lt;{ [key: string]: any | undefined; }&gt; |
 | `courseID`    | number                        |
 

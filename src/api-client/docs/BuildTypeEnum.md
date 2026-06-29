@@ -1,6 +1,6 @@
 # BuildTypeEnum
 
-- `default` - default _ `alpine` - alpine _ `ubuntu` - ubuntu \* `windows` - windows
+- `default` - default * `alpine` - alpine * `ubuntu` - ubuntu * `windows` - windows
 
 ## Properties
 

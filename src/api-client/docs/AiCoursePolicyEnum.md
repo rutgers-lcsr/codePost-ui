@@ -1,6 +1,6 @@
 # AiCoursePolicyEnum
 
-- `all` - All courses _ `selected` - Selected courses only _ `none` - Disabled
+- `all` - All courses * `selected` - Selected courses only * `none` - Disabled
 
 ## Properties
 

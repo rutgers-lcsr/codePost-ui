@@ -1,6 +1,6 @@
 # SuggestedCommentStatusEnum
 
-- `pending` - Pending _ `accepted` - Accepted _ `rejected` - Rejected
+- `pending` - Pending * `accepted` - Accepted * `rejected` - Rejected
 
 ## Properties
 
