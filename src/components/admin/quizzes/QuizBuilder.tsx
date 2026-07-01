@@ -48,6 +48,7 @@ import { typeMeta } from './questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
 import MarkdownField from './MarkdownField';
+import QuizPreviewDrawer, { PreviewItem } from './QuizPreviewDrawer';
 
 const { Text } = Typography;
 
@@ -116,6 +117,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
 
   const [addOpen, setAddOpen] = React.useState(false);
   const [groupOpen, setGroupOpen] = React.useState(false);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
   const [editingGroup, setEditingGroup] = React.useState<QuizQuestionGroup | null>(null);
 
   // --- Quiz settings (title / description / attached assignment) ---
@@ -132,6 +134,8 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const [timeLimitMinutes, setTimeLimitMinutes] = React.useState<number | null>(current.timeLimitMinutes ?? null);
   const [attemptsAllowed, setAttemptsAllowed] = React.useState<number>(current.attemptsAllowed ?? 1);
   const [shuffleQuestions, setShuffleQuestions] = React.useState<boolean>(current.shuffleQuestions ?? false);
+  const [oneQuestionAtATime, setOneQuestionAtATime] = React.useState<boolean>(current.oneQuestionAtATime ?? false);
+  const [allowBacktracking, setAllowBacktracking] = React.useState<boolean>(current.allowBacktracking ?? true);
   const [showCorrectAnswers, setShowCorrectAnswers] = React.useState(current.showCorrectAnswers || SHOW_DEFAULT);
   const [passingScore, setPassingScore] = React.useState<number | null>(current.passingScore ?? null);
   const UNIT_DEFAULT = QuizPassingScoreUnitEnum.Percent;
@@ -150,6 +154,8 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     setTimeLimitMinutes(current.timeLimitMinutes ?? null);
     setAttemptsAllowed(current.attemptsAllowed ?? 1);
     setShuffleQuestions(current.shuffleQuestions ?? false);
+    setOneQuestionAtATime(current.oneQuestionAtATime ?? false);
+    setAllowBacktracking(current.allowBacktracking ?? true);
     setShowCorrectAnswers(current.showCorrectAnswers || SHOW_DEFAULT);
     setPassingScore(current.passingScore ?? null);
     setPassingScoreUnit(current.passingScoreUnit || UNIT_DEFAULT);
@@ -167,12 +173,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     (timeLimitMinutes ?? null) !== (current.timeLimitMinutes ?? null) ||
     attemptsAllowed !== (current.attemptsAllowed ?? 1) ||
     shuffleQuestions !== (current.shuffleQuestions ?? false) ||
+    oneQuestionAtATime !== (current.oneQuestionAtATime ?? false) ||
+    allowBacktracking !== (current.allowBacktracking ?? true) ||
     showCorrectAnswers !== (current.showCorrectAnswers || SHOW_DEFAULT) ||
     (passingScore ?? null) !== (current.passingScore ?? null) ||
     passingScoreUnit !== (current.passingScoreUnit || UNIT_DEFAULT) ||
     isPublished !== (current.isPublished ?? false);
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = async (overrides?: { isPublished?: boolean }) => {
     if (!title.trim()) {
       message.warning('A quiz needs a title.');
       return;
@@ -191,10 +199,12 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           timeLimitMinutes,
           attemptsAllowed,
           shuffleQuestions,
+          oneQuestionAtATime,
+          allowBacktracking,
           showCorrectAnswers,
           passingScore,
           passingScoreUnit,
-          isPublished,
+          isPublished: overrides?.isPublished ?? isPublished,
         },
       });
       message.success('Quiz settings saved.');
@@ -206,6 +216,24 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     } finally {
       setSavingSettings(false);
     }
+  };
+
+  // Publishing makes the quiz visible to students, so nudge the author to save any
+  // pending edits first (otherwise students would see a stale version).
+  const handlePublishToggle = (checked: boolean) => {
+    if (checked && settingsDirty) {
+      Modal.confirm({
+        title: 'Save changes and publish?',
+        content: 'This quiz has unsaved changes. Save them now so students see the latest version.',
+        okText: 'Save & publish',
+        cancelText: 'Not now',
+        onOk: async () => {
+          setIsPublished(true);
+          await handleSaveSettings({ isPublished: true });
+        },
+      });
+    }
+    setIsPublished(checked);
   };
 
   // --- Question membership ---
@@ -422,6 +450,25 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const assignmentOptions = assignments.map((a) => ({ value: a.id, label: a.name }));
   const totalItems = orderedQuestions.length + orderedGroups.length;
 
+  // Fixed questions, plus a simulated sample for each random draw. Memoized so the
+  // random selection stays stable while the instructor interacts with the preview.
+  const previewItems: PreviewItem[] = React.useMemo(() => {
+    const fixed: PreviewItem[] = orderedQuestions
+      .map((qq) => {
+        const q = questionsById.get(qq.question);
+        return q ? { question: q, points: Number(qq.pointsOverride ?? q.points ?? 1) } : null;
+      })
+      .filter((x): x is PreviewItem => x !== null);
+
+    const drawn: PreviewItem[] = orderedGroups.flatMap((g) => {
+      const pool = questions.filter((q) => q.bank === g.bank);
+      const picked = [...pool].sort(() => Math.random() - 0.5).slice(0, g.pickCount ?? 1);
+      return picked.map((q) => ({ question: q, points: Number(g.pointsPerQuestion ?? 1) }));
+    });
+
+    return [...fixed, ...drawn];
+  }, [orderedQuestions, orderedGroups, questionsById, questions]);
+
   return (
     <>
       {/* Quiz settings */}
@@ -432,9 +479,20 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           </Typography.Title>
         }
         extra={
-          <CPButton cpType="primary" onClick={handleSaveSettings} disabled={!settingsDirty} loading={savingSettings}>
-            Save
-          </CPButton>
+          <Space size="middle">
+            <Space size={6}>
+              <Switch checked={isPublished} onChange={handlePublishToggle} />
+              <Text type={isPublished ? undefined : 'secondary'}>{isPublished ? 'Published' : 'Draft'}</Text>
+            </Space>
+            <CPButton
+              cpType="primary"
+              onClick={() => handleSaveSettings()}
+              disabled={!settingsDirty}
+              loading={savingSettings}
+            >
+              Save
+            </CPButton>
+          </Space>
         }
         style={{ marginBottom: 16 }}
       >
@@ -579,16 +637,27 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             </div>
           </Flex>
 
-          <Flex gap={24} align="center">
-            <Space>
-              <Switch checked={shuffleQuestions} onChange={setShuffleQuestions} />
-              <Text>Shuffle questions</Text>
-            </Space>
-            <Space>
-              <Switch checked={isPublished} onChange={setIsPublished} />
-              <Text>Published</Text>
-            </Space>
-          </Flex>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+              Question delivery
+            </Text>
+            <Flex vertical gap={10}>
+              <Space>
+                <Switch checked={shuffleQuestions} onChange={setShuffleQuestions} />
+                <Text>Shuffle question order</Text>
+              </Space>
+              <Space>
+                <Switch checked={oneQuestionAtATime} onChange={setOneQuestionAtATime} />
+                <Text>One question at a time</Text>
+              </Space>
+              {oneQuestionAtATime && (
+                <Space style={{ marginLeft: 36 }}>
+                  <Switch size="small" checked={allowBacktracking} onChange={setAllowBacktracking} />
+                  <Text type="secondary">Let students go back to previous questions</Text>
+                </Space>
+              )}
+            </Flex>
+          </div>
         </Flex>
       </Card>
 
@@ -609,10 +678,16 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         }
         extra={
           <Space>
-            {/* To do make sure the instructor can preview the quiz */}
-            <CPButton cpType="link" icon={<EyeOutlined />} onClick={() => {}}>
-              Preview
-            </CPButton>
+            <Tooltip title={previewItems.length === 0 ? 'Add questions to preview' : 'Preview as a student'}>
+              <CPButton
+                cpType="link"
+                icon={<EyeOutlined />}
+                onClick={() => setPreviewOpen(true)}
+                disabled={previewItems.length === 0}
+              >
+                Preview
+              </CPButton>
+            </Tooltip>
             <CPButton cpType="secondary" icon={<RetweetOutlined />} onClick={openCreateGroup}>
               Add Random Draw
             </CPButton>
@@ -654,6 +729,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         group={editingGroup}
         nextSortKey={orderedGroups.length ? Math.max(...orderedGroups.map((g) => g.sortKey ?? 0)) + 1 : 0}
         onClose={() => setGroupOpen(false)}
+      />
+
+      <QuizPreviewDrawer
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        quiz={current}
+        items={previewItems}
+        hasGroups={orderedGroups.length > 0}
       />
     </>
   );

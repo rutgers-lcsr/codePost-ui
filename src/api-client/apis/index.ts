@@ -25,6 +25,7 @@ export { PromptTypesApi } from './PromptTypesApi';
 export { PromptVariantsApi } from './PromptVariantsApi';
 export { QuestionBanksApi } from './QuestionBanksApi';
 export { QuestionsApi } from './QuestionsApi';
+export { QuizAttemptsApi } from './QuizAttemptsApi';
 export { QuizImagesApi } from './QuizImagesApi';
 export { QuizImportJobsApi } from './QuizImportJobsApi';
 export { QuizQuestionGroupsApi } from './QuizQuestionGroupsApi';

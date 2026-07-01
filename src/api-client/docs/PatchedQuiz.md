@@ -15,9 +15,12 @@
 | `timeLimitMinutes`   | number                                                    |
 | `attemptsAllowed`    | number                                                    |
 | `shuffleQuestions`   | boolean                                                   |
+| `oneQuestionAtATime` | boolean                                                   |
+| `allowBacktracking`  | boolean                                                   |
 | `showCorrectAnswers` | [QuizShowAnswersEnum](QuizShowAnswersEnum.md)             |
 | `passingScore`       | number                                                    |
 | `passingScoreUnit`   | [QuizPassingScoreUnitEnum](QuizPassingScoreUnitEnum.md)   |
+| `scoringPolicy`      | [QuizScoringPolicyEnum](QuizScoringPolicyEnum.md)         |
 | `isPublished`        | boolean                                                   |
 | `quizQuestions`      | [Array&lt;QuizQuestion&gt;](QuizQuestion.md)              |
 | `questionGroups`     | [Array&lt;QuizQuestionGroup&gt;](QuizQuestionGroup.md)    |

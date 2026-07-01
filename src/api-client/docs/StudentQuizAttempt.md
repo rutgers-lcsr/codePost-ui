@@ -1,0 +1,22 @@
+# StudentQuizAttempt
+
+## Properties
+
+| Name                 | Type                                                       |
+| -------------------- | ---------------------------------------------------------- |
+| `id`                 | number                                                     |
+| `quiz`               | number                                                     |
+| `attemptNumber`      | number                                                     |
+| `status`             | [QuizAttemptStatusEnum](QuizAttemptStatusEnum.md)          |
+| `startedAt`          | string                                                     |
+| `deadline`           | string                                                     |
+| `submittedAt`        | string                                                     |
+| `score`              | number                                                     |
+| `maxScore`           | number                                                     |
+| `needsManualGrading` | boolean                                                    |
+| `passed`             | boolean                                                    |
+| `oneQuestionAtATime` | boolean                                                    |
+| `allowBacktracking`  | boolean                                                    |
+| `responses`          | [Array&lt;StudentQuizResponse&gt;](StudentQuizResponse.md) |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

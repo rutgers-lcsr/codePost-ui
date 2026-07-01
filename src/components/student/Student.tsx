@@ -23,7 +23,7 @@ import { Badge, Button, Card, Empty, Flex, Modal, Skeleton, Spin, Statistic, Tag
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -34,7 +34,9 @@ import { CLIENT_URL } from '../../config';
 import { USER_TYPE } from '../../types/common';
 
 import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/common';
-import { Course, StudentSubmission, Submission } from '../../api-client';
+import { Course, StudentQuiz, StudentSubmission, Submission } from '../../api-client';
+import StudentQuizzesSection from './quizzes/StudentQuizzesSection';
+import QuizTakeRoute from './quizzes/QuizTakeRoute';
 import type {
   StudentUploadCreateRequest,
   StudentUploadPartialUpdateRequest,
@@ -171,6 +173,9 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
+  const handleTakeQuiz = (quiz: StudentQuiz) => {
+    navigate(`quizzes/${quiz.id}/take`, { state: { title: quiz.title } });
+  };
   const queryClient = useQueryClient();
 
   // Subscribe to the permissions cache so capability checks in renderAssignmentRow re-evaluate
@@ -775,6 +780,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           </>
         )}
 
+        {/* Quizzes */}
+        <StudentQuizzesSection courseId={currentCourse.id} onTake={handleTakeQuiz} />
+
         {/* Upload Dialog */}
         <UploadSubmissionDialog
           isVisible={currentPanel === CURRENT_PANEL.UPLOADFILES || currentPanel === CURRENT_PANEL.ADDFILES}
@@ -852,7 +860,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     />
   );
 
-  return (
+  const courseShell = (
     <div id="Student">
       <CPLayoutAdmin
         header={header}
@@ -864,6 +872,14 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       />
       <SubmissionCelebration trigger={showCelebration} onComplete={() => setShowCelebration(false)} />
     </div>
+  );
+
+  return (
+    <Routes>
+      {/* Full-page quiz taking, outside the normal course chrome. */}
+      <Route path="quizzes/:quizId/take" element={<QuizTakeRoute courseId={currentCourse?.id} />} />
+      <Route path="*" element={courseShell} />
+    </Routes>
   );
 };
 

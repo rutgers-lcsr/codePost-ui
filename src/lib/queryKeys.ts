@@ -36,6 +36,8 @@ export const studentKeys = {
   assignments: (courseId: number) => ['student', 'assignments', courseId] as const,
   submissions: (courseId: number) => ['student', 'submissions', courseId] as const,
   histories: (courseId: number) => ['student', 'histories', courseId] as const,
+  availableQuizzes: (courseId: number) => ['student', 'availableQuizzes', courseId] as const,
+  quizAttempts: (quizId: number) => ['student', 'quizAttempts', quizId] as const,
 };
 
 export const graderKeys = {

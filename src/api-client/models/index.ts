@@ -7653,6 +7653,18 @@ export interface PatchedQuiz {
    */
   shuffleQuestions?: boolean;
   /**
+   * Sequential mode: show one question at a time instead of all on one page.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  oneQuestionAtATime?: boolean;
+  /**
+   * When sequential, whether students may return to previous questions.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  allowBacktracking?: boolean;
+  /**
    * When students may see the correct answers.
    *
    * * `never` - Never
@@ -7677,6 +7689,16 @@ export interface PatchedQuiz {
    * @memberof PatchedQuiz
    */
   passingScoreUnit?: QuizPassingScoreUnitEnum;
+  /**
+   * Which attempt counts as the official score when multiple attempts are allowed.
+   *
+   * * `highest` - Highest attempt counts
+   * * `latest` - Latest attempt counts
+   * * `average` - Average of attempts
+   * @type {QuizScoringPolicyEnum}
+   * @memberof PatchedQuiz
+   */
+  scoringPolicy?: QuizScoringPolicyEnum;
   /**
    * If false the quiz is a draft (author-only); students only see published quizzes.
    * @type {boolean}
@@ -7993,6 +8015,31 @@ export interface PatchedRubricComment {
    * @memberof PatchedRubricComment
    */
   name?: string | null;
+}
+/**
+ *
+ * @export
+ * @interface PatchedSaveQuizAnswerRequest
+ */
+export interface PatchedSaveQuizAnswerRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedSaveQuizAnswerRequest
+   */
+  response?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedSaveQuizAnswerRequest
+   */
+  answerText?: string;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof PatchedSaveQuizAnswerRequest
+   */
+  selectedChoices?: Array<number>;
 }
 /**
  *
@@ -9688,6 +9735,18 @@ export interface Quiz {
    */
   shuffleQuestions?: boolean;
   /**
+   * Sequential mode: show one question at a time instead of all on one page.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  oneQuestionAtATime?: boolean;
+  /**
+   * When sequential, whether students may return to previous questions.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  allowBacktracking?: boolean;
+  /**
    * When students may see the correct answers.
    *
    * * `never` - Never
@@ -9712,6 +9771,16 @@ export interface Quiz {
    * @memberof Quiz
    */
   passingScoreUnit?: QuizPassingScoreUnitEnum;
+  /**
+   * Which attempt counts as the official score when multiple attempts are allowed.
+   *
+   * * `highest` - Highest attempt counts
+   * * `latest` - Latest attempt counts
+   * * `average` - Average of attempts
+   * @type {QuizScoringPolicyEnum}
+   * @memberof Quiz
+   */
+  scoringPolicy?: QuizScoringPolicyEnum;
   /**
    * If false the quiz is a draft (author-only); students only see published quizzes.
    * @type {boolean}
@@ -9769,6 +9838,36 @@ export enum QuizAssignmentTriggerEnum {
   AfterFeedback = 'after_feedback',
 }
 
+/**
+ * * `in_progress` - In progress
+ * * `submitted` - Submitted
+ * @export
+ * @enum {string}
+ */
+export enum QuizAttemptStatusEnum {
+  InProgress = 'in_progress',
+  Submitted = 'submitted',
+}
+
+/**
+ * Shape of StudentQuiz.availability (documents the SerializerMethodField for the client).
+ * @export
+ * @interface QuizAvailability
+ */
+export interface QuizAvailability {
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizAvailability
+   */
+  isOpen: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizAvailability
+   */
+  reason: string;
+}
 /**
  * Read view of an uploaded description image. ``url`` is the public, token-based
  * endpoint that renders inline in Markdown.
@@ -10004,6 +10103,19 @@ export interface QuizQuestionGroup {
    */
   sortKey?: number;
 }
+/**
+ * * `highest` - Highest attempt counts
+ * * `latest` - Latest attempt counts
+ * * `average` - Average of attempts
+ * @export
+ * @enum {string}
+ */
+export enum QuizScoringPolicyEnum {
+  Highest = 'highest',
+  Latest = 'latest',
+  Average = 'average',
+}
+
 /**
  * * `never` - Never
  * * `after_submit` - After submitting
@@ -10447,6 +10559,19 @@ export interface ShellMetricsSession {
   lastActivity?: number | null;
 }
 /**
+ *
+ * @export
+ * @interface StartQuizAttemptRequest
+ */
+export interface StartQuizAttemptRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof StartQuizAttemptRequest
+   */
+  quiz: number;
+}
+/**
  * * `draft` - Draft
  * * `active` - Active
  * * `candidate` - Candidate
@@ -10474,6 +10599,366 @@ export enum StatusDfeEnum {
   Error = 'error',
 }
 
+/**
+ * A question as a student sees it — no provenance; correct answers gated by `reveal`.
+ * @export
+ * @interface StudentQuestion
+ */
+export interface StudentQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuestion
+   */
+  readonly id: number;
+  /**
+   * The type of question.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof StudentQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The question stem/prompt — single font (may contain HTML from Canvas).
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  text: string;
+  /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  description?: string;
+  /**
+   * For code questions: optional starter code shown to students.
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  starterCode?: string | null;
+  /**
+   * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  language?: string | null;
+  /**
+   *
+   * @type {Array<StudentQuestionChoice>}
+   * @memberof StudentQuestion
+   */
+  readonly choices: Array<StudentQuestionChoice>;
+  /**
+   * Feedback shown regardless of answer.
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  generalFeedback?: string;
+}
+
+/**
+ *
+ * @export
+ * @interface StudentQuestionChoice
+ */
+export interface StudentQuestionChoice {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuestionChoice
+   */
+  readonly id: number;
+  /**
+   * The choice text (or accepted answer value).
+   * @type {string}
+   * @memberof StudentQuestionChoice
+   */
+  text: string;
+  /**
+   * Order of this choice within the question.
+   * @type {number}
+   * @memberof StudentQuestionChoice
+   */
+  sortKey?: number;
+  /**
+   * Whether this choice is a correct answer.
+   * @type {boolean}
+   * @memberof StudentQuestionChoice
+   */
+  isCorrect?: boolean;
+  /**
+   * Optional per-choice feedback.
+   * @type {string}
+   * @memberof StudentQuestionChoice
+   */
+  feedback?: string;
+}
+/**
+ * Summary of a quiz for a student: settings, availability, and the caller's attempt usage.
+ * @export
+ * @interface StudentQuiz
+ */
+export interface StudentQuiz {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  course: number;
+  /**
+   * The assignment this quiz is attached to, if any.
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  assignment?: number | null;
+  /**
+   * The quiz title.
+   * @type {string}
+   * @memberof StudentQuiz
+   */
+  title: string;
+  /**
+   * Optional quiz description.
+   * @type {string}
+   * @memberof StudentQuiz
+   */
+  description?: string;
+  /**
+   * Time limit in minutes. Null = untimed.
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  timeLimitMinutes?: number | null;
+  /**
+   * Number of attempts allowed. 0 = unlimited.
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  attemptsAllowed?: number;
+  /**
+   * Which attempt counts as the official score when multiple attempts are allowed.
+   *
+   * * `highest` - Highest attempt counts
+   * * `latest` - Latest attempt counts
+   * * `average` - Average of attempts
+   * @type {QuizScoringPolicyEnum}
+   * @memberof StudentQuiz
+   */
+  scoringPolicy?: QuizScoringPolicyEnum;
+  /**
+   * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  passingScore?: number | null;
+  /**
+   * Whether passingScore is a percentage or an absolute point value.
+   *
+   * * `percent` - Percent
+   * * `points` - Points
+   * @type {QuizPassingScoreUnitEnum}
+   * @memberof StudentQuiz
+   */
+  passingScoreUnit?: QuizPassingScoreUnitEnum;
+  /**
+   * When students may see the correct answers.
+   *
+   * * `never` - Never
+   * * `after_submit` - After submitting
+   * * `after_close` - After the quiz closes
+   * @type {QuizShowAnswersEnum}
+   * @memberof StudentQuiz
+   */
+  showCorrectAnswers?: QuizShowAnswersEnum;
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  readonly questionCount: number;
+  /**
+   *
+   * @type {QuizAvailability}
+   * @memberof StudentQuiz
+   */
+  readonly availability: QuizAvailability;
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  readonly attemptsUsed: number;
+}
+
+/**
+ *
+ * @export
+ * @interface StudentQuizAttempt
+ */
+export interface StudentQuizAttempt {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuizAttempt
+   */
+  readonly id: number;
+  /**
+   * The quiz being attempted.
+   * @type {number}
+   * @memberof StudentQuizAttempt
+   */
+  quiz: number;
+  /**
+   * 1-based attempt index for this (quiz, student).
+   * @type {number}
+   * @memberof StudentQuizAttempt
+   */
+  attemptNumber?: number;
+  /**
+   * Attempt lifecycle state.
+   *
+   * * `in_progress` - In progress
+   * * `submitted` - Submitted
+   * @type {QuizAttemptStatusEnum}
+   * @memberof StudentQuizAttempt
+   */
+  status?: QuizAttemptStatusEnum;
+  /**
+   * When the student started this attempt.
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  startedAt?: string;
+  /**
+   * Hard stop = startedAt + quiz.timeLimitMinutes. Null when untimed.
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  deadline?: string | null;
+  /**
+   * When the attempt was submitted.
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  submittedAt?: string | null;
+  /**
+   * Auto-graded points earned (set on submit).
+   * @type {number}
+   * @memberof StudentQuizAttempt
+   */
+  score?: number | null;
+  /**
+   * Total points possible in this attempt (snapshot).
+   * @type {number}
+   * @memberof StudentQuizAttempt
+   */
+  maxScore?: number | null;
+  /**
+   * True if any response (essay/code) awaits manual grading.
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  needsManualGrading?: boolean;
+  /**
+   * Whether the attempt met quiz.passingScore. Null until fully graded or if no threshold.
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  passed?: boolean | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly oneQuestionAtATime: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly allowBacktracking: boolean;
+  /**
+   *
+   * @type {Array<StudentQuizResponse>}
+   * @memberof StudentQuizAttempt
+   */
+  readonly responses: Array<StudentQuizResponse>;
+}
+
+/**
+ *
+ * @export
+ * @interface StudentQuizResponse
+ */
+export interface StudentQuizResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuizResponse
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {StudentQuestion}
+   * @memberof StudentQuizResponse
+   */
+  readonly question: StudentQuestion;
+  /**
+   * Presentation order within the attempt (randomized when shuffleQuestions).
+   * @type {number}
+   * @memberof StudentQuizResponse
+   */
+  sortKey?: number;
+  /**
+   * Points this question is worth in this attempt (snapshot of override/base).
+   * @type {number}
+   * @memberof StudentQuizResponse
+   */
+  points?: number;
+  /**
+   * Typed answer for short-answer/numerical/essay/code questions.
+   * @type {string}
+   * @memberof StudentQuizResponse
+   */
+  answerText?: string;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof StudentQuizResponse
+   */
+  readonly selectedChoices: Array<number>;
+  /**
+   * Points awarded after grading. Null until graded.
+   * @type {number}
+   * @memberof StudentQuizResponse
+   */
+  pointsEarned?: number | null;
+  /**
+   * Whether the auto-graded answer was correct. Null for manual/ungraded.
+   * @type {boolean}
+   * @memberof StudentQuizResponse
+   */
+  isCorrect?: boolean | null;
+  /**
+   * True for essay/code responses awaiting manual grading.
+   * @type {boolean}
+   * @memberof StudentQuizResponse
+   */
+  needsManualGrading?: boolean;
+}
 /**
  *
  * @export

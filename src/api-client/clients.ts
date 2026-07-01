@@ -28,6 +28,7 @@ import {
   PromptVariantsApi,
   QuestionBanksApi,
   QuestionsApi,
+  QuizAttemptsApi,
   QuizImagesApi,
   QuizImportJobsApi,
   QuizQuestionGroupsApi,
@@ -101,6 +102,7 @@ export const promptTypesApi = new PromptTypesApi(apiClientConfig);
 export const promptVariantsApi = new PromptVariantsApi(apiClientConfig);
 export const questionBanksApi = new QuestionBanksApi(apiClientConfig);
 export const questionsApi = new QuestionsApi(apiClientConfig);
+export const quizAttemptsApi = new QuizAttemptsApi(apiClientConfig);
 export const quizImagesApi = new QuizImagesApi(apiClientConfig);
 export const quizImportJobsApi = new QuizImportJobsApi(apiClientConfig);
 export const quizQuestionGroupsApi = new QuizQuestionGroupsApi(apiClientConfig);

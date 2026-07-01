@@ -22,6 +22,7 @@ apis/PromptTypesApi.ts
 apis/PromptVariantsApi.ts
 apis/QuestionBanksApi.ts
 apis/QuestionsApi.ts
+apis/QuizAttemptsApi.ts
 apis/QuizImagesApi.ts
 apis/QuizImportJobsApi.ts
 apis/QuizQuestionGroupsApi.ts
@@ -232,6 +233,7 @@ docs/PatchedQuizQuestion.md
 docs/PatchedQuizQuestionGroup.md
 docs/PatchedRubricCategory.md
 docs/PatchedRubricComment.md
+docs/PatchedSaveQuizAnswerRequest.md
 docs/PatchedSection.md
 docs/PatchedSubmission.md
 docs/PatchedSubmissionFile.md
@@ -264,6 +266,9 @@ docs/QuestionTypeEnum.md
 docs/QuestionsApi.md
 docs/Quiz.md
 docs/QuizAssignmentTriggerEnum.md
+docs/QuizAttemptStatusEnum.md
+docs/QuizAttemptsApi.md
+docs/QuizAvailability.md
 docs/QuizImage.md
 docs/QuizImagesApi.md
 docs/QuizImportJob.md
@@ -274,6 +279,7 @@ docs/QuizQuestion.md
 docs/QuizQuestionGroup.md
 docs/QuizQuestionGroupsApi.md
 docs/QuizQuestionsApi.md
+docs/QuizScoringPolicyEnum.md
 docs/QuizShowAnswersEnum.md
 docs/QuizSourceEnum.md
 docs/QuizzesApi.md
@@ -295,8 +301,14 @@ docs/SetCredentialsResponse.md
 docs/SeverityEnum.md
 docs/ShellMetricsResponse.md
 docs/ShellMetricsSession.md
+docs/StartQuizAttemptRequest.md
 docs/Status4a6Enum.md
 docs/StatusDfeEnum.md
+docs/StudentQuestion.md
+docs/StudentQuestionChoice.md
+docs/StudentQuiz.md
+docs/StudentQuizAttempt.md
+docs/StudentQuizResponse.md
 docs/StudentSubmission.md
 docs/Submission.md
 docs/SubmissionCheckPermissionResponse.md
