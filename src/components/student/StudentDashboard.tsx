@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import {
   CalendarOutlined,
   CheckCircleFilled,
-  ClockCircleOutlined,
   EyeOutlined,
   FireOutlined,
   FormOutlined,
@@ -61,6 +60,9 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
+/** Max rows shown per needs-attention rail section before "Show all". */
+const RAIL_CAP = 5;
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Component                                                                 */
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -84,6 +86,22 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
 
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [showAllPeriods, setShowAllPeriods] = useState(false);
+
+  /* ── Needs-attention rail: capped lists with per-section expanders ───── */
+
+  const [expandedRail, setExpandedRail] = useState<Record<string, boolean>>({});
+  const capRail = <T,>(key: string, items: T[]): T[] => (expandedRail[key] ? items : items.slice(0, RAIL_CAP));
+  const railToggle = (key: string, total: number) =>
+    total > RAIL_CAP ? (
+      <Button
+        type="link"
+        size="small"
+        style={{ paddingInline: 0, marginTop: 4 }}
+        onClick={() => setExpandedRail((e) => ({ ...e, [key]: !e[key] }))}
+      >
+        {expandedRail[key] ? 'Show less' : `Show all ${total}`}
+      </Button>
+    ) : null;
 
   const sortedPeriods = useMemo(() => {
     const periods = new Set<string>();
@@ -285,272 +303,283 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         </Flex>
       )}
 
-      {/* ── Due this week ───────────────────────────────────────────────── */}
-      {!isLoading && dueThisWeek.length > 0 && (
-        <motion.section
-          aria-label={`Due this week — ${dueThisWeek.length} assignments`}
+      <div className={styles.mainSplit}>
+        {/* ── Course cards ──────────────────────────────────────────────── */}
+        {/* Rendered immediately from `courses`; each card fills in as its course query settles. */}
+        <motion.div
+          className={styles.mainCol}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
-          style={{ marginBottom: 24 }}
         >
-          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <FireOutlined style={{ color: '#ff4d4f' }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Due This Week
-            </Title>
-            <Badge count={dueThisWeek.length} size="small" />
-          </Flex>
-
-          <Flex vertical gap={8}>
-            <AnimatePresence>
-              {dueThisWeek.map(({ assignment, course }) => {
-                const sub = submissions[assignment.id]?.[0];
-                const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
-                const dueRel = assignment.uploadDueDate
-                  ? getRelativeDueDate(assignment.uploadDueDate)
-                  : { text: '', urgent: false };
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Your Courses
+          </Title>
+          <div className={styles.courseGrid}>
+            {displayCourses
+              .filter((c) => !c.archived)
+              .map((course) => {
+                const loading = isCourseLoading(course.id);
+                const progress = getProgress(course.id);
+                const next = courseNextDue[course.id];
                 const link = encodedCourseLink('student', course);
 
                 return (
-                  <motion.div
-                    key={assignment.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <Link to={link} style={{ textDecoration: 'none' }}>
-                      <Card size="small" hoverable>
-                        <Flex justify="space-between" align="center">
-                          <div>
-                            <Text strong>{assignment.name}</Text>
-                            <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {course.name}
-                            </Text>
-                          </div>
-                          <Flex align="center" gap={8}>
-                            {dueRel.text && (
-                              <Tag color={dueRel.urgent ? 'error' : 'default'}>
-                                <CalendarOutlined /> {dueRel.text}
-                              </Tag>
-                            )}
-                            {status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload ? (
-                              <Tag color="blue">
-                                <UploadOutlined /> Upload
-                              </Tag>
-                            ) : status === SubmissionStatus.NOT_REVIEWED ? (
-                              <Tag color="processing">
-                                <EyeOutlined /> View
-                              </Tag>
-                            ) : (
-                              <Tag color="default">Open</Tag>
-                            )}
-                          </Flex>
-                        </Flex>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </Flex>
-        </motion.section>
-      )}
-
-      {/* ── Quizzes to take ─────────────────────────────────────────────── */}
-      {!isLoading && quizzesToTake.length > 0 && (
-        <motion.section
-          aria-label={`Quizzes to take — ${quizzesToTake.length}`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.08, ease: [0.4, 0, 0.2, 1] }}
-          style={{ marginBottom: 24 }}
-        >
-          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <FormOutlined style={{ color: '#198665' }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Quizzes to Take
-            </Title>
-            <Badge count={quizzesToTake.length} size="small" />
-          </Flex>
-
-          <Flex vertical gap={8}>
-            {quizzesToTake.map(({ quiz, course }) => (
-              <Link
-                key={`${course.id}-${quiz.id}`}
-                to={encodedCourseLink('student', course, `quizzes/${quiz.id}/take`)}
-                style={{ textDecoration: 'none' }}
-              >
-                <Card size="small" hoverable>
-                  <Flex justify="space-between" align="center">
-                    <div>
-                      <Text strong>{quiz.title}</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {course.name}
-                      </Text>
-                    </div>
-                    <Flex align="center" gap={8}>
-                      {quiz.timeLimitMinutes ? (
-                        <Tag>
-                          <ClockCircleOutlined /> {quiz.timeLimitMinutes} min
-                        </Tag>
-                      ) : null}
-                      <Tag color="green">{quizActionLabel(quiz)}</Tag>
-                    </Flex>
-                  </Flex>
-                </Card>
-              </Link>
-            ))}
-          </Flex>
-        </motion.section>
-      )}
-
-      {/* ── Pending feedback ────────────────────────────────────────────── */}
-      {!isLoading && pendingFeedback.length > 0 && (
-        <motion.section
-          aria-label={`New feedback — ${pendingFeedback.length} assignments`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-          style={{ marginBottom: 24 }}
-        >
-          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <EyeOutlined style={{ color: '#1677ff' }} />
-            <Title level={5} style={{ margin: 0 }}>
-              New Feedback
-            </Title>
-            <Badge count={pendingFeedback.length} size="small" color="blue" />
-          </Flex>
-
-          <Flex vertical gap={8}>
-            <AnimatePresence>
-              {pendingFeedback.map(({ assignment, course }) => {
-                const link = encodedCourseLink('student', course);
-                return (
-                  <motion.div
-                    key={assignment.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    <Link to={link} style={{ textDecoration: 'none' }}>
-                      <Card size="small" hoverable>
-                        <Flex justify="space-between" align="center">
-                          <div>
-                            <Text strong>{assignment.name}</Text>
-                            <Badge status="processing" style={{ marginLeft: 6 }} />
-                            <br />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {course.name}
-                            </Text>
-                          </div>
-                          <Tag color="warning">
-                            <EyeOutlined /> View Feedback
-                          </Tag>
-                        </Flex>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </Flex>
-        </motion.section>
-      )}
-
-      {/* ── Course cards ────────────────────────────────────────────────── */}
-      {/* Rendered immediately from `courses`; each card fills in as its course query settles. */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <Title level={5} style={{ marginBottom: 12 }}>
-          Your Courses
-        </Title>
-        <div className={styles.courseGrid}>
-          {displayCourses
-            .filter((c) => !c.archived)
-            .map((course) => {
-              const loading = isCourseLoading(course.id);
-              const progress = getProgress(course.id);
-              const next = courseNextDue[course.id];
-              const link = encodedCourseLink('student', course);
-
-              return (
-                <Link key={course.id} to={link} style={{ textDecoration: 'none' }}>
-                  <Card size="small" hoverable>
-                    <Flex justify="space-between" align="flex-start" style={{ marginBottom: 8 }}>
-                      <Text strong style={{ fontSize: 15 }}>
-                        {course.name}
-                      </Text>
-                      <Tag>{course.period}</Tag>
-                    </Flex>
-
-                    {loading ? (
-                      <Flex align="center" gap={8} style={{ marginTop: 4 }}>
-                        <Spin size="small" />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          Loading…
+                  <Link key={course.id} to={link} style={{ textDecoration: 'none' }}>
+                    <Card size="small" hoverable>
+                      <Flex justify="space-between" align="flex-start" style={{ marginBottom: 8 }}>
+                        <Text strong style={{ fontSize: 15 }}>
+                          {course.name}
                         </Text>
+                        <Tag>{course.period}</Tag>
                       </Flex>
-                    ) : (
-                      <>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {progress.total} assignment{progress.total === 1 ? '' : 's'}
-                        </Text>
 
-                        {/* Progress */}
-                        {progress.total > 0 && (
-                          <div style={{ marginTop: 10 }}>
-                            <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                      {loading ? (
+                        <Flex align="center" gap={8} style={{ marginTop: 4 }}>
+                          <Spin size="small" />
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            Loading…
+                          </Text>
+                        </Flex>
+                      ) : (
+                        <>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {progress.total} assignment{progress.total === 1 ? '' : 's'}
+                          </Text>
+
+                          {/* Progress */}
+                          {progress.total > 0 && (
+                            <div style={{ marginTop: 10 }}>
+                              <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  {Math.round(progress.percent)}% complete
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  {progress.completed}/{progress.total}
+                                </Text>
+                              </Flex>
+                              <Progress
+                                percent={progress.percent}
+                                showInfo={false}
+                                size="small"
+                                status={progress.percent === 100 ? 'success' : 'active'}
+                              />
+                            </div>
+                          )}
+
+                          {/* Next due */}
+                          {next && (
+                            <Flex gap={6} align="center" style={{ marginTop: 8 }}>
+                              <CalendarOutlined style={{ fontSize: 11, color: '#999' }} />
                               <Text type="secondary" style={{ fontSize: 12 }}>
-                                {Math.round(progress.percent)}% complete
+                                {next.name}
                               </Text>
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {progress.completed}/{progress.total}
-                              </Text>
+                              <Tag color="default" style={{ fontSize: 11 }}>
+                                {next.dueText}
+                              </Tag>
                             </Flex>
-                            <Progress
-                              percent={progress.percent}
-                              showInfo={false}
-                              size="small"
-                              status={progress.percent === 100 ? 'success' : 'active'}
-                            />
-                          </div>
-                        )}
+                          )}
 
-                        {/* Next due */}
-                        {next && (
-                          <Flex gap={6} align="center" style={{ marginTop: 8 }}>
-                            <CalendarOutlined style={{ fontSize: 11, color: '#999' }} />
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {next.name}
-                            </Text>
-                            <Tag color="default" style={{ fontSize: 11 }}>
-                              {next.dueText}
+                          {/* Fully completed badge */}
+                          {progress.total > 0 && progress.percent === 100 && (
+                            <Tag color="success" icon={<CheckCircleFilled />} style={{ marginTop: 8 }}>
+                              All done!
                             </Tag>
-                          </Flex>
-                        )}
+                          )}
+                        </>
+                      )}
+                    </Card>
+                  </Link>
+                );
+              })}
+          </div>
+        </motion.div>
 
-                        {/* Fully completed badge */}
-                        {progress.total > 0 && progress.percent === 100 && (
-                          <Tag color="success" icon={<CheckCircleFilled />} style={{ marginTop: 8 }}>
-                            All done!
+        {/* ── Needs-attention rail ──────────────────────────────────────── */}
+        {!isLoading && (dueThisWeek.length > 0 || quizzesToTake.length > 0 || pendingFeedback.length > 0) && (
+          <div className={styles.rail}>
+            {/* Due this week */}
+            {dueThisWeek.length > 0 && (
+              <motion.section
+                aria-label={`Due this week — ${dueThisWeek.length} assignments`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
+                style={{ marginBottom: 24 }}
+              >
+                <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+                  <FireOutlined style={{ color: '#ff4d4f' }} />
+                  <Title level={5} style={{ margin: 0 }}>
+                    Due This Week
+                  </Title>
+                  <Badge count={dueThisWeek.length} size="small" />
+                </Flex>
+
+                <Flex vertical gap={8}>
+                  <AnimatePresence>
+                    {capRail('due', dueThisWeek).map(({ assignment, course }) => {
+                      const sub = submissions[assignment.id]?.[0];
+                      const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
+                      const dueRel = assignment.uploadDueDate
+                        ? getRelativeDueDate(assignment.uploadDueDate)
+                        : { text: '', urgent: false };
+                      const link = encodedCourseLink('student', course);
+
+                      return (
+                        <motion.div
+                          key={assignment.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                        >
+                          <Link to={link} style={{ textDecoration: 'none' }}>
+                            <Card size="small" hoverable>
+                              <Flex justify="space-between" align="center" gap={8}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <Text strong ellipsis style={{ display: 'block' }}>
+                                    {assignment.name}
+                                  </Text>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                    {course.name}
+                                  </Text>
+                                </div>
+                                {dueRel.text ? (
+                                  <Tag color={dueRel.urgent ? 'error' : 'default'} style={{ marginInlineEnd: 0 }}>
+                                    <CalendarOutlined /> {dueRel.text}
+                                  </Tag>
+                                ) : status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload ? (
+                                  <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+                                    <UploadOutlined /> Upload
+                                  </Tag>
+                                ) : status === SubmissionStatus.NOT_REVIEWED ? (
+                                  <Tag color="processing" style={{ marginInlineEnd: 0 }}>
+                                    <EyeOutlined /> View
+                                  </Tag>
+                                ) : (
+                                  <Tag color="default" style={{ marginInlineEnd: 0 }}>
+                                    Open
+                                  </Tag>
+                                )}
+                              </Flex>
+                            </Card>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </Flex>
+                {railToggle('due', dueThisWeek.length)}
+              </motion.section>
+            )}
+
+            {/* Quizzes to take */}
+            {quizzesToTake.length > 0 && (
+              <motion.section
+                aria-label={`Quizzes to take — ${quizzesToTake.length}`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.08, ease: [0.4, 0, 0.2, 1] }}
+                style={{ marginBottom: 24 }}
+              >
+                <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+                  <FormOutlined style={{ color: '#198665' }} />
+                  <Title level={5} style={{ margin: 0 }}>
+                    Quizzes to Take
+                  </Title>
+                  <Badge count={quizzesToTake.length} size="small" />
+                </Flex>
+
+                <Flex vertical gap={8}>
+                  {capRail('quizzes', quizzesToTake).map(({ quiz, course }) => (
+                    <Link
+                      key={`${course.id}-${quiz.id}`}
+                      to={encodedCourseLink('student', course, `quizzes/${quiz.id}/take`)}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <Card size="small" hoverable>
+                        <Flex justify="space-between" align="center" gap={8}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <Text strong ellipsis style={{ display: 'block' }}>
+                              {quiz.title}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {course.name}
+                            </Text>
+                          </div>
+                          <Tag color="green" style={{ marginInlineEnd: 0 }}>
+                            {quizActionLabel(quiz)}
                           </Tag>
-                        )}
-                      </>
-                    )}
-                  </Card>
-                </Link>
-              );
-            })}
-        </div>
-      </motion.div>
+                        </Flex>
+                      </Card>
+                    </Link>
+                  ))}
+                </Flex>
+                {railToggle('quizzes', quizzesToTake.length)}
+              </motion.section>
+            )}
+
+            {/* New feedback */}
+            {pendingFeedback.length > 0 && (
+              <motion.section
+                aria-label={`New feedback — ${pendingFeedback.length} assignments`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+                style={{ marginBottom: 24 }}
+              >
+                <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+                  <EyeOutlined style={{ color: '#1677ff' }} />
+                  <Title level={5} style={{ margin: 0 }}>
+                    New Feedback
+                  </Title>
+                  <Badge count={pendingFeedback.length} size="small" color="blue" />
+                </Flex>
+
+                <Flex vertical gap={8}>
+                  <AnimatePresence>
+                    {capRail('feedback', pendingFeedback).map(({ assignment, course }) => {
+                      const link = encodedCourseLink('student', course);
+                      return (
+                        <motion.div
+                          key={assignment.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                        >
+                          <Link to={link} style={{ textDecoration: 'none' }}>
+                            <Card size="small" hoverable>
+                              <Flex justify="space-between" align="center" gap={8}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <Flex align="center" gap={6}>
+                                    <Text strong ellipsis style={{ display: 'block', minWidth: 0 }}>
+                                      {assignment.name}
+                                    </Text>
+                                    <Badge status="processing" />
+                                  </Flex>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                    {course.name}
+                                  </Text>
+                                </div>
+                                <Tag color="warning" style={{ marginInlineEnd: 0 }}>
+                                  <EyeOutlined /> View
+                                </Tag>
+                              </Flex>
+                            </Card>
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </Flex>
+                {railToggle('feedback', pendingFeedback.length)}
+              </motion.section>
+            )}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

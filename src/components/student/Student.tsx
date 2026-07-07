@@ -23,7 +23,7 @@ import { Badge, Button, Card, Empty, Flex, Modal, Skeleton, Spin, Statistic, Tag
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -63,7 +63,9 @@ import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
 import AssignmentRow from './AssignmentRow';
 import { SubmissionStatus } from './submissionStatus';
+import { assignmentNeedsAction, quizNeedsAction } from './actionStatus';
 import AssignmentSection from './AssignmentSection';
+import StudentNav from './StudentNav';
 import styles from './Student.module.scss';
 import SubmissionCelebration from './SubmissionCelebration';
 import { usePermissionsStore, selectCaps } from '../../stores/usePermissionsStore';
@@ -174,11 +176,17 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
+  const location = useLocation();
   const handleTakeQuiz = useCallback(
     (quiz: StudentQuiz) => {
-      navigate(`quizzes/${quiz.id}/take`, { state: { title: quiz.title } });
+      if (!currentCourse) return;
+      // Absolute path: this can fire from either the Assignments or Quizzes page,
+      // so a relative `quizzes/...` would double up on the latter.
+      navigate(encodedCourseLink('student', currentCourse, `quizzes/${quiz.id}/take`), {
+        state: { title: quiz.title, from: location.pathname },
+      });
     },
-    [navigate],
+    [navigate, currentCourse, location.pathname],
   );
   const queryClient = useQueryClient();
 
@@ -191,7 +199,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const isLoadingAssignments = assignmentsQuery.isPending;
 
   // Attached quizzes surface on their assignment card; group them by assignment id.
-  const { data: courseQuizzes = [] } = useAvailableQuizzes(currentCourse?.id);
+  const { data: courseQuizzes = [], isLoading: isLoadingQuizzes } = useAvailableQuizzes(currentCourse?.id);
   const quizzesByAssignment = React.useMemo(() => {
     const map = new Map<number, StudentQuiz[]>();
     for (const quiz of courseQuizzes) {
@@ -202,6 +210,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     }
     return map;
   }, [courseQuizzes]);
+  const standaloneQuizzes = React.useMemo(() => courseQuizzes.filter((q) => q.assignment == null), [courseQuizzes]);
 
   const submissionsQuery = useStudentSubmissionsQuery(
     currentCourse?.id,
@@ -512,6 +521,22 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     };
   }, [groupedSections, submissions, getSubmissionStatus]);
 
+  // Sidebar badge counts: items on each page the student still needs to act on.
+  const navCounts = useMemo(
+    () => ({
+      assignments: currentCourseAssignments.filter((a) =>
+        assignmentNeedsAction({
+          status: getSubmissionStatus(a, submissions[a.id]?.[0]),
+          hasSubmission: submissions[a.id]?.[0] !== undefined,
+          allowStudentUpload: !!a.allowStudentUpload,
+          quizzes: quizzesByAssignment.get(a.id) ?? [],
+        }),
+      ).length,
+      quizzes: standaloneQuizzes.filter(quizNeedsAction).length,
+    }),
+    [currentCourseAssignments, submissions, getSubmissionStatus, quizzesByAssignment, standaloneQuizzes],
+  );
+
   // Build a row for an assignment (shared renderer)
   const renderAssignmentRow = useCallback(
     (assignment: Assignment, opts: { showPartners: boolean; showStats: boolean; showUpload: boolean }) => {
@@ -628,6 +653,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   // Render content
   let studentContent;
+  let quizzesContent;
   if (!currentCourse) {
     studentContent = (
       <div className={styles.console}>
@@ -639,6 +665,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         </Flex>
       </div>
     );
+    quizzesContent = studentContent;
   } else if (isLoadingAssignments) {
     studentContent = (
       <div className={styles.console}>
@@ -647,6 +674,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         </Flex>
       </div>
     );
+    quizzesContent = studentContent;
   } else {
     const lateDayCredits = getLateDayCreditsComponent();
     const assignmentList = currentCourseAssignments;
@@ -673,30 +701,30 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     const isEmpty = !isLoading && assignmentList.length === 0;
     const hasAssignments = !isLoading && assignmentList.length > 0 && groupedSections;
 
-    studentContent = (
-      <div className={styles.console}>
-        {/* Header */}
-        <header style={{ marginBottom: 24 }}>
-          <Flex justify="space-between" align="flex-start">
-            <div>
-              <Typography.Title level={2} style={{ margin: 0, fontSize: 28 }}>
-                {currentCourse.name}
-              </Typography.Title>
-              {currentCourse.period && (
-                <Typography.Text type="secondary" style={{ fontSize: 15 }}>
-                  {currentCourse.period}
-                </Typography.Text>
-              )}
-            </div>
-            {lateDayCredits && (
-              <Tag icon={<ClockCircleOutlined />} color="blue">
-                {lateDayCredits}
-              </Tag>
+    const courseHeader = (
+      <header style={{ marginBottom: 24 }}>
+        <Flex justify="space-between" align="flex-start">
+          <div>
+            <Typography.Title level={2} style={{ margin: 0, fontSize: 28 }}>
+              {currentCourse.name}
+            </Typography.Title>
+            {currentCourse.period && (
+              <Typography.Text type="secondary" style={{ fontSize: 15 }}>
+                {currentCourse.period}
+              </Typography.Text>
             )}
-          </Flex>
-        </header>
+          </div>
+          {lateDayCredits && (
+            <Tag icon={<ClockCircleOutlined />} color="blue">
+              {lateDayCredits}
+            </Tag>
+          )}
+        </Flex>
+      </header>
+    );
 
-        {/* Summary stats */}
+    const statsCard = (
+      <>
         {hasAssignments && stats.total > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -727,7 +755,28 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
             </Card>
           </motion.div>
         )}
+      </>
+    );
 
+    // Shared page chrome: header + stats bar on top, then the page list on the
+    // left with the page content beside it (docs-style).
+    const pageChrome = (pageContent: React.ReactNode) => (
+      <div className={styles.console}>
+        {courseHeader}
+        {statsCard}
+        <Flex gap={24} align="flex-start">
+          <StudentNav
+            course={currentCourse}
+            assignmentsCount={isLoadingSubmissions ? 0 : navCounts.assignments}
+            quizzesCount={navCounts.quizzes}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>{pageContent}</div>
+        </Flex>
+      </div>
+    );
+
+    studentContent = pageChrome(
+      <>
         {/* Loading skeleton */}
         {isLoading && <Skeleton active paragraph={{ rows: 6 }} />}
 
@@ -801,9 +850,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           </>
         )}
 
-        {/* Quizzes */}
-        <StudentQuizzesSection courseId={currentCourse.id} onTake={handleTakeQuiz} />
-
         {/* Upload Dialog */}
         <UploadSubmissionDialog
           isVisible={currentPanel === CURRENT_PANEL.UPLOADFILES || currentPanel === CURRENT_PANEL.ADDFILES}
@@ -844,7 +890,19 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           isStudent={true}
           defaultFiles={defaultFiles}
         />
-      </div>
+      </>,
+    );
+
+    quizzesContent = pageChrome(
+      <>
+        {/* Standalone quizzes; attached quizzes live on their assignment card. */}
+        <StudentQuizzesSection courseId={currentCourse.id} onTake={handleTakeQuiz} />
+        {!isLoadingQuizzes && standaloneQuizzes.length === 0 && (
+          <Flex justify="center" align="center" style={{ minHeight: 300 }}>
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No quizzes for this course yet." />
+          </Flex>
+        )}
+      </>,
     );
   }
 
@@ -881,11 +939,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     />
   );
 
-  const courseShell = (
+  const shell = (content: React.ReactNode) => (
     <div id="Student">
       <CPLayoutAdmin
         header={header}
-        detail={studentContent}
+        detail={content}
         navigation={() => null}
         collapsible={true}
         hasSider={false}
@@ -899,7 +957,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     <Routes>
       {/* Full-page quiz taking, outside the normal course chrome. */}
       <Route path="quizzes/:quizId/take" element={<QuizTakeRoute courseId={currentCourse?.id} />} />
-      <Route path="*" element={courseShell} />
+      <Route path="quizzes" element={shell(quizzesContent)} />
+      <Route path="*" element={shell(studentContent)} />
     </Routes>
   );
 };

@@ -9,9 +9,9 @@ import { COURSE_NAME, COURSE_PERIOD } from './constants';
 
 const courseUrl = `/student/${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}`;
 
-/** Open a standalone quiz from the course view's Quizzes section by (partial) title. */
+/** Open a standalone quiz from the course view's Quizzes page by (partial) title. */
 async function openQuiz(page: Page, titleFragment: string) {
-  await page.goto(courseUrl);
+  await page.goto(`${courseUrl}/quizzes`);
   const card = page.getByTestId('student-quiz-card').filter({ hasText: titleFragment });
   await card.getByTestId('student-quiz-action').click();
   await expect(page.getByTestId('quiz-taking')).toBeVisible();

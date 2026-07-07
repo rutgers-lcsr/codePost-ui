@@ -2,6 +2,7 @@
 import React, { useCallback, useState } from 'react';
 import { Button, Flex, Tag, Tooltip, Typography } from 'antd';
 import {
+  CheckCircleFilled,
   DownOutlined,
   UploadOutlined,
   PlusOutlined,
@@ -16,6 +17,7 @@ import { CodePostDate } from '../utils/CodepostDate';
 import { SubmissionStatus } from './submissionStatus';
 import { StudentQuiz } from '../../api-client';
 import { quizAction, quizActionLabel } from './quizzes/quizStatus';
+import { assignmentIsDone, assignmentNeedsAction } from './actionStatus';
 
 interface AssignmentRowProps {
   assignmentName: string;
@@ -114,6 +116,11 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   const [expanded, setExpanded] = useState(false);
   const hasGrade = grade !== null && grade !== undefined && maxPoints !== undefined && maxPoints !== null;
   const showAddFiles = liveFeedbackMode && hasExistingSubmission && !isFinalized;
+
+  // Corner indicator: green check when fully done, red dot while action is still possible.
+  const actionInput = { status, hasSubmission: hasExistingSubmission, allowStudentUpload, quizzes };
+  const isDone = assignmentIsDone(actionInput);
+  const needsAction = !isDone && assignmentNeedsAction(actionInput);
 
   // Only stats live in the dropdown
   const hasStatsContent = showStats && !hideGrades && (meanGrade || medianGrade);
@@ -283,6 +290,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
       role="article"
       aria-label={assignmentName}
       style={{
+        position: 'relative',
         borderRadius: 8,
         border: '1px solid #f0f0f0',
         padding: '12px 16px',
@@ -291,6 +299,42 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
         background: '#fff',
       }}
     >
+      {isDone && (
+        <CheckCircleFilled
+          aria-label="Done"
+          data-testid="assignment-done-indicator"
+          style={{
+            position: 'absolute',
+            top: -8,
+            right: -8,
+            fontSize: 18,
+            color: '#52c41a',
+            background: '#fff',
+            borderRadius: '50%',
+            boxShadow: '0 0 0 2px #fff',
+            zIndex: 2,
+            lineHeight: 1,
+          }}
+        />
+      )}
+      {needsAction && (
+        <span
+          aria-label="Needs action"
+          data-testid="assignment-todo-indicator"
+          style={{
+            position: 'absolute',
+            top: -6,
+            right: -6,
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: '#ff4d4f',
+            border: '2px solid #fff',
+            boxSizing: 'border-box',
+            zIndex: 2,
+          }}
+        />
+      )}
       <Flex
         align="center"
         gap={12}
@@ -307,6 +351,15 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
             <Typography.Text strong ellipsis style={{ fontSize: 14 }}>
               {assignmentName}
             </Typography.Text>
+            {quizzes.length > 0 && (
+              <Tag
+                icon={<FormOutlined />}
+                color="green"
+                style={{ margin: 0, fontSize: 11, lineHeight: '18px', paddingInline: 6, flexShrink: 0 }}
+              >
+                Quiz
+              </Tag>
+            )}
             {status === SubmissionStatus.PENDING && (
               <span
                 style={{

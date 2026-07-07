@@ -12,26 +12,44 @@
 
 .courseGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 12px;
+}
+
+/* Courses as the main column, with a narrow "needs attention" rail beside it.
+   The rail wraps below the courses when the viewport gets too narrow. */
+.mainSplit {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.mainCol {
+  flex: 1 1 620px;
+  min-width: 0;
+}
+
+.rail {
+  flex: 1 1 300px;
+  max-width: 360px;
+  min-width: 280px;
 }
 
 @media (max-width: 1024px) {
   .dashboard {
     padding: 40px 32px 48px;
   }
+}
 
-  .courseGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (max-width: 900px) {
+  .rail {
+    max-width: none;
   }
 }
 
 @media (max-width: 700px) {
   .dashboard {
     padding: 20px 16px 32px;
-  }
-
-  .courseGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

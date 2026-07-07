@@ -95,7 +95,9 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                style={{ overflow: 'hidden' }}
+                // Negative margin + matching padding move the clip edge outward so the
+                // cards' overhanging corner indicators aren't cut off.
+                style={{ overflow: 'hidden', margin: '0 -12px', padding: '0 12px' }}
               >
                 <motion.div
                   initial="hidden"

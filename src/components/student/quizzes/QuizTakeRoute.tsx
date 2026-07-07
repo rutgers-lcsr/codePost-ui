@@ -14,10 +14,14 @@ const QuizTakeRoute: React.FC<{ courseId?: number }> = ({ courseId }) => {
   if (!courseId || !quizId) return <Navigate to="/student" replace />;
 
   const base = location.pathname.replace(/\/quizzes\/[^/]+\/take\/?$/, '') || '/student';
-  const title = (location.state as { title?: string } | null)?.title;
+  const state = location.state as { title?: string; from?: string } | null;
+  const title = state?.title;
+  // Return to the page the quiz was started from (Assignments or Quizzes);
+  // deep links carry no state and fall back to the course root.
+  const back = state?.from ?? base;
 
   return (
-    <QuizTakingView quizId={quizId} courseId={courseId} quizTitle={title} onExit={() => navigate(base)} />
+    <QuizTakingView quizId={quizId} courseId={courseId} quizTitle={title} onExit={() => navigate(back)} />
   );
 };
 
