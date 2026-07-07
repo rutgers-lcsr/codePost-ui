@@ -5,8 +5,10 @@ import { Link } from 'react-router-dom';
 import {
   CalendarOutlined,
   CheckCircleFilled,
+  ClockCircleOutlined,
   EyeOutlined,
   FireOutlined,
+  FormOutlined,
   InboxOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
@@ -18,6 +20,8 @@ import { Assignment } from '../../types/common';
 import { SubmissionStatus } from './submissionStatus';
 import { encodedCourseLink } from '../core/CourseMenu';
 import { useStudentData, getSubmissionStatusFor } from './useStudentData';
+import { useAllAvailableQuizzes } from './quizzes/queries';
+import { quizAction, quizActionLabel } from './quizzes/quizStatus';
 import styles from './StudentDashboard.module.scss';
 
 const { Title, Text } = Typography;
@@ -67,10 +71,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
     viewsBySubmission,
     isLoadingAssignments,
     isLoadingSubmissions,
+    isCourseLoading,
     getGroupedSections,
     getProgress,
   } = useStudentData(courses, userEmail, studentSections);
 
+  // Aggregate widgets (summary stats, "Due This Week", "New Feedback") need every course settled;
+  // the course grid below renders immediately and fills each card in as its course resolves.
   const isLoading = isLoadingAssignments || isLoadingSubmissions;
 
   /* ── Period filter ───────────────────────────────────────────────────── */
@@ -106,6 +113,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
     () => (selectedPeriod ? courses.filter((c) => c.period === selectedPeriod) : courses),
     [courses, selectedPeriod],
   );
+
+  // Quizzes across the shown courses that the student can start or resume now.
+  const quizzesToTake = useAllAvailableQuizzes(displayCourses).filter(({ quiz }) => {
+    const action = quizAction(quiz);
+    return action === 'start' || action === 'resume';
+  });
 
   /* ── Aggregate cross-course data ─────────────────────────────────────── */
 
@@ -272,13 +285,6 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         </Flex>
       )}
 
-      {/* ── Loading state ───────────────────────────────────────────────── */}
-      {isLoading && (
-        <Flex justify="center" style={{ padding: 64 }}>
-          <Spin tip="Loading your assignments…" size="large" />
-        </Flex>
-      )}
-
       {/* ── Due this week ───────────────────────────────────────────────── */}
       {!isLoading && dueThisWeek.length > 0 && (
         <motion.section
@@ -353,6 +359,55 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         </motion.section>
       )}
 
+      {/* ── Quizzes to take ─────────────────────────────────────────────── */}
+      {!isLoading && quizzesToTake.length > 0 && (
+        <motion.section
+          aria-label={`Quizzes to take — ${quizzesToTake.length}`}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.08, ease: [0.4, 0, 0.2, 1] }}
+          style={{ marginBottom: 24 }}
+        >
+          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+            <FormOutlined style={{ color: '#198665' }} />
+            <Title level={5} style={{ margin: 0 }}>
+              Quizzes to Take
+            </Title>
+            <Badge count={quizzesToTake.length} size="small" />
+          </Flex>
+
+          <Flex vertical gap={8}>
+            {quizzesToTake.map(({ quiz, course }) => (
+              <Link
+                key={`${course.id}-${quiz.id}`}
+                to={encodedCourseLink('student', course, `quizzes/${quiz.id}/take`)}
+                style={{ textDecoration: 'none' }}
+              >
+                <Card size="small" hoverable>
+                  <Flex justify="space-between" align="center">
+                    <div>
+                      <Text strong>{quiz.title}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {course.name}
+                      </Text>
+                    </div>
+                    <Flex align="center" gap={8}>
+                      {quiz.timeLimitMinutes ? (
+                        <Tag>
+                          <ClockCircleOutlined /> {quiz.timeLimitMinutes} min
+                        </Tag>
+                      ) : null}
+                      <Tag color="green">{quizActionLabel(quiz)}</Tag>
+                    </Flex>
+                  </Flex>
+                </Card>
+              </Link>
+            ))}
+          </Flex>
+        </motion.section>
+      )}
+
       {/* ── Pending feedback ────────────────────────────────────────────── */}
       {!isLoading && pendingFeedback.length > 0 && (
         <motion.section
@@ -408,83 +463,94 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
       )}
 
       {/* ── Course cards ────────────────────────────────────────────────── */}
-      {!isLoading && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
-        >
-          <Title level={5} style={{ marginBottom: 12 }}>
-            Your Courses
-          </Title>
-          <div className={styles.courseGrid}>
-            {displayCourses
-              .filter((c) => !c.archived)
-              .map((course) => {
-                const progress = getProgress(course.id);
-                const next = courseNextDue[course.id];
-                const link = encodedCourseLink('student', course);
+      {/* Rendered immediately from `courses`; each card fills in as its course query settles. */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <Title level={5} style={{ marginBottom: 12 }}>
+          Your Courses
+        </Title>
+        <div className={styles.courseGrid}>
+          {displayCourses
+            .filter((c) => !c.archived)
+            .map((course) => {
+              const loading = isCourseLoading(course.id);
+              const progress = getProgress(course.id);
+              const next = courseNextDue[course.id];
+              const link = encodedCourseLink('student', course);
 
-                return (
-                  <Link key={course.id} to={link} style={{ textDecoration: 'none' }}>
-                    <Card size="small" hoverable>
-                      <Flex justify="space-between" align="flex-start" style={{ marginBottom: 8 }}>
-                        <Text strong style={{ fontSize: 15 }}>
-                          {course.name}
-                        </Text>
-                        <Tag>{course.period}</Tag>
-                      </Flex>
-
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {progress.total} assignment{progress.total === 1 ? '' : 's'}
+              return (
+                <Link key={course.id} to={link} style={{ textDecoration: 'none' }}>
+                  <Card size="small" hoverable>
+                    <Flex justify="space-between" align="flex-start" style={{ marginBottom: 8 }}>
+                      <Text strong style={{ fontSize: 15 }}>
+                        {course.name}
                       </Text>
+                      <Tag>{course.period}</Tag>
+                    </Flex>
 
-                      {/* Progress */}
-                      {progress.total > 0 && (
-                        <div style={{ marginTop: 10 }}>
-                          <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                    {loading ? (
+                      <Flex align="center" gap={8} style={{ marginTop: 4 }}>
+                        <Spin size="small" />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          Loading…
+                        </Text>
+                      </Flex>
+                    ) : (
+                      <>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {progress.total} assignment{progress.total === 1 ? '' : 's'}
+                        </Text>
+
+                        {/* Progress */}
+                        {progress.total > 0 && (
+                          <div style={{ marginTop: 10 }}>
+                            <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                {Math.round(progress.percent)}% complete
+                              </Text>
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                {progress.completed}/{progress.total}
+                              </Text>
+                            </Flex>
+                            <Progress
+                              percent={progress.percent}
+                              showInfo={false}
+                              size="small"
+                              status={progress.percent === 100 ? 'success' : 'active'}
+                            />
+                          </div>
+                        )}
+
+                        {/* Next due */}
+                        {next && (
+                          <Flex gap={6} align="center" style={{ marginTop: 8 }}>
+                            <CalendarOutlined style={{ fontSize: 11, color: '#999' }} />
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                              {Math.round(progress.percent)}% complete
+                              {next.name}
                             </Text>
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {progress.completed}/{progress.total}
-                            </Text>
+                            <Tag color="default" style={{ fontSize: 11 }}>
+                              {next.dueText}
+                            </Tag>
                           </Flex>
-                          <Progress
-                            percent={progress.percent}
-                            showInfo={false}
-                            size="small"
-                            status={progress.percent === 100 ? 'success' : 'active'}
-                          />
-                        </div>
-                      )}
+                        )}
 
-                      {/* Next due */}
-                      {next && (
-                        <Flex gap={6} align="center" style={{ marginTop: 8 }}>
-                          <CalendarOutlined style={{ fontSize: 11, color: '#999' }} />
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            {next.name}
-                          </Text>
-                          <Tag color="default" style={{ fontSize: 11 }}>
-                            {next.dueText}
+                        {/* Fully completed badge */}
+                        {progress.total > 0 && progress.percent === 100 && (
+                          <Tag color="success" icon={<CheckCircleFilled />} style={{ marginTop: 8 }}>
+                            All done!
                           </Tag>
-                        </Flex>
-                      )}
-
-                      {/* Fully completed badge */}
-                      {progress.total > 0 && progress.percent === 100 && (
-                        <Tag color="success" icon={<CheckCircleFilled />} style={{ marginTop: 8 }}>
-                          All done!
-                        </Tag>
-                      )}
-                    </Card>
-                  </Link>
-                );
-              })}
-          </div>
-        </motion.div>
-      )}
+                        )}
+                      </>
+                    )}
+                  </Card>
+                </Link>
+              );
+            })}
+        </div>
+      </motion.div>
     </div>
   );
 };

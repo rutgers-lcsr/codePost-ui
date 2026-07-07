@@ -12,6 +12,7 @@
 | `graders`              | Array&lt;string     | null&gt; |
 | `superGraders`         | Array&lt;string     | null&gt; |
 | `rubricEditors`        | Array&lt;string     | null&gt; |
+| `quizGraders`          | Array&lt;string     | null&gt; |
 | `courseAdmins`         | Array&lt;string     | null&gt; |
 | `inactiveStudents`     | Array&lt;string     | null&gt; |
 | `inactiveGraders`      | Array&lt;string     | null&gt; |

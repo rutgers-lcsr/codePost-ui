@@ -29,6 +29,7 @@ export const quizKeys = {
   detail: (quizId: number) => ['quizzes', 'detail', quizId] as const,
   suggestions: (assignmentId: number) => ['quizzes', 'suggestions', assignmentId] as const,
   regeneration: (questionId: number) => ['quizzes', 'regeneration', questionId] as const,
+  attempts: (quizId: number) => ['quizzes', 'attempts', quizId] as const,
 };
 
 export const studentKeys = {

@@ -4,6 +4,7 @@ All URIs are relative to *http://localhost*
 
 | Method                                           | HTTP request                     | Description |
 | ------------------------------------------------ | -------------------------------- | ----------- |
+| [**attemptsList**](QuizzesApi.md#attemptslist)   | **GET** /quizzes/{id}/attempts/  |             |
 | [**create**](QuizzesApi.md#create)               | **POST** /quizzes/               |             |
 | [**destroy**](QuizzesApi.md#destroy)             | **DELETE** /quizzes/{id}/        |             |
 | [**list**](QuizzesApi.md#list)                   | **GET** /quizzes/                |             |
@@ -11,6 +12,80 @@ All URIs are relative to *http://localhost*
 | [**questionsList**](QuizzesApi.md#questionslist) | **GET** /quizzes/{id}/questions/ |             |
 | [**retrieve**](QuizzesApi.md#retrieve)           | **GET** /quizzes/{id}/           |             |
 | [**update**](QuizzesApi.md#update)               | **PUT** /quizzes/{id}/           |             |
+
+## attemptsList
+
+> Array&lt;StaffQuizAttempt&gt; attemptsList(id, needsGrading)
+
+Submitted attempts on this quiz, for grading — quiz graders and course admins only.
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { AttemptsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+    // boolean | Only attempts awaiting manual grading. (optional)
+    needsGrading: true,
+  } satisfies AttemptsListRequest;
+
+  try {
+    const data = await api.attemptsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name             | Type      | Description                                   | Notes                                |
+| ---------------- | --------- | --------------------------------------------- | ------------------------------------ |
+| **id**           | `number`  | A unique integer value identifying this quiz. | [Defaults to `undefined`]            |
+| **needsGrading** | `boolean` | Only attempts awaiting manual grading.        | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;StaffQuizAttempt&gt;**](StaffQuizAttempt.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 ## create
 

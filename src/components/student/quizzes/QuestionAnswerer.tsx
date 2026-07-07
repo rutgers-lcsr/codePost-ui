@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } from 'antd';
+import { Alert, Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
 import { StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
@@ -75,7 +75,10 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
     }
     if (type === QuestionTypeEnum.Code) {
       return (
-        <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
+        <div
+          style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}
+          data-testid="quiz-answer-code"
+        >
           <Editor
             height="260px"
             language={monacoLang(question.language)}
@@ -101,6 +104,7 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
           value={value.answerText}
           onChange={(e) => setText(e.target.value)}
           placeholder="Write your answer…"
+          data-testid="quiz-answer-text"
         />
       );
     }
@@ -115,6 +119,7 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
           placeholder={type === QuestionTypeEnum.Numerical ? 'Enter a number…' : 'Type your answer…'}
           inputMode={type === QuestionTypeEnum.Numerical ? 'decimal' : undefined}
           style={{ maxWidth: 360 }}
+          data-testid="quiz-answer-text"
         />
         {reveal && accepted.length > 0 && (
           <div style={{ marginTop: 8 }}>
@@ -130,6 +135,8 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
     <Card
       size="small"
       style={{ marginBottom: 12 }}
+      data-testid="quiz-question"
+      data-question-type={type}
       title={
         <Flex align="center" gap={8} wrap>
           <Text strong>Question {index + 1}</Text>
@@ -148,6 +155,16 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
       {question.text && <Markdown>{question.text}</Markdown>}
       {question.description && <Markdown>{question.description}</Markdown>}
       <div style={{ marginTop: 12 }}>{renderInput()}</div>
+      {reveal && response.graderFeedback && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginTop: 12 }}
+          message="Grader feedback"
+          description={response.graderFeedback}
+          data-testid="quiz-grader-feedback"
+        />
+      )}
       {reveal && question.generalFeedback && (
         <div style={{ marginTop: 12 }}>
           <Text type="secondary">Feedback: </Text>
@@ -164,7 +181,9 @@ const ChoiceLabel: React.FC<{ text: string; reveal: boolean; isCorrect?: boolean
   isCorrect,
   feedback,
 }) => (
-  <span>
+  // The testid lives on this span (inside the antd label) because Radio/Checkbox
+  // don't forward data-* attributes; clicking it toggles the control.
+  <span data-testid="quiz-choice">
     {text}
     {reveal && isCorrect === true && <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 6 }} />}
     {reveal && feedback && (
@@ -176,17 +195,23 @@ const ChoiceLabel: React.FC<{ text: string; reveal: boolean; isCorrect?: boolean
 );
 
 const ResultTag: React.FC<{ response: StudentQuizResponse }> = ({ response }) => {
-  if (response.needsManualGrading) return <Tag color="gold">Pending grading</Tag>;
+  if (response.needsManualGrading) {
+    return (
+      <Tag color="gold" data-testid="quiz-question-result">
+        Pending grading
+      </Tag>
+    );
+  }
   if (response.isCorrect === true) {
     return (
-      <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />}>
+      <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />} data-testid="quiz-question-result">
         {response.pointsEarned ?? 0} pts
       </Tag>
     );
   }
   if (response.isCorrect === false) {
     return (
-      <Tag color="error" icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />}>
+      <Tag color="error" icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />} data-testid="quiz-question-result">
         0 pts
       </Tag>
     );

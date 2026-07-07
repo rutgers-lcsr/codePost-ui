@@ -16,6 +16,7 @@ export type RosterData = {
   courseAdmins: string[];
   superGraders: string[];
   rubricEditors: string[];
+  quizGraders: string[];
   not_activated: string[];
   organization?: number;
 };
@@ -39,6 +40,7 @@ export const normalizeRoster = (roster: CourseRoster | RosterData): RosterData =
     graders: toStrings(rosterApi.graders),
     superGraders: toStrings(rosterApi.superGraders),
     rubricEditors: toStrings(rosterApi.rubricEditors),
+    quizGraders: toStrings(rosterApi.quizGraders),
     courseAdmins: toStrings(rosterApi.courseAdmins),
     not_activated: rosterApi.notActivated ?? [],
     organization: rosterApi.organization,

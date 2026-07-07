@@ -44,6 +44,7 @@ export interface IManageGradersProps {
   graders: string[];
   superGraders: string[];
   rubricEditors: string[];
+  quizGraders: string[];
   admins: string[];
   sections: Section[];
   currentCourse: Course;
@@ -114,6 +115,21 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
       } else {
         updateRoster([], [grader], USER_APP.RubricEditor).then(() => {
           message.success(`${grader} is no longer a rubric editor`);
+        });
+      }
+    },
+    [updateRoster],
+  );
+
+  const toggleQuizGrader = useCallback(
+    (grader: string, include: boolean) => {
+      if (include) {
+        updateRoster([grader], [], USER_APP.QuizGrader).then(() => {
+          message.success(`${grader} can now grade quizzes`);
+        });
+      } else {
+        updateRoster([], [grader], USER_APP.QuizGrader).then(() => {
+          message.success(`${grader} can no longer grade quizzes`);
         });
       }
     },
@@ -244,6 +260,23 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
           a.isRubricEditor === b.isRubricEditor ? 0 : a.isRubricEditor ? -1 : 1,
       },
       {
+        title: (
+          <div>
+            Quiz Grader{' '}
+            <CPTooltip
+              title="Quiz graders can grade quiz responses (essay/code). Assignment graders can't grade quizzes without this role."
+              infoIcon={true}
+              hideThisOnHideTips={true}
+            />
+          </div>
+        ),
+        dataIndex: 'quizGraderStatus',
+        key: 'quizGraderStatus',
+        align: aligner,
+        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+          a.isQuizGrader === b.isQuizGrader ? 0 : a.isQuizGrader ? -1 : 1,
+      },
+      {
         title: 'Actions',
         dataIndex: 'actions',
         key: 'actions',
@@ -300,6 +333,29 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         </Popconfirm>
       );
 
+      const isQuizGrader = props.quizGraders.includes(graderEmail);
+      const quizGraderStatusElement = isQuizGrader ? (
+        <Popconfirm
+          title="Remove Quiz Grader access?"
+          onConfirm={() => toggleQuizGrader(graderEmail, false)}
+          okText="Remove"
+          cancelText="Cancel"
+        >
+          <Button danger size="small">
+            Remove
+          </Button>
+        </Popconfirm>
+      ) : (
+        <Popconfirm
+          title="Grant Quiz Grader access?"
+          onConfirm={() => toggleQuizGrader(graderEmail, true)}
+          okText="Grant"
+          cancelText="Cancel"
+        >
+          <Button size="small">Grant</Button>
+        </Popconfirm>
+      );
+
       return {
         key: graderEmail,
         grader: graderEmail,
@@ -307,6 +363,8 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         superGrader: isSuperGrader,
         rubricEditorStatus: rubricEditorStatusElement,
         isRubricEditor: isRubricEditor,
+        quizGraderStatus: quizGraderStatusElement,
+        isQuizGrader: isQuizGrader,
         actions: (
           <Space>
             {!hasActivated && (

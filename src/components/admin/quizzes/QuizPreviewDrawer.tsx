@@ -62,7 +62,11 @@ const QuizPreviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, items, hasGr
   const previewResponses = items.map(toResponse);
   const settingTags = [
     quiz.timeLimitMinutes ? `${quiz.timeLimitMinutes} min` : 'Untimed',
-    quiz.attemptsAllowed === 0 ? 'Unlimited attempts' : `${quiz.attemptsAllowed ?? 1} attempt(s)`,
+    quiz.attemptsAllowed === 0
+      ? 'Unlimited attempts'
+      : (quiz.attemptsAllowed ?? 1) > 1
+        ? `${quiz.attemptsAllowed} attempts`
+        : null,
     quiz.shuffleQuestions ? 'Shuffled' : null,
     quiz.passingScore != null
       ? `Pass ≥ ${quiz.passingScore}${quiz.passingScoreUnit === 'points' ? ' pts' : '%'}`

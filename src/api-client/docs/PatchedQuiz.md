@@ -12,6 +12,9 @@
 | `assignmentTrigger`  | [QuizAssignmentTriggerEnum](QuizAssignmentTriggerEnum.md) |
 | `availableFrom`      | string                                                    |
 | `availableUntil`     | string                                                    |
+| `closeEvent`         | [QuizCloseEventEnum](QuizCloseEventEnum.md)               |
+| `closeOffsetMinutes` | number                                                    |
+| `endAttemptsAtClose` | boolean                                                   |
 | `timeLimitMinutes`   | number                                                    |
 | `attemptsAllowed`    | number                                                    |
 | `shuffleQuestions`   | boolean                                                   |

@@ -10,9 +10,11 @@ Read-only serializer for course audit events.
 | `course`         | number |
 | `assignment`     | number |
 | `submission`     | number |
+| `quiz`           | number |
 | `user`           | number |
 | `userEmail`      | string |
 | `assignmentName` | string |
+| `quizTitle`      | string |
 | `eventType`      | string |
 | `meta`           | any    |
 | `created`        | string |

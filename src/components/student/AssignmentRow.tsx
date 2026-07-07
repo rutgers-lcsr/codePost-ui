@@ -8,10 +8,14 @@ import {
   EyeOutlined,
   DownloadOutlined,
   CalendarOutlined,
+  FormOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { CodePostDate } from '../utils/CodepostDate';
 import { SubmissionStatus } from './submissionStatus';
+import { StudentQuiz } from '../../api-client';
+import { quizAction, quizActionLabel } from './quizzes/quizStatus';
 
 interface AssignmentRowProps {
   assignmentName: string;
@@ -40,6 +44,8 @@ interface AssignmentRowProps {
   onAddFiles?: () => void;
   onDownload?: () => void;
   disabled?: boolean;
+  quizzes?: StudentQuiz[];
+  onTakeQuiz?: (quiz: StudentQuiz) => void;
 }
 
 const statusTagColor: Record<SubmissionStatus, string> = {
@@ -102,6 +108,8 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   onAddFiles,
   onDownload,
   disabled = false,
+  quizzes = [],
+  onTakeQuiz,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const hasGrade = grade !== null && grade !== undefined && maxPoints !== undefined && maxPoints !== null;
@@ -347,6 +355,55 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
           )}
         </Flex>
       </Flex>
+
+      {/* Attached quizzes */}
+      {quizzes.length > 0 && (
+        <Flex vertical gap={8} style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
+          {quizzes.map((quiz) => {
+            const action = quizAction(quiz);
+            return (
+              <Flex key={quiz.id} justify="space-between" align="center" gap={8} data-testid="attached-quiz-row">
+                <Flex align="center" gap={6} style={{ minWidth: 0 }}>
+                  <FormOutlined style={{ color: '#198665' }} />
+                  <Typography.Text ellipsis style={{ fontSize: 13 }}>
+                    {quiz.title}
+                  </Typography.Text>
+                  <Typography.Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                    {quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}
+                    {quiz.timeLimitMinutes ? ` · ${quiz.timeLimitMinutes} min` : ''}
+                    {quiz.closeAt ? (
+                      <>
+                        {' · Due '}
+                        <CodePostDate datetime={quiz.closeAt} />
+                      </>
+                    ) : null}
+                  </Typography.Text>
+                </Flex>
+                {action === 'locked' ? (
+                  <Tooltip title="This quiz isn't open yet">
+                    <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid="attached-quiz-locked">
+                      {quizActionLabel(quiz)}
+                    </Tag>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    type={action === 'review' ? 'default' : 'primary'}
+                    size="small"
+                    icon={action === 'review' ? <EyeOutlined /> : undefined}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTakeQuiz?.(quiz);
+                    }}
+                    data-testid="attached-quiz-action"
+                  >
+                    {quizActionLabel(quiz)}
+                  </Button>
+                )}
+              </Flex>
+            );
+          })}
+        </Flex>
+      )}
 
       {/* Expandable stats panel */}
       <AnimatePresence initial={false}>

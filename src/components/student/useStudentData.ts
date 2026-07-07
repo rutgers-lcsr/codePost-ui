@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
 
-import { useCallback, useMemo } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { Course, Submission } from '../../api-client';
 import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
@@ -111,6 +111,8 @@ export interface UseStudentDataResult {
   viewsBySubmission: Record<number, boolean>;
   isLoadingAssignments: boolean;
   isLoadingSubmissions: boolean;
+  /** Whether a single course's data (assignments/submissions/histories) is still loading */
+  isCourseLoading: (courseId: number) => boolean;
   /** Grouped sections for a single course (pass courseId) */
   getGroupedSections: (courseId: number) => GroupedSections | null;
   /** Get progress stats for a course */
@@ -132,40 +134,34 @@ async function fetchCourseData(
     (a) => a.isVisible && !(a.hideFrom ?? []).some((h: number) => studentSections.indexOf(h) > -1),
   );
 
-  // 2. Fetch submissions (only for eligible assignments)
+  // 2. Fetch submissions (only for eligible assignments). Fire them all at once — the browser
+  // already caps concurrent connections per host, so manual batching only added serial barriers.
   const eligible = assignments.filter((a) => a.isReleased || a.allowStudentUpload || a.liveFeedbackMode);
   const submissionsMap: Record<number, Submission[]> = {};
-  const subBatch = 6;
-  for (let i = 0; i < eligible.length; i += subBatch) {
-    const batch = eligible.slice(i, i + subBatch);
-    const results = await Promise.all(batch.map((a) => fetchSubmissions(a.id, userEmail)));
-    batch.forEach((a, idx) => {
-      submissionsMap[a.id] = results[idx];
-    });
-  }
+  const subResults = await Promise.all(eligible.map((a) => fetchSubmissions(a.id, userEmail)));
+  eligible.forEach((a, idx) => {
+    submissionsMap[a.id] = subResults[idx];
+  });
 
-  // 3. Fetch view histories (only for submissions that exist)
+  // 3. Fetch view histories (only for submissions that exist), again all at once.
   const views: Record<number, boolean> = {};
   const withSubs = Object.values(submissionsMap).filter((subs) => subs.length > 0);
-  const histBatch = 6;
-  for (let i = 0; i < withSubs.length; i += histBatch) {
-    const batch = withSubs.slice(i, i + histBatch);
-    const results = await Promise.all(batch.map((subs) => fetchHistory(subs[0].id, userEmail)));
-    batch.forEach((subs, idx) => {
-      for (const item of results[idx]) {
-        if (item.student === userEmail) {
-          views[subs[0].id] = item.hasViewed;
-        }
+  const histResults = await Promise.all(withSubs.map((subs) => fetchHistory(subs[0].id, userEmail)));
+  withSubs.forEach((subs, idx) => {
+    for (const item of histResults[idx]) {
+      if (item.student === userEmail) {
+        views[subs[0].id] = item.hasViewed;
       }
-    });
-  }
+    }
+  });
 
   return { assignments, submissions: submissionsMap, views };
 }
 
 export function useStudentData(courses: Course[], userEmail: string, studentSections: number[]): UseStudentDataResult {
+  const queryClient = useQueryClient();
+
   // One query per course — each loads assignments → submissions → histories in sequence.
-  // Uses the same cache keys as the per-course hooks so navigating to a course is instant.
   const courseQueries = useQueries({
     queries: courses.map((course) => ({
       queryKey: studentKeys.courseData(course.id),
@@ -173,6 +169,18 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
       staleTime: 30_000,
     })),
   });
+
+  // Seed the per-course cache keys the course view (Student.tsx) reads, so clicking into a course
+  // paints instantly from cache instead of re-running the assignments→submissions→histories waterfall.
+  useEffect(() => {
+    courses.forEach((course, i) => {
+      const data = courseQueries[i]?.data;
+      if (!data) return;
+      queryClient.setQueryData(studentKeys.assignments(course.id), data.assignments);
+      queryClient.setQueryData(studentKeys.submissions(course.id), data.submissions);
+      queryClient.setQueryData(studentKeys.histories(course.id), data.views);
+    });
+  }, [courses, courseQueries, queryClient]);
 
   // Merge per-course results into the cross-course maps the dashboard expects
   const assignments = useMemo(() => {
@@ -202,6 +210,19 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
 
   const isLoadingAssignments = courseQueries.some((q) => q.isPending);
   const isLoadingSubmissions = courseQueries.some((q) => q.isPending);
+
+  const courseLoadingById = useMemo(() => {
+    const result: Record<number, boolean> = {};
+    courses.forEach((course, i) => {
+      result[course.id] = courseQueries[i]?.isPending ?? true;
+    });
+    return result;
+  }, [courses, courseQueries]);
+
+  const isCourseLoading = useCallback(
+    (courseId: number): boolean => courseLoadingById[courseId] ?? true,
+    [courseLoadingById],
+  );
 
   const getGroupedSections = useCallback(
     (courseId: number): GroupedSections | null => {
@@ -275,6 +296,7 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
     viewsBySubmission,
     isLoadingAssignments,
     isLoadingSubmissions,
+    isCourseLoading,
     getGroupedSections,
     getProgress,
   };

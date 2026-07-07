@@ -166,6 +166,7 @@ docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GenerateQuizQuestionsRequest.md
 docs/GenerateQuizQuestionsResponse.md
+docs/GradeQuizResponseRequest.md
 docs/GranularityEnum.md
 docs/HandleValidationResponse.md
 docs/HealthCheck.md
@@ -269,6 +270,7 @@ docs/QuizAssignmentTriggerEnum.md
 docs/QuizAttemptStatusEnum.md
 docs/QuizAttemptsApi.md
 docs/QuizAvailability.md
+docs/QuizCloseEventEnum.md
 docs/QuizImage.md
 docs/QuizImagesApi.md
 docs/QuizImportJob.md
@@ -301,6 +303,7 @@ docs/SetCredentialsResponse.md
 docs/SeverityEnum.md
 docs/ShellMetricsResponse.md
 docs/ShellMetricsSession.md
+docs/StaffQuizAttempt.md
 docs/StartQuizAttemptRequest.md
 docs/Status4a6Enum.md
 docs/StatusDfeEnum.md

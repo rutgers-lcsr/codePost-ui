@@ -123,6 +123,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
   const admins = roster?.courseAdmins ?? [];
   const superGraders = roster?.superGraders ?? [];
   const rubricEditors = roster?.rubricEditors ?? [];
+  const quizGraders = roster?.quizGraders ?? [];
   const notActivated = roster?.not_activated ?? [];
 
   const sectionsQuery = useSectionsQuery(courseId);
@@ -397,6 +398,9 @@ const Admin: React.FC<IComponentProps> = (props) => {
           break;
         case USER_APP.RubricEditor:
           payload.rubricEditors = users;
+          break;
+        case USER_APP.QuizGrader:
+          payload.quizGraders = users;
           break;
       }
       return payload;
@@ -846,6 +850,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         // Actions
         refreshCourseData={refreshCourseData}
         rubricEditors={rubricEditors}
+        quizGraders={quizGraders}
       />
     );
   }

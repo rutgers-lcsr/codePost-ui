@@ -41,6 +41,7 @@ interface AdminRoutesProps {
   admins: string[];
   superGraders: string[];
   rubricEditors: string[];
+  quizGraders: string[];
   inactiveStudents: string[];
   inactiveGraders: string[];
   notActivated: string[];
@@ -177,6 +178,7 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
               admins={props.admins}
               superGraders={props.superGraders}
               rubricEditors={props.rubricEditors}
+              quizGraders={props.quizGraders}
               loadComplete={props.loadComplete.roster}
               sectionsLoadComplete={props.loadComplete.sections}
               currentCourse={props.course}

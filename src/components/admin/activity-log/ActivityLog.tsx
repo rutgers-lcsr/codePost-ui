@@ -32,6 +32,14 @@ const EVENT_TYPE_OPTIONS = [
   { value: 'autograder_failed', label: 'Autograder Failed' },
   { value: 'late_day_used', label: 'Late Day Used' },
   { value: 'comment_feedback', label: 'Comment Feedback' },
+  { value: 'quiz_created', label: 'Quiz Created' },
+  { value: 'quiz_updated', label: 'Quiz Updated' },
+  { value: 'quiz_published', label: 'Quiz Published' },
+  { value: 'quiz_unpublished', label: 'Quiz Unpublished' },
+  { value: 'quiz_deleted', label: 'Quiz Deleted' },
+  { value: 'quiz_attempt_started', label: 'Quiz Attempt Started' },
+  { value: 'quiz_attempt_submitted', label: 'Quiz Attempt Submitted' },
+  { value: 'quiz_attempt_autosubmitted', label: 'Quiz Attempt Auto-Submitted' },
 ];
 
 const EVENT_TYPE_COLORS: Record<string, string> = {
@@ -46,6 +54,14 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   autograder_failed: 'magenta',
   late_day_used: 'gold',
   comment_feedback: 'purple',
+  quiz_created: 'geekblue',
+  quiz_updated: 'blue',
+  quiz_published: 'green',
+  quiz_unpublished: 'gold',
+  quiz_deleted: 'red',
+  quiz_attempt_started: 'cyan',
+  quiz_attempt_submitted: 'lime',
+  quiz_attempt_autosubmitted: 'orange',
 };
 
 const PAGE_SIZE = 25;
@@ -140,11 +156,11 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
       render: (val: string | null) => val || '—',
     },
     {
-      title: 'Assignment',
-      dataIndex: 'assignmentName',
-      key: 'assignmentName',
+      title: 'Assignment / Quiz',
+      key: 'context',
       width: 200,
-      render: (val: string | null) => val || '—',
+      render: (_: unknown, row: CourseAuditEvent) =>
+        row.assignmentName || (row.quizTitle ? `Quiz: ${row.quizTitle}` : '—'),
     },
     {
       title: 'Submission',

@@ -42,11 +42,16 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
   const startedRef = React.useRef(false);
   const timers = React.useRef<Record<number, ReturnType<typeof setTimeout>>>({});
   const dirtyRef = React.useRef(false);
+  // Server-clock anchor: the server's time at load + how long ago (locally measured) we got it.
+  const anchorRef = React.useRef<{ serverMs: number; localMs: number } | null>(null);
 
   const submitted = attempt?.status === 'submitted';
 
   const applyAttempt = React.useCallback((a: StudentQuizAttempt) => {
     setAttempt(a);
+    if (a.serverNow) {
+      anchorRef.current = { serverMs: new Date(a.serverNow).getTime(), localMs: Date.now() };
+    }
     const next: Record<number, AnswerValue> = {};
     for (const r of a.responses) {
       next[r.id] = initialAnswer(r);
@@ -63,6 +68,19 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
         const a = await quizAttemptsApi.create({ startQuizAttemptRequest: { quiz: quizId } });
         applyAttempt(a);
       } catch (e) {
+        // Can't start (e.g. no attempts remaining) — fall back to reviewing the latest submitted attempt.
+        try {
+          const mine = await quizAttemptsApi.myAttemptsList({ quiz: quizId });
+          const submitted = mine
+            .filter((a) => a.status === 'submitted')
+            .sort((a, b) => (b.attemptNumber ?? 0) - (a.attemptNumber ?? 0));
+          if (submitted.length > 0) {
+            applyAttempt(submitted[0]);
+            return;
+          }
+        } catch {
+          /* fall through to the error below */
+        }
         setError(parseErr(e) ?? 'This quiz could not be started.');
       } finally {
         setLoading(false);
@@ -150,9 +168,13 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
     }
   }, [attempt, submitting, answers, applyAttempt, queryClient, courseId, quizId]);
 
-  // Auto-submit when the timer runs out.
+  // Auto-submit when the timer runs out. The countdown is anchored to the server clock
+  // (serverNow at load + locally-measured elapsed) so a skewed device clock can't grant or
+  // steal time; the server's saveAnswer grace lets the final flush land after 0:00.
   const deadlineMs = attempt?.deadline ? new Date(attempt.deadline).getTime() : null;
-  const remainingMs = deadlineMs ? Math.max(0, deadlineMs - nowMs) : null;
+  const anchor = anchorRef.current;
+  const estServerNowMs = anchor ? anchor.serverMs + (nowMs - anchor.localMs) : nowMs;
+  const remainingMs = deadlineMs !== null ? Math.max(0, deadlineMs - estServerNowMs) : null;
   React.useEffect(() => {
     if (remainingMs === 0 && attempt?.status === 'in_progress') {
       message.warning('Time is up — submitting your quiz.');
@@ -191,7 +213,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
 
   if (submitted) {
     return (
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-results">
         <CPButton cpType="link" onClick={onExit}>
           <LeftOutlined /> Back to course
         </CPButton>
@@ -216,7 +238,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }}>
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-taking">
       <Flex justify="space-between" align="center" wrap gap={12} style={{ marginBottom: 16 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>
@@ -231,7 +253,12 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
             <Text type="secondary">Saved</Text>
           )}
           {remainingMs !== null && (
-            <Tag color={remainingMs < 60000 ? 'red' : 'blue'} icon={<ClockCircleOutlined />} style={{ fontSize: 14 }}>
+            <Tag
+              color={remainingMs < 60000 ? 'red' : 'blue'}
+              icon={<ClockCircleOutlined />}
+              style={{ fontSize: 14 }}
+              data-testid="quiz-timer"
+            >
               {formatRemaining(remainingMs)}
             </Tag>
           )}
@@ -263,7 +290,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
             okText="Submit"
             onConfirm={handleSubmit}
           >
-            <CPButton cpType="primary" loading={submitting}>
+            <CPButton cpType="primary" loading={submitting} data-testid="quiz-submit">
               Submit quiz
             </CPButton>
           </Popconfirm>
@@ -286,14 +313,23 @@ const ResultsSummary: React.FC<{ attempt: StudentQuizAttempt; title?: string }> 
     <Result
       status={resultStatus}
       title={title ?? 'Quiz submitted'}
-      subTitle={statusTitle}
+      subTitle={<span data-testid="quiz-score">{statusTitle}</span>}
       extra={
         attempt.passed === true ? (
-          <Tag color="success">Passed</Tag>
+          <Tag color="success" data-testid="quiz-result-status">
+            Passed
+          </Tag>
         ) : attempt.passed === false ? (
-          <Tag color="error">Did not pass</Tag>
+          <Tag color="error" data-testid="quiz-result-status">
+            Did not pass
+          </Tag>
         ) : attempt.needsManualGrading ? (
-          <Alert type="info" showIcon message="Your final score will be available once grading is complete." />
+          <Alert
+            type="info"
+            showIcon
+            data-testid="quiz-result-status"
+            message="Your final score will be available once grading is complete."
+          />
         ) : null
       }
     />

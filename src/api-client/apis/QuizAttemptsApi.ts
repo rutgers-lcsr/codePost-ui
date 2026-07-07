@@ -15,7 +15,9 @@
 
 import * as runtime from '../runtime';
 import type {
+  GradeQuizResponseRequest,
   PatchedSaveQuizAnswerRequest,
+  StaffQuizAttempt,
   StartQuizAttemptRequest,
   StudentQuiz,
   StudentQuizAttempt,
@@ -28,6 +30,11 @@ export interface AvailableQuizzesListRequest {
 
 export interface CreateRequest {
   startQuizAttemptRequest: StartQuizAttemptRequest;
+}
+
+export interface GradeResponseCreateRequest {
+  id: number;
+  gradeQuizResponseRequest: GradeQuizResponseRequest;
 }
 
 export interface MyAttemptsListRequest {
@@ -52,7 +59,7 @@ export interface SubmitCreateRequest {
  */
 export class QuizAttemptsApi extends runtime.BaseAPI {
   /**
-   * Published quizzes in ``course`` the caller can take now (or has already attempted).
+   * Published quizzes in ``course`` the caller should see.  Attached quizzes surface once their assignment is released — even while the quiz itself is still locked — so the assignment card can show them with a reason. Standalone quizzes surface only when open now or already attempted.
    */
   async availableQuizzesListRaw(
     requestParameters: AvailableQuizzesListRequest,
@@ -104,7 +111,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Published quizzes in ``course`` the caller can take now (or has already attempted).
+   * Published quizzes in ``course`` the caller should see.  Attached quizzes surface once their assignment is released — even while the quiz itself is still locked — so the assignment card can show them with a reason. Standalone quizzes surface only when open now or already attempted.
    */
   async availableQuizzesList(
     requestParameters: AvailableQuizzesListRequest,
@@ -173,6 +180,76 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<StudentQuizAttempt> {
     const response = await this.createRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Manually grade one essay/code response (quiz graders and course admins only — gated by QuizAttemptPermissions). Recomputes the attempt\'s score and pass state.
+   */
+  async gradeResponseCreateRaw(
+    requestParameters: GradeResponseCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<StaffQuizAttempt>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling gradeResponseCreate().',
+      );
+    }
+
+    if (requestParameters['gradeQuizResponseRequest'] == null) {
+      throw new runtime.RequiredError(
+        'gradeQuizResponseRequest',
+        'Required parameter "gradeQuizResponseRequest" was null or undefined when calling gradeResponseCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/{id}/gradeResponse/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['gradeQuizResponseRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Manually grade one essay/code response (quiz graders and course admins only — gated by QuizAttemptPermissions). Recomputes the attempt\'s score and pass state.
+   */
+  async gradeResponseCreate(
+    requestParameters: GradeResponseCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<StaffQuizAttempt> {
+    const response = await this.gradeResponseCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

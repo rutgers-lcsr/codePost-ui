@@ -14,7 +14,12 @@
  */
 
 import * as runtime from '../runtime';
-import type { PatchedQuiz, Quiz, QuizQuestion } from '../models/index';
+import type { PatchedQuiz, Quiz, QuizQuestion, StaffQuizAttempt } from '../models/index';
+
+export interface AttemptsListRequest {
+  id: number;
+  needsGrading?: boolean;
+}
 
 export interface CreateRequest {
   quiz: Omit<Quiz, 'id' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'>;
@@ -46,6 +51,70 @@ export interface UpdateRequest {
  *
  */
 export class QuizzesApi extends runtime.BaseAPI {
+  /**
+   * Submitted attempts on this quiz, for grading — quiz graders and course admins only.
+   */
+  async attemptsListRaw(
+    requestParameters: AttemptsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<StaffQuizAttempt>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling attemptsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['needsGrading'] != null) {
+      queryParameters['needsGrading'] = requestParameters['needsGrading'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/attempts/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Submitted attempts on this quiz, for grading — quiz graders and course admins only.
+   */
+  async attemptsList(
+    requestParameters: AttemptsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<StaffQuizAttempt>> {
+    const response = await this.attemptsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
   /**
    * Quizzes: authoring containers of questions, optionally attached to an assignment.  Attach a quiz to an existing assignment by PATCHing its ``assignment`` field.
    */

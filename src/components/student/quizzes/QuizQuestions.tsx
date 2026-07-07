@@ -84,7 +84,12 @@ const QuizQuestions: React.FC<IProps> = ({
       <Flex justify="space-between" align="center" style={{ marginTop: 16 }}>
         <div>
           {allowBack && i > 0 && (
-            <CPButton cpType="secondary" icon={<LeftOutlined />} onClick={() => setCurrent(i - 1)}>
+            <CPButton
+              cpType="secondary"
+              icon={<LeftOutlined />}
+              onClick={() => setCurrent(i - 1)}
+              data-testid="quiz-prev"
+            >
               Previous
             </CPButton>
           )}
@@ -93,7 +98,7 @@ const QuizQuestions: React.FC<IProps> = ({
           {isLast ? (
             submitSlot
           ) : (
-            <CPButton cpType="primary" onClick={() => setCurrent(i + 1)}>
+            <CPButton cpType="primary" onClick={() => setCurrent(i + 1)} data-testid="quiz-next">
               Next <RightOutlined />
             </CPButton>
           )}

@@ -1,10 +1,12 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Card, Flex, Spin, Tag, Typography } from 'antd';
-import { ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import { StudentQuiz } from '../../../api-client';
+import { CodePostDate } from '../../utils/CodepostDate';
 import { useAvailableQuizzes } from './queries';
+import { quizAction, quizActionLabel } from './quizStatus';
 
 const { Title, Text } = Typography;
 
@@ -13,18 +15,12 @@ interface IProps {
   onTake: (quiz: StudentQuiz) => void;
 }
 
-const canStartQuiz = (quiz: StudentQuiz): boolean => {
-  if (!quiz.availability?.isOpen) return false;
-  const allowed = quiz.attemptsAllowed ?? 1;
-  return allowed === 0 || quiz.attemptsUsed < allowed;
-};
-
 const QuizCard: React.FC<{ quiz: StudentQuiz; onTake: () => void }> = ({ quiz, onTake }) => {
-  const startable = canStartQuiz(quiz);
+  const action = quizAction(quiz);
   const allowedLabel = quiz.attemptsAllowed === 0 ? 'unlimited' : quiz.attemptsAllowed;
 
   return (
-    <Card size="small">
+    <Card size="small" data-testid="student-quiz-card">
       <Flex justify="space-between" align="center" gap={16} wrap>
         <div style={{ minWidth: 0 }}>
           <Title level={5} style={{ margin: 0 }}>
@@ -39,14 +35,25 @@ const QuizCard: React.FC<{ quiz: StudentQuiz; onTake: () => void }> = ({ quiz, o
                 <ClockCircleOutlined /> {quiz.timeLimitMinutes} min
               </Text>
             ) : null}
-            <Text type="secondary">
-              Attempts: {quiz.attemptsUsed} / {allowedLabel}
-            </Text>
+            {quiz.closeAt ? (
+              <Text type="secondary">
+                <CalendarOutlined /> Due <CodePostDate datetime={quiz.closeAt} />
+              </Text>
+            ) : null}
+            {(quiz.attemptsAllowed ?? 1) !== 1 && (
+              <Text type="secondary">
+                Attempts: {quiz.attemptsUsed} / {allowedLabel}
+              </Text>
+            )}
             {!quiz.availability?.isOpen && <Tag>Closed</Tag>}
           </Flex>
         </div>
-        <CPButton cpType={startable ? 'primary' : 'secondary'} onClick={onTake}>
-          {startable ? (quiz.attemptsUsed > 0 ? 'New attempt' : 'Start quiz') : 'Review results'}
+        <CPButton
+          cpType={action === 'review' ? 'secondary' : 'primary'}
+          onClick={onTake}
+          data-testid="student-quiz-action"
+        >
+          {quizActionLabel(quiz)}
         </CPButton>
       </Flex>
     </Card>
@@ -54,7 +61,9 @@ const QuizCard: React.FC<{ quiz: StudentQuiz; onTake: () => void }> = ({ quiz, o
 };
 
 const StudentQuizzesSection: React.FC<IProps> = ({ courseId, onTake }) => {
-  const { data: quizzes = [], isLoading } = useAvailableQuizzes(courseId);
+  const { data: allQuizzes = [], isLoading } = useAvailableQuizzes(courseId);
+  // Attached quizzes live on their assignment card; this section is standalone quizzes only.
+  const quizzes = allQuizzes.filter((q) => q.assignment == null);
 
   if (isLoading) {
     return (

@@ -3486,6 +3486,12 @@ export interface CourseAuditEvent {
    */
   readonly submission: number | null;
   /**
+   * The quiz associated with this event
+   * @type {number}
+   * @memberof CourseAuditEvent
+   */
+  readonly quiz: number | null;
+  /**
    * The user who performed the action
    * @type {number}
    * @memberof CourseAuditEvent
@@ -3503,6 +3509,12 @@ export interface CourseAuditEvent {
    * @memberof CourseAuditEvent
    */
   readonly assignmentName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAuditEvent
+   */
+  readonly quizTitle: string;
   /**
    *
    * @type {string}
@@ -3632,6 +3644,12 @@ export interface CourseRoster {
    * @memberof CourseRoster
    */
   rubricEditors: Array<string | null>;
+  /**
+   *
+   * @type {Array<string | null>}
+   * @memberof CourseRoster
+   */
+  quizGraders: Array<string | null>;
   /**
    *
    * @type {Array<string | null>}
@@ -4644,6 +4662,31 @@ export interface GenerateQuizQuestionsResponse {
    * @memberof GenerateQuizQuestionsResponse
    */
   status: string;
+}
+/**
+ *
+ * @export
+ * @interface GradeQuizResponseRequest
+ */
+export interface GradeQuizResponseRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof GradeQuizResponseRequest
+   */
+  response: number;
+  /**
+   *
+   * @type {number}
+   * @memberof GradeQuizResponseRequest
+   */
+  pointsEarned: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GradeQuizResponseRequest
+   */
+  graderFeedback?: string;
 }
 /**
  * * `hourly` - hourly
@@ -7617,7 +7660,8 @@ export interface PatchedQuiz {
    * * `during` - During the assignment
    * * `after_assignment` - After the assignment closes
    * * `after_submission` - After the student submits
-   * * `after_feedback` - After feedback is released
+   * * `after_feedback` - After feedback is released (whole assignment)
+   * * `after_student_feedback` - After each student's feedback is ready (self-paced)
    * @type {QuizAssignmentTriggerEnum}
    * @memberof PatchedQuiz
    */
@@ -7629,11 +7673,35 @@ export interface PatchedQuiz {
    */
   availableFrom?: string | null;
   /**
-   * Standalone quizzes: when the quiz closes / is due.
+   * Standalone quizzes: when the quiz closes / is due. Also the close time when an attached quiz's closeEvent is 'fixed_date'.
    * @type {string}
    * @memberof PatchedQuiz
    */
   availableUntil?: string | null;
+  /**
+   * When an attached quiz closes. Ignored for standalone quizzes.
+   *
+   * * `none` - No automatic close
+   * * `assignment_due` - At the assignment's deadline
+   * * `submission` - After the student submits
+   * * `feedback_released` - When feedback is released
+   * * `fixed_date` - At a fixed date & time
+   * @type {QuizCloseEventEnum}
+   * @memberof PatchedQuiz
+   */
+  closeEvent?: QuizCloseEventEnum;
+  /**
+   * Minutes added to the close event (e.g. 10080 = one week after). Ignored for 'none' and 'fixed_date'.
+   * @type {number}
+   * @memberof PatchedQuiz
+   */
+  closeOffsetMinutes?: number;
+  /**
+   * If true, reaching the close time ends/auto-submits in-progress attempts (hard deadline); if false it only blocks new attempts.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  endAttemptsAtClose?: boolean;
   /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
@@ -9699,7 +9767,8 @@ export interface Quiz {
    * * `during` - During the assignment
    * * `after_assignment` - After the assignment closes
    * * `after_submission` - After the student submits
-   * * `after_feedback` - After feedback is released
+   * * `after_feedback` - After feedback is released (whole assignment)
+   * * `after_student_feedback` - After each student's feedback is ready (self-paced)
    * @type {QuizAssignmentTriggerEnum}
    * @memberof Quiz
    */
@@ -9711,11 +9780,35 @@ export interface Quiz {
    */
   availableFrom?: string | null;
   /**
-   * Standalone quizzes: when the quiz closes / is due.
+   * Standalone quizzes: when the quiz closes / is due. Also the close time when an attached quiz's closeEvent is 'fixed_date'.
    * @type {string}
    * @memberof Quiz
    */
   availableUntil?: string | null;
+  /**
+   * When an attached quiz closes. Ignored for standalone quizzes.
+   *
+   * * `none` - No automatic close
+   * * `assignment_due` - At the assignment's deadline
+   * * `submission` - After the student submits
+   * * `feedback_released` - When feedback is released
+   * * `fixed_date` - At a fixed date & time
+   * @type {QuizCloseEventEnum}
+   * @memberof Quiz
+   */
+  closeEvent?: QuizCloseEventEnum;
+  /**
+   * Minutes added to the close event (e.g. 10080 = one week after). Ignored for 'none' and 'fixed_date'.
+   * @type {number}
+   * @memberof Quiz
+   */
+  closeOffsetMinutes?: number;
+  /**
+   * If true, reaching the close time ends/auto-submits in-progress attempts (hard deadline); if false it only blocks new attempts.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  endAttemptsAtClose?: boolean;
   /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
@@ -9827,7 +9920,8 @@ export interface Quiz {
  * * `during` - During the assignment
  * * `after_assignment` - After the assignment closes
  * * `after_submission` - After the student submits
- * * `after_feedback` - After feedback is released
+ * * `after_feedback` - After feedback is released (whole assignment)
+ * * `after_student_feedback` - After each student's feedback is ready (self-paced)
  * @export
  * @enum {string}
  */
@@ -9836,6 +9930,7 @@ export enum QuizAssignmentTriggerEnum {
   AfterAssignment = 'after_assignment',
   AfterSubmission = 'after_submission',
   AfterFeedback = 'after_feedback',
+  AfterStudentFeedback = 'after_student_feedback',
 }
 
 /**
@@ -9868,6 +9963,23 @@ export interface QuizAvailability {
    */
   reason: string;
 }
+/**
+ * * `none` - No automatic close
+ * * `assignment_due` - At the assignment's deadline
+ * * `submission` - After the student submits
+ * * `feedback_released` - When feedback is released
+ * * `fixed_date` - At a fixed date & time
+ * @export
+ * @enum {string}
+ */
+export enum QuizCloseEventEnum {
+  None = 'none',
+  AssignmentDue = 'assignment_due',
+  Submission = 'submission',
+  FeedbackReleased = 'feedback_released',
+  FixedDate = 'fixed_date',
+}
+
 /**
  * Read view of an uploaded description image. ``url`` is the public, token-based
  * endpoint that renders inline in Markdown.
@@ -10559,6 +10671,114 @@ export interface ShellMetricsSession {
   lastActivity?: number | null;
 }
 /**
+ * A quiz attempt as staff (grading) sees it: the student's identity plus every response
+ * with answers and grading state. Callers set reveal/revealScore context to True.
+ * @export
+ * @interface StaffQuizAttempt
+ */
+export interface StaffQuizAttempt {
+  /**
+   *
+   * @type {number}
+   * @memberof StaffQuizAttempt
+   */
+  readonly id: number;
+  /**
+   * The quiz being attempted.
+   * @type {number}
+   * @memberof StaffQuizAttempt
+   */
+  quiz: number;
+  /**
+   * 1-based attempt index for this (quiz, student).
+   * @type {number}
+   * @memberof StaffQuizAttempt
+   */
+  attemptNumber?: number;
+  /**
+   * Attempt lifecycle state.
+   *
+   * * `in_progress` - In progress
+   * * `submitted` - Submitted
+   * @type {QuizAttemptStatusEnum}
+   * @memberof StaffQuizAttempt
+   */
+  status?: QuizAttemptStatusEnum;
+  /**
+   * When the student started this attempt.
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  startedAt?: string;
+  /**
+   * Hard stop = startedAt + quiz.timeLimitMinutes. Null when untimed.
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  deadline?: string | null;
+  /**
+   * When the attempt was submitted.
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  submittedAt?: string | null;
+  /**
+   * Auto-graded points earned (set on submit).
+   * @type {number}
+   * @memberof StaffQuizAttempt
+   */
+  score?: number | null;
+  /**
+   * Total points possible in this attempt (snapshot).
+   * @type {number}
+   * @memberof StaffQuizAttempt
+   */
+  maxScore?: number | null;
+  /**
+   * True if any response (essay/code) awaits manual grading.
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  needsManualGrading?: boolean;
+  /**
+   * Whether the attempt met quiz.passingScore. Null until fully graded or if no threshold.
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  passed?: boolean | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly oneQuestionAtATime: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly allowBacktracking: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  readonly serverNow: string;
+  /**
+   *
+   * @type {Array<StudentQuizResponse>}
+   * @memberof StaffQuizAttempt
+   */
+  readonly responses: Array<StudentQuizResponse>;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  readonly student: string;
+}
+
+/**
  *
  * @export
  * @interface StartQuizAttemptRequest
@@ -10801,6 +11021,24 @@ export interface StudentQuiz {
    * @memberof StudentQuiz
    */
   readonly attemptsUsed: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  readonly hasOpenAttempt: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  readonly hasSubmittedAttempt: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentQuiz
+   */
+  readonly closeAt: string | null;
 }
 
 /**
@@ -10892,6 +11130,12 @@ export interface StudentQuizAttempt {
   readonly allowBacktracking: boolean;
   /**
    *
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  readonly serverNow: string;
+  /**
+   *
    * @type {Array<StudentQuizResponse>}
    * @memberof StudentQuizAttempt
    */
@@ -10958,6 +11202,12 @@ export interface StudentQuizResponse {
    * @memberof StudentQuizResponse
    */
   needsManualGrading?: boolean;
+  /**
+   * Optional feedback from the grader on a manually graded response.
+   * @type {string}
+   * @memberof StudentQuizResponse
+   */
+  graderFeedback?: string;
 }
 /**
  *

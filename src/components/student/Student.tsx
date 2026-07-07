@@ -37,6 +37,7 @@ import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/comm
 import { Course, StudentQuiz, StudentSubmission, Submission } from '../../api-client';
 import StudentQuizzesSection from './quizzes/StudentQuizzesSection';
 import QuizTakeRoute from './quizzes/QuizTakeRoute';
+import { useAvailableQuizzes } from './quizzes/queries';
 import type {
   StudentUploadCreateRequest,
   StudentUploadPartialUpdateRequest,
@@ -173,9 +174,12 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
-  const handleTakeQuiz = (quiz: StudentQuiz) => {
-    navigate(`quizzes/${quiz.id}/take`, { state: { title: quiz.title } });
-  };
+  const handleTakeQuiz = useCallback(
+    (quiz: StudentQuiz) => {
+      navigate(`quizzes/${quiz.id}/take`, { state: { title: quiz.title } });
+    },
+    [navigate],
+  );
   const queryClient = useQueryClient();
 
   // Subscribe to the permissions cache so capability checks in renderAssignmentRow re-evaluate
@@ -185,6 +189,19 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const assignmentsQuery = useStudentAssignmentsQuery(currentCourse, user.studentSections);
   const currentCourseAssignments = assignmentsQuery.data ?? [];
   const isLoadingAssignments = assignmentsQuery.isPending;
+
+  // Attached quizzes surface on their assignment card; group them by assignment id.
+  const { data: courseQuizzes = [] } = useAvailableQuizzes(currentCourse?.id);
+  const quizzesByAssignment = React.useMemo(() => {
+    const map = new Map<number, StudentQuiz[]>();
+    for (const quiz of courseQuizzes) {
+      if (quiz.assignment == null) continue;
+      const list = map.get(quiz.assignment) ?? [];
+      list.push(quiz);
+      map.set(quiz.assignment, list);
+    }
+    return map;
+  }, [courseQuizzes]);
 
   const submissionsQuery = useStudentSubmissionsQuery(
     currentCourse?.id,
@@ -590,6 +607,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
               ? () => downloadAssignment(assignment.id, assignment.name)
               : undefined
           }
+          quizzes={quizzesByAssignment.get(assignment.id) ?? []}
+          onTakeQuiz={handleTakeQuiz}
         />
       );
     },
@@ -602,6 +621,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       downloadAssignment,
       currentCourse,
       permissionsCache,
+      quizzesByAssignment,
+      handleTakeQuiz,
     ],
   );
 
