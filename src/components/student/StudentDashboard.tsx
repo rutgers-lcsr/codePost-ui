@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import {
   CalendarOutlined,
   CheckCircleFilled,
+  ExclamationCircleOutlined,
   EyeOutlined,
   FireOutlined,
   FormOutlined,
@@ -103,6 +104,58 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
       </Button>
     ) : null;
 
+  /** Compact rail row for an assignment with a deadline (shared by Overdue and Due Soon). */
+  const dueRow = ({ assignment, course }: { assignment: Assignment; course: Course }) => {
+    const sub = submissions[assignment.id]?.[0];
+    const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
+    const dueRel = assignment.uploadDueDate
+      ? getRelativeDueDate(assignment.uploadDueDate)
+      : { text: '', urgent: false };
+    const link = encodedCourseLink('student', course);
+
+    return (
+      <motion.div
+        key={assignment.id}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <Link to={link} style={{ textDecoration: 'none' }}>
+          <Card size="small" hoverable>
+            <Flex justify="space-between" align="center" gap={8}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Text strong ellipsis style={{ display: 'block' }}>
+                  {assignment.name}
+                </Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {course.name}
+                </Text>
+              </div>
+              {dueRel.text ? (
+                <Tag color={dueRel.urgent ? 'error' : 'default'} style={{ marginInlineEnd: 0 }}>
+                  <CalendarOutlined /> {dueRel.text}
+                </Tag>
+              ) : status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload ? (
+                <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+                  <UploadOutlined /> Upload
+                </Tag>
+              ) : status === SubmissionStatus.NOT_REVIEWED ? (
+                <Tag color="processing" style={{ marginInlineEnd: 0 }}>
+                  <EyeOutlined /> View
+                </Tag>
+              ) : (
+                <Tag color="default" style={{ marginInlineEnd: 0 }}>
+                  Open
+                </Tag>
+              )}
+            </Flex>
+          </Card>
+        </Link>
+      </motion.div>
+    );
+  };
+
   const sortedPeriods = useMemo(() => {
     const periods = new Set<string>();
     for (const c of courses) {
@@ -140,14 +193,16 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
 
   /* ── Aggregate cross-course data ─────────────────────────────────────── */
 
-  const { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments } =
+  const { overdue, dueSoon, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments } =
     useMemo(() => {
-      const dueThisWeek: Array<{ assignment: Assignment; course: Course }> = [];
+      const overdue: Array<{ assignment: Assignment; course: Course }> = [];
+      const dueSoon: Array<{ assignment: Assignment; course: Course }> = [];
       const pendingFeedback: Array<{ assignment: Assignment; course: Course }> = [];
       let totalDueToday = 0;
       let totalPendingFeedback = 0;
       let totalCompleted = 0;
       let totalAssignments = 0;
+      const now = Date.now();
 
       for (const course of displayCourses) {
         const sections = getGroupedSections(course.id);
@@ -161,7 +216,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         totalDueToday += sections.dueToday.length;
 
         for (const a of [...sections.overdue, ...sections.dueToday, ...sections.dueSoon]) {
-          dueThisWeek.push({ assignment: a, course });
+          const due = a.uploadDueDate ? new Date(a.uploadDueDate).getTime() : Infinity;
+          (due < now ? overdue : dueSoon).push({ assignment: a, course });
         }
 
         for (const a of sections.all) {
@@ -174,13 +230,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         }
       }
 
-      dueThisWeek.sort((a, b) => {
-        const dateA = a.assignment.uploadDueDate ? new Date(a.assignment.uploadDueDate).getTime() : Infinity;
-        const dateB = b.assignment.uploadDueDate ? new Date(b.assignment.uploadDueDate).getTime() : Infinity;
-        return dateA - dateB;
-      });
+      const dueTime = (x: { assignment: Assignment }) =>
+        x.assignment.uploadDueDate ? new Date(x.assignment.uploadDueDate).getTime() : Infinity;
+      // Most recently due first — stale long-overdue items sink to the bottom.
+      overdue.sort((a, b) => dueTime(b) - dueTime(a));
+      // Soonest deadline first.
+      dueSoon.sort((a, b) => dueTime(a) - dueTime(b));
 
-      return { dueThisWeek, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments };
+      return { overdue, dueSoon, pendingFeedback, totalDueToday, totalPendingFeedback, totalCompleted, totalAssignments };
     }, [displayCourses, getGroupedSections, submissions, viewsBySubmission]);
 
   /* ── Next-due per course ─────────────────────────────────────────────── */
@@ -396,80 +453,54 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         </motion.div>
 
         {/* ── Needs-attention rail ──────────────────────────────────────── */}
-        {!isLoading && (dueThisWeek.length > 0 || quizzesToTake.length > 0 || pendingFeedback.length > 0) && (
+        {!isLoading &&
+          (overdue.length > 0 || dueSoon.length > 0 || quizzesToTake.length > 0 || pendingFeedback.length > 0) && (
           <div className={styles.rail}>
-            {/* Due this week */}
-            {dueThisWeek.length > 0 && (
+            {/* Overdue */}
+            {overdue.length > 0 && (
               <motion.section
-                aria-label={`Due this week — ${dueThisWeek.length} assignments`}
+                aria-label={`Overdue — ${overdue.length} assignments`}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
                 style={{ marginBottom: 24 }}
               >
                 <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-                  <FireOutlined style={{ color: '#ff4d4f' }} />
+                  <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
                   <Title level={5} style={{ margin: 0 }}>
-                    Due This Week
+                    Overdue
                   </Title>
-                  <Badge count={dueThisWeek.length} size="small" />
+                  <Badge count={overdue.length} size="small" />
                 </Flex>
 
                 <Flex vertical gap={8}>
-                  <AnimatePresence>
-                    {capRail('due', dueThisWeek).map(({ assignment, course }) => {
-                      const sub = submissions[assignment.id]?.[0];
-                      const status = getSubmissionStatusFor(assignment, sub, viewsBySubmission);
-                      const dueRel = assignment.uploadDueDate
-                        ? getRelativeDueDate(assignment.uploadDueDate)
-                        : { text: '', urgent: false };
-                      const link = encodedCourseLink('student', course);
-
-                      return (
-                        <motion.div
-                          key={assignment.id}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                        >
-                          <Link to={link} style={{ textDecoration: 'none' }}>
-                            <Card size="small" hoverable>
-                              <Flex justify="space-between" align="center" gap={8}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <Text strong ellipsis style={{ display: 'block' }}>
-                                    {assignment.name}
-                                  </Text>
-                                  <Text type="secondary" style={{ fontSize: 12 }}>
-                                    {course.name}
-                                  </Text>
-                                </div>
-                                {dueRel.text ? (
-                                  <Tag color={dueRel.urgent ? 'error' : 'default'} style={{ marginInlineEnd: 0 }}>
-                                    <CalendarOutlined /> {dueRel.text}
-                                  </Tag>
-                                ) : status === SubmissionStatus.NO_SUBMISSION && assignment.allowStudentUpload ? (
-                                  <Tag color="blue" style={{ marginInlineEnd: 0 }}>
-                                    <UploadOutlined /> Upload
-                                  </Tag>
-                                ) : status === SubmissionStatus.NOT_REVIEWED ? (
-                                  <Tag color="processing" style={{ marginInlineEnd: 0 }}>
-                                    <EyeOutlined /> View
-                                  </Tag>
-                                ) : (
-                                  <Tag color="default" style={{ marginInlineEnd: 0 }}>
-                                    Open
-                                  </Tag>
-                                )}
-                              </Flex>
-                            </Card>
-                          </Link>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
+                  <AnimatePresence>{capRail('overdue', overdue).map(dueRow)}</AnimatePresence>
                 </Flex>
-                {railToggle('due', dueThisWeek.length)}
+                {railToggle('overdue', overdue.length)}
+              </motion.section>
+            )}
+
+            {/* Due soon */}
+            {dueSoon.length > 0 && (
+              <motion.section
+                aria-label={`Due soon — ${dueSoon.length} assignments`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.07, ease: [0.4, 0, 0.2, 1] }}
+                style={{ marginBottom: 24 }}
+              >
+                <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
+                  <FireOutlined style={{ color: '#faad14' }} />
+                  <Title level={5} style={{ margin: 0 }}>
+                    Due Soon
+                  </Title>
+                  <Badge count={dueSoon.length} size="small" color="#faad14" />
+                </Flex>
+
+                <Flex vertical gap={8}>
+                  <AnimatePresence>{capRail('dueSoon', dueSoon).map(dueRow)}</AnimatePresence>
+                </Flex>
+                {railToggle('dueSoon', dueSoon.length)}
               </motion.section>
             )}
 

@@ -11039,6 +11039,30 @@ export interface StudentQuiz {
    * @memberof StudentQuiz
    */
   readonly closeAt: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  readonly myScore: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof StudentQuiz
+   */
+  readonly myMaxScore: number | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  readonly myPassed: boolean | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  readonly myScorePending: boolean;
 }
 
 /**

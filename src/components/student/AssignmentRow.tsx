@@ -17,6 +17,7 @@ import { CodePostDate } from '../utils/CodepostDate';
 import { SubmissionStatus } from './submissionStatus';
 import { StudentQuiz } from '../../api-client';
 import { quizAction, quizActionLabel } from './quizzes/quizStatus';
+import QuizScoreTags from './quizzes/QuizScoreTags';
 import { assignmentIsDone, assignmentNeedsAction } from './actionStatus';
 
 interface AssignmentRowProps {
@@ -432,26 +433,29 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
                     ) : null}
                   </Typography.Text>
                 </Flex>
-                {action === 'locked' ? (
-                  <Tooltip title="This quiz isn't open yet">
-                    <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid="attached-quiz-locked">
+                <Flex align="center" gap={6} style={{ flexShrink: 0 }}>
+                  <QuizScoreTags quiz={quiz} />
+                  {action === 'locked' ? (
+                    <Tooltip title="This quiz isn't open yet">
+                      <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid="attached-quiz-locked">
+                        {quizActionLabel(quiz)}
+                      </Tag>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      type={action === 'review' ? 'default' : 'primary'}
+                      size="small"
+                      icon={action === 'review' ? <EyeOutlined /> : undefined}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTakeQuiz?.(quiz);
+                      }}
+                      data-testid="attached-quiz-action"
+                    >
                       {quizActionLabel(quiz)}
-                    </Tag>
-                  </Tooltip>
-                ) : (
-                  <Button
-                    type={action === 'review' ? 'default' : 'primary'}
-                    size="small"
-                    icon={action === 'review' ? <EyeOutlined /> : undefined}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTakeQuiz?.(quiz);
-                    }}
-                    data-testid="attached-quiz-action"
-                  >
-                    {quizActionLabel(quiz)}
-                  </Button>
-                )}
+                    </Button>
+                  )}
+                </Flex>
               </Flex>
             );
           })}

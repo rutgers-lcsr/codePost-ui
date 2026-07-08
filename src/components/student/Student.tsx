@@ -210,7 +210,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     }
     return map;
   }, [courseQuizzes]);
-  const standaloneQuizzes = React.useMemo(() => courseQuizzes.filter((q) => q.assignment == null), [courseQuizzes]);
 
   const submissionsQuery = useStudentSubmissionsQuery(
     currentCourse?.id,
@@ -522,6 +521,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   }, [groupedSections, submissions, getSubmissionStatus]);
 
   // Sidebar badge counts: items on each page the student still needs to act on.
+  // The Quizzes page lists standalone AND attached quizzes, so its count covers both.
   const navCounts = useMemo(
     () => ({
       assignments: currentCourseAssignments.filter((a) =>
@@ -532,9 +532,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           quizzes: quizzesByAssignment.get(a.id) ?? [],
         }),
       ).length,
-      quizzes: standaloneQuizzes.filter(quizNeedsAction).length,
+      quizzes: courseQuizzes.filter(quizNeedsAction).length,
     }),
-    [currentCourseAssignments, submissions, getSubmissionStatus, quizzesByAssignment, standaloneQuizzes],
+    [currentCourseAssignments, submissions, getSubmissionStatus, quizzesByAssignment, courseQuizzes],
   );
 
   // Build a row for an assignment (shared renderer)
@@ -834,7 +834,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
               count={groupedSections.completed.length}
               variant="completed"
               icon={<CheckCircleOutlined />}
-              defaultCollapsed={groupedSections.completed.length > 3}
             >
               {groupedSections.completed.map((a) => renderAssignmentRow(a, rowOpts))}
             </AssignmentSection>
@@ -893,11 +892,17 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       </>,
     );
 
+    const assignmentNamesById = Object.fromEntries(currentCourseAssignments.map((a) => [a.id, a.name]));
+
     quizzesContent = pageChrome(
       <>
-        {/* Standalone quizzes; attached quizzes live on their assignment card. */}
-        <StudentQuizzesSection courseId={currentCourse.id} onTake={handleTakeQuiz} />
-        {!isLoadingQuizzes && standaloneQuizzes.length === 0 && (
+        {/* Standalone quizzes, plus attached quizzes (which also live on their assignment card). */}
+        <StudentQuizzesSection
+          courseId={currentCourse.id}
+          onTake={handleTakeQuiz}
+          assignmentNamesById={assignmentNamesById}
+        />
+        {!isLoadingQuizzes && courseQuizzes.length === 0 && (
           <Flex justify="center" align="center" style={{ minHeight: 300 }}>
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No quizzes for this course yet." />
           </Flex>

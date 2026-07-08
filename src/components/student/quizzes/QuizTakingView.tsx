@@ -141,19 +141,19 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
     setSubmitting(true);
     Object.values(timers.current).forEach(clearTimeout);
     try {
-      // Flush the latest answers, then finalize.
+      // Flush the latest answers, then finalize. A failed save must abort the submit —
+      // grading reads the server-side answers, so submitting anyway would silently
+      // drop whatever didn't save. The student keeps their local answers and can retry.
       await Promise.all(
         attempt.responses.map((r) =>
-          quizAttemptsApi
-            .saveAnswerPartialUpdate({
-              id: attempt.id,
-              patchedSaveQuizAnswerRequest: {
-                response: r.id,
-                answerText: answers[r.id]?.answerText ?? '',
-                selectedChoices: answers[r.id]?.selectedChoices ?? [],
-              },
-            })
-            .catch(() => undefined),
+          quizAttemptsApi.saveAnswerPartialUpdate({
+            id: attempt.id,
+            patchedSaveQuizAnswerRequest: {
+              response: r.id,
+              answerText: answers[r.id]?.answerText ?? '',
+              selectedChoices: answers[r.id]?.selectedChoices ?? [],
+            },
+          }),
         ),
       );
       const done = await quizAttemptsApi.submitCreate({ id: attempt.id });

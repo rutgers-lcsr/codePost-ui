@@ -25,9 +25,18 @@ function questionOfType(page: Page, type: string) {
 }
 
 /** Click a choice (radio/checkbox) by its exact visible text, within a question scope.
- *  Clicking the label reliably toggles antd radios AND checkboxes. */
+ *  Clicking the label reliably toggles antd radios AND checkboxes. A click can land
+ *  mid-re-render (the debounced autosave of the previous answer) and get swallowed,
+ *  so verify the control actually toggled and retry if it didn't. */
 async function pickChoice(scope: Scope, text: string) {
-  await scope.getByTestId('quiz-choice').filter({ hasText: new RegExp(`^${text}$`) }).click();
+  const choice = scope.getByTestId('quiz-choice').filter({ hasText: new RegExp(`^${text}$`) });
+  const input = choice.locator('xpath=ancestor::label//input');
+  await expect(async () => {
+    if (!(await input.isChecked())) {
+      await choice.click();
+    }
+    await expect(input).toBeChecked({ timeout: 1000 });
+  }).toPass({ timeout: 30000 });
 }
 
 /** Answer the five auto-graded questions of a one-page quiz correctly. */
@@ -83,6 +92,11 @@ test.describe('student quiz taking', () => {
     await submitQuiz(page);
     // Essay + code ⇒ manual grading, so no numeric score yet.
     await expect(page.getByTestId('quiz-score')).toContainText('await grading');
+
+    // Back on the Quizzes page the card shows the pending-grading state, not a score.
+    await page.getByText('Back to course').click();
+    const card = page.getByTestId('student-quiz-card').filter({ hasText: 'QT · All question types' });
+    await expect(card.getByTestId('student-quiz-score')).toHaveText('Awaiting grading');
   });
 
   test('auto-graded answers score full marks and pass', async ({ page }) => {
@@ -122,6 +136,11 @@ test.describe('student quiz taking', () => {
     }
     await submitQuiz(page);
     await expect(page.getByTestId('quiz-score')).toContainText('10 / 10');
+
+    // Back on the Quizzes page the card now shows the official score.
+    await page.getByText('Back to course').click();
+    const card = page.getByTestId('student-quiz-card').filter({ hasText: 'QT · Timed · sequential · 3 attempts' });
+    await expect(card.getByTestId('student-quiz-score')).toHaveText('10 / 10');
   });
 
   test('a not-yet-open attached quiz shows as locked on its assignment', async ({ page }) => {

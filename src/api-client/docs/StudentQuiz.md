@@ -23,5 +23,9 @@ Summary of a quiz for a student: settings, availability, and the caller\'s attem
 | `hasOpenAttempt`      | boolean                                                 |
 | `hasSubmittedAttempt` | boolean                                                 |
 | `closeAt`             | string                                                  |
+| `myScore`             | number                                                  |
+| `myMaxScore`          | number                                                  |
+| `myPassed`            | boolean                                                 |
+| `myScorePending`      | boolean                                                 |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
