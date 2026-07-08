@@ -45,6 +45,8 @@ export const quizLockText = (reason?: string): string => {
       return 'Opens after feedback is released';
     case 'student_feedback_not_ready':
       return 'Opens when your feedback is ready';
+    case 'questions_not_ready':
+      return 'Your quiz is being prepared';
     case 'assignment_still_open':
       return 'Opens after the assignment closes';
     case 'not_yet_open':

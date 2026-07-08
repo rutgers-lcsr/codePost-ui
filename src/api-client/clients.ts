@@ -17,6 +17,8 @@ import {
   CoursesApi,
   DashboardApi,
   FilesApi,
+  GeneratedQuestionSetsApi,
+  GeneratedQuizQuestionsApi,
   ImpersonateApi,
   LearningObjectivesApi,
   LogsApi,
@@ -29,6 +31,7 @@ import {
   QuestionBanksApi,
   QuestionsApi,
   QuizAttemptsApi,
+  QuizGeneratedSectionsApi,
   QuizImagesApi,
   QuizImportJobsApi,
   QuizQuestionGroupsApi,
@@ -91,6 +94,8 @@ export const courseFilesApi = new CourseFilesApi(apiClientConfig);
 export const coursesApi = new CoursesApi(apiClientConfig);
 export const dashboardApi = new DashboardApi(apiClientConfig);
 export const filesApi = new FilesApi(apiClientConfig);
+export const generatedQuestionSetsApi = new GeneratedQuestionSetsApi(apiClientConfig);
+export const generatedQuizQuestionsApi = new GeneratedQuizQuestionsApi(apiClientConfig);
 export const impersonateApi = new ImpersonateApi(apiClientConfig);
 export const learningObjectivesApi = new LearningObjectivesApi(apiClientConfig);
 export const logsApi = new LogsApi(apiClientConfig);
@@ -103,6 +108,7 @@ export const promptVariantsApi = new PromptVariantsApi(apiClientConfig);
 export const questionBanksApi = new QuestionBanksApi(apiClientConfig);
 export const questionsApi = new QuestionsApi(apiClientConfig);
 export const quizAttemptsApi = new QuizAttemptsApi(apiClientConfig);
+export const quizGeneratedSectionsApi = new QuizGeneratedSectionsApi(apiClientConfig);
 export const quizImagesApi = new QuizImagesApi(apiClientConfig);
 export const quizImportJobsApi = new QuizImportJobsApi(apiClientConfig);
 export const quizQuestionGroupsApi = new QuizQuestionGroupsApi(apiClientConfig);

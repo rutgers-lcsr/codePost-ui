@@ -2,16 +2,20 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                           | HTTP request                     | Description |
-| ------------------------------------------------ | -------------------------------- | ----------- |
-| [**attemptsList**](QuizzesApi.md#attemptslist)   | **GET** /quizzes/{id}/attempts/  |             |
-| [**create**](QuizzesApi.md#create)               | **POST** /quizzes/               |             |
-| [**destroy**](QuizzesApi.md#destroy)             | **DELETE** /quizzes/{id}/        |             |
-| [**list**](QuizzesApi.md#list)                   | **GET** /quizzes/                |             |
-| [**partialUpdate**](QuizzesApi.md#partialupdate) | **PATCH** /quizzes/{id}/         |             |
-| [**questionsList**](QuizzesApi.md#questionslist) | **GET** /quizzes/{id}/questions/ |             |
-| [**retrieve**](QuizzesApi.md#retrieve)           | **GET** /quizzes/{id}/           |             |
-| [**update**](QuizzesApi.md#update)               | **PUT** /quizzes/{id}/           |             |
+| Method                                                                   | HTTP request                                | Description |
+| ------------------------------------------------------------------------ | ------------------------------------------- | ----------- |
+| [**attemptsList**](QuizzesApi.md#attemptslist)                           | **GET** /quizzes/{id}/attempts/             |             |
+| [**create**](QuizzesApi.md#create)                                       | **POST** /quizzes/                          |             |
+| [**destroy**](QuizzesApi.md#destroy)                                     | **DELETE** /quizzes/{id}/                   |             |
+| [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                 | **GET** /quizzes/{id}/generatedSets/        |             |
+| [**list**](QuizzesApi.md#list)                                           | **GET** /quizzes/                           |             |
+| [**partialUpdate**](QuizzesApi.md#partialupdate)                         | **PATCH** /quizzes/{id}/                    |             |
+| [**promptVariablesList**](QuizzesApi.md#promptvariableslist)             | **GET** /quizzes/{id}/promptVariables/      |             |
+| [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate) | **POST** /quizzes/{id}/publishAllGenerated/ |             |
+| [**questionsList**](QuizzesApi.md#questionslist)                         | **GET** /quizzes/{id}/questions/            |             |
+| [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)             | **POST** /quizzes/{id}/resetAttempts/       |             |
+| [**retrieve**](QuizzesApi.md#retrieve)                                   | **GET** /quizzes/{id}/                      |             |
+| [**update**](QuizzesApi.md#update)                                       | **PUT** /quizzes/{id}/                      |             |
 
 ## attemptsList
 
@@ -232,6 +236,77 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## generatedSetsList
+
+> Array&lt;GeneratedQuestionSetList&gt; generatedSetsList(id)
+
+Per-student generated question sets on this quiz, for review. Course admins always; other staff only when gradersCanReviewGenerated is on.
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { GeneratedSetsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies GeneratedSetsListRequest;
+
+  try {
+    const data = await api.generatedSetsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;GeneratedQuestionSetList&gt;**](GeneratedQuestionSetList.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## list
 
 > Array&lt;Quiz&gt; list()
@@ -373,6 +448,148 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## promptVariablesList
+
+> Array&lt;PromptVariable&gt; promptVariablesList(id)
+
+The {variables} usable in this quiz\&#39;s personalized-section prompts (powers the prompt editor\&#39;s autocomplete).
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { PromptVariablesListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies PromptVariablesListRequest;
+
+  try {
+    const data = await api.promptVariablesList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;PromptVariable&gt;**](PromptVariable.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## publishAllGeneratedCreate
+
+> PublishAllGeneratedResponse publishAllGeneratedCreate(id)
+
+Approve every generated set awaiting review on this quiz in one step (course admins only). Sets with no questions are skipped.
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { PublishAllGeneratedCreateRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies PublishAllGeneratedCreateRequest;
+
+  try {
+    const data = await api.publishAllGeneratedCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**PublishAllGeneratedResponse**](PublishAllGeneratedResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## questionsList
 
 > Array&lt;QuizQuestion&gt; questionsList(id)
@@ -426,6 +643,77 @@ example().catch(console.error);
 ### Return type
 
 [**Array&lt;QuizQuestion&gt;**](QuizQuestion.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## resetAttemptsCreate
+
+> ResetQuizAttemptsResponse resetAttemptsCreate(id)
+
+Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { ResetAttemptsCreateRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies ResetAttemptsCreateRequest;
+
+  try {
+    const data = await api.resetAttemptsCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**ResetQuizAttemptsResponse**](ResetQuizAttemptsResponse.md)
 
 ### Authorization
 

@@ -11,6 +11,8 @@ apis/CourseFilesApi.ts
 apis/CoursesApi.ts
 apis/DashboardApi.ts
 apis/FilesApi.ts
+apis/GeneratedQuestionSetsApi.ts
+apis/GeneratedQuizQuestionsApi.ts
 apis/ImpersonateApi.ts
 apis/LearningObjectivesApi.ts
 apis/LogsApi.ts
@@ -23,6 +25,7 @@ apis/PromptVariantsApi.ts
 apis/QuestionBanksApi.ts
 apis/QuestionsApi.ts
 apis/QuizAttemptsApi.ts
+apis/QuizGeneratedSectionsApi.ts
 apis/QuizImagesApi.ts
 apis/QuizImportJobsApi.ts
 apis/QuizQuestionGroupsApi.ts
@@ -166,6 +169,12 @@ docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GenerateQuizQuestionsRequest.md
 docs/GenerateQuizQuestionsResponse.md
+docs/GeneratedQuestionSet.md
+docs/GeneratedQuestionSetList.md
+docs/GeneratedQuestionSetStatusEnum.md
+docs/GeneratedQuestionSetsApi.md
+docs/GeneratedQuizQuestion.md
+docs/GeneratedQuizQuestionsApi.md
 docs/GradeQuizResponseRequest.md
 docs/GranularityEnum.md
 docs/HandleValidationResponse.md
@@ -220,6 +229,7 @@ docs/PatchedEnvironmentBuildRequest.md
 docs/PatchedEnvironmentRunAllRequest.md
 docs/PatchedEnvironmentRunRequest.md
 docs/PatchedFile.md
+docs/PatchedGeneratedQuizQuestion.md
 docs/PatchedLearningObjective.md
 docs/PatchedMaintenanceBanner.md
 docs/PatchedOrganization.md
@@ -229,6 +239,7 @@ docs/PatchedPromptFeedback.md
 docs/PatchedQuestion.md
 docs/PatchedQuestionBank.md
 docs/PatchedQuiz.md
+docs/PatchedQuizGeneratedSection.md
 docs/PatchedQuizImportJob.md
 docs/PatchedQuizQuestion.md
 docs/PatchedQuizQuestionGroup.md
@@ -258,7 +269,9 @@ docs/PromptFeedback.md
 docs/PromptFeedbackApi.md
 docs/PromptTypesApi.md
 docs/PromptTypesList200ResponseInner.md
+docs/PromptVariable.md
 docs/PromptVariantsApi.md
+docs/PublishAllGeneratedResponse.md
 docs/Question.md
 docs/QuestionBank.md
 docs/QuestionBanksApi.md
@@ -271,11 +284,14 @@ docs/QuizAttemptStatusEnum.md
 docs/QuizAttemptsApi.md
 docs/QuizAvailability.md
 docs/QuizCloseEventEnum.md
+docs/QuizGeneratedSection.md
+docs/QuizGeneratedSectionsApi.md
 docs/QuizImage.md
 docs/QuizImagesApi.md
 docs/QuizImportJob.md
 docs/QuizImportJobStatusEnum.md
 docs/QuizImportJobsApi.md
+docs/QuizMultiAttemptScoreMethodEnum.md
 docs/QuizPassingScoreUnitEnum.md
 docs/QuizQuestion.md
 docs/QuizQuestionGroup.md
@@ -292,6 +308,7 @@ docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
+docs/ResetQuizAttemptsResponse.md
 docs/RubricCategoriesApi.md
 docs/RubricCategory.md
 docs/RubricComment.md

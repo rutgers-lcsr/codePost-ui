@@ -29,13 +29,15 @@ import {
   EyeOutlined,
   PlusOutlined,
   RetweetOutlined,
+  RobotOutlined,
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
-import { quizzesApi, quizQuestionsApi, quizQuestionGroupsApi } from '../../../api-client/clients';
+import { quizzesApi, quizQuestionsApi, quizQuestionGroupsApi, quizGeneratedSectionsApi } from '../../../api-client/clients';
 import {
   Course,
   Quiz,
+  QuizGeneratedSection,
   QuizQuestion,
   QuizQuestionGroup,
   QuizAssignmentTriggerEnum,
@@ -45,10 +47,14 @@ import {
 } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
-import { useCourseQuestions, useQuizMembership, useQuizDetail, useQuestionBanks } from './queries';
+import {
+  useCourseQuestions, useGeneratedSets, useQuizMembership, useQuizDetail, useQuestionBanks,
+} from './queries';
 import { typeMeta } from './questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
+import GeneratedSectionModal from './GeneratedSectionModal';
+import GeneratedReviewDrawer from './GeneratedReviewDrawer';
 import MarkdownField from './MarkdownField';
 import QuizPreviewDrawer, { PreviewItem } from './QuizPreviewDrawer';
 import QuizGradingDrawer from './QuizGradingDrawer';
@@ -60,10 +66,12 @@ interface IProps {
   quiz: Quiz;
 }
 
-// A unified row in the quiz-contents table: either a fixed question or a random draw.
+// A unified row in the quiz-contents table: a fixed question, a random draw, or a
+// per-student personalized (AI-generated) section.
 type ContentRow =
   | { key: string; kind: 'question'; qq: QuizQuestion; position: number }
-  | { key: string; kind: 'group'; group: QuizQuestionGroup };
+  | { key: string; kind: 'group'; group: QuizQuestionGroup }
+  | { key: string; kind: 'aiSection'; section: QuizGeneratedSection };
 
 // Per-row points override: commits on blur / Enter (not every keystroke) and
 // disables while the PATCH is in flight. Needs its own component because a
@@ -185,12 +193,16 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
 
   const current = liveQuiz ?? quiz;
   const groups = React.useMemo(() => current.questionGroups ?? [], [current.questionGroups]);
+  const sections = React.useMemo(() => current.generatedSections ?? [], [current.generatedSections]);
 
   const [addOpen, setAddOpen] = React.useState(false);
   const [groupOpen, setGroupOpen] = React.useState(false);
   const [previewOpen, setPreviewOpen] = React.useState(false);
   const [gradingOpen, setGradingOpen] = React.useState(false);
   const [editingGroup, setEditingGroup] = React.useState<QuizQuestionGroup | null>(null);
+  const [sectionOpen, setSectionOpen] = React.useState(false);
+  const [reviewOpen, setReviewOpen] = React.useState(false);
+  const [editingSection, setEditingSection] = React.useState<QuizGeneratedSection | null>(null);
 
   // --- Quiz settings (title / description / attached assignment) ---
   const [title, setTitle] = React.useState(current.title);
@@ -239,6 +251,11 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const UNIT_DEFAULT = QuizPassingScoreUnitEnum.Percent;
   const [passingScoreUnit, setPassingScoreUnit] = React.useState(current.passingScoreUnit || UNIT_DEFAULT);
   const [isPublished, setIsPublished] = React.useState<boolean>(current.isPublished ?? false);
+  // Per-student generated questions.
+  const [gradersCanReviewGenerated, setGradersCanReviewGenerated] =
+    React.useState<boolean>(current.gradersCanReviewGenerated ?? false);
+  const [autoPublishGenerated, setAutoPublishGenerated] =
+    React.useState<boolean>(current.autoPublishGenerated ?? false);
 
   // Reset all settings state when switching quizzes. (Keyed on id so an unrelated
   // detail refetch doesn't clobber in-progress edits.)
@@ -262,6 +279,8 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     setPassingScore(current.passingScore ?? null);
     setPassingScoreUnit(current.passingScoreUnit || UNIT_DEFAULT);
     setIsPublished(current.isPublished ?? false);
+    setGradersCanReviewGenerated(current.gradersCanReviewGenerated ?? false);
+    setAutoPublishGenerated(current.autoPublishGenerated ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current.id]);
 
@@ -283,7 +302,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     showCorrectAnswers !== (current.showCorrectAnswers || SHOW_DEFAULT) ||
     (passingScore ?? null) !== (current.passingScore ?? null) ||
     passingScoreUnit !== (current.passingScoreUnit || UNIT_DEFAULT) ||
-    isPublished !== (current.isPublished ?? false);
+    isPublished !== (current.isPublished ?? false) ||
+    gradersCanReviewGenerated !== (current.gradersCanReviewGenerated ?? false) ||
+    autoPublishGenerated !== (current.autoPublishGenerated ?? false);
 
   const handleSaveSettings = async (overrides?: { isPublished?: boolean }) => {
     if (!title.trim()) {
@@ -313,6 +334,8 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           passingScore,
           passingScoreUnit,
           isPublished: overrides?.isPublished ?? isPublished,
+          gradersCanReviewGenerated,
+          autoPublishGenerated,
         },
       });
       message.success('Quiz settings saved.');
@@ -432,10 +455,48 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     });
   };
 
-  // --- Unified quiz-contents rows: questions first, then random draws ---
+  // --- Personalized (per-student generated) sections ---
+  const orderedSections = React.useMemo(
+    () => [...sections].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0)),
+    [sections],
+  );
+  // Review badge (only fetched once sections exist; graders without the review flag get
+  // a 403, which simply hides the count).
+  const { data: generatedSets = [] } = useGeneratedSets(orderedSections.length > 0 ? quiz.id : undefined);
+  const readyCount = generatedSets.filter((s) => s.status === 'ready').length;
+
+  const openCreateSection = () => {
+    setEditingSection(null);
+    setSectionOpen(true);
+  };
+  const openEditSection = (s: QuizGeneratedSection) => {
+    setEditingSection(s);
+    setSectionOpen(true);
+  };
+  const handleDeleteSection = (s: QuizGeneratedSection) => {
+    Modal.confirm({
+      title: 'Remove this personalized section?',
+      content: "Every student's generated questions for this section are deleted too. "
+        + 'Attempts already taken are unaffected.',
+      okText: 'Remove',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await quizGeneratedSectionsApi.destroy({ id: s.id! });
+          message.success('Personalized section removed.');
+          invalidateGroups();
+        } catch {
+          message.error('Failed to remove the section.');
+        }
+      },
+    });
+  };
+
+  // --- Unified quiz-contents rows: questions, then random draws, then personalized ---
   const rows: ContentRow[] = [
     ...orderedQuestions.map((qq, i) => ({ key: `q-${qq.id}`, kind: 'question' as const, qq, position: i })),
     ...orderedGroups.map((g) => ({ key: `g-${g.id}`, kind: 'group' as const, group: g })),
+    ...orderedSections.map((s) => ({ key: `s-${s.id}`, kind: 'aiSection' as const, section: s })),
   ];
 
   const columns = [
@@ -443,8 +504,11 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       title: '#',
       key: 'order',
       width: 48,
-      render: (_: unknown, row: ContentRow) =>
-        row.kind === 'question' ? row.position + 1 : <RetweetOutlined style={{ color: '#198665' }} />,
+      render: (_: unknown, row: ContentRow) => {
+        if (row.kind === 'question') return row.position + 1;
+        if (row.kind === 'aiSection') return <RobotOutlined style={{ color: '#722ed1' }} />;
+        return <RetweetOutlined style={{ color: '#198665' }} />;
+      },
     },
     {
       title: 'Type',
@@ -452,6 +516,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       width: 140,
       render: (_: unknown, row: ContentRow) => {
         if (row.kind === 'group') return <Tag color="green">Random draw</Tag>;
+        if (row.kind === 'aiSection') return <Tag color="purple">Personalized</Tag>;
         const meta = typeMeta(questionsById.get(row.qq.question)?.questionType);
         return <Tag color={meta.color}>{meta.label}</Tag>;
       },
@@ -466,6 +531,15 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             <Text>
               {g.name ? `${g.name} — ` : ''}
               Draw <b>{g.pickCount ?? 1}</b> random from <b>{bankNameById.get(g.bank) ?? `bank #${g.bank}`}</b>
+            </Text>
+          );
+        }
+        if (row.kind === 'aiSection') {
+          const s = row.section;
+          return (
+            <Text>
+              {s.name ? `${s.name} — ` : ''}
+              Generate <b>{s.numQuestions ?? 3}</b> per student from their submission
             </Text>
           );
         }
@@ -484,6 +558,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           return (
             <Text type="secondary">
               {g.pickCount ?? 1} × {g.pointsPerQuestion ?? 1}
+            </Text>
+          );
+        }
+        if (row.kind === 'aiSection') {
+          const s = row.section;
+          return (
+            <Text type="secondary">
+              {s.numQuestions ?? 3} × {s.pointsPerQuestion ?? 1}
             </Text>
           );
         }
@@ -523,6 +605,27 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             </Space.Compact>
           );
         }
+        if (row.kind === 'aiSection') {
+          return (
+            <Space.Compact size="small">
+              <Button
+                size="small"
+                aria-label="Edit personalized section"
+                title="Edit personalized section"
+                icon={<EditOutlined />}
+                onClick={() => openEditSection(row.section)}
+              />
+              <Button
+                size="small"
+                danger
+                aria-label="Remove personalized section"
+                title="Remove personalized section"
+                icon={<DeleteOutlined />}
+                onClick={() => handleDeleteSection(row.section)}
+              />
+            </Space.Compact>
+          );
+        }
         return (
           <Space.Compact size="small">
             <Button
@@ -556,7 +659,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   ];
 
   const assignmentOptions = assignments.map((a) => ({ value: a.id, label: a.name }));
-  const totalItems = orderedQuestions.length + orderedGroups.length;
+  const totalItems = orderedQuestions.length + orderedGroups.length + orderedSections.length;
 
   // Fixed questions, plus a simulated sample for each random draw. Memoized so the
   // random selection stays stable while the instructor interacts with the preview.
@@ -854,6 +957,28 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
               )}
             </Flex>
           </div>
+          {orderedSections.length > 0 && (
+            <div>
+              <Text strong>Personalized questions</Text>
+              <Flex vertical gap={10} style={{ marginTop: 8 }}>
+                <Space>
+                  <Switch checked={autoPublishGenerated} onChange={setAutoPublishGenerated} />
+                  <Text>Publish generated questions automatically (skip review)</Text>
+                </Space>
+                <Space>
+                  <Switch checked={gradersCanReviewGenerated} onChange={setGradersCanReviewGenerated} />
+                  <Text>Graders may review and publish generated questions</Text>
+                </Space>
+                {closeEvent === QuizCloseEventEnum.Submission && !autoPublishGenerated && (
+                  <Text type="warning" style={{ fontSize: 13 }}>
+                    This quiz closes relative to each student's submission, but their questions
+                    only open once reviewed — a slow review can eat into (or consume) their
+                    window. Review promptly, extend the close offset, or enable auto-publish.
+                  </Text>
+                )}
+              </Flex>
+            </div>
+          )}
         </Flex>
       </Card>
 
@@ -868,6 +993,11 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             {orderedGroups.length > 0 && (
               <Tag color="green">
                 {orderedGroups.length} random {orderedGroups.length === 1 ? 'draw' : 'draws'}
+              </Tag>
+            )}
+            {orderedSections.length > 0 && (
+              <Tag color="purple">
+                {orderedSections.length} personalized
               </Tag>
             )}
           </Flex>
@@ -887,6 +1017,27 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             <Tooltip title="Review submitted attempts and grade essay/code responses">
               <CPButton cpType="link" icon={<CheckSquareOutlined />} onClick={() => setGradingOpen(true)}>
                 Grading
+              </CPButton>
+            </Tooltip>
+            {orderedSections.length > 0 && (
+              <Tooltip title="Review each student's generated questions before their quiz opens">
+                <CPButton cpType="link" icon={<RobotOutlined />} onClick={() => setReviewOpen(true)}>
+                  Review Generated{readyCount > 0 ? ` (${readyCount})` : ''}
+                </CPButton>
+              </Tooltip>
+            )}
+            <Tooltip
+              title={assignmentId == null
+                ? 'Attach the quiz to an assignment first — questions are generated from each student\'s submission'
+                : 'Generate questions per student from their own submission'}
+            >
+              <CPButton
+                cpType="secondary"
+                icon={<RobotOutlined />}
+                disabled={assignmentId == null}
+                onClick={openCreateSection}
+              >
+                Add Personalized
               </CPButton>
             </Tooltip>
             <CPButton cpType="secondary" icon={<RetweetOutlined />} onClick={openCreateGroup}>
@@ -941,6 +1092,22 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       />
 
       <QuizGradingDrawer open={gradingOpen} onClose={() => setGradingOpen(false)} quiz={current} />
+
+      <GeneratedSectionModal
+        open={sectionOpen}
+        courseId={course.id!}
+        quizId={quiz.id!}
+        section={editingSection}
+        nextSortKey={orderedSections.length ? Math.max(...orderedSections.map((s) => s.sortKey ?? 0)) + 1 : 0}
+        onClose={() => setSectionOpen(false)}
+      />
+
+      <GeneratedReviewDrawer
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        quiz={current}
+        courseId={course.id!}
+      />
     </>
   );
 };

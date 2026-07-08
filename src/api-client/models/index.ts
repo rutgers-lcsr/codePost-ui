@@ -4664,6 +4664,285 @@ export interface GenerateQuizQuestionsResponse {
   status: string;
 }
 /**
+ * A student's generated question set with its questions — the review payload.
+ * Staff-only (never exposed to students).
+ * @export
+ * @interface GeneratedQuestionSet
+ */
+export interface GeneratedQuestionSet {
+  /**
+   *
+   * @type {number}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly id: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly quiz: number;
+  /**
+   * The student this set was generated for.
+   * @type {number}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly student: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly studentEmail: string;
+  /**
+   * The submission this set was generated from (seed). Null if the submission was later deleted; regeneration then requires a new submission.
+   * @type {number}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly submission: number | null;
+  /**
+   * Lifecycle: pending -> generating -> ready (awaiting review) -> approved; or failed.
+   *
+   * * `pending` - Pending
+   * * `generating` - Generating
+   * * `ready` - Ready for review
+   * * `approved` - Approved
+   * * `failed` - Failed
+   * @type {GeneratedQuestionSetStatusEnum}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly status: GeneratedQuestionSetStatusEnum;
+  /**
+   * The staff user who approved this set. Null when auto-published.
+   * @type {number}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly approvedBy: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly approvedByEmail: string | null;
+  /**
+   * When this set was approved.
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly approvedAt: string | null;
+  /**
+   * Error detail if generation failed.
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly errorMessage: string;
+  /**
+   * Metadata about the generation (model, tokens, etc.). Staff-internal.
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly generationMetadata: string | null;
+  /**
+   *
+   * @type {Array<GeneratedQuizQuestion>}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly questions: Array<GeneratedQuizQuestion>;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly modified: string;
+}
+
+/**
+ * Summary row for the per-quiz review table (no question payload).
+ * @export
+ * @interface GeneratedQuestionSetList
+ */
+export interface GeneratedQuestionSetList {
+  /**
+   *
+   * @type {number}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly id: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly quiz: number;
+  /**
+   * The student this set was generated for.
+   * @type {number}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly student: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly studentEmail: string;
+  /**
+   * The submission this set was generated from (seed). Null if the submission was later deleted; regeneration then requires a new submission.
+   * @type {number}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly submission: number | null;
+  /**
+   * Lifecycle: pending -> generating -> ready (awaiting review) -> approved; or failed.
+   *
+   * * `pending` - Pending
+   * * `generating` - Generating
+   * * `ready` - Ready for review
+   * * `approved` - Approved
+   * * `failed` - Failed
+   * @type {GeneratedQuestionSetStatusEnum}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly status: GeneratedQuestionSetStatusEnum;
+  /**
+   * When this set was approved.
+   * @type {string}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly approvedAt: string | null;
+  /**
+   * Error detail if generation failed.
+   * @type {string}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly errorMessage: string;
+  /**
+   *
+   * @type {number}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly questionCount: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly modified: string;
+}
+
+/**
+ * * `pending` - Pending
+ * * `generating` - Generating
+ * * `ready` - Ready for review
+ * * `approved` - Approved
+ * * `failed` - Failed
+ * @export
+ * @enum {string}
+ */
+export enum GeneratedQuestionSetStatusEnum {
+  Pending = 'pending',
+  Generating = 'generating',
+  Ready = 'ready',
+  Approved = 'approved',
+  Failed = 'failed',
+}
+
+/**
+ * One generated question in a student's set. Staff may edit its content (PATCH)
+ * before or after approval; the set/section links are system-managed.
+ * @export
+ * @interface GeneratedQuizQuestion
+ */
+export interface GeneratedQuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof GeneratedQuizQuestion
+   */
+  readonly id: number;
+  /**
+   * The related set_id.
+   * @type {number}
+   * @memberof GeneratedQuizQuestion
+   */
+  readonly set: number;
+  /**
+   * The section this question was generated for.
+   * @type {number}
+   * @memberof GeneratedQuizQuestion
+   */
+  readonly section: number;
+  /**
+   * The type of question.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof GeneratedQuizQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The question stem/prompt.
+   * @type {string}
+   * @memberof GeneratedQuizQuestion
+   */
+  text: string;
+  /**
+   * Optional Markdown description shown beneath the stem.
+   * @type {string}
+   * @memberof GeneratedQuizQuestion
+   */
+  description?: string;
+  /**
+   *
+   * @type {any}
+   * @memberof GeneratedQuizQuestion
+   */
+  choicesData?: any | null;
+  /**
+   * Point value (seeded from the section's pointsPerQuestion, staff-editable).
+   * @type {number}
+   * @memberof GeneratedQuizQuestion
+   */
+  points?: number;
+  /**
+   * Order of this question within the set.
+   * @type {number}
+   * @memberof GeneratedQuizQuestion
+   */
+  sortKey?: number;
+  /**
+   * For code questions: the language.
+   * @type {string}
+   * @memberof GeneratedQuizQuestion
+   */
+  language?: string | null;
+  /**
+   * For code questions: optional starter code shown to students.
+   * @type {string}
+   * @memberof GeneratedQuizQuestion
+   */
+  starterCode?: string | null;
+}
+
+/**
  *
  * @export
  * @interface GradeQuizResponseRequest
@@ -7008,6 +7287,89 @@ export interface PatchedFile {
   readonly modified?: string;
 }
 /**
+ * One generated question in a student's set. Staff may edit its content (PATCH)
+ * before or after approval; the set/section links are system-managed.
+ * @export
+ * @interface PatchedGeneratedQuizQuestion
+ */
+export interface PatchedGeneratedQuizQuestion {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  readonly id?: number;
+  /**
+   * The related set_id.
+   * @type {number}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  readonly set?: number;
+  /**
+   * The section this question was generated for.
+   * @type {number}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  readonly section?: number;
+  /**
+   * The type of question.
+   *
+   * * `multiple_choice` - Multiple Choice (one correct)
+   * * `multiple_answers` - Multiple Answers (several correct)
+   * * `true_false` - True / False
+   * * `short_answer` - Short Answer
+   * * `essay` - Essay
+   * * `numerical` - Numerical
+   * * `code` - Code
+   * @type {QuestionTypeEnum}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  questionType?: QuestionTypeEnum;
+  /**
+   * The question stem/prompt.
+   * @type {string}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  text?: string;
+  /**
+   * Optional Markdown description shown beneath the stem.
+   * @type {string}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  description?: string;
+  /**
+   *
+   * @type {any}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  choicesData?: any | null;
+  /**
+   * Point value (seeded from the section's pointsPerQuestion, staff-editable).
+   * @type {number}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  points?: number;
+  /**
+   * Order of this question within the set.
+   * @type {number}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  sortKey?: number;
+  /**
+   * For code questions: the language.
+   * @type {string}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  language?: string | null;
+  /**
+   * For code questions: optional starter code shown to students.
+   * @type {string}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  starterCode?: string | null;
+}
+
+/**
  *
  * @export
  * @interface PatchedLearningObjective
@@ -7768,11 +8130,38 @@ export interface PatchedQuiz {
    */
   scoringPolicy?: QuizScoringPolicyEnum;
   /**
+   * How multiple attempts combine into the official score: 'by_unit' compares/averages by the passing unit (percentage, or points); 'pooled' totals points earned over total points possible across attempts.
+   *
+   * * `by_unit` - By passing unit (percentage, or points)
+   * * `pooled` - Pooled points across attempts
+   * @type {QuizMultiAttemptScoreMethodEnum}
+   * @memberof PatchedQuiz
+   */
+  multiAttemptScoreMethod?: QuizMultiAttemptScoreMethodEnum;
+  /**
    * If false the quiz is a draft (author-only); students only see published quizzes.
    * @type {boolean}
    * @memberof PatchedQuiz
    */
   isPublished?: boolean;
+  /**
+   * If true, graders may review/edit/approve per-student generated question sets on this quiz; if false, only course admins may.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  gradersCanReviewGenerated?: boolean;
+  /**
+   * If true, per-student generated question sets are approved automatically on generation (no staff review gate).
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  autoPublishGenerated?: boolean;
+  /**
+   *
+   * @type {Array<QuizGeneratedSection>}
+   * @memberof PatchedQuiz
+   */
+  readonly generatedSections?: Array<QuizGeneratedSection>;
   /**
    *
    * @type {Array<QuizQuestion>}
@@ -7809,6 +8198,63 @@ export interface PatchedQuiz {
   readonly metadata?: string;
 }
 
+/**
+ * A per-student generation config on a quiz: an instructor-authored prompt template,
+ * question count, and points per question. The prompt is strictly validated on save
+ * (unknown {variables} are rejected with helpful messages).
+ * @export
+ * @interface PatchedQuizGeneratedSection
+ */
+export interface PatchedQuizGeneratedSection {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  readonly id?: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  quiz?: number;
+  /**
+   * Optional label for this section (e.g. 'About your solution — 3 questions').
+   * @type {string}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  name?: string;
+  /**
+   * Instructor-authored prompt template. May contain {variables} such as {assignment_file:name} or {submission_files}, resolved per student at generation time.
+   * @type {string}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  systemPrompt?: string;
+  /**
+   * How many questions to generate per student.
+   * @type {number}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  numQuestions?: number;
+  /**
+   * Points each generated question is worth.
+   * @type {number}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  pointsPerQuestion?: number;
+  /**
+   *
+   * @type {any}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  questionTypes?: any | null;
+  /**
+   * Order of this section within the quiz.
+   * @type {number}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  sortKey?: number;
+}
 /**
  * Read-only view of a QTI / Common Cartridge import job (for status polling).
  * @export
@@ -9495,6 +9941,68 @@ export interface PromptTypesList200ResponseInner {
   description?: string;
 }
 /**
+ *
+ * @export
+ * @interface PromptVariable
+ */
+export interface PromptVariable {
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  token: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  argument: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  description: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptVariable
+   */
+  kind: string;
+}
+/**
+ *
+ * @export
+ * @interface PublishAllGeneratedResponse
+ */
+export interface PublishAllGeneratedResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof PublishAllGeneratedResponse
+   */
+  approved: number;
+  /**
+   *
+   * @type {number}
+   * @memberof PublishAllGeneratedResponse
+   */
+  skipped: number;
+}
+/**
  * A quiz question that lives in exactly one bank, with nested writable choices.
  *
  * Choices are synced atomically on create/update — a question and its options are
@@ -9875,11 +10383,38 @@ export interface Quiz {
    */
   scoringPolicy?: QuizScoringPolicyEnum;
   /**
+   * How multiple attempts combine into the official score: 'by_unit' compares/averages by the passing unit (percentage, or points); 'pooled' totals points earned over total points possible across attempts.
+   *
+   * * `by_unit` - By passing unit (percentage, or points)
+   * * `pooled` - Pooled points across attempts
+   * @type {QuizMultiAttemptScoreMethodEnum}
+   * @memberof Quiz
+   */
+  multiAttemptScoreMethod?: QuizMultiAttemptScoreMethodEnum;
+  /**
    * If false the quiz is a draft (author-only); students only see published quizzes.
    * @type {boolean}
    * @memberof Quiz
    */
   isPublished?: boolean;
+  /**
+   * If true, graders may review/edit/approve per-student generated question sets on this quiz; if false, only course admins may.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  gradersCanReviewGenerated?: boolean;
+  /**
+   * If true, per-student generated question sets are approved automatically on generation (no staff review gate).
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  autoPublishGenerated?: boolean;
+  /**
+   *
+   * @type {Array<QuizGeneratedSection>}
+   * @memberof Quiz
+   */
+  readonly generatedSections: Array<QuizGeneratedSection>;
   /**
    *
    * @type {Array<QuizQuestion>}
@@ -9980,6 +10515,63 @@ export enum QuizCloseEventEnum {
   FixedDate = 'fixed_date',
 }
 
+/**
+ * A per-student generation config on a quiz: an instructor-authored prompt template,
+ * question count, and points per question. The prompt is strictly validated on save
+ * (unknown {variables} are rejected with helpful messages).
+ * @export
+ * @interface QuizGeneratedSection
+ */
+export interface QuizGeneratedSection {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGeneratedSection
+   */
+  readonly id: number;
+  /**
+   * The related quiz_id.
+   * @type {number}
+   * @memberof QuizGeneratedSection
+   */
+  quiz: number;
+  /**
+   * Optional label for this section (e.g. 'About your solution — 3 questions').
+   * @type {string}
+   * @memberof QuizGeneratedSection
+   */
+  name?: string;
+  /**
+   * Instructor-authored prompt template. May contain {variables} such as {assignment_file:name} or {submission_files}, resolved per student at generation time.
+   * @type {string}
+   * @memberof QuizGeneratedSection
+   */
+  systemPrompt: string;
+  /**
+   * How many questions to generate per student.
+   * @type {number}
+   * @memberof QuizGeneratedSection
+   */
+  numQuestions?: number;
+  /**
+   * Points each generated question is worth.
+   * @type {number}
+   * @memberof QuizGeneratedSection
+   */
+  pointsPerQuestion?: number;
+  /**
+   *
+   * @type {any}
+   * @memberof QuizGeneratedSection
+   */
+  questionTypes?: any | null;
+  /**
+   * Order of this section within the quiz.
+   * @type {number}
+   * @memberof QuizGeneratedSection
+   */
+  sortKey?: number;
+}
 /**
  * Read view of an uploaded description image. ``url`` is the public, token-based
  * endpoint that renders inline in Markdown.
@@ -10116,6 +10708,17 @@ export enum QuizImportJobStatusEnum {
   Running = 'running',
   Completed = 'completed',
   Failed = 'failed',
+}
+
+/**
+ * * `by_unit` - By passing unit (percentage, or points)
+ * * `pooled` - Pooled points across attempts
+ * @export
+ * @enum {string}
+ */
+export enum QuizMultiAttemptScoreMethodEnum {
+  ByUnit = 'by_unit',
+  Pooled = 'pooled',
 }
 
 /**
@@ -10391,6 +10994,19 @@ export interface ResetPasswordResponse {
    * @memberof ResetPasswordResponse
    */
   success: boolean;
+}
+/**
+ *
+ * @export
+ * @interface ResetQuizAttemptsResponse
+ */
+export interface ResetQuizAttemptsResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof ResetQuizAttemptsResponse
+   */
+  deleted: number;
 }
 /**
  *
@@ -10820,7 +11436,7 @@ export enum StatusDfeEnum {
 }
 
 /**
- * A question as a student sees it — no provenance; correct answers gated by `reveal`.
+ * Shape of a rendered snapshot question for a student (documents the client contract).
  * @export
  * @interface StudentQuestion
  */
@@ -10830,61 +11446,52 @@ export interface StudentQuestion {
    * @type {number}
    * @memberof StudentQuestion
    */
-  readonly id: number;
+  id: number | null;
   /**
-   * The type of question.
    *
-   * * `multiple_choice` - Multiple Choice (one correct)
-   * * `multiple_answers` - Multiple Answers (several correct)
-   * * `true_false` - True / False
-   * * `short_answer` - Short Answer
-   * * `essay` - Essay
-   * * `numerical` - Numerical
-   * * `code` - Code
-   * @type {QuestionTypeEnum}
+   * @type {string}
    * @memberof StudentQuestion
    */
-  questionType?: QuestionTypeEnum;
+  questionType: string;
   /**
-   * The question stem/prompt — single font (may contain HTML from Canvas).
+   *
    * @type {string}
    * @memberof StudentQuestion
    */
   text: string;
   /**
-   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   *
    * @type {string}
    * @memberof StudentQuestion
    */
-  description?: string;
+  description: string | null;
   /**
-   * For code questions: optional starter code shown to students.
+   *
    * @type {string}
    * @memberof StudentQuestion
    */
-  starterCode?: string | null;
+  starterCode: string | null;
   /**
-   * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
+   *
    * @type {string}
    * @memberof StudentQuestion
    */
-  language?: string | null;
+  language: string | null;
   /**
    *
    * @type {Array<StudentQuestionChoice>}
    * @memberof StudentQuestion
    */
-  readonly choices: Array<StudentQuestionChoice>;
+  choices?: Array<StudentQuestionChoice>;
   /**
-   * Feedback shown regardless of answer.
+   *
    * @type {string}
    * @memberof StudentQuestion
    */
-  generalFeedback?: string;
+  generalFeedback?: string | null;
 }
-
 /**
- *
+ * Shape of a rendered snapshot choice for a student (documents the client contract).
  * @export
  * @interface StudentQuestionChoice
  */
@@ -10894,27 +11501,27 @@ export interface StudentQuestionChoice {
    * @type {number}
    * @memberof StudentQuestionChoice
    */
-  readonly id: number;
+  id: number;
   /**
-   * The choice text (or accepted answer value).
+   *
    * @type {string}
    * @memberof StudentQuestionChoice
    */
   text: string;
   /**
-   * Order of this choice within the question.
+   *
    * @type {number}
    * @memberof StudentQuestionChoice
    */
-  sortKey?: number;
+  sortKey: number;
   /**
-   * Whether this choice is a correct answer.
+   *
    * @type {boolean}
    * @memberof StudentQuestionChoice
    */
   isCorrect?: boolean;
   /**
-   * Optional per-choice feedback.
+   *
    * @type {string}
    * @memberof StudentQuestionChoice
    */

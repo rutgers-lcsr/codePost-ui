@@ -1,13 +1,13 @@
 # StudentQuestion
 
-A question as a student sees it — no provenance; correct answers gated by `reveal`.
+Shape of a rendered snapshot question for a student (documents the client contract).
 
 ## Properties
 
 | Name              | Type                                                           |
 | ----------------- | -------------------------------------------------------------- |
 | `id`              | number                                                         |
-| `questionType`    | [QuestionTypeEnum](QuestionTypeEnum.md)                        |
+| `questionType`    | string                                                         |
 | `text`            | string                                                         |
 | `description`     | string                                                         |
 | `starterCode`     | string                                                         |

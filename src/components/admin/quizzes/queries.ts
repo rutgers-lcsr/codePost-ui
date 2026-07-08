@@ -1,8 +1,13 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useQuery } from '@tanstack/react-query';
-import { assignmentsApi, coursesApi, questionsApi, questionBanksApi, quizzesApi } from '../../../api-client/clients';
+import {
+  assignmentsApi, coursesApi, generatedQuestionSetsApi, questionsApi, questionBanksApi, quizzesApi,
+} from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
-import { QuestionBank, Question, Quiz, QuizQuestion, SuggestedQuizQuestion } from '../../../api-client';
+import {
+  GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
+  QuestionBank, Question, Quiz, QuizQuestion, SuggestedQuizQuestion,
+} from '../../../api-client';
 
 /** A course's question banks. List endpoints are blocked, so we fetch via the
  *  course parent action (`courses/{id}/questionBanks/`). */
@@ -73,4 +78,36 @@ export const useRegenerationSuggestions = (questionId: number | undefined) =>
     queryFn: (): Promise<SuggestedQuizQuestion[]> =>
       questionsApi.regenerationSuggestionsList({ id: questionId! }),
     enabled: !!questionId,
+  });
+
+/** The {variables} usable in a quiz's personalized-section prompts
+ *  (`quizzes/{id}/promptVariables/`) — feeds the prompt editor's autocomplete. */
+export const usePromptVariables = (quizId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.promptVariables(quizId ?? -1),
+    queryFn: (): Promise<PromptVariable[]> => quizzesApi.promptVariablesList({ id: quizId! }),
+    enabled: !!quizId,
+  });
+
+/** Per-student generated question sets on a quiz (`quizzes/{id}/generatedSets/`).
+ *  Polls while any set is still pending/generating (the review screen is long-lived). */
+export const useGeneratedSets = (quizId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.generatedSets(quizId ?? -1),
+    queryFn: (): Promise<GeneratedQuestionSetList[]> =>
+      quizzesApi.generatedSetsList({ id: quizId! }),
+    enabled: !!quizId,
+    refetchInterval: (query) =>
+      (query.state.data ?? []).some((s) => s.status === 'pending' || s.status === 'generating')
+        ? 4000
+        : false,
+  });
+
+/** One generated set with its editable questions (`generatedQuestionSets/{id}/`). */
+export const useGeneratedSetDetail = (setId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.generatedSetDetail(setId ?? -1),
+    queryFn: (): Promise<GeneratedQuestionSet> =>
+      generatedQuestionSetsApi.retrieve({ id: setId! }),
+    enabled: !!setId,
   });

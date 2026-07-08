@@ -1,5 +1,7 @@
 # StudentQuestionChoice
 
+Shape of a rendered snapshot choice for a student (documents the client contract).
+
 ## Properties
 
 | Name        | Type    |

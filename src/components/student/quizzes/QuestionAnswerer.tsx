@@ -37,7 +37,7 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
   const question = response.question;
   const type = question.questionType;
   const meta = typeMeta(type);
-  const choices = [...question.choices].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
+  const choices = [...(question.choices ?? [])].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
 
   const setText = (answerText: string) => onChange({ ...value, answerText });
   const setChoices = (selectedChoices: number[]) => onChange({ ...value, selectedChoices });

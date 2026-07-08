@@ -14,7 +14,16 @@
  */
 
 import * as runtime from '../runtime';
-import type { PatchedQuiz, Quiz, QuizQuestion, StaffQuizAttempt } from '../models/index';
+import type {
+  GeneratedQuestionSetList,
+  PatchedQuiz,
+  PromptVariable,
+  PublishAllGeneratedResponse,
+  Quiz,
+  QuizQuestion,
+  ResetQuizAttemptsResponse,
+  StaffQuizAttempt,
+} from '../models/index';
 
 export interface AttemptsListRequest {
   id: number;
@@ -22,19 +31,41 @@ export interface AttemptsListRequest {
 }
 
 export interface CreateRequest {
-  quiz: Omit<Quiz, 'id' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'>;
+  quiz: Omit<
+    Quiz,
+    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+  >;
 }
 
 export interface DestroyRequest {
   id: number;
 }
 
+export interface GeneratedSetsListRequest {
+  id: number;
+}
+
 export interface PartialUpdateRequest {
   id: number;
-  patchedQuiz?: Omit<PatchedQuiz, 'id' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'>;
+  patchedQuiz?: Omit<
+    PatchedQuiz,
+    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+  >;
+}
+
+export interface PromptVariablesListRequest {
+  id: number;
+}
+
+export interface PublishAllGeneratedCreateRequest {
+  id: number;
 }
 
 export interface QuestionsListRequest {
+  id: number;
+}
+
+export interface ResetAttemptsCreateRequest {
   id: number;
 }
 
@@ -44,7 +75,10 @@ export interface RetrieveRequest {
 
 export interface UpdateRequest {
   id: number;
-  quiz: Omit<Quiz, 'id' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'>;
+  quiz: Omit<
+    Quiz,
+    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+  >;
 }
 
 /**
@@ -231,6 +265,66 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
+   * Per-student generated question sets on this quiz, for review. Course admins always; other staff only when gradersCanReviewGenerated is on.
+   */
+  async generatedSetsListRaw(
+    requestParameters: GeneratedSetsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<GeneratedQuestionSetList>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generatedSetsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/generatedSets/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Per-student generated question sets on this quiz, for review. Course admins always; other staff only when gradersCanReviewGenerated is on.
+   */
+  async generatedSetsList(
+    requestParameters: GeneratedSetsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<GeneratedQuestionSetList>> {
+    const response = await this.generatedSetsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * Quizzes: authoring containers of questions, optionally attached to an assignment.  Attach a quiz to an existing assignment by PATCHing its ``assignment`` field.
    */
   async listRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<Quiz>>> {
@@ -340,6 +434,126 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
+   * The {variables} usable in this quiz\'s personalized-section prompts (powers the prompt editor\'s autocomplete).
+   */
+  async promptVariablesListRaw(
+    requestParameters: PromptVariablesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<PromptVariable>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling promptVariablesList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/promptVariables/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * The {variables} usable in this quiz\'s personalized-section prompts (powers the prompt editor\'s autocomplete).
+   */
+  async promptVariablesList(
+    requestParameters: PromptVariablesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<PromptVariable>> {
+    const response = await this.promptVariablesListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Approve every generated set awaiting review on this quiz in one step (course admins only). Sets with no questions are skipped.
+   */
+  async publishAllGeneratedCreateRaw(
+    requestParameters: PublishAllGeneratedCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<PublishAllGeneratedResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling publishAllGeneratedCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/publishAllGenerated/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Approve every generated set awaiting review on this quiz in one step (course admins only). Sets with no questions are skipped.
+   */
+  async publishAllGeneratedCreate(
+    requestParameters: PublishAllGeneratedCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<PublishAllGeneratedResponse> {
+    const response = await this.publishAllGeneratedCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * List this quiz\'s question memberships, in order.
    */
   async questionsListRaw(
@@ -396,6 +610,66 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<QuizQuestion>> {
     const response = await this.questionsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+   */
+  async resetAttemptsCreateRaw(
+    requestParameters: ResetAttemptsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<ResetQuizAttemptsResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling resetAttemptsCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/resetAttempts/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+   */
+  async resetAttemptsCreate(
+    requestParameters: ResetAttemptsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<ResetQuizAttemptsResponse> {
+    const response = await this.resetAttemptsCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
