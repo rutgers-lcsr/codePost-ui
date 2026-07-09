@@ -11,6 +11,16 @@ import { TYPE_META } from './questionMeta';
 
 const { Text } = Typography;
 
+// Seed for new sections. Only what the prompt references is sent to the model, so the
+// default explicitly attaches the student's submission and test results.
+const DEFAULT_SECTION_PROMPT = `Ask questions that check this student understands the code they submitted — its structure, its behavior, and the decisions they made.
+
+Their submission:
+{submission_files}
+
+Their autograder results:
+{submission_test_results}`;
+
 interface IProps {
   open: boolean;
   courseId: number;
@@ -46,7 +56,10 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
+      form.setFieldsValue({
+        numQuestions: 3, pointsPerQuestion: 1, questionTypes: [],
+        systemPrompt: DEFAULT_SECTION_PROMPT,
+      });
     }
   }, [open, section, form]);
 
@@ -105,11 +118,9 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
     >
       <Text type="secondary" style={{ fontSize: 13 }}>
         When a student submits the assignment, questions are generated for them from your
-        prompt — which can draw on the assignment, their own submission, or both. If your
-        prompt uses no {'{submission_…}'} variable, the student's files and test results are
-        attached automatically; referencing one gives you exact control over what is included.
-        You review and approve each student's questions before their quiz opens (unless
-        auto-publish is on).
+        prompt. The AI sees exactly what your prompt references — use {'{'}variables{'}'} to
+        attach assignment files, the student's submission, or their test results. You review
+        and approve each student's questions before their quiz opens (unless auto-publish is on).
       </Text>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)">
@@ -130,8 +141,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
           <TemplateTextArea
             variables={variables}
             placeholder={
-              'e.g., Ask questions that check the student understands their own code in ' +
-              '{submission_files}. Focus on their control flow and data structures.'
+              'e.g., Ask questions about the student\'s code in {submission_files}. ' +
+              'Only what you reference here is sent to the AI.'
             }
           />
         </Form.Item>
