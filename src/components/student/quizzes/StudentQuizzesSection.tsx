@@ -6,7 +6,7 @@ import CPButton from '../../core/CPButton';
 import { StudentQuiz } from '../../../api-client';
 import { CodePostDate } from '../../utils/CodepostDate';
 import { useAvailableQuizzes } from './queries';
-import { quizAction, quizActionLabel } from './quizStatus';
+import { quizAction, quizActionLabel, quizLockText } from './quizStatus';
 import QuizScoreTags from './QuizScoreTags';
 
 const { Title, Text } = Typography;
@@ -54,8 +54,12 @@ const QuizCard: React.FC<{ quiz: StudentQuiz; onTake: () => void; assignmentName
               </Text>
             )}
             <QuizScoreTags quiz={quiz} />
-            {/* For locked quizzes the action slot already explains why; skip the redundant tag. */}
-            {!quiz.availability?.isOpen && action !== 'locked' && <Tag>Closed</Tag>}
+            {/* For locked quizzes the action slot already explains why; skip the redundant tag.
+                Otherwise (e.g. reviewable) show the real not-open reason — a quiz awaiting its
+                generated questions is "being prepared", not closed. */}
+            {!quiz.availability?.isOpen && action !== 'locked' && (
+              <Tag>{quizLockText(quiz.availability?.reason)}</Tag>
+            )}
           </Flex>
         </div>
         {action === 'locked' ? (
