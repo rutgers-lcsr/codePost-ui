@@ -105,8 +105,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
     >
       <Text type="secondary" style={{ fontSize: 13 }}>
         When a student submits the assignment, questions are generated for them from your
-        prompt — which can draw on the assignment, their own submission, or both. You review
-        and approve each student's questions before their quiz opens (unless auto-publish is on).
+        prompt — which can draw on the assignment, their own submission, or both. If your
+        prompt uses no {'{submission_…}'} variable, the student's files and test results are
+        attached automatically; referencing one gives you exact control over what is included.
+        You review and approve each student's questions before their quiz opens (unless
+        auto-publish is on).
       </Text>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)">
