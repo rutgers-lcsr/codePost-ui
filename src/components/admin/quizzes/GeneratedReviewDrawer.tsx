@@ -23,6 +23,7 @@ import {
 import { quizKeys } from '../../../lib/queryKeys';
 import { useGeneratedSetDetail, useGeneratedSets } from './queries';
 import ChoicesEditor from './ChoicesEditor';
+import CodeQuestionEditor from './CodeQuestionEditor';
 import { LocalChoice, hasChoiceEditor, validateChoices } from './choiceUtils';
 import MarkdownField from './MarkdownField';
 import { typeMeta } from './questionMeta';
@@ -56,6 +57,7 @@ const GeneratedQuestionCard: React.FC<{
 }> = ({ question, courseId, editable, onChanged }) => {
   const [text, setText] = React.useState(question.text);
   const [description, setDescription] = React.useState(question.description ?? '');
+  const [starterCode, setStarterCode] = React.useState(question.starterCode ?? '');
   const [points, setPoints] = React.useState<number>(Number(question.points ?? 1));
   const [choices, setChoices] = React.useState<LocalChoice[]>(
     ((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
@@ -68,6 +70,7 @@ const GeneratedQuestionCard: React.FC<{
   const dirty =
     text !== question.text ||
     description !== (question.description ?? '') ||
+    starterCode !== (question.starterCode ?? '') ||
     points !== Number(question.points ?? 1) ||
     JSON.stringify(choices) !==
       JSON.stringify(((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
@@ -88,6 +91,7 @@ const GeneratedQuestionCard: React.FC<{
           text,
           description,
           points,
+          starterCode: questionType === QuestionTypeEnum.Code ? starterCode : question.starterCode,
           choicesData: hasChoiceEditor(questionType) ? choices : [],
         },
       });
@@ -144,10 +148,14 @@ const GeneratedQuestionCard: React.FC<{
       {hasChoiceEditor(questionType) && (
         <ChoicesEditor questionType={questionType} value={choices} onChange={setChoices} />
       )}
-      {question.starterCode ? (
-        <Input.TextArea value={question.starterCode} readOnly autoSize={{ minRows: 2, maxRows: 8 }}
-                        style={{ fontFamily: 'monospace' }} />
-      ) : null}
+      {questionType === QuestionTypeEnum.Code && (
+        <CodeQuestionEditor
+          value={starterCode}
+          onChange={setStarterCode}
+          language={question.language}
+          readOnly={!editable}
+        />
+      )}
       {editable && (
         <Space>
           <CPButton cpType="primary" size="small" onClick={save} loading={saving} disabled={!dirty}>

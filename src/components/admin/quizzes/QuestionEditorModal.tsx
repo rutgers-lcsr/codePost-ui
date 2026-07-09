@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Flex, Form, Input, InputNumber, Modal, Select, message } from 'antd';
-import Editor from '@monaco-editor/react';
+import CodeQuestionEditor from './CodeQuestionEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
@@ -46,19 +46,6 @@ const LANGUAGE_OPTIONS = [
   'ruby',
   'php',
 ];
-
-// Map an Environment.language value to a Monaco language id for highlighting.
-const monacoLang = (lang?: string | null): string => {
-  if (!lang) return 'plaintext';
-  if (lang.startsWith('python')) return 'python';
-  if (lang.startsWith('java')) return 'java';
-  if (lang.startsWith('c/c++')) return 'cpp';
-  if (lang.startsWith('node')) return 'javascript';
-  if (lang.startsWith('r-')) return 'r';
-  if (lang === 'ruby') return 'ruby';
-  if (lang === 'php') return 'php';
-  return 'plaintext';
-};
 
 interface IProps {
   open: boolean;
@@ -230,28 +217,20 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
         {isCode(qType) && (
           <>
             <Form.Item label="Starter code (optional)">
-              <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
-                <Editor
-                  height="160px"
-                  language={monacoLang(language)}
-                  value={starterCode}
-                  onChange={(v) => setStarterCode(v ?? '')}
-                  theme="vs-dark"
-                  options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 8 } }}
-                />
-              </div>
+              <CodeQuestionEditor
+                height={160}
+                language={language}
+                value={starterCode}
+                onChange={setStarterCode}
+              />
             </Form.Item>
             <Form.Item label="Reference solution (optional, authoring-only — not auto-graded yet)">
-              <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
-                <Editor
-                  height="180px"
-                  language={monacoLang(language)}
-                  value={referenceSolution}
-                  onChange={(v) => setReferenceSolution(v ?? '')}
-                  theme="vs-dark"
-                  options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 8 } }}
-                />
-              </div>
+              <CodeQuestionEditor
+                height={180}
+                language={language}
+                value={referenceSolution}
+                onChange={setReferenceSolution}
+              />
             </Form.Item>
           </>
         )}
