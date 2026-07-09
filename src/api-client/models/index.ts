@@ -4590,6 +4590,25 @@ export interface GenerateFileSuggestionsRequest {
 /**
  *
  * @export
+ * @interface GenerateForStudentRequest
+ */
+export interface GenerateForStudentRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof GenerateForStudentRequest
+   */
+  student: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GenerateForStudentRequest
+   */
+  force?: boolean;
+}
+/**
+ *
+ * @export
  * @interface GenerateOTTRequest
  */
 export interface GenerateOTTRequest {

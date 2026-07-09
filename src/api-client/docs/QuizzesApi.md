@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**attemptsList**](QuizzesApi.md#attemptslist)                           | **GET** /quizzes/{id}/attempts/             |             |
 | [**create**](QuizzesApi.md#create)                                       | **POST** /quizzes/                          |             |
 | [**destroy**](QuizzesApi.md#destroy)                                     | **DELETE** /quizzes/{id}/                   |             |
+| [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)   | **POST** /quizzes/{id}/generateForStudent/  |             |
 | [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                 | **GET** /quizzes/{id}/generatedSets/        |             |
 | [**list**](QuizzesApi.md#list)                                           | **GET** /quizzes/                           |             |
 | [**partialUpdate**](QuizzesApi.md#partialupdate)                         | **PATCH** /quizzes/{id}/                    |             |
@@ -233,6 +234,83 @@ example().catch(console.error);
 | Status code | Description      | Response headers |
 | ----------- | ---------------- | ---------------- |
 | **204**     | No response body | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## generateForStudentCreate
+
+> GeneratedQuestionSet generateForStudentCreate(id, generateForStudentRequest)
+
+Generate (or regenerate) this quiz\&#39;s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force&#x3D;true (it becomes un-published until re-approved).
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizzesApi,
+} from '';
+import type { GenerateForStudentCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+    // GenerateForStudentRequest
+    generateForStudentRequest: ...,
+  } satisfies GenerateForStudentCreateRequest;
+
+  try {
+    const data = await api.generateForStudentCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                          | Type                                                      | Description                                   | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | --------------------------------------------- | ------------------------- |
+| **id**                        | `number`                                                  | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| **generateForStudentRequest** | [GenerateForStudentRequest](GenerateForStudentRequest.md) |                                               |                           |
+
+### Return type
+
+[**GeneratedQuestionSet**](GeneratedQuestionSet.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

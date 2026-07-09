@@ -165,6 +165,7 @@ docs/FilesApi.md
 docs/GenerateAIAssistanceResponse.md
 docs/GenerateDescriptionResponse.md
 docs/GenerateFileSuggestionsRequest.md
+docs/GenerateForStudentRequest.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GenerateQuizQuestionsRequest.md

@@ -15,6 +15,8 @@
 
 import * as runtime from '../runtime';
 import type {
+  GenerateForStudentRequest,
+  GeneratedQuestionSet,
   GeneratedQuestionSetList,
   PatchedQuiz,
   PromptVariable,
@@ -39,6 +41,11 @@ export interface CreateRequest {
 
 export interface DestroyRequest {
   id: number;
+}
+
+export interface GenerateForStudentCreateRequest {
+  id: number;
+  generateForStudentRequest: GenerateForStudentRequest;
 }
 
 export interface GeneratedSetsListRequest {
@@ -262,6 +269,76 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<void> {
     await this.destroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
+   */
+  async generateForStudentCreateRaw(
+    requestParameters: GenerateForStudentCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GeneratedQuestionSet>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateForStudentCreate().',
+      );
+    }
+
+    if (requestParameters['generateForStudentRequest'] == null) {
+      throw new runtime.RequiredError(
+        'generateForStudentRequest',
+        'Required parameter "generateForStudentRequest" was null or undefined when calling generateForStudentCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/generateForStudent/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['generateForStudentRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
+   */
+  async generateForStudentCreate(
+    requestParameters: GenerateForStudentCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GeneratedQuestionSet> {
+    const response = await this.generateForStudentCreateRaw(requestParameters, initOverrides);
+    return await response.value();
   }
 
   /**

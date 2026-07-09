@@ -7,13 +7,16 @@
 // quiz's gradersCanReviewGenerated flag is on) — a 403 here means the viewer lacks access.
 import * as React from 'react';
 import {
-  Alert, Drawer, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag, Typography, message,
+  Alert, AutoComplete, Drawer, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag,
+  Typography, message,
 } from 'antd';
-import { LeftOutlined, ExportOutlined } from '@ant-design/icons';
-import { useQueryClient } from '@tanstack/react-query';
+import { LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
-import { generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi } from '../../../api-client/clients';
+import {
+  coursesApi, generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi,
+} from '../../../api-client/clients';
 import {
   GeneratedQuestionSetList, GeneratedQuizQuestion, Quiz, QuestionTypeEnum,
 } from '../../../api-client';
@@ -166,10 +169,36 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
 
   const { data: sets = [], isLoading, error } = useGeneratedSets(open ? quiz.id : undefined);
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
+  // Roster emails feed the generate-for-student picker; if the viewer can't read the
+  // roster (403) the field simply falls back to free typing.
+  const { data: roster } = useQuery({
+    queryKey: ['quizzes', 'roster', courseId],
+    queryFn: () => coursesApi.rosterRetrieve({ id: courseId }),
+    enabled: open,
+    retry: false,
+  });
+  const [genEmail, setGenEmail] = React.useState('');
 
   React.useEffect(() => {
     if (!open) setCurrentId(null);
   }, [open]);
+
+  const generateFor = async (email: string) => {
+    setActing(true);
+    try {
+      await quizzesApi.generateForStudentCreate({
+        id: quiz.id!,
+        generateForStudentRequest: { student: email },
+      });
+      message.success(`Generating questions for ${email}…`);
+      setGenEmail('');
+      queryClient.invalidateQueries({ queryKey: quizKeys.generatedSets(quiz.id!) });
+    } catch (e) {
+      message.error(parseErr(e) ?? 'Failed to start generation.');
+    } finally {
+      setActing(false);
+    }
+  };
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: quizKeys.generatedSets(quiz.id!) });
@@ -290,11 +319,38 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
           style={{ marginBottom: 12 }}
         />
       )}
+      {!current && error == null && (
+        <Space style={{ marginBottom: 12 }}>
+          <AutoComplete
+            style={{ width: 280 }}
+            placeholder="Generate for a student (email)…"
+            value={genEmail}
+            onChange={setGenEmail}
+            options={(roster?.students ?? [])
+              .filter((s): s is string => !!s)
+              .map((s) => ({ value: s }))}
+            filterOption={(input, option) =>
+              String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            data-testid="generate-for-student-email"
+          />
+          <CPButton
+            icon={<RobotOutlined />}
+            loading={acting}
+            disabled={!genEmail.trim()}
+            onClick={() => generateFor(genEmail.trim())}
+            data-testid="generate-for-student"
+          >
+            Generate
+          </CPButton>
+        </Space>
+      )}
       {!current && (
         isLoading ? (
           <Spin />
         ) : sets.length === 0 ? (
-          <Empty description="No generated sets yet — they appear when students submit the assignment." />
+          <Empty description="No generated sets yet — they appear when students submit the assignment,
+            or generate one for a specific student above." />
         ) : (
           <Table
             rowKey="id"
