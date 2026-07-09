@@ -175,8 +175,18 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
   const anchor = anchorRef.current;
   const estServerNowMs = anchor ? anchor.serverMs + (nowMs - anchor.localMs) : nowMs;
   const remainingMs = deadlineMs !== null ? Math.max(0, deadlineMs - estServerNowMs) : null;
+  // One-shot per attempt: the effect re-runs whenever handleSubmit's identity changes
+  // (e.g. `submitting` flips as the auto-submit starts), which would fire the warning
+  // again while the attempt is still in_progress. If the auto-submit fails, the student
+  // still sees the error and can submit manually (the server also auto-submits expired
+  // attempts on resume).
+  const autoSubmittedRef = React.useRef(false);
   React.useEffect(() => {
-    if (remainingMs === 0 && attempt?.status === 'in_progress') {
+    autoSubmittedRef.current = false;
+  }, [attempt?.id]);
+  React.useEffect(() => {
+    if (remainingMs === 0 && attempt?.status === 'in_progress' && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
       message.warning('Time is up — submitting your quiz.');
       handleSubmit();
     }
