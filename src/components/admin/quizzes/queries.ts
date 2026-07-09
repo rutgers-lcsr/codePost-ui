@@ -4,6 +4,7 @@ import {
   assignmentsApi, coursesApi, generatedQuestionSetsApi, questionsApi, questionBanksApi, quizzesApi,
 } from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
+import { getCourseAISettings } from '../../../utils/aiService';
 import {
   GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
   QuestionBank, Question, Quiz, QuizQuestion, SuggestedQuizQuestion,
@@ -80,7 +81,7 @@ export const useRegenerationSuggestions = (questionId: number | undefined) =>
     enabled: !!questionId,
   });
 
-/** The {variables} usable in a quiz's personalized-section prompts
+/** The {variables} usable in a quiz's AI-generated section prompts
  *  (`quizzes/{id}/promptVariables/`) — feeds the prompt editor's autocomplete. */
 export const usePromptVariables = (quizId: number | undefined) =>
   useQuery({
@@ -110,4 +111,18 @@ export const useGeneratedSetDetail = (setId: number | undefined) =>
     queryFn: (): Promise<GeneratedQuestionSet> =>
       generatedQuestionSetsApi.retrieve({ id: setId! }),
     enabled: !!setId,
+  });
+
+/** Whether the AI-Generated Quiz Questions feature is enabled for this course (AI
+ *  configured + the personalized_quiz_generation feature resolved on) — gates the
+ *  authoring surface in the builder. Resolution mirrors AISettingsCard. */
+export const useAIQuizGenerationEnabled = (courseId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.aiGenerationEnabled(courseId ?? -1),
+    queryFn: async (): Promise<boolean> => {
+      const settings = await getCourseAISettings(courseId!);
+      const featureStatus = (settings as unknown as { aiFeatures?: Record<string, boolean> }).aiFeatures;
+      return Boolean(settings.aiEnabled) && featureStatus?.personalized_quiz_generation === true;
+    },
+    enabled: !!courseId,
   });

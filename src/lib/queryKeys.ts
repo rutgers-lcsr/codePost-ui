@@ -33,6 +33,7 @@ export const quizKeys = {
   promptVariables: (quizId: number) => ['quizzes', 'promptVariables', quizId] as const,
   generatedSets: (quizId: number) => ['quizzes', 'generatedSets', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,
+  aiGenerationEnabled: (courseId: number) => ['quizzes', 'aiGenerationEnabled', courseId] as const,
 };
 
 export const studentKeys = {

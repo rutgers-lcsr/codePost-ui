@@ -66,12 +66,12 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
           id: section.id!,
           patchedQuizGeneratedSection: payload,
         });
-        message.success('Personalized section updated.');
+        message.success('AI-generated section updated.');
       } else {
         await quizGeneratedSectionsApi.create({
           quizGeneratedSection: { quiz: quizId, sortKey: nextSortKey, ...payload },
         });
-        message.success('Personalized section added.');
+        message.success('AI-generated section added.');
       }
       queryClient.invalidateQueries({ queryKey: quizKeys.detail(quizId) });
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
@@ -94,7 +94,7 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
 
   return (
     <Modal
-      title={section ? 'Edit Personalized Section' : 'Add Personalized Section'}
+      title={section ? 'Edit AI-Generated Questions' : 'Add AI-Generated Questions'}
       open={open}
       onCancel={onClose}
       onOk={handleSave}
@@ -105,8 +105,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
     >
       <Text type="secondary" style={{ fontSize: 13 }}>
         When a student submits the assignment, questions are generated for them from your
-        prompt and their own submission. You review and approve each student's questions
-        before their quiz opens (unless auto-publish is on).
+        prompt — which can draw on the assignment, their own submission, or both. You review
+        and approve each student's questions before their quiz opens (unless auto-publish is on).
       </Text>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)">

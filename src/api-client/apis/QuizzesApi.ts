@@ -434,7 +434,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * The {variables} usable in this quiz\'s personalized-section prompts (powers the prompt editor\'s autocomplete).
+   * The {variables} usable in this quiz\'s AI-generated section prompts (powers the prompt editor\'s autocomplete).
    */
   async promptVariablesListRaw(
     requestParameters: PromptVariablesListRequest,
@@ -483,7 +483,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * The {variables} usable in this quiz\'s personalized-section prompts (powers the prompt editor\'s autocomplete).
+   * The {variables} usable in this quiz\'s AI-generated section prompts (powers the prompt editor\'s autocomplete).
    */
   async promptVariablesList(
     requestParameters: PromptVariablesListRequest,

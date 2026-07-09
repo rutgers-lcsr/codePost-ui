@@ -286,7 +286,7 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
         <Alert
           type="warning"
           showIcon
-          message="You don't have access to review generated questions on this quiz."
+          title="You don't have access to review generated questions on this quiz."
           style={{ marginBottom: 12 }}
         />
       )}
@@ -314,7 +314,7 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
             </CPButton>
           </div>
           {current.status === 'failed' && (
-            <Alert type="error" showIcon message="Generation failed"
+            <Alert type="error" showIcon title="Generation failed"
                    description={current.errorMessage || 'Unknown error.'} />
           )}
           {(current.questions ?? []).map((q) => (

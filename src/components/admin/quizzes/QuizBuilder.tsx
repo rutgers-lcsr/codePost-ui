@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import {
+  Alert,
   Button,
   Card,
   DatePicker,
@@ -48,7 +49,8 @@ import {
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
 import {
-  useCourseQuestions, useGeneratedSets, useQuizMembership, useQuizDetail, useQuestionBanks,
+  useAIQuizGenerationEnabled, useCourseQuestions, useGeneratedSets, useQuizMembership,
+  useQuizDetail, useQuestionBanks,
 } from './queries';
 import { typeMeta } from './questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
@@ -464,6 +466,10 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   // a 403, which simply hides the count).
   const { data: generatedSets = [] } = useGeneratedSets(orderedSections.length > 0 ? quiz.id : undefined);
   const readyCount = generatedSets.filter((s) => s.status === 'ready').length;
+  // The authoring surface only shows when the course's AI feature is on; existing
+  // sections stay manageable (with a warning) so they can be cleaned up after a
+  // course turns it off.
+  const { data: aiQuizEnabled = false } = useAIQuizGenerationEnabled(course.id);
 
   const openCreateSection = () => {
     setEditingSection(null);
@@ -475,7 +481,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   };
   const handleDeleteSection = (s: QuizGeneratedSection) => {
     Modal.confirm({
-      title: 'Remove this personalized section?',
+      title: 'Remove this AI-generated section?',
       content: "Every student's generated questions for this section are deleted too. "
         + 'Attempts already taken are unaffected.',
       okText: 'Remove',
@@ -483,7 +489,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       onOk: async () => {
         try {
           await quizGeneratedSectionsApi.destroy({ id: s.id! });
-          message.success('Personalized section removed.');
+          message.success('AI-generated section removed.');
           invalidateGroups();
         } catch {
           message.error('Failed to remove the section.');
@@ -516,7 +522,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       width: 140,
       render: (_: unknown, row: ContentRow) => {
         if (row.kind === 'group') return <Tag color="green">Random draw</Tag>;
-        if (row.kind === 'aiSection') return <Tag color="purple">Personalized</Tag>;
+        if (row.kind === 'aiSection') return <Tag color="purple">AI generated</Tag>;
         const meta = typeMeta(questionsById.get(row.qq.question)?.questionType);
         return <Tag color={meta.color}>{meta.label}</Tag>;
       },
@@ -610,16 +616,16 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             <Space.Compact size="small">
               <Button
                 size="small"
-                aria-label="Edit personalized section"
-                title="Edit personalized section"
+                aria-label="Edit AI-generated section"
+                title="Edit AI-generated section"
                 icon={<EditOutlined />}
                 onClick={() => openEditSection(row.section)}
               />
               <Button
                 size="small"
                 danger
-                aria-label="Remove personalized section"
-                title="Remove personalized section"
+                aria-label="Remove AI-generated section"
+                title="Remove AI-generated section"
                 icon={<DeleteOutlined />}
                 onClick={() => handleDeleteSection(row.section)}
               />
@@ -959,7 +965,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           </div>
           {orderedSections.length > 0 && (
             <div>
-              <Text strong>Personalized questions</Text>
+              <Text strong>AI-generated questions</Text>
               <Flex vertical gap={10} style={{ marginTop: 8 }}>
                 <Space>
                   <Switch checked={autoPublishGenerated} onChange={setAutoPublishGenerated} />
@@ -997,7 +1003,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             )}
             {orderedSections.length > 0 && (
               <Tag color="purple">
-                {orderedSections.length} personalized
+                {orderedSections.length} AI generated
               </Tag>
             )}
           </Flex>
@@ -1026,20 +1032,22 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                 </CPButton>
               </Tooltip>
             )}
-            <Tooltip
-              title={assignmentId == null
-                ? 'Attach the quiz to an assignment first — questions are generated from each student\'s submission'
-                : 'Generate questions per student from their own submission'}
-            >
-              <CPButton
-                cpType="secondary"
-                icon={<RobotOutlined />}
-                disabled={assignmentId == null}
-                onClick={openCreateSection}
+            {aiQuizEnabled && (
+              <Tooltip
+                title={assignmentId == null
+                  ? 'Attach the quiz to an assignment first — questions are generated when each student submits'
+                  : 'Generate questions per student from the assignment and their submission'}
               >
-                Add Personalized
-              </CPButton>
-            </Tooltip>
+                <CPButton
+                  cpType="secondary"
+                  icon={<RobotOutlined />}
+                  disabled={assignmentId == null}
+                  onClick={openCreateSection}
+                >
+                  Add AI Questions
+                </CPButton>
+              </Tooltip>
+            )}
             <CPButton cpType="secondary" icon={<RetweetOutlined />} onClick={openCreateGroup}>
               Add Random Draw
             </CPButton>
@@ -1050,6 +1058,18 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         }
         styles={{ body: { padding: totalItems === 0 ? undefined : 0 } }}
       >
+        {orderedSections.length > 0 && !aiQuizEnabled && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ margin: 12 }}
+            title="AI quiz question generation is disabled for this course"
+            description="This quiz has AI-generated sections, but new submissions won't generate
+              questions while the feature is off — students without an approved set can't open the
+              quiz. Re-enable the 'AI-Generated Quiz Questions' feature in the course's AI settings,
+              or remove the sections."
+          />
+        )}
         {isLoading ? (
           <Flex justify="center" style={{ padding: 40 }}>
             <Spin />

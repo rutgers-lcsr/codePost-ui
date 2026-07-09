@@ -452,7 +452,7 @@ example().catch(console.error);
 
 > Array&lt;PromptVariable&gt; promptVariablesList(id)
 
-The {variables} usable in this quiz\&#39;s personalized-section prompts (powers the prompt editor\&#39;s autocomplete).
+The {variables} usable in this quiz\&#39;s AI-generated section prompts (powers the prompt editor\&#39;s autocomplete).
 
 ### Example
 
