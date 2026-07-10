@@ -298,6 +298,7 @@ docs/QuizQuestion.md
 docs/QuizQuestionGroup.md
 docs/QuizQuestionGroupsApi.md
 docs/QuizQuestionsApi.md
+docs/QuizResultRow.md
 docs/QuizScoringPolicyEnum.md
 docs/QuizShowAnswersEnum.md
 docs/QuizSourceEnum.md
@@ -307,6 +308,7 @@ docs/RegenerateSuggestionResponse.md
 docs/RegisterAndSetPasswordRequest.md
 docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
+docs/ReopenQuizResponseRequest.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
 docs/ResetQuizAttemptsResponse.md

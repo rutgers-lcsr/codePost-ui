@@ -23,6 +23,7 @@ import type {
   PublishAllGeneratedResponse,
   Quiz,
   QuizQuestion,
+  QuizResultRow,
   ResetQuizAttemptsResponse,
   StaffQuizAttempt,
 } from '../models/index';
@@ -73,6 +74,10 @@ export interface QuestionsListRequest {
 }
 
 export interface ResetAttemptsCreateRequest {
+  id: number;
+}
+
+export interface ResultsListRequest {
   id: number;
 }
 
@@ -747,6 +752,66 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<ResetQuizAttemptsResponse> {
     const response = await this.resetAttemptsCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+   */
+  async resultsListRaw(
+    requestParameters: ResultsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<QuizResultRow>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling resultsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/results/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+   */
+  async resultsList(
+    requestParameters: ResultsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<QuizResultRow>> {
+    const response = await this.resultsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

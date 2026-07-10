@@ -42,6 +42,10 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
   const startedRef = React.useRef(false);
   const timers = React.useRef<Record<number, ReturnType<typeof setTimeout>>>({});
   const dirtyRef = React.useRef(false);
+  // Local edits not yet confirmed saved, keyed by response id. The submit flush sends ONLY
+  // these: re-saving an already-persisted earlier answer would trip the server's
+  // no-backtracking guard (sortKey < furthestIndex ⇒ 400) and wrongly abort the submit.
+  const unsavedRef = React.useRef<Record<number, AnswerValue>>({});
   // Server-clock anchor: the server's time at load + how long ago (locally measured) we got it.
   const anchorRef = React.useRef<{ serverMs: number; localMs: number } | null>(null);
 
@@ -123,6 +127,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
           },
         });
         dirtyRef.current = false;
+        // Saved — unless the student typed again while this request was in flight.
+        if (unsavedRef.current[responseId] === val) delete unsavedRef.current[responseId];
       } catch (e) {
         message.error(parseErr(e) ?? 'Failed to save your answer.');
       } finally {
@@ -133,6 +139,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
 
   const handleChange = (responseId: number, val: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [responseId]: val }));
+    unsavedRef.current[responseId] = val;
     scheduleSave(responseId, val);
   };
 
@@ -141,21 +148,25 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
     setSubmitting(true);
     Object.values(timers.current).forEach(clearTimeout);
     try {
-      // Flush the latest answers, then finalize. A failed save must abort the submit —
-      // grading reads the server-side answers, so submitting anyway would silently
-      // drop whatever didn't save. The student keeps their local answers and can retry.
+      // Flush answers with unsaved local edits, then finalize. A failed save must abort the
+      // submit — grading reads the server-side answers, so submitting anyway would silently
+      // drop whatever didn't save. Only unsaved edits are flushed: re-sending an already
+      // persisted earlier answer would trip the server's no-backtracking guard and wrongly
+      // abort the submit (edits to earlier questions can't exist unless backtracking is on).
+      const unsaved = Object.entries(unsavedRef.current);
       await Promise.all(
-        attempt.responses.map((r) =>
+        unsaved.map(([responseId, val]) =>
           quizAttemptsApi.saveAnswerPartialUpdate({
             id: attempt.id,
             patchedSaveQuizAnswerRequest: {
-              response: r.id,
-              answerText: answers[r.id]?.answerText ?? '',
-              selectedChoices: answers[r.id]?.selectedChoices ?? [],
+              response: Number(responseId),
+              answerText: val.answerText,
+              selectedChoices: val.selectedChoices,
             },
           }),
         ),
       );
+      unsavedRef.current = {};
       const done = await quizAttemptsApi.submitCreate({ id: attempt.id });
       dirtyRef.current = false;
       applyAttempt(done);

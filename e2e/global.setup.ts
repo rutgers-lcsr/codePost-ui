@@ -37,25 +37,30 @@ setup('seed backend and save student auth state', async () => {
     '--student', STUDENT_EMAIL,
   ]);
 
-  // 2. Log in as the seeded student through the DEBUG-only dev endpoint → JWT.
+  // 2. Log in as the seeded student + instructor through the DEBUG-only dev endpoint → JWTs.
   const api = await request.newContext({ baseURL: API_URL });
-  const resp = await api.post('/dev-auth/login-as/', { data: { role: 'student' } });
-  expect(
-    resp.ok(),
-    `dev-auth/login-as failed (${resp.status()}). Is the backend running with DEBUG=TRUE on ${API_URL}?`,
-  ).toBeTruthy();
-  const token = (await resp.json()).token as string;
-  expect(token, 'dev-auth/login-as returned no token').toBeTruthy();
+  const loginAs = async (role: string): Promise<string> => {
+    const resp = await api.post('/dev-auth/login-as/', { data: { role } });
+    expect(
+      resp.ok(),
+      `dev-auth/login-as ${role} failed (${resp.status()}). Is the backend running with DEBUG=TRUE on ${API_URL}?`,
+    ).toBeTruthy();
+    const token = (await resp.json()).token as string;
+    expect(token, `dev-auth/login-as ${role} returned no token`).toBeTruthy();
+    return token;
+  };
+  const studentToken = await loginAs('student');
+  const instructorToken = await loginAs('course_admin');
   await api.dispose();
 
-  // 3. Persist the auth state the specs reuse: the JWT in localStorage.token for the app origin.
+  // 3. Persist the auth states the specs reuse: the JWT in localStorage.token for the app origin.
   mkdirSync(AUTH_DIR, { recursive: true });
-  writeFileSync(
-    path.join(AUTH_DIR, 'student.json'),
+  const authState = (token: string) =>
     JSON.stringify(
       { cookies: [], origins: [{ origin: BASE_URL, localStorage: [{ name: 'token', value: token }] }] },
       null,
       2,
-    ),
-  );
+    );
+  writeFileSync(path.join(AUTH_DIR, 'student.json'), authState(studentToken));
+  writeFileSync(path.join(AUTH_DIR, 'instructor.json'), authState(instructorToken));
 });

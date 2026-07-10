@@ -17,6 +17,7 @@
 | `viewAuditLog`             | boolean |
 | `changeInviteCode`         | boolean |
 | `manageCourseApiKeys`      | boolean |
+| `gradeQuiz`                | boolean |
 | `editAssignment`           | boolean |
 | `copyAssignment`           | boolean |
 | `viewAssignment`           | boolean |

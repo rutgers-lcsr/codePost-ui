@@ -4,6 +4,7 @@ import * as React from 'react';
 import {
   ClusterOutlined,
   ContainerOutlined,
+  FormOutlined,
   InboxOutlined,
   MessageOutlined,
   PushpinOutlined,
@@ -32,6 +33,7 @@ const GraderNav: React.FC<IProps> = (props) => {
   const courseCaps = useCourseCapabilities(props.courseId);
   const showAllSubmissions = !!courseCaps.manage_regrades;
   const showRubrics = !!courseCaps.edit_rubric;
+  const showQuizGrading = !!courseCaps.grade_quiz;
   const panel = location.pathname.replace(props.baseURL, '').split('/')[1] || '';
 
   const assignment = location.pathname.replace(props.baseURL, '').split('/')[2] || '';
@@ -52,7 +54,7 @@ const GraderNav: React.FC<IProps> = (props) => {
   };
 
   const getDefaultSelectedKeys = () => {
-    const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades', 'rubrics'];
+    const routes = ['my_submissions', 'my_sections', 'all_submissions', 'regrades', 'rubrics', 'quizzes'];
 
     const match = routes.indexOf(panel).toString();
 
@@ -107,6 +109,15 @@ const GraderNav: React.FC<IProps> = (props) => {
             key: '4',
             icon: <ContainerOutlined />, // Using Container (or similar) or Edit
             label: <Link to={getPath('rubrics')}>Rubrics</Link>,
+          },
+        ]
+      : []),
+    ...(showQuizGrading
+      ? [
+          {
+            key: '5',
+            icon: <FormOutlined />,
+            label: <Link to={`${props.baseURL}/quizzes`}>Quiz Grading</Link>,
           },
         ]
       : []),

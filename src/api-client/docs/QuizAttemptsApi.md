@@ -2,15 +2,16 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                                    | HTTP request                               | Description |
-| ------------------------------------------------------------------------- | ------------------------------------------ | ----------- |
-| [**availableQuizzesList**](QuizAttemptsApi.md#availablequizzeslist)       | **GET** /quizAttempts/availableQuizzes/    |             |
-| [**create**](QuizAttemptsApi.md#create)                                   | **POST** /quizAttempts/                    |             |
-| [**gradeResponseCreate**](QuizAttemptsApi.md#graderesponsecreate)         | **POST** /quizAttempts/{id}/gradeResponse/ |             |
-| [**myAttemptsList**](QuizAttemptsApi.md#myattemptslist)                   | **GET** /quizAttempts/myAttempts/          |             |
-| [**retrieve**](QuizAttemptsApi.md#retrieve)                               | **GET** /quizAttempts/{id}/                |             |
-| [**saveAnswerPartialUpdate**](QuizAttemptsApi.md#saveanswerpartialupdate) | **PATCH** /quizAttempts/{id}/saveAnswer/   |             |
-| [**submitCreate**](QuizAttemptsApi.md#submitcreate)                       | **POST** /quizAttempts/{id}/submit/        |             |
+| Method                                                                    | HTTP request                                | Description |
+| ------------------------------------------------------------------------- | ------------------------------------------- | ----------- |
+| [**availableQuizzesList**](QuizAttemptsApi.md#availablequizzeslist)       | **GET** /quizAttempts/availableQuizzes/     |             |
+| [**create**](QuizAttemptsApi.md#create)                                   | **POST** /quizAttempts/                     |             |
+| [**gradeResponseCreate**](QuizAttemptsApi.md#graderesponsecreate)         | **POST** /quizAttempts/{id}/gradeResponse/  |             |
+| [**myAttemptsList**](QuizAttemptsApi.md#myattemptslist)                   | **GET** /quizAttempts/myAttempts/           |             |
+| [**reopenResponseCreate**](QuizAttemptsApi.md#reopenresponsecreate)       | **POST** /quizAttempts/{id}/reopenResponse/ |             |
+| [**retrieve**](QuizAttemptsApi.md#retrieve)                               | **GET** /quizAttempts/{id}/                 |             |
+| [**saveAnswerPartialUpdate**](QuizAttemptsApi.md#saveanswerpartialupdate) | **PATCH** /quizAttempts/{id}/saveAnswer/    |             |
+| [**submitCreate**](QuizAttemptsApi.md#submitcreate)                       | **POST** /quizAttempts/{id}/submit/         |             |
 
 ## availableQuizzesList
 
@@ -305,9 +306,86 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## reopenResponseCreate
+
+> StaffQuizAttempt reopenResponseCreate(id, reopenQuizResponseRequest)
+
+Send a manually graded essay/code response back to the grading queue (undo the grade). The feedback text is kept as a draft; the attempt\&#39;s totals are refreshed.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizAttemptsApi,
+} from '';
+import type { ReopenResponseCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizAttemptsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz attempt.
+    id: 56,
+    // ReopenQuizResponseRequest
+    reopenQuizResponseRequest: ...,
+  } satisfies ReopenResponseCreateRequest;
+
+  try {
+    const data = await api.reopenResponseCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                          | Type                                                      | Description                                           | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                        | `number`                                                  | A unique integer value identifying this quiz attempt. | [Defaults to `undefined`] |
+| **reopenQuizResponseRequest** | [ReopenQuizResponseRequest](ReopenQuizResponseRequest.md) |                                                       |                           |
+
+### Return type
+
+[**StaffQuizAttempt**](StaffQuizAttempt.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## retrieve
 
-> StudentQuizAttempt retrieve(id)
+> StaffQuizAttempt retrieve(id)
 
 A student\&#39;s quiz attempts. Students operate only on their own; staff may read.
 
@@ -357,7 +435,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**StudentQuizAttempt**](StudentQuizAttempt.md)
+[**StaffQuizAttempt**](StaffQuizAttempt.md)
 
 ### Authorization
 

@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   GradeQuizResponseRequest,
   PatchedSaveQuizAnswerRequest,
+  ReopenQuizResponseRequest,
   StaffQuizAttempt,
   StartQuizAttemptRequest,
   StudentQuiz,
@@ -39,6 +40,11 @@ export interface GradeResponseCreateRequest {
 
 export interface MyAttemptsListRequest {
   quiz: number;
+}
+
+export interface ReopenResponseCreateRequest {
+  id: number;
+  reopenQuizResponseRequest: ReopenQuizResponseRequest;
 }
 
 export interface RetrieveRequest {
@@ -317,12 +323,82 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
+   * Send a manually graded essay/code response back to the grading queue (undo the grade). The feedback text is kept as a draft; the attempt\'s totals are refreshed.
+   */
+  async reopenResponseCreateRaw(
+    requestParameters: ReopenResponseCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<StaffQuizAttempt>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling reopenResponseCreate().',
+      );
+    }
+
+    if (requestParameters['reopenQuizResponseRequest'] == null) {
+      throw new runtime.RequiredError(
+        'reopenQuizResponseRequest',
+        'Required parameter "reopenQuizResponseRequest" was null or undefined when calling reopenResponseCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/{id}/reopenResponse/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['reopenQuizResponseRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Send a manually graded essay/code response back to the grading queue (undo the grade). The feedback text is kept as a draft; the attempt\'s totals are refreshed.
+   */
+  async reopenResponseCreate(
+    requestParameters: ReopenResponseCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<StaffQuizAttempt> {
+    const response = await this.reopenResponseCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * A student\'s quiz attempts. Students operate only on their own; staff may read.
    */
   async retrieveRaw(
     requestParameters: RetrieveRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<StudentQuizAttempt>> {
+  ): Promise<runtime.ApiResponse<StaffQuizAttempt>> {
     if (requestParameters['id'] == null) {
       throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling retrieve().');
     }
@@ -368,7 +444,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   async retrieve(
     requestParameters: RetrieveRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<StudentQuizAttempt> {
+  ): Promise<StaffQuizAttempt> {
     const response = await this.retrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }

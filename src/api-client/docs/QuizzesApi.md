@@ -15,6 +15,7 @@ All URIs are relative to *http://localhost*
 | [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate) | **POST** /quizzes/{id}/publishAllGenerated/ |             |
 | [**questionsList**](QuizzesApi.md#questionslist)                         | **GET** /quizzes/{id}/questions/            |             |
 | [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)             | **POST** /quizzes/{id}/resetAttempts/       |             |
+| [**resultsList**](QuizzesApi.md#resultslist)                             | **GET** /quizzes/{id}/results/              |             |
 | [**retrieve**](QuizzesApi.md#retrieve)                                   | **GET** /quizzes/{id}/                      |             |
 | [**update**](QuizzesApi.md#update)                                       | **PUT** /quizzes/{id}/                      |             |
 
@@ -792,6 +793,77 @@ example().catch(console.error);
 ### Return type
 
 [**ResetQuizAttemptsResponse**](ResetQuizAttemptsResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## resultsList
+
+> Array&lt;QuizResultRow&gt; resultsList(id)
+
+Per-student official results (per this quiz\&#39;s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { ResultsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies ResultsListRequest;
+
+  try {
+    const data = await api.resultsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;QuizResultRow&gt;**](QuizResultRow.md)
 
 ### Authorization
 

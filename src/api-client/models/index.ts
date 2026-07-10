@@ -2027,6 +2027,12 @@ export interface BatchCapabilitiesResponseResultsValue {
    * @type {boolean}
    * @memberof BatchCapabilitiesResponseResultsValue
    */
+  gradeQuiz?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
   editAssignment?: boolean;
   /**
    *
@@ -2491,6 +2497,12 @@ export interface CapabilitiesResponseCapabilitiesMap {
    * @memberof CapabilitiesResponseCapabilitiesMap
    */
   manageCourseApiKeys?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  gradeQuiz?: boolean;
   /**
    *
    * @type {boolean}
@@ -10874,6 +10886,55 @@ export interface QuizQuestionGroup {
   sortKey?: number;
 }
 /**
+ *
+ * @export
+ * @interface QuizResultRow
+ */
+export interface QuizResultRow {
+  /**
+   *
+   * @type {string}
+   * @memberof QuizResultRow
+   */
+  student: string;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizResultRow
+   */
+  attemptsUsed: number;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizResultRow
+   */
+  score: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizResultRow
+   */
+  maxScore: number | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizResultRow
+   */
+  passed: boolean | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizResultRow
+   */
+  needsGrading: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizResultRow
+   */
+  lastSubmittedAt: string | null;
+}
+/**
  * * `highest` - Highest attempt counts
  * * `latest` - Latest attempt counts
  * * `average` - Average of attempts
@@ -11005,6 +11066,19 @@ export interface RegisterAndSetPasswordResponse {
    * @memberof RegisterAndSetPasswordResponse
    */
   isValid: boolean;
+}
+/**
+ *
+ * @export
+ * @interface ReopenQuizResponseRequest
+ */
+export interface ReopenQuizResponseRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof ReopenQuizResponseRequest
+   */
+  response: number;
 }
 /**
  *

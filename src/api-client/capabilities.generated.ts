@@ -16,6 +16,7 @@ export type Capability =
   | 'view_audit_log'
   | 'change_invite_code'
   | 'manage_course_api_keys'
+  | 'grade_quiz'
   | 'edit_assignment'
   | 'copy_assignment'
   | 'view_assignment'
@@ -71,6 +72,7 @@ export const CAPABILITY_DESCRIPTIONS: Record<Capability, string> = {
   view_audit_log: 'View and export the course-level audit log of student and grader activity.',
   change_invite_code: 'Regenerate the course join invite code.',
   manage_course_api_keys: 'Create, revoke, and manage course-scoped API keys.',
+  grade_quiz: 'View quiz attempts and manually grade essay/code responses (course admins and quiz graders).',
   edit_assignment: 'Modify assignment settings including name, deadlines, point values, and visibility.',
   copy_assignment: "Duplicate an assignment's configuration, rubric, and test cases to another course.",
   view_assignment: 'View the assignment and its associated submissions.',

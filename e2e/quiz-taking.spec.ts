@@ -73,10 +73,18 @@ async function answerCurrentSequential(page: Page) {
   }
 }
 
-/** Click Submit and confirm the Popconfirm, then wait for the results screen. */
+/** Click Submit and confirm the Popconfirm, then wait for the results screen. The submit
+ *  click can land mid-re-render (debounced autosave) and get swallowed — same race as
+ *  pickChoice — so retry until the confirm actually shows. */
 async function submitQuiz(page: Page) {
-  await page.getByTestId('quiz-submit').click();
-  await page.getByRole('button', { name: 'Submit', exact: true }).click();
+  const confirm = page.getByRole('button', { name: 'Submit', exact: true });
+  await expect(async () => {
+    if (!(await confirm.isVisible())) {
+      await page.getByTestId('quiz-submit').click();
+    }
+    await expect(confirm).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
+  await confirm.click();
   await expect(page.getByTestId('quiz-results')).toBeVisible();
 }
 

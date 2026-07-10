@@ -30,6 +30,7 @@ export const quizKeys = {
   suggestions: (assignmentId: number) => ['quizzes', 'suggestions', assignmentId] as const,
   regeneration: (questionId: number) => ['quizzes', 'regeneration', questionId] as const,
   attempts: (quizId: number) => ['quizzes', 'attempts', quizId] as const,
+  results: (quizId: number) => ['quizzes', 'results', quizId] as const,
   promptVariables: (quizId: number) => ['quizzes', 'promptVariables', quizId] as const,
   generatedSets: (quizId: number) => ['quizzes', 'generatedSets', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,

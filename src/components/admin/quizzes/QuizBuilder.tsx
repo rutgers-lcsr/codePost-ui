@@ -34,7 +34,7 @@ import {
   RetweetOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { quizzesApi, quizQuestionsApi, quizQuestionGroupsApi, quizGeneratedSectionsApi } from '../../../api-client/clients';
 import {
@@ -468,6 +468,15 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   // a 403, which simply hides the count).
   const { data: generatedSets = [] } = useGeneratedSets(orderedSections.length > 0 ? quiz.id : undefined);
   const readyCount = generatedSets.filter((s) => s.status === 'ready').length;
+  // Needs-grading badge; shares the grading drawer's query key so grading refreshes it.
+  // Quiz graders / admins only — a 403 for plain staff simply hides the count.
+  const { data: pendingAttempts = [] } = useQuery({
+    queryKey: [...quizKeys.attempts(quiz.id ?? -1), true],
+    queryFn: () => quizzesApi.attemptsList({ id: quiz.id!, needsGrading: true }),
+    enabled: !!quiz.id,
+    retry: false,
+  });
+  const needsGradingCount = pendingAttempts.length;
   // The authoring surface only shows when the course's AI feature is on; existing
   // sections stay manageable (with a warning) so they can be cleaned up after a
   // course turns it off.
@@ -1026,7 +1035,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             </Tooltip>
             <Tooltip title="Review submitted attempts and grade essay/code responses">
               <CPButton cpType="link" icon={<CheckSquareOutlined />} onClick={() => setGradingOpen(true)}>
-                Grading
+                Grading{needsGradingCount > 0 ? ` (${needsGradingCount})` : ''}
               </CPButton>
             </Tooltip>
             {orderedSections.length > 0 && (

@@ -11,6 +11,7 @@ const MySubmissionsPanel = lazy(() => import('./MySubmissionsPanel'));
 const SectionPanel = lazy(() => import('./SectionPanel'));
 const RegradesPanel = lazy(() => import('./RegradesPanel'));
 const ViewAllPanel = lazy(() => import('./ViewAllPanel'));
+const QuizGradingPanel = lazy(() => import('./QuizGradingPanel'));
 
 import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManager';
 import RubricUI from '../admin/assignments/rubric/RubricUI';
@@ -69,6 +70,7 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
   const courseCaps = useCourseCapabilities(currentCourse?.id);
   const showAllSubmissions = !!courseCaps.manage_regrades;
   const showRubrics = !!courseCaps.edit_rubric;
+  const showQuizGrading = !!courseCaps.grade_quiz;
 
   return (
     <Routes>
@@ -120,6 +122,9 @@ const GraderRoutes: FC<GraderRoutesProps> = ({
             />
           }
         />
+      )}
+      {showQuizGrading && (
+        <Route path="quizzes/*" key="quizzes" element={<QuizGradingPanel course={currentCourse} />} />
       )}
       <Route path="video" key="video" element={<Navigate to="/docs" replace />} />
       {showRubrics && (
