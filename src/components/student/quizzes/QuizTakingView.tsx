@@ -9,6 +9,7 @@ import { StudentQuizAttempt } from '../../../api-client';
 import { studentKeys } from '../../../lib/queryKeys';
 import QuestionAnswerer, { AnswerValue, initialAnswer } from './QuestionAnswerer';
 import QuizQuestions from './QuizQuestions';
+import { useAvailableQuizzes } from './queries';
 
 const { Title, Text } = Typography;
 
@@ -16,6 +17,8 @@ interface IProps {
   quizId: number;
   courseId: number;
   quizTitle?: string;
+  /** Review a past submitted attempt instead of starting/resuming one. */
+  reviewOnly?: boolean;
   onExit: () => void;
 }
 
@@ -29,9 +32,11 @@ const formatRemaining = (ms: number): string => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit }) => {
+const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewOnly = false, onExit }) => {
   const queryClient = useQueryClient();
   const [attempt, setAttempt] = React.useState<StudentQuizAttempt | null>(null);
+  // The student's submitted attempts (newest first) — the review history strip.
+  const [pastAttempts, setPastAttempts] = React.useState<StudentQuizAttempt[]>([]);
   const [answers, setAnswers] = React.useState<Record<number, AnswerValue>>({});
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -63,23 +68,58 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
     setAnswers(next);
   }, []);
 
-  // Start (or resume) the attempt once on mount.
+  // Loads the student's submitted attempts (newest first); applies the latest when asked.
+  const loadSubmitted = React.useCallback(
+    async (applyLatest: boolean): Promise<boolean> => {
+      const mine = await quizAttemptsApi.myAttemptsList({ quiz: quizId });
+      const submitted = mine
+        .filter((a) => a.status === 'submitted')
+        .sort((a, b) => (b.attemptNumber ?? 0) - (a.attemptNumber ?? 0));
+      setPastAttempts(submitted);
+      if (applyLatest && submitted.length > 0) {
+        applyAttempt(submitted[0]);
+      }
+      return submitted.length > 0;
+    },
+    [quizId, applyAttempt],
+  );
+
+  // Quiz metadata (scoring policy) for the history strip — served from the course's cached
+  // availableQuizzes list, which the student almost always arrived through.
+  const { data: courseQuizzes } = useAvailableQuizzes(courseId);
+  const quizMeta = courseQuizzes?.find((q) => q.id === quizId);
+  const countingAttemptId = React.useMemo(() => {
+    // Mirrors the server's official_score: submitted, fully graded attempts only.
+    const policy = quizMeta?.scoringPolicy ?? 'highest';
+    if (policy === 'average') return null;
+    const graded = pastAttempts.filter((a) => a.score != null && !a.needsManualGrading);
+    if (graded.length === 0) return null;
+    if (policy === 'latest') {
+      return graded.reduce((x, y) => ((y.attemptNumber ?? 0) > (x.attemptNumber ?? 0) ? y : x)).id;
+    }
+    const ratio = (a: StudentQuizAttempt) =>
+      Number(a.maxScore) > 0 ? Number(a.score) / Number(a.maxScore) : 0;
+    return graded.reduce((x, y) => (ratio(y) > ratio(x) ? y : x)).id;
+  }, [pastAttempts, quizMeta?.scoringPolicy]);
+
+  // Start (or resume) the attempt once on mount — or, in review mode, load past attempts.
   React.useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
     (async () => {
       try {
+        if (reviewOnly) {
+          if (!(await loadSubmitted(true))) {
+            setError('You have no submitted attempts to review yet.');
+          }
+          return;
+        }
         const a = await quizAttemptsApi.create({ startQuizAttemptRequest: { quiz: quizId } });
         applyAttempt(a);
       } catch (e) {
         // Can't start (e.g. no attempts remaining) — fall back to reviewing the latest submitted attempt.
         try {
-          const mine = await quizAttemptsApi.myAttemptsList({ quiz: quizId });
-          const submitted = mine
-            .filter((a) => a.status === 'submitted')
-            .sort((a, b) => (b.attemptNumber ?? 0) - (a.attemptNumber ?? 0));
-          if (submitted.length > 0) {
-            applyAttempt(submitted[0]);
+          if (await loadSubmitted(true)) {
             return;
           }
         } catch {
@@ -90,7 +130,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
         setLoading(false);
       }
     })();
-  }, [quizId, applyAttempt]);
+  }, [quizId, reviewOnly, applyAttempt, loadSubmitted]);
 
   // Tick the clock while taking.
   React.useEffect(() => {
@@ -170,6 +210,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
       const done = await quizAttemptsApi.submitCreate({ id: attempt.id });
       dirtyRef.current = false;
       applyAttempt(done);
+      void loadSubmitted(false); // refresh the attempt-history strip
       queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
       queryClient.invalidateQueries({ queryKey: studentKeys.quizAttempts(quizId) });
     } catch (e) {
@@ -177,7 +218,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
     } finally {
       setSubmitting(false);
     }
-  }, [attempt, submitting, answers, applyAttempt, queryClient, courseId, quizId]);
+  }, [attempt, submitting, answers, applyAttempt, loadSubmitted, queryClient, courseId, quizId]);
 
   // Auto-submit when the timer runs out. The countdown is anchored to the server clock
   // (serverNow at load + locally-measured elapsed) so a skewed device clock can't grant or
@@ -239,21 +280,38 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, onExit 
           <LeftOutlined /> Back to course
         </CPButton>
         <ResultsSummary attempt={attempt} title={quizTitle} />
-        {answersRevealed && (
-          <div style={{ marginTop: 16 }}>
-            {responses.map((r, i) => (
-              <QuestionAnswerer
-                key={r.id}
-                response={r}
-                index={i}
-                value={answers[r.id] ?? { answerText: '', selectedChoices: [] }}
-                disabled
-                reveal
-                onChange={() => undefined}
-              />
+        {pastAttempts.length > 1 && (
+          <Flex gap={8} wrap align="center" justify="center" style={{ marginBottom: 12 }} data-testid="attempt-history">
+            <Text type="secondary">Attempts:</Text>
+            {pastAttempts.map((a) => (
+              <Tag.CheckableTag key={a.id} checked={a.id === attempt.id} onChange={() => applyAttempt(a)}>
+                #{a.attemptNumber}
+                {a.score != null ? ` · ${Number(a.score)}/${Number(a.maxScore)}` : ''}
+                {countingAttemptId === a.id ? ' · counts' : ''}
+              </Tag.CheckableTag>
             ))}
-          </div>
+            {quizMeta?.scoringPolicy === 'average' && (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Final score is the average of all attempts.
+              </Text>
+            )}
+          </Flex>
         )}
+        {/* The student's own answers (and any grader feedback) always show; correct-answer
+            markers inside follow the quiz's reveal policy. */}
+        <div style={{ marginTop: 16 }}>
+          {responses.map((r, i) => (
+            <QuestionAnswerer
+              key={r.id}
+              response={r}
+              index={i}
+              value={answers[r.id] ?? { answerText: '', selectedChoices: [] }}
+              disabled
+              reveal={answersRevealed}
+              onChange={() => undefined}
+            />
+          ))}
+        </div>
       </div>
     );
   }

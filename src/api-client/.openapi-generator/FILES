@@ -240,6 +240,7 @@ docs/PatchedPromptFeedback.md
 docs/PatchedQuestion.md
 docs/PatchedQuestionBank.md
 docs/PatchedQuiz.md
+docs/PatchedQuizAccommodationRow.md
 docs/PatchedQuizGeneratedSection.md
 docs/PatchedQuizImportJob.md
 docs/PatchedQuizQuestion.md
@@ -280,6 +281,7 @@ docs/QuestionChoice.md
 docs/QuestionTypeEnum.md
 docs/QuestionsApi.md
 docs/Quiz.md
+docs/QuizAccommodationRow.md
 docs/QuizAssignmentTriggerEnum.md
 docs/QuizAttemptStatusEnum.md
 docs/QuizAttemptsApi.md

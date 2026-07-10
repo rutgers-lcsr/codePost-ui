@@ -12,6 +12,10 @@ import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDe
 /* style imports */
 import { Breadcrumb, Button, Empty, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { coursesApi } from '../../../api-client/clients';
+
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import { Link, useLocation } from 'react-router-dom';
@@ -64,11 +68,53 @@ export interface IManageStudentsProps {
   myEmail: string;
 }
 
+// Extra-time options matching how accommodation letters are usually written.
+const TIME_MULTIPLIER_OPTIONS = [1, 1.25, 1.5, 2, 3].map((m) => ({
+  value: m,
+  label: m === 1 ? 'None' : `${m}×`,
+}));
+
 const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
   const location = useLocation();
   const [activeStudent, setActiveStudent] = useState<string>('');
   const courseCaps = useCourseCapabilities(props.currentCourse?.id);
   const canManageRoster = courseCaps.manage_roster !== false;
+  const queryClient = useQueryClient();
+
+  // Per-student quiz extra-time multipliers (admin-only endpoint; 403 hides the column).
+  const accommodationsKey = ['courses', 'quizAccommodations', props.currentCourse?.id ?? -1];
+  const { data: quizAccommodations, isError: accommodationsUnavailable } = useQuery({
+    queryKey: accommodationsKey,
+    queryFn: () => coursesApi.quizAccommodationsList({ id: props.currentCourse.id! }),
+    enabled: !!props.currentCourse?.id && canManageRoster,
+    retry: false,
+  });
+  const multiplierByStudent = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of quizAccommodations ?? []) map.set(row.student, Number(row.timeMultiplier));
+    return map;
+  }, [quizAccommodations]);
+
+  const setTimeMultiplier = useCallback(
+    async (student: string, multiplier: number) => {
+      try {
+        await coursesApi.setQuizAccommodationPartialUpdate({
+          id: props.currentCourse.id!,
+          patchedQuizAccommodationRow: { student, timeMultiplier: multiplier },
+        });
+        message.success(
+          multiplier === 1
+            ? `Removed ${student}'s quiz time accommodation.`
+            : `${student} now gets ${multiplier}× time on timed quizzes.`,
+        );
+        queryClient.invalidateQueries({ queryKey: accommodationsKey });
+      } catch {
+        message.error('Failed to update the quiz time accommodation.');
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.currentCourse?.id, queryClient],
+  );
 
   const sendActivationEmail = useCallback(
     (student: string) => {
@@ -213,6 +259,20 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         },
         renderForSearch: renderSectionCell,
       },
+      ...(canManageRoster && !accommodationsUnavailable
+        ? [
+            {
+              title: (
+                <Tooltip title="Extra time on timed quizzes (e.g. 1.5× turns 40 minutes into 60).">
+                  <span>Quiz time</span>
+                </Tooltip>
+              ),
+              dataIndex: 'quizTime',
+              key: 'quizTime',
+              align: 'center' as const,
+            },
+          ]
+        : []),
       {
         title: 'Actions',
         dataIndex: 'actions',
@@ -220,7 +280,7 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         align: 'right' as const,
       },
     ],
-    [renderStudentCell, renderSectionCell],
+    [renderStudentCell, renderSectionCell, canManageRoster, accommodationsUnavailable],
   );
 
   const data = useMemo(() => {
@@ -231,6 +291,16 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         key: studentEmail,
         student: studentEmail,
         section: props.sectionsByStudent[studentEmail]?.name ?? 'No section',
+        quizTime: (
+          <Select
+            size="small"
+            style={{ width: 90 }}
+            value={multiplierByStudent.get(studentEmail) ?? 1}
+            options={TIME_MULTIPLIER_OPTIONS}
+            onChange={(m) => setTimeMultiplier(studentEmail, m)}
+            data-testid="quiz-time-multiplier"
+          />
+        ),
         actions: (
           <Space>
             {!hasActivated && (
@@ -259,6 +329,8 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
     location.pathname,
     sendActivationEmail,
     removeStudent,
+    multiplierByStudent,
+    setTimeMultiplier,
   ]);
   const actions = useMemo(() => {
     if (props.students.length === 0) return [];

@@ -8,8 +8,8 @@
 // the role.
 import * as React from 'react';
 import {
-  Alert, Drawer, Empty, Flex, Input, InputNumber, Popconfirm, Space, Spin, Switch, Table, Tabs,
-  Tag, Typography, message,
+  Alert, Drawer, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Space, Spin, Switch, Table,
+  Tabs, Tag, Typography, message,
 } from 'antd';
 import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -151,6 +151,14 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
     enabled: open && !!quiz.id,
   });
 
+  // Every submitted attempt (unfiltered) feeds the per-question item analysis. Shares the
+  // needsGradingOnly=false variant of the attempts key, so grading invalidates it too.
+  const { data: allAttempts = [], isLoading: statsLoading } = useQuery({
+    queryKey: [...quizKeys.attempts(quiz.id ?? -1), false],
+    queryFn: (): Promise<StaffQuizAttempt[]> => quizzesApi.attemptsList({ id: quiz.id! }),
+    enabled: open && !!quiz.id,
+  });
+
   React.useEffect(() => {
     if (!open) setCurrent(null);
   }, [open]);
@@ -164,6 +172,71 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
     setCurrent(updated);
     refresh();
   };
+
+  // Item analysis: aggregate every submitted response per question. Fixed and random-draw
+  // questions share stable ids across attempts; AI-generated ones are per-student and
+  // collapse into one aggregate bucket.
+  const questionStats = React.useMemo(() => {
+    interface ChoiceStat { id: number; text: string; isCorrect: boolean; picks: number }
+    interface Acc {
+      key: string; title: string; qtype: string; n: number; pending: number;
+      choices: ChoiceStat[] | null; earnedSum: number; gradedN: number;
+      correctN: number; correctableN: number;
+    }
+    const byQuestion = new Map<string, Acc>();
+    const selectableTypes = new Set<string>([
+      QuestionTypeEnum.MultipleChoice, QuestionTypeEnum.MultipleAnswers, QuestionTypeEnum.TrueFalse,
+    ]);
+    for (const a of allAttempts) {
+      for (const r of a.responses) {
+        const qid = r.question?.id;
+        const key = qid != null ? String(qid) : 'generated';
+        let s = byQuestion.get(key);
+        if (!s) {
+          const qtype = r.question?.questionType ?? '';
+          s = {
+            key,
+            title: key === 'generated' ? 'AI-generated questions (per-student)' : (r.question?.text ?? '—'),
+            qtype: key === 'generated' ? 'mixed' : qtype,
+            n: 0,
+            pending: 0,
+            choices: key !== 'generated' && selectableTypes.has(qtype)
+              ? (r.question?.choices ?? []).map((c) => ({
+                  id: c.id!, text: c.text ?? '', isCorrect: !!c.isCorrect, picks: 0,
+                }))
+              : null,
+            earnedSum: 0, gradedN: 0, correctN: 0, correctableN: 0,
+          };
+          byQuestion.set(key, s);
+        }
+        s.n += 1;
+        if (r.needsManualGrading) s.pending += 1;
+        if (r.pointsEarned != null && Number(r.points) > 0) {
+          s.earnedSum += Number(r.pointsEarned) / Number(r.points);
+          s.gradedN += 1;
+        }
+        if (r.isCorrect != null) {
+          s.correctableN += 1;
+          if (r.isCorrect) s.correctN += 1;
+        }
+        if (s.choices) {
+          for (const cid of r.selectedChoices ?? []) {
+            const c = s.choices.find((x) => x.id === cid);
+            if (c) c.picks += 1;
+          }
+        }
+      }
+    }
+    const rows = [...byQuestion.values()].map((s) => ({
+      ...s,
+      avgPct: s.gradedN > 0 ? Math.round((s.earnedSum / s.gradedN) * 100) : null,
+      correctPct: s.correctableN > 0 ? Math.round((s.correctN / s.correctableN) * 100) : null,
+    }));
+    // Worst-performing questions first; fully ungraded rows sink to the bottom.
+    rows.sort((a, b) => (a.avgPct ?? 101) - (b.avgPct ?? 101));
+    return rows;
+  }, [allAttempts]);
+  type QuestionStat = (typeof questionStats)[number];
 
   // Grade-and-next: walk the attempts that still need grading.
   const pending = attempts.filter((a) => a.needsManualGrading);
@@ -309,6 +382,96 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
     </>
   );
 
+  const questionsTab = statsLoading ? (
+    <Flex justify="center" style={{ padding: 40 }}>
+      <Spin />
+    </Flex>
+  ) : questionStats.length === 0 ? (
+    <Empty description="No submitted attempts yet." image={Empty.PRESENTED_IMAGE_SIMPLE} />
+  ) : (
+    <Table
+      dataSource={questionStats}
+      rowKey="key"
+      size="small"
+      pagination={false}
+      data-testid="question-stats-table"
+      columns={[
+        {
+          title: 'Question',
+          key: 'title',
+          render: (_: unknown, s: QuestionStat) => (
+            <Flex align="center" gap={6} style={{ minWidth: 0 }}>
+              <Text ellipsis style={{ maxWidth: 380 }}>
+                {s.title}
+              </Text>
+              <Tag style={{ flexShrink: 0 }}>{s.qtype.replace(/_/g, ' ')}</Tag>
+            </Flex>
+          ),
+        },
+        {
+          title: 'Responses',
+          key: 'n',
+          width: 120,
+          render: (_: unknown, s: QuestionStat) => (
+            <Space size={4}>
+              <Text>{s.n}</Text>
+              {s.pending > 0 && <Tag color="gold">{s.pending} pending</Tag>}
+            </Space>
+          ),
+        },
+        {
+          title: 'Avg score',
+          key: 'avg',
+          width: 170,
+          render: (_: unknown, s: QuestionStat) =>
+            s.avgPct != null ? (
+              <Flex align="center" gap={8}>
+                <Progress percent={s.avgPct} showInfo={false} size="small" style={{ width: 90 }} />
+                <Text data-testid="question-avg">{s.avgPct}%</Text>
+              </Flex>
+            ) : (
+              <Text type="secondary">—</Text>
+            ),
+        },
+        {
+          title: 'Fully correct',
+          key: 'correct',
+          width: 110,
+          render: (_: unknown, s: QuestionStat) =>
+            s.correctPct != null ? `${s.correctPct}%` : <Text type="secondary">—</Text>,
+        },
+      ]}
+      expandable={{
+        rowExpandable: (s: QuestionStat) => !!s.choices?.length,
+        expandedRowRender: (s: QuestionStat) => (
+          <Flex vertical gap={6} style={{ padding: '4px 8px' }}>
+            {(s.choices ?? []).map((c) => (
+              <Flex key={c.id} align="center" gap={8}>
+                <Text ellipsis style={{ width: 320 }}>
+                  {c.text}
+                </Text>
+                {c.isCorrect && (
+                  <Tag color="success" style={{ margin: 0 }}>
+                    correct
+                  </Tag>
+                )}
+                <Progress
+                  percent={s.n > 0 ? Math.round((c.picks / s.n) * 100) : 0}
+                  showInfo={false}
+                  size="small"
+                  style={{ width: 120 }}
+                />
+                <Text type="secondary">
+                  {c.picks} {c.picks === 1 ? 'pick' : 'picks'}
+                </Text>
+              </Flex>
+            ))}
+          </Flex>
+        ),
+      }}
+    />
+  );
+
   const responses = current ? [...current.responses].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0)) : [];
 
   return (
@@ -394,6 +557,7 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
           items={[
             { key: 'attempts', label: 'Attempts', children: attemptsTab },
             { key: 'results', label: 'Results', children: resultsTab },
+            { key: 'questions', label: 'Questions', children: questionsTab },
           ]}
         />
       )}

@@ -82,12 +82,28 @@ test.describe('staff quiz grading', () => {
     await expect(row.getByTestId('result-score')).toHaveText('4.5 / 5');
     await expect(row.getByText('Passed')).toBeVisible();
     await expect(ipage.getByTestId('results-export')).toBeEnabled();
+
+    // ── Questions tab: item analysis shows the essay averaging 90% ─────────
+    await ipage.getByRole('tab', { name: 'Questions' }).click();
+    const statRow = ipage
+      .getByTestId('question-stats-table')
+      .locator('tr', { hasText: 'stack' }); // essay stem mentions stack vs queue
+    await expect(statRow.getByTestId('question-avg')).toHaveText('90%');
     await ictx.close();
 
-    // ── Student: the card now shows the official score ──────────────────────
+    // ── Student: the card shows the official score and Review opens results ─
     await page.goto(`${courseUrl}/quizzes`);
     const card = page.getByTestId('student-quiz-card').filter({ hasText: QUIZ_TITLE });
     await expect(card.getByTestId('student-quiz-score')).toHaveText('4.5 / 5');
     await expect(card.getByText('Passed')).toBeVisible();
+
+    // Unlimited attempts ⇒ the primary action is "New attempt"; the secondary Review
+    // link must still reach past results and the grader's feedback.
+    await expect(card.getByTestId('student-quiz-action')).toHaveText('New attempt');
+    await card.getByTestId('student-quiz-review').click();
+    await expect(page).toHaveURL(/\/quizzes\/\d+\/review/);
+    await expect(page.getByTestId('quiz-results')).toBeVisible();
+    await expect(page.getByTestId('quiz-score')).toContainText('4.5 / 5');
+    await expect(page.getByTestId('quiz-grader-feedback')).toContainText('Good work');
   });
 });

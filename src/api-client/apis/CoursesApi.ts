@@ -33,9 +33,11 @@ import type {
   PatchedCourseAISettings,
   PatchedCourseRosterMap,
   PatchedCourseStudentCaptions,
+  PatchedQuizAccommodationRow,
   Question,
   QuestionBank,
   Quiz,
+  QuizAccommodationRow,
 } from '../models/index';
 
 export interface AddToRosterPartialUpdateRequest {
@@ -180,6 +182,10 @@ export interface QuestionsListRequest {
   id: number;
 }
 
+export interface QuizAccommodationsListRequest {
+  id: number;
+}
+
 export interface QuizzesListRequest {
   id: number;
 }
@@ -221,6 +227,11 @@ export interface SectionsListRequest {
   id: number;
   page?: number;
   pageSize?: number;
+}
+
+export interface SetQuizAccommodationPartialUpdateRequest {
+  id: number;
+  patchedQuizAccommodationRow?: PatchedQuizAccommodationRow;
 }
 
 export interface StudentCaptionsPartialUpdateRequest {
@@ -1669,6 +1680,66 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
+   * List per-student quiz extra-time accommodations (course admins only).
+   */
+  async quizAccommodationsListRaw(
+    requestParameters: QuizAccommodationsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<QuizAccommodationRow>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling quizAccommodationsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/quizAccommodations/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * List per-student quiz extra-time accommodations (course admins only).
+   */
+  async quizAccommodationsList(
+    requestParameters: QuizAccommodationsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<QuizAccommodationRow>> {
+    const response = await this.quizAccommodationsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * List the course\'s quizzes (staff only).
    */
   async quizzesListRaw(
@@ -2159,6 +2230,69 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<PaginatedSectionList> {
     const response = await this.sectionsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Set a student\'s quiz time multiplier (course admins only). A multiplier of 1 removes the accommodation.
+   */
+  async setQuizAccommodationPartialUpdateRaw(
+    requestParameters: SetQuizAccommodationPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<QuizAccommodationRow>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling setQuizAccommodationPartialUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/setQuizAccommodation/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['patchedQuizAccommodationRow'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Set a student\'s quiz time multiplier (course admins only). A multiplier of 1 removes the accommodation.
+   */
+  async setQuizAccommodationPartialUpdate(
+    requestParameters: SetQuizAccommodationPartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<QuizAccommodationRow> {
+    const response = await this.setQuizAccommodationPartialUpdateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

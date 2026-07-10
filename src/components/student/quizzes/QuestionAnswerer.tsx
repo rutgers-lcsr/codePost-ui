@@ -148,14 +148,17 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
           <Text type="secondary" style={{ fontSize: 12 }}>
             {response.points ?? 0} {Number(response.points) === 1 ? 'point' : 'points'}
           </Text>
-          {reveal && <ResultTag response={response} />}
+          {(reveal || response.pointsEarned != null || response.needsManualGrading) && (
+            <ResultTag response={response} />
+          )}
         </Space>
       }
     >
       {question.text && <Markdown>{question.text}</Markdown>}
       {question.description && <Markdown>{question.description}</Markdown>}
       <div style={{ marginTop: 12 }}>{renderInput()}</div>
-      {reveal && response.graderFeedback && (
+      {/* Server-gated: present once the attempt is submitted, regardless of answer reveal. */}
+      {response.graderFeedback && (
         <Alert
           type="info"
           showIcon
@@ -213,6 +216,15 @@ const ResultTag: React.FC<{ response: StudentQuizResponse }> = ({ response }) =>
     return (
       <Tag color="error" icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />} data-testid="quiz-question-result">
         0 pts
+      </Tag>
+    );
+  }
+  // No correctness (partial credit, manual grades, or answers-hidden policies) — the
+  // earned points still show once the server reveals them.
+  if (response.pointsEarned != null) {
+    return (
+      <Tag data-testid="quiz-question-result">
+        {Number(response.pointsEarned)} / {Number(response.points ?? 0)} pts
       </Tag>
     );
   }

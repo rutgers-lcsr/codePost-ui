@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Flex, Form, Input, InputNumber, Modal, Select, message } from 'antd';
+import { Flex, Form, Input, InputNumber, Modal, Select, Switch, message } from 'antd';
 import CodeQuestionEditor from './CodeQuestionEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
@@ -62,6 +62,8 @@ interface IQuestionForm {
   points: number;
   generalFeedback?: string;
   language?: string;
+  partialCredit?: boolean;
+  numericTolerance?: number | null;
 }
 
 const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, question, onClose }) => {
@@ -91,6 +93,8 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
         points: question.points ?? 1,
         generalFeedback: question.generalFeedback,
         language: question.language ?? undefined,
+        partialCredit: question.partialCredit ?? false,
+        numericTolerance: question.numericTolerance ?? undefined,
       });
     } else {
       setQType(QuestionTypeEnum.MultipleChoice);
@@ -99,7 +103,7 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
       setReferenceSolution('');
       setChoices(defaultChoicesFor(QuestionTypeEnum.MultipleChoice));
       form.resetFields();
-      form.setFieldsValue({ questionType: QuestionTypeEnum.MultipleChoice, points: 1 });
+      form.setFieldsValue({ questionType: QuestionTypeEnum.MultipleChoice, points: 1, partialCredit: false });
     }
   }, [open, question, form]);
 
@@ -124,6 +128,10 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
       description: values.description,
       points: values.points,
       generalFeedback: values.generalFeedback,
+      // Grading settings only apply to their question type; clear them on type changes.
+      partialCredit: values.questionType === QuestionTypeEnum.MultipleAnswers && !!values.partialCredit,
+      numericTolerance:
+        values.questionType === QuestionTypeEnum.Numerical ? (values.numericTolerance ?? null) : null,
     };
 
     if (isCode(values.questionType)) {
@@ -195,6 +203,26 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
           <Form.Item name="points" label="Points" rules={[{ required: true }]} style={{ width: 140 }}>
             <InputNumber min={0} step={1} style={{ width: '100%' }} />
           </Form.Item>
+          {qType === QuestionTypeEnum.MultipleAnswers && (
+            <Form.Item
+              name="partialCredit"
+              label="Partial credit"
+              valuePropName="checked"
+              tooltip="Right minus wrong: (correct − incorrect selections) / total correct × points, floored at 0. Off = all-or-nothing."
+            >
+              <Switch data-testid="question-partial-credit" />
+            </Form.Item>
+          )}
+          {qType === QuestionTypeEnum.Numerical && (
+            <Form.Item
+              name="numericTolerance"
+              label="± Tolerance"
+              tooltip="Accept answers within this distance of an accepted value. Empty = exact match."
+              style={{ width: 160 }}
+            >
+              <InputNumber min={0} step={0.1} style={{ width: '100%' }} data-testid="question-tolerance" />
+            </Form.Item>
+          )}
           {isCode(qType) && (
             <Form.Item label="Language" style={{ flex: 1 }}>
               <Select

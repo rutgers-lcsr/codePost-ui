@@ -16,7 +16,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { CodePostDate } from '../utils/CodepostDate';
 import { SubmissionStatus } from './submissionStatus';
 import { StudentQuiz } from '../../api-client';
-import { quizAction, quizActionLabel } from './quizzes/quizStatus';
+import { canReview, quizAction, quizActionLabel } from './quizzes/quizStatus';
 import QuizScoreTags from './quizzes/QuizScoreTags';
 import { assignmentIsDone, assignmentNeedsAction } from './actionStatus';
 
@@ -49,6 +49,7 @@ interface AssignmentRowProps {
   disabled?: boolean;
   quizzes?: StudentQuiz[];
   onTakeQuiz?: (quiz: StudentQuiz) => void;
+  onReviewQuiz?: (quiz: StudentQuiz) => void;
 }
 
 const statusTagColor: Record<SubmissionStatus, string> = {
@@ -113,6 +114,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   disabled = false,
   quizzes = [],
   onTakeQuiz,
+  onReviewQuiz,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const hasGrade = grade !== null && grade !== undefined && maxPoints !== undefined && maxPoints !== null;
@@ -435,6 +437,21 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
                 </Flex>
                 <Flex align="center" gap={6} style={{ flexShrink: 0 }}>
                   <QuizScoreTags quiz={quiz} />
+                  {/* Past results stay reachable even when the primary action starts a new attempt. */}
+                  {onReviewQuiz && canReview(quiz) && action !== 'review' && (
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onReviewQuiz(quiz);
+                      }}
+                      data-testid="attached-quiz-review"
+                    >
+                      Review
+                    </Button>
+                  )}
                   {action === 'locked' ? (
                     <Tooltip title="This quiz isn't open yet">
                       <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid="attached-quiz-locked">
@@ -448,7 +465,8 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
                       icon={action === 'review' ? <EyeOutlined /> : undefined}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onTakeQuiz?.(quiz);
+                        if (action === 'review' && onReviewQuiz) onReviewQuiz(quiz);
+                        else onTakeQuiz?.(quiz);
                       }}
                       data-testid="attached-quiz-action"
                     >

@@ -26,6 +26,7 @@ All URIs are relative to *http://localhost*
 | [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                      |             |
 | [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/          |             |
 | [**questionsList**](CoursesApi.md#questionslist)                                         | **GET** /courses/{id}/questions/              |             |
+| [**quizAccommodationsList**](CoursesApi.md#quizaccommodationslist)                       | **GET** /courses/{id}/quizAccommodations/     |             |
 | [**quizzesList**](CoursesApi.md#quizzeslist)                                             | **GET** /courses/{id}/quizzes/                |             |
 | [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/     |             |
 | [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                        |             |
@@ -34,6 +35,7 @@ All URIs are relative to *http://localhost*
 | [**rosterPartialUpdate**](CoursesApi.md#rosterpartialupdate)                             | **PATCH** /courses/{id}/roster/               |             |
 | [**rosterRetrieve**](CoursesApi.md#rosterretrieve)                                       | **GET** /courses/{id}/roster/                 |             |
 | [**sectionsList**](CoursesApi.md#sectionslist)                                           | **GET** /courses/{id}/sections/               |             |
+| [**setQuizAccommodationPartialUpdate**](CoursesApi.md#setquizaccommodationpartialupdate) | **PATCH** /courses/{id}/setQuizAccommodation/ |             |
 | [**studentCaptionsPartialUpdate**](CoursesApi.md#studentcaptionspartialupdate)           | **PATCH** /courses/{id}/studentCaptions/      |             |
 | [**studentCaptionsRetrieve**](CoursesApi.md#studentcaptionsretrieve)                     | **GET** /courses/{id}/studentCaptions/        |             |
 | [**update**](CoursesApi.md#update)                                                       | **PUT** /courses/{id}/                        |             |
@@ -1704,6 +1706,77 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## quizAccommodationsList
+
+> Array&lt;QuizAccommodationRow&gt; quizAccommodationsList(id)
+
+List per-student quiz extra-time accommodations (course admins only).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { QuizAccommodationsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies QuizAccommodationsListRequest;
+
+  try {
+    const data = await api.quizAccommodationsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;QuizAccommodationRow&gt;**](QuizAccommodationRow.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## quizzesList
 
 > Array&lt;Quiz&gt; quizzesList(id)
@@ -2286,6 +2359,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## setQuizAccommodationPartialUpdate
+
+> QuizAccommodationRow setQuizAccommodationPartialUpdate(id, patchedQuizAccommodationRow)
+
+Set a student\&#39;s quiz time multiplier (course admins only). A multiplier of 1 removes the accommodation.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { SetQuizAccommodationPartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // PatchedQuizAccommodationRow (optional)
+    patchedQuizAccommodationRow: ...,
+  } satisfies SetQuizAccommodationPartialUpdateRequest;
+
+  try {
+    const data = await api.setQuizAccommodationPartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                            | Type                                                          | Description                                     | Notes                     |
+| ------------------------------- | ------------------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                          | `number`                                                      | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **patchedQuizAccommodationRow** | [PatchedQuizAccommodationRow](PatchedQuizAccommodationRow.md) |                                                 | [Optional]                |
+
+### Return type
+
+[**QuizAccommodationRow**](QuizAccommodationRow.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

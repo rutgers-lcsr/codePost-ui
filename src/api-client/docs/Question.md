@@ -14,6 +14,8 @@ A quiz question that lives in exactly one bank, with nested writable choices. Ch
 | `description`       | string                                           |
 | `points`            | number                                           |
 | `generalFeedback`   | string                                           |
+| `partialCredit`     | boolean                                          |
+| `numericTolerance`  | number                                           |
 | `language`          | string                                           |
 | `starterCode`       | string                                           |
 | `referenceSolution` | string                                           |

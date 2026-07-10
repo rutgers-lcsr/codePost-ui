@@ -7940,6 +7940,18 @@ export interface PatchedQuestion {
    */
   generalFeedback?: string;
   /**
+   * For multiple_answers questions: score right-minus-wrong partial credit ((correct − incorrect selections) / total correct × points, floored at 0) instead of all-or-nothing.
+   * @type {boolean}
+   * @memberof PatchedQuestion
+   */
+  partialCredit?: boolean;
+  /**
+   * For numerical questions: accept answers within ± this of an accepted value. Null/0 requires an exact match.
+   * @type {number}
+   * @memberof PatchedQuestion
+   */
+  numericTolerance?: number | null;
+  /**
    * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
    * @type {string}
    * @memberof PatchedQuestion
@@ -8265,6 +8277,25 @@ export interface PatchedQuiz {
   readonly metadata?: string;
 }
 
+/**
+ * One per-student quiz extra-time accommodation (course-level multiplier).
+ * @export
+ * @interface PatchedQuizAccommodationRow
+ */
+export interface PatchedQuizAccommodationRow {
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedQuizAccommodationRow
+   */
+  student?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedQuizAccommodationRow
+   */
+  timeMultiplier?: number;
+}
 /**
  * A per-student generation config on a quiz: an instructor-authored prompt template,
  * question count, and points per question. The prompt is strictly validated on save
@@ -10135,6 +10166,18 @@ export interface Question {
    */
   generalFeedback?: string;
   /**
+   * For multiple_answers questions: score right-minus-wrong partial credit ((correct − incorrect selections) / total correct × points, floored at 0) instead of all-or-nothing.
+   * @type {boolean}
+   * @memberof Question
+   */
+  partialCredit?: boolean;
+  /**
+   * For numerical questions: accept answers within ± this of an accepted value. Null/0 requires an exact match.
+   * @type {number}
+   * @memberof Question
+   */
+  numericTolerance?: number | null;
+  /**
    * For code questions: the language (matches Environment.language values). When null, resolve from the attached assignment's environment.
    * @type {string}
    * @memberof Question
@@ -10518,6 +10561,25 @@ export interface Quiz {
   readonly metadata: string;
 }
 
+/**
+ * One per-student quiz extra-time accommodation (course-level multiplier).
+ * @export
+ * @interface QuizAccommodationRow
+ */
+export interface QuizAccommodationRow {
+  /**
+   *
+   * @type {string}
+   * @memberof QuizAccommodationRow
+   */
+  student: string;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizAccommodationRow
+   */
+  timeMultiplier: number;
+}
 /**
  * * `during` - During the assignment
  * * `after_assignment` - After the assignment closes

@@ -37,6 +37,7 @@ import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/comm
 import { Course, StudentQuiz, StudentSubmission, Submission } from '../../api-client';
 import StudentQuizzesSection from './quizzes/StudentQuizzesSection';
 import QuizTakeRoute from './quizzes/QuizTakeRoute';
+import QuizReviewRoute from './quizzes/QuizReviewRoute';
 import { useAvailableQuizzes } from './quizzes/queries';
 import type {
   StudentUploadCreateRequest,
@@ -183,6 +184,15 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       // Absolute path: this can fire from either the Assignments or Quizzes page,
       // so a relative `quizzes/...` would double up on the latter.
       navigate(encodedCourseLink('student', currentCourse, `quizzes/${quiz.id}/take`), {
+        state: { title: quiz.title, from: location.pathname },
+      });
+    },
+    [navigate, currentCourse, location.pathname],
+  );
+  const handleReviewQuiz = useCallback(
+    (quiz: StudentQuiz) => {
+      if (!currentCourse) return;
+      navigate(encodedCourseLink('student', currentCourse, `quizzes/${quiz.id}/review`), {
         state: { title: quiz.title, from: location.pathname },
       });
     },
@@ -634,6 +644,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           }
           quizzes={quizzesByAssignment.get(assignment.id) ?? []}
           onTakeQuiz={handleTakeQuiz}
+          onReviewQuiz={handleReviewQuiz}
         />
       );
     },
@@ -648,6 +659,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       permissionsCache,
       quizzesByAssignment,
       handleTakeQuiz,
+      handleReviewQuiz,
     ],
   );
 
@@ -900,6 +912,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         <StudentQuizzesSection
           courseId={currentCourse.id}
           onTake={handleTakeQuiz}
+          onReview={handleReviewQuiz}
           assignmentNamesById={assignmentNamesById}
         />
         {!isLoadingQuizzes && courseQuizzes.length === 0 && (
@@ -960,8 +973,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
 
   return (
     <Routes>
-      {/* Full-page quiz taking, outside the normal course chrome. */}
+      {/* Full-page quiz taking / reviewing, outside the normal course chrome. */}
       <Route path="quizzes/:quizId/take" element={<QuizTakeRoute courseId={currentCourse?.id} />} />
+      <Route path="quizzes/:quizId/review" element={<QuizReviewRoute courseId={currentCourse?.id} />} />
       <Route path="quizzes" element={shell(quizzesContent)} />
       <Route path="*" element={shell(studentContent)} />
     </Routes>
