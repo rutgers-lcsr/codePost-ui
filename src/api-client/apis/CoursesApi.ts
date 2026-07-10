@@ -55,6 +55,7 @@ export interface AiSettingsPartialUpdateRequest {
   patchedCourseAISettings?: Omit<
     PatchedCourseAISettings,
     | 'id'
+    | 'aiFeatureModelsResolved'
     | 'aiFeatures'
     | 'aiEnabled'
     | 'aiCommentsEnabled'

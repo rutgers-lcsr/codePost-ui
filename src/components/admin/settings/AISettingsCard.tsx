@@ -53,6 +53,10 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [featureConfig, setFeatureConfig] = React.useState<AIFeatureConfig>({});
   const [featureStatus, setFeatureStatus] = React.useState<AIFeatureStatus>({});
 
+  // Per-feature model overrides
+  const [featureModels, setFeatureModels] = React.useState<Record<string, string>>({});
+  const [featureModelsResolved, setFeatureModelsResolved] = React.useState<Record<string, string>>({});
+
   // Model dropdown
   const [modelOptions, setModelOptions] = React.useState<{ label: string; value: string }[]>([]);
   const [loadingModels, setLoadingModels] = React.useState(false);
@@ -81,6 +85,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setFeatureRegistry(features);
         setFeatureConfig(((s.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
         setFeatureStatus(((s.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
+        setFeatureModels((s.aiFeatureModels as Record<string, string>) ?? {});
+        setFeatureModelsResolved((s.aiFeatureModelsResolved as Record<string, string>) ?? {});
       } catch (error) {
         console.error('Failed to fetch AI settings:', error);
       } finally {
@@ -90,9 +96,14 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     fetchSettings();
   }, [courseId]);
 
-  // Fetch curated + live models when provider changes
+  // When using org settings, we don't show the course-specific key fields
+  const usingOrgSettings = orgAiAvailable && !aiUseOwnSettings;
+
+  // Fetch curated + live models when the effective provider changes.
+  // When inheriting the org key, the course aiModels endpoint resolves the
+  // effective provider server-side and returns its curated list too.
   React.useEffect(() => {
-    if (!provider) {
+    if (!provider && !usingOrgSettings) {
       setModelOptions([]);
       return;
     }
@@ -116,25 +127,27 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       return opts;
     };
 
-    const curatedPromise = AIUsageService.getModels(provider)
-      .then((res) => res.providers?.[0]?.models ?? [])
-      .catch(() => [] as AIModel[]);
-
-    const livePromise = AIUsageService.getCourseModels(courseId)
+    const coursePromise = AIUsageService.getCourseModels(courseId)
       .then((res) => {
         const provData = res.providers?.[0];
         if (provData?.liveError) {
           console.warn('Live model fetch warning:', provData.liveError);
         }
-        return provData?.liveModels ?? [];
+        return { curated: provData?.models ?? [], live: provData?.liveModels ?? [] };
       })
-      .catch(() => [] as AIModel[]);
+      .catch(() => ({ curated: [] as AIModel[], live: [] as AIModel[] }));
 
-    Promise.all([curatedPromise, livePromise]).then(([curated, live]) => {
-      setModelOptions(buildOptions(curated, live));
+    const curatedPromise = (
+      !usingOrgSettings && provider
+        ? AIUsageService.getModels(provider).then((res) => res.providers?.[0]?.models ?? [])
+        : Promise.resolve([] as AIModel[])
+    ).catch(() => [] as AIModel[]);
+
+    Promise.all([curatedPromise, coursePromise]).then(([curated, course]) => {
+      setModelOptions(buildOptions([...curated, ...course.curated], course.live));
       setLoadingModels(false);
     });
-  }, [provider, courseId]);
+  }, [provider, courseId, usingOrgSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -148,6 +161,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         aiCommentsDisabled,
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
         aiFeatureConfig: featureConfig,
+        aiFeatureModels: featureModels,
         ...(apiKey ? { aiApiKey: apiKey } : {}),
       } as Parameters<typeof AIUsageService.updateCourseAISettings>[1]);
       const r = result as unknown as Record<string, unknown>;
@@ -159,6 +173,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       setHasApiKey(result.hasApiKey ?? false);
       setFeatureConfig(((r.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
       setFeatureStatus(((r.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
+      setFeatureModels((r.aiFeatureModels as Record<string, string>) ?? {});
+      setFeatureModelsResolved((r.aiFeatureModelsResolved as Record<string, string>) ?? {});
       setApiKey('');
       setIsDirty(false);
       message.success('AI settings saved!');
@@ -172,9 +188,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const mark = () => setIsDirty(true);
 
   const showBaseUrl = provider === 'ollama' || provider === 'portkey' || provider === 'custom';
-
-  // When using org settings, we don't show the course-specific key fields
-  const usingOrgSettings = orgAiAvailable && !aiUseOwnSettings;
 
   return (
     <Card
@@ -418,6 +431,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                         (featureConfig[other.key] ?? featureStatus[other.key] ?? other.defaultEnabled),
                     );
                   const effectiveEnabled = isEnabled || forcedOn;
+                  const modelOverride = featureModels[feature.key];
                   return (
                     <Card
                       key={feature.key}
@@ -440,6 +454,39 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                             <Text type="secondary" style={{ fontSize: 11, fontStyle: 'italic' }}>
                               Required by other enabled features
                             </Text>
+                          )}
+                          {effectiveEnabled && (
+                            <Select
+                              showSearch
+                              allowClear
+                              size="small"
+                              value={modelOverride || undefined}
+                              onChange={(value?: string) => {
+                                setFeatureModels((prev) => {
+                                  const next = { ...prev };
+                                  if (value) next[feature.key] = value;
+                                  else delete next[feature.key];
+                                  return next;
+                                });
+                                mark();
+                              }}
+                              placeholder={
+                                featureModelsResolved[feature.key] && !modelOverride
+                                  ? `Default (${featureModelsResolved[feature.key]})`
+                                  : 'Default model'
+                              }
+                              aria-label={`Model for ${feature.label}`}
+                              style={{ width: 320, marginTop: 8 }}
+                              loading={loadingModels}
+                              notFoundContent={loadingModels ? <Spin size="small" /> : 'No models found'}
+                              options={modelOptions}
+                              filterOption={(input, option) =>
+                                !!option &&
+                                (option.value.toLowerCase().includes(input.toLowerCase()) ||
+                                  (typeof option.label === 'string' &&
+                                    option.label.toLowerCase().includes(input.toLowerCase())))
+                              }
+                            />
                           )}
                         </Flex>
                         <Switch

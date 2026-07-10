@@ -17,6 +17,7 @@ Serializer for organization-level AI configuration.
 | `aiEnabledCourseIds` | Array&lt;number&gt;                         |
 | `aiTokenRates`       | any                                         |
 | `aiFeatureConfig`    | any                                         |
+| `aiFeatureModels`    | any                                         |
 | `aiFeatures`         | { [key: string]: boolean                    | undefined; } |
 | `aiEnabled`          | boolean                                     |
 | `aiCommentsEnabled`  | boolean                                     |

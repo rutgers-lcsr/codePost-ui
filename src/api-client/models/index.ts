@@ -3289,6 +3289,18 @@ export interface CourseAISettings {
    */
   aiFeatureConfig?: any | null;
   /**
+   * Per-feature AI model overrides. JSON: {"quiz_generation": "gemini-2.5-pro", ...}. Missing keys use the effective default model.
+   * @type {any}
+   * @memberof CourseAISettings
+   */
+  aiFeatureModels?: any | null;
+  /**
+   *
+   * @type {{ [key: string]: string | undefined; }}
+   * @memberof CourseAISettings
+   */
+  readonly aiFeatureModelsResolved: { [key: string]: string | undefined };
+  /**
    *
    * @type {{ [key: string]: boolean | undefined; }}
    * @memberof CourseAISettings
@@ -5751,6 +5763,12 @@ export interface OrganizationAISettings {
    */
   aiFeatureConfig?: any | null;
   /**
+   * Per-feature AI model overrides. JSON: {"quiz_generation": "gemini-2.5-pro", ...}. Missing keys use aiModel.
+   * @type {any}
+   * @memberof OrganizationAISettings
+   */
+  aiFeatureModels?: any | null;
+  /**
    *
    * @type {{ [key: string]: boolean | undefined; }}
    * @memberof OrganizationAISettings
@@ -6880,6 +6898,18 @@ export interface PatchedCourseAISettings {
    */
   aiFeatureConfig?: any | null;
   /**
+   * Per-feature AI model overrides. JSON: {"quiz_generation": "gemini-2.5-pro", ...}. Missing keys use the effective default model.
+   * @type {any}
+   * @memberof PatchedCourseAISettings
+   */
+  aiFeatureModels?: any | null;
+  /**
+   *
+   * @type {{ [key: string]: string | undefined; }}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly aiFeatureModelsResolved?: { [key: string]: string | undefined };
+  /**
    *
    * @type {{ [key: string]: boolean | undefined; }}
    * @memberof PatchedCourseAISettings
@@ -7625,6 +7655,12 @@ export interface PatchedOrganizationAISettingsUpdate {
    * @memberof PatchedOrganizationAISettingsUpdate
    */
   aiFeatureConfig?: any | null;
+  /**
+   * Per-feature AI model overrides. JSON: {"quiz_generation": "gemini-2.5-pro", ...}. Missing keys use aiModel.
+   * @type {any}
+   * @memberof PatchedOrganizationAISettingsUpdate
+   */
+  aiFeatureModels?: any | null;
 }
 
 /**

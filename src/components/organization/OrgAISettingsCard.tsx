@@ -56,6 +56,9 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [featureConfig, setFeatureConfig] = React.useState<AIFeatureConfig>({});
   const [featureStatus, setFeatureStatus] = React.useState<AIFeatureStatus>({});
 
+  // Per-feature model overrides
+  const [featureModels, setFeatureModels] = React.useState<Record<string, string>>({});
+
   // Model dropdown
   const [modelOptions, setModelOptions] = React.useState<{ label: string; value: string }[]>([]);
   const [loadingModels, setLoadingModels] = React.useState(false);
@@ -86,6 +89,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         setFeatureRegistry(features);
         setFeatureConfig(((raw.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
         setFeatureStatus(((raw.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
+        setFeatureModels((raw.aiFeatureModels as Record<string, string>) ?? {});
       } catch {
         message.error('Failed to load organization AI settings');
       } finally {
@@ -155,6 +159,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         aiEnabledCourseIds: coursePolicy === AiCoursePolicyEnum.Selected ? enabledCourseIds : [],
         aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
         aiFeatureConfig: featureConfig,
+        aiFeatureModels: featureModels,
         ...(apiKey ? { aiApiKey: apiKey } : {}),
       } as Parameters<typeof AIUsageService.updateOrgAISettings>[1]);
       setApiKey('');
@@ -365,6 +370,8 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                         (featureConfig[other.key] ?? featureStatus[other.key] ?? other.defaultEnabled),
                     );
                   const effectiveEnabled = isEnabled || forcedOn;
+                  const modelOverride = featureModels[feature.key];
+                  const fallbackModel = model || DEFAULT_MODELS[provider as AIProvider] || '';
                   return (
                     <Card
                       key={feature.key}
@@ -385,6 +392,35 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
                             <Text type="secondary" style={{ fontSize: 11, fontStyle: 'italic' }}>
                               Required by other enabled features
                             </Text>
+                          )}
+                          {effectiveEnabled && (
+                            <Select
+                              showSearch
+                              allowClear
+                              size="small"
+                              value={modelOverride || undefined}
+                              onChange={(value?: string) => {
+                                setFeatureModels((prev) => {
+                                  const next = { ...prev };
+                                  if (value) next[feature.key] = value;
+                                  else delete next[feature.key];
+                                  return next;
+                                });
+                                mark();
+                              }}
+                              placeholder={fallbackModel ? `Default (${fallbackModel})` : 'Default model'}
+                              aria-label={`Model for ${feature.label}`}
+                              style={{ width: 320, marginTop: 8 }}
+                              loading={loadingModels}
+                              notFoundContent={loadingModels ? <Spin size="small" /> : 'No models found'}
+                              options={modelOptions}
+                              filterOption={(input, option) =>
+                                !!option &&
+                                (option.value.toLowerCase().includes(input.toLowerCase()) ||
+                                  (typeof option.label === 'string' &&
+                                    option.label.toLowerCase().includes(input.toLowerCase())))
+                              }
+                            />
                           )}
                         </Flex>
                         <Switch

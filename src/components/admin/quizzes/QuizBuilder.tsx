@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   DatePicker,
+  Dropdown,
   Empty,
   Flex,
   Input,
@@ -25,6 +26,7 @@ import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   DeleteOutlined,
+  DownOutlined,
   EditOutlined,
   CheckSquareOutlined,
   EyeOutlined,
@@ -995,7 +997,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
             <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
               Questions
             </Typography.Title>
-            <Tag color="blue">{orderedQuestions.length} fixed</Tag>
+            {orderedQuestions.length > 0 && (
+              <Tag color="blue">{orderedQuestions.length} fixed</Tag>
+            )}
             {orderedGroups.length > 0 && (
               <Tag color="green">
                 {orderedGroups.length} random {orderedGroups.length === 1 ? 'draw' : 'draws'}
@@ -1032,28 +1036,34 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                 </CPButton>
               </Tooltip>
             )}
-            {aiQuizEnabled && (
-              <Tooltip
-                title={assignmentId == null
-                  ? 'Attach the quiz to an assignment first — questions are generated when each student submits'
-                  : 'Generate questions per student from the assignment and their submission'}
-              >
-                <CPButton
-                  cpType="secondary"
-                  icon={<RobotOutlined />}
-                  disabled={assignmentId == null}
-                  onClick={openCreateSection}
-                >
-                  Add AI Questions
-                </CPButton>
-              </Tooltip>
-            )}
-            <CPButton cpType="secondary" icon={<RetweetOutlined />} onClick={openCreateGroup}>
-              Add Random Draw
-            </CPButton>
-            <CPButton cpType="primary" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>
-              Add Questions
-            </CPButton>
+            <Dropdown
+              trigger={['click']}
+              menu={{
+                items: [
+                  { key: 'questions', icon: <PlusOutlined />, label: 'Questions from a bank…' },
+                  { key: 'group', icon: <RetweetOutlined />, label: 'Random draw…' },
+                  ...(aiQuizEnabled
+                    ? [{
+                        key: 'ai',
+                        icon: <RobotOutlined />,
+                        label: assignmentId == null
+                          ? 'AI-generated questions (attach an assignment first)'
+                          : 'AI-generated questions…',
+                        disabled: assignmentId == null,
+                      }]
+                    : []),
+                ],
+                onClick: ({ key }) => {
+                  if (key === 'questions') setAddOpen(true);
+                  else if (key === 'group') openCreateGroup();
+                  else if (key === 'ai') openCreateSection();
+                },
+              }}
+            >
+              <Button type="primary" icon={<PlusOutlined />}>
+                Add <DownOutlined style={{ fontSize: 10 }} />
+              </Button>
+            </Dropdown>
           </Space>
         }
         styles={{ body: { padding: totalItems === 0 ? undefined : 0 } }}
