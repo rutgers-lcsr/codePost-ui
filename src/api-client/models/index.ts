@@ -4633,6 +4633,19 @@ export interface GenerateForStudentRequest {
 /**
  *
  * @export
+ * @interface GenerateMissingResponse
+ */
+export interface GenerateMissingResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof GenerateMissingResponse
+   */
+  queued: number;
+}
+/**
+ *
+ * @export
  * @interface GenerateOTTRequest
  */
 export interface GenerateOTTRequest {

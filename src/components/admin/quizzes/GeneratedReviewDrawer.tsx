@@ -8,7 +8,7 @@
 import * as React from 'react';
 import {
   Alert, AutoComplete, Drawer, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag,
-  Typography, message,
+  Tooltip, Typography, message,
 } from 'antd';
 import { LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -244,6 +244,16 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
     });
   };
 
+  const generateMissing = () =>
+    act(async () => {
+      const res = await quizzesApi.generateMissingCreate({ id: quiz.id! });
+      message.info(
+        res.queued > 0
+          ? `Queued generation for ${res.queued} student${res.queued === 1 ? '' : 's'}.`
+          : 'Everyone with a submission already has a question set.',
+      );
+    }, 'Generate-missing complete.');
+
   const publishAll = () => {
     const readyCount = sets.filter((s) => s.status === 'ready').length;
     Modal.confirm({
@@ -351,6 +361,11 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
           >
             Generate
           </CPButton>
+          <Tooltip title="Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).">
+            <CPButton loading={acting} onClick={generateMissing} data-testid="generate-missing">
+              Generate missing
+            </CPButton>
+          </Tooltip>
         </Space>
       )}
       {!current && (

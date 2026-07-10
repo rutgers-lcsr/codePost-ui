@@ -118,9 +118,10 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
     >
       <Text type="secondary" style={{ fontSize: 13 }}>
         When a student submits the assignment, questions are generated for them from your
-        prompt. The AI sees exactly what your prompt references — use {'{'}variables{'}'} to
-        attach assignment files, the student's submission, or their test results. You review
-        and approve each student's questions before their quiz opens (unless auto-publish is on).
+        prompt — and right away for anyone who has already submitted. The AI sees exactly
+        what your prompt references — use {'{'}variables{'}'} to attach assignment files, the
+        student's submission, or their test results. You review and approve each student's
+        questions before their quiz opens (unless auto-publish is on).
       </Text>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)">

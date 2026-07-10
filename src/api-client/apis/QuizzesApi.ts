@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   GenerateForStudentRequest,
+  GenerateMissingResponse,
   GeneratedQuestionSet,
   GeneratedQuestionSetList,
   PatchedQuiz,
@@ -47,6 +48,10 @@ export interface DestroyRequest {
 export interface GenerateForStudentCreateRequest {
   id: number;
   generateForStudentRequest: GenerateForStudentRequest;
+}
+
+export interface GenerateMissingCreateRequest {
+  id: number;
 }
 
 export interface GeneratedSetsListRequest {
@@ -343,6 +348,66 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<GeneratedQuestionSet> {
     const response = await this.generateForStudentCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+   */
+  async generateMissingCreateRaw(
+    requestParameters: GenerateMissingCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GenerateMissingResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateMissingCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/generateMissing/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+   */
+  async generateMissingCreate(
+    requestParameters: GenerateMissingCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GenerateMissingResponse> {
+    const response = await this.generateMissingCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
