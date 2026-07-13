@@ -4,14 +4,19 @@ import { Question, QuestionChoice, QuestionTypeEnum } from '../../../api-client'
 export type LocalChoice = { text: string; isCorrect: boolean };
 
 // Types whose correctness is a single pick (radio) vs. several (checkbox).
-export const SINGLE_CORRECT: QuestionTypeEnum[] = [QuestionTypeEnum.MultipleChoice, QuestionTypeEnum.TrueFalse];
-export const MULTI_CORRECT: QuestionTypeEnum[] = [QuestionTypeEnum.MultipleAnswers];
+const SINGLE_CORRECT: QuestionTypeEnum[] = [QuestionTypeEnum.MultipleChoice, QuestionTypeEnum.TrueFalse];
+const MULTI_CORRECT: QuestionTypeEnum[] = [QuestionTypeEnum.MultipleAnswers];
 // Types whose "choices" are accepted free-text answers (all correct).
-export const ACCEPTED_ANSWERS: QuestionTypeEnum[] = [QuestionTypeEnum.ShortAnswer, QuestionTypeEnum.Numerical];
+const ACCEPTED_ANSWERS: QuestionTypeEnum[] = [QuestionTypeEnum.ShortAnswer, QuestionTypeEnum.Numerical];
 
 export const isSingleCorrect = (t?: QuestionTypeEnum) => !!t && SINGLE_CORRECT.includes(t);
 export const isAcceptedAnswers = (t?: QuestionTypeEnum) => !!t && ACCEPTED_ANSWERS.includes(t);
 export const isCode = (t?: QuestionTypeEnum) => t === QuestionTypeEnum.Code;
+
+/** Essay/code responses are graded by staff, not auto-graded — the UI mirror of the
+ *  backend's quiz_grading.MANUAL_TYPES. */
+export const isManuallyGraded = (t?: string) =>
+  t === QuestionTypeEnum.Essay || t === QuestionTypeEnum.Code;
 
 /** Whether a type uses the choices/accepted-answers editor at all (essay & code don't). */
 export const hasChoiceEditor = (t?: QuestionTypeEnum) =>

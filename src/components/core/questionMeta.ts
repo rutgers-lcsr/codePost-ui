@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { QuestionTypeEnum } from '../../../api-client';
+import { QuestionTypeEnum } from '../../api-client';
 
 /** Display label + tag color for each question type. */
 export const TYPE_META: Record<string, { label: string; color: string }> = {
@@ -13,6 +13,16 @@ export const TYPE_META: Record<string, { label: string; color: string }> = {
 };
 
 export const typeMeta = (t?: string) => TYPE_META[t ?? ''] ?? { label: t ?? 'Unknown', color: 'default' };
+
+/** "8 / 10" — the one way quiz scores render (API sends plain numbers). */
+export const formatScore = (
+  score: number | string | null | undefined,
+  max: number | string | null | undefined,
+): string => `${Number(score ?? 0)} / ${Number(max ?? 0)}`;
+
+/** Sort comparator for anything carrying a sortKey. */
+export const bySortKey = <T extends { sortKey?: number | null }>(a: T, b: T): number =>
+  (a.sortKey ?? 0) - (b.sortKey ?? 0);
 
 /** Map an Environment.language value to a Monaco language id for syntax highlighting. */
 export const monacoLang = (lang?: string | null): string => {

@@ -36,7 +36,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
   const [targetBankId, setTargetBankId] = React.useState<number | undefined>(undefined);
   const [importQuizzes, setImportQuizzes] = React.useState(false);
   const [phase, setPhase] = React.useState<Phase>('idle');
-  const [result, setResult] = React.useState<{ summary: ImportSummary; bankName?: string } | null>(null);
+  const [result, setResult] = React.useState<{ summary: ImportSummary } | null>(null);
   const [errorMsg, setErrorMsg] = React.useState('');
 
   React.useEffect(() => {
@@ -114,7 +114,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
         return;
       }
 
-      setResult({ summary: parseSummary(job.summary), bankName: undefined });
+      setResult({ summary: parseSummary(job.summary) });
       setPhase('done');
       queryClient.invalidateQueries({ queryKey: quizKeys.banks(courseId) });
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });

@@ -9,7 +9,7 @@ import { Course, QuestionTypeEnum } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
 import { useAssignmentSuggestions } from './queries';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 import SuggestionCard from './SuggestionCard';
 
 const { Text } = Typography;

@@ -11,22 +11,25 @@ import {
   Tooltip, Typography, message,
 } from 'antd';
 import { LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
 import {
-  coursesApi, generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi,
+  generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi,
 } from '../../../api-client/clients';
 import {
   GeneratedQuestionSetList, GeneratedQuizQuestion, Quiz, QuestionTypeEnum,
 } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
+import { useApiAction } from '../../../hooks/useApiAction';
 import { quizKeys } from '../../../lib/queryKeys';
-import { useGeneratedSetDetail, useGeneratedSets } from './queries';
+import { useBackfillPreview, useGeneratedSetDetail, useGeneratedSets } from './queries';
+import { useRosterQuery } from '../hooks/useRosterQuery';
 import ChoicesEditor from './ChoicesEditor';
 import CodeQuestionEditor from './CodeQuestionEditor';
 import { LocalChoice, hasChoiceEditor, validateChoices } from './choiceUtils';
 import MarkdownField from './MarkdownField';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 
 const { Text } = Typography;
 
@@ -37,9 +40,6 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   approved: { label: 'Published', color: 'green' },
   failed: { label: 'Failed', color: 'red' },
 };
-
-const parseErr = (e: unknown): string | undefined => (e as { body?: { detail?: string; error?: string } })?.body?.detail
-  ?? (e as { body?: { error?: string } })?.body?.error;
 
 interface IProps {
   open: boolean;
@@ -98,7 +98,7 @@ const GeneratedQuestionCard: React.FC<{
       message.success('Question saved.');
       onChanged();
     } catch (e) {
-      message.error(parseErr(e) ?? 'Failed to save the question.');
+      message.error(apiErrorMessage(e) ?? 'Failed to save the question.');
     } finally {
       setSaving(false);
     }
@@ -116,7 +116,7 @@ const GeneratedQuestionCard: React.FC<{
           message.success('Question removed.');
           onChanged();
         } catch (e) {
-          message.error(parseErr(e) ?? 'Failed to remove the question.');
+          message.error(apiErrorMessage(e) ?? 'Failed to remove the question.');
         }
       },
     });
@@ -173,60 +173,39 @@ const GeneratedQuestionCard: React.FC<{
 const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId }) => {
   const queryClient = useQueryClient();
   const [currentId, setCurrentId] = React.useState<number | null>(null);
-  const [acting, setActing] = React.useState(false);
 
   const { data: sets = [], isLoading, error } = useGeneratedSets(open ? quiz.id : undefined);
+  // Students with a submission but no set — shown on the Generate-missing button.
+  const { data: backfillPreview } = useBackfillPreview(quiz.id, open);
+  const missingCount = backfillPreview?.missing ?? 0;
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
   // Roster emails feed the generate-for-student picker; if the viewer can't read the
   // roster (403) the field simply falls back to free typing.
-  const { data: roster } = useQuery({
-    queryKey: ['quizzes', 'roster', courseId],
-    queryFn: () => coursesApi.rosterRetrieve({ id: courseId }),
-    enabled: open,
-    retry: false,
-  });
+  const { data: roster } = useRosterQuery(open ? courseId : undefined);
   const [genEmail, setGenEmail] = React.useState('');
 
   React.useEffect(() => {
     if (!open) setCurrentId(null);
   }, [open]);
 
-  const generateFor = async (email: string) => {
-    setActing(true);
-    try {
+  const generateFor = (email: string) =>
+    act(async () => {
       await quizzesApi.generateForStudentCreate({
         id: quiz.id!,
         generateForStudentRequest: { student: email },
       });
-      message.success(`Generating questions for ${email}…`);
       setGenEmail('');
-      queryClient.invalidateQueries({ queryKey: quizKeys.generatedSets(quiz.id!) });
-    } catch (e) {
-      message.error(parseErr(e) ?? 'Failed to start generation.');
-    } finally {
-      setActing(false);
-    }
-  };
+    }, `Generating questions for ${email}…`, 'Failed to start generation.');
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: quizKeys.generatedSets(quiz.id!) });
+    queryClient.invalidateQueries({ queryKey: quizKeys.backfillPreview(quiz.id!) });
     if (currentId != null) {
       queryClient.invalidateQueries({ queryKey: quizKeys.generatedSetDetail(currentId) });
     }
   };
 
-  const act = async (fn: () => Promise<unknown>, successMsg: string) => {
-    setActing(true);
-    try {
-      await fn();
-      message.success(successMsg);
-      refresh();
-    } catch (e) {
-      message.error(parseErr(e) ?? 'The action failed.');
-    } finally {
-      setActing(false);
-    }
-  };
+  const { acting, run: act } = useApiAction(refresh);
 
   const approve = (id: number) =>
     act(() => generatedQuestionSetsApi.approveCreate({ id }), 'Approved — the quiz is now open for this student.');
@@ -362,8 +341,13 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
             Generate
           </CPButton>
           <Tooltip title="Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).">
-            <CPButton loading={acting} onClick={generateMissing} data-testid="generate-missing">
-              Generate missing
+            <CPButton
+              loading={acting}
+              disabled={missingCount === 0}
+              onClick={generateMissing}
+              data-testid="generate-missing"
+            >
+              Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
             </CPButton>
           </Tooltip>
         </Space>

@@ -6,7 +6,7 @@ import { quizQuestionsApi } from '../../../api-client/clients';
 import { Question } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useCourseQuestions, useQuestionBanks } from './queries';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 
 const { Text } = Typography;
 

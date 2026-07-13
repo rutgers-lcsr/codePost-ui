@@ -1,15 +1,7 @@
 /* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software. */
 
-/* Rendered Markdown (display) spacing. */
-.cp-markdown > *:last-child {
-  margin-bottom: 0;
-}
-.cp-markdown p {
-  margin: 0 0 0.5em;
-}
-.cp-markdown--compact p {
-  margin: 0;
-}
+/* (.cp-markdown display rules live in core/Markdown.css, imported by the Markdown
+   component itself so it renders styled wherever it's used.) */
 
 /* Rich (TipTap) editor styled to look like an antd input box. */
 .cp-rich-editor {

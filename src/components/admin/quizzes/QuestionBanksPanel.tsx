@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { questionBanksApi } from '../../../api-client/clients';
 import { QuestionBank } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useQuestionBanks } from './queries';
 import MarkdownField from './MarkdownField';
@@ -66,8 +67,7 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
       setModalOpen(false);
       invalidate();
     } catch (err) {
-      const e = err as { body?: { name?: string[]; detail?: string } };
-      message.error(e?.body?.name?.[0] ?? e?.body?.detail ?? 'Failed to save question bank.');
+      message.error(apiErrorMessage(err, 'name') ?? 'Failed to save question bank.');
     } finally {
       setSaving(false);
     }

@@ -29,10 +29,16 @@ export const quizKeys = {
   detail: (quizId: number) => ['quizzes', 'detail', quizId] as const,
   suggestions: (assignmentId: number) => ['quizzes', 'suggestions', assignmentId] as const,
   regeneration: (questionId: number) => ['quizzes', 'regeneration', questionId] as const,
-  attempts: (quizId: number) => ['quizzes', 'attempts', quizId] as const,
+  // The needsGrading variant is part of the key; invalidating the bare prefix
+  // (`quizKeys.attempts(id)`) still matches both variants.
+  attempts: (quizId: number, needsGrading?: boolean) =>
+    needsGrading === undefined
+      ? (['quizzes', 'attempts', quizId] as const)
+      : (['quizzes', 'attempts', quizId, needsGrading] as const),
   results: (quizId: number) => ['quizzes', 'results', quizId] as const,
   promptVariables: (quizId: number) => ['quizzes', 'promptVariables', quizId] as const,
   generatedSets: (quizId: number) => ['quizzes', 'generatedSets', quizId] as const,
+  backfillPreview: (quizId: number) => ['quizzes', 'backfillPreview', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,
   aiGenerationEnabled: (courseId: number) => ['quizzes', 'aiGenerationEnabled', courseId] as const,
 };

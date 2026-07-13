@@ -6,9 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { suggestedQuizQuestionsApi } from '../../../api-client/clients';
 import { SuggestedQuizQuestion, QuestionTypeEnum } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 import AnswerPreview from './AnswerPreview';
-import Markdown from './Markdown';
+import Markdown from '../../core/Markdown';
 
 const { Text } = Typography;
 

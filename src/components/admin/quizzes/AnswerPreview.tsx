@@ -6,7 +6,7 @@ import { isSingleCorrect, isAcceptedAnswers, isCode } from './choiceUtils';
 
 const { Text } = Typography;
 
-export interface PreviewChoice {
+interface PreviewChoice {
   text: string;
   isCorrect: boolean;
 }

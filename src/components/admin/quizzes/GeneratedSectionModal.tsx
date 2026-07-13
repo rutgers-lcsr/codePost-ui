@@ -1,13 +1,14 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Form, Input, InputNumber, Modal, Select, Typography, message } from 'antd';
+import { Alert, Form, Input, InputNumber, Modal, Select, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import { quizGeneratedSectionsApi } from '../../../api-client/clients';
 import { QuizGeneratedSection } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import TemplateTextArea from '../../core/TemplateTextArea';
-import { usePromptVariables } from './queries';
-import { TYPE_META } from './questionMeta';
+import { useBackfillPreview, usePromptVariables } from './queries';
+import { TYPE_META } from '../../core/questionMeta';
 
 const { Text } = Typography;
 
@@ -43,6 +44,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
   const { data: variables = [] } = usePromptVariables(open ? quizId : undefined);
   const [form] = Form.useForm<ISectionForm>();
   const [saving, setSaving] = React.useState(false);
+
+  // Saving a NEW section backfills students who already submitted — make that visible
+  // (and its AI cost) before the instructor commits.
+  const { data: backfillPreview } = useBackfillPreview(quizId, open && !section);
+  const backfillCount = !section ? (backfillPreview?.wouldGenerate ?? 0) : 0;
 
   React.useEffect(() => {
     if (!open) return;
@@ -92,13 +98,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
     } catch (err) {
       // Surface the server's prompt-validation messages (unknown {variable}, bad file
       // argument, ...) inline under the prompt field.
-      const e = err as {
-        body?: { systemPrompt?: string[]; detail?: string; nonFieldErrors?: string[] };
-      };
-      if (e?.body?.systemPrompt?.length) {
-        form.setFields([{ name: 'systemPrompt', errors: e.body.systemPrompt }]);
+      const promptErrors = (err as { body?: { systemPrompt?: string[] } })?.body?.systemPrompt;
+      if (promptErrors?.length) {
+        form.setFields([{ name: 'systemPrompt', errors: promptErrors }]);
       } else {
-        message.error(e?.body?.nonFieldErrors?.[0] ?? e?.body?.detail ?? 'Failed to save the section.');
+        message.error(apiErrorMessage(err) ?? 'Failed to save the section.');
       }
     } finally {
       setSaving(false);
@@ -111,7 +115,13 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
       open={open}
       onCancel={onClose}
       onOk={handleSave}
-      okText={section ? 'Save' : 'Add'}
+      okText={
+        section
+          ? 'Save'
+          : backfillCount > 0
+            ? `Add & generate for ${backfillCount} student${backfillCount === 1 ? '' : 's'}`
+            : 'Add'
+      }
       confirmLoading={saving}
       destroyOnHidden
       width={640}
@@ -123,6 +133,16 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
         student's submission, or their test results. You review and approve each student's
         questions before their quiz opens (unless auto-publish is on).
       </Text>
+      {backfillCount > 0 && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginTop: 12 }}
+          title={`${backfillCount} student${backfillCount === 1 ? ' has' : 's have'} already submitted — saving this
+            section queues question generation for them right away (one AI call per student group).`}
+          data-testid="backfill-notice"
+        />
+      )}
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)">
           <Input placeholder="e.g., About your solution" maxLength={128} />

@@ -6,8 +6,9 @@ import {
 import { quizKeys } from '../../../lib/queryKeys';
 import { getCourseAISettings } from '../../../utils/aiService';
 import {
-  GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
-  QuestionBank, Question, Quiz, QuizQuestion, SuggestedQuizQuestion,
+  BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
+  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, StaffQuizAttempt,
+  SuggestedQuizQuestion,
 } from '../../../api-client';
 
 /** A course's question banks. List endpoints are blocked, so we fetch via the
@@ -88,6 +89,40 @@ export const usePromptVariables = (quizId: number | undefined) =>
     queryKey: quizKeys.promptVariables(quizId ?? -1),
     queryFn: (): Promise<PromptVariable[]> => quizzesApi.promptVariablesList({ id: quizId! }),
     enabled: !!quizId,
+  });
+
+/** A quiz's submitted attempts for grading (`quizzes/{id}/attempts/`), optionally only
+ *  those awaiting manual grading. Quiz graders / admins only — a 403 (plain staff
+ *  peeking, e.g. the builder's count badge) is surfaced as an error, never retried. */
+export const useQuizAttempts = (
+  quizId: number | undefined,
+  { needsGrading = false, enabled = true }: { needsGrading?: boolean; enabled?: boolean } = {},
+) =>
+  useQuery({
+    queryKey: quizKeys.attempts(quizId ?? -1, needsGrading),
+    queryFn: (): Promise<StaffQuizAttempt[]> =>
+      quizzesApi.attemptsList({ id: quizId!, needsGrading: needsGrading || undefined }),
+    enabled: enabled && !!quizId,
+    retry: false,
+  });
+
+/** Per-student official results (`quizzes/{id}/results/`). */
+export const useQuizResults = (quizId: number | undefined, enabled = true) =>
+  useQuery({
+    queryKey: quizKeys.results(quizId ?? -1),
+    queryFn: (): Promise<QuizResultRow[]> => quizzesApi.resultsList({ id: quizId! }),
+    enabled: enabled && !!quizId,
+    retry: false,
+  });
+
+/** How many students a generation backfill would touch (`quizzes/{id}/backfillPreview/`). */
+export const useBackfillPreview = (quizId: number | undefined, enabled = true) =>
+  useQuery({
+    queryKey: quizKeys.backfillPreview(quizId ?? -1),
+    queryFn: (): Promise<BackfillPreviewResponse> =>
+      quizzesApi.backfillPreviewRetrieve({ id: quizId! }),
+    enabled: enabled && !!quizId,
+    retry: false,
   });
 
 /** Per-student generated question sets on a quiz (`quizzes/{id}/generatedSets/`).

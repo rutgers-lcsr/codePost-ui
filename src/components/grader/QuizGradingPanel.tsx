@@ -28,7 +28,7 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
   // refreshes the row counts.
   const pendingQueries = useQueries({
     queries: published.map((q) => ({
-      queryKey: [...quizKeys.attempts(q.id ?? -1), true],
+      queryKey: quizKeys.attempts(q.id ?? -1, true),
       queryFn: () => quizzesApi.attemptsList({ id: q.id!, needsGrading: true }),
       enabled: !!q.id,
       retry: false,

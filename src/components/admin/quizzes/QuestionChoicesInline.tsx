@@ -4,9 +4,10 @@ import { Button, Divider, Flex, Input, Space, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import ChoicesEditor from './ChoicesEditor';
-import Markdown from './Markdown';
+import Markdown from '../../core/Markdown';
 import { LocalChoice, choicesPayload, hasChoiceEditor, toLocalChoices, validateChoices } from './choiceUtils';
 
 const { Text } = Typography;
@@ -49,8 +50,7 @@ const QuestionChoicesInline: React.FC<IProps> = ({ question, courseId, bankId })
       queryClient.invalidateQueries({ queryKey: quizKeys.bankQuestions(bankId) });
       queryClient.invalidateQueries({ queryKey: quizKeys.courseQuestions(courseId) });
     } catch (err) {
-      const e = err as { body?: { detail?: string } };
-      message.error(e?.body?.detail ?? 'Failed to update answers.');
+      message.error(apiErrorMessage(err) ?? 'Failed to update answers.');
     } finally {
       setSaving(false);
     }

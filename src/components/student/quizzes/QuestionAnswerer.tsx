@@ -4,8 +4,8 @@ import { Alert, Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } fro
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
 import { StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
-import Markdown from '../../admin/quizzes/Markdown';
-import { typeMeta, monacoLang } from '../../admin/quizzes/questionMeta';
+import Markdown from '../../core/Markdown';
+import { typeMeta, monacoLang } from '../../core/questionMeta';
 
 const { Text } = Typography;
 

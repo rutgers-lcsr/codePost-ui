@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { quizzesApi } from '../../../api-client/clients';
 import { Quiz } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useCourseQuizzes } from './queries';
 import MarkdownField from './MarkdownField';
@@ -51,8 +52,7 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
       invalidate();
       onSelect(created);
     } catch (err) {
-      const e = err as { body?: { title?: string[]; detail?: string } };
-      message.error(e?.body?.title?.[0] ?? e?.body?.detail ?? 'Failed to create quiz.');
+      message.error(apiErrorMessage(err, 'title') ?? 'Failed to create quiz.');
     } finally {
       setSaving(false);
     }

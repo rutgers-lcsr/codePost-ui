@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Alert, Drawer, Flex, Space, Switch, Tag, Typography } from 'antd';
 import { Question, Quiz, StudentQuizResponse } from '../../../api-client';
-import Markdown from './Markdown';
+import Markdown from '../../core/Markdown';
 import { AnswerValue, initialAnswer } from '../../student/quizzes/QuestionAnswerer';
 import QuizQuestions from '../../student/quizzes/QuizQuestions';
 

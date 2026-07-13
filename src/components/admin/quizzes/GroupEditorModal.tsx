@@ -4,6 +4,7 @@ import { Form, InputNumber, Input, Modal, Select, Typography, message } from 'an
 import { useQueryClient } from '@tanstack/react-query';
 import { quizQuestionGroupsApi } from '../../../api-client/clients';
 import { QuizQuestionGroup } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useQuestionBanks } from './queries';
 
@@ -78,8 +79,7 @@ const GroupEditorModal: React.FC<IProps> = ({ open, courseId, quizId, group, nex
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
       onClose();
     } catch (err) {
-      const e = err as { body?: { detail?: string; nonFieldErrors?: string[] } };
-      message.error(e?.body?.nonFieldErrors?.[0] ?? e?.body?.detail ?? 'Failed to save the random draw.');
+      message.error(apiErrorMessage(err) ?? 'Failed to save the random draw.');
     } finally {
       setSaving(false);
     }

@@ -4,24 +4,19 @@ import {
   Alert,
   Button,
   Card,
-  DatePicker,
   Dropdown,
   Empty,
   Flex,
-  Input,
   InputNumber,
   Modal,
-  Select,
   Space,
   Spin,
-  Switch,
   Table,
   Tag,
   Tooltip,
   Typography,
   message,
 } from 'antd';
-import dayjs from 'dayjs';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -34,34 +29,24 @@ import {
   RetweetOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
-import { quizzesApi, quizQuestionsApi, quizQuestionGroupsApi, quizGeneratedSectionsApi } from '../../../api-client/clients';
-import {
-  Course,
-  Quiz,
-  QuizGeneratedSection,
-  QuizQuestion,
-  QuizQuestionGroup,
-  QuizAssignmentTriggerEnum,
-  QuizShowAnswersEnum,
-  QuizPassingScoreUnitEnum,
-  QuizCloseEventEnum,
-} from '../../../api-client';
+import { quizQuestionsApi, quizQuestionGroupsApi, quizGeneratedSectionsApi } from '../../../api-client/clients';
+import { Course, Quiz, QuizGeneratedSection, QuizQuestion, QuizQuestionGroup } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
 import {
-  useAIQuizGenerationEnabled, useCourseQuestions, useGeneratedSets, useQuizMembership,
+  useAIQuizGenerationEnabled, useCourseQuestions, useGeneratedSets, useQuizAttempts, useQuizMembership,
   useQuizDetail, useQuestionBanks,
 } from './queries';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
 import GeneratedSectionModal from './GeneratedSectionModal';
 import GeneratedReviewDrawer from './GeneratedReviewDrawer';
-import MarkdownField from './MarkdownField';
 import QuizPreviewDrawer, { PreviewItem } from './QuizPreviewDrawer';
 import QuizGradingDrawer from './QuizGradingDrawer';
+import QuizSettingsCard, { QuizSettingsDraft } from './QuizSettingsCard';
 
 const { Text } = Typography;
 
@@ -119,74 +104,6 @@ const PointsOverrideInput: React.FC<{
   );
 };
 
-type OffsetUnit = 'minutes' | 'hours' | 'days';
-const UNIT_FACTOR: Record<OffsetUnit, number> = { minutes: 1, hours: 60, days: 1440 };
-// Show a stored minute count in the largest whole unit that divides it.
-const splitOffset = (min: number): { value: number; unit: OffsetUnit } => {
-  if (min > 0 && min % 1440 === 0) return { value: min / 1440, unit: 'days' };
-  if (min > 0 && min % 60 === 0) return { value: min / 60, unit: 'hours' };
-  return { value: min, unit: 'minutes' };
-};
-
-const TRIGGER_HELP: Record<string, string> = {
-  [QuizAssignmentTriggerEnum.During]: 'Opens while the assignment is accepting submissions.',
-  [QuizAssignmentTriggerEnum.AfterAssignment]: "Opens once the assignment's deadline passes.",
-  [QuizAssignmentTriggerEnum.AfterSubmission]: 'Opens for each student once they submit the assignment.',
-  [QuizAssignmentTriggerEnum.AfterFeedback]: 'Opens once grades/feedback are released for the whole assignment.',
-  [QuizAssignmentTriggerEnum.AfterStudentFeedback]:
-    "Opens for each student once their own feedback is available — under live feedback mode this unlocks per student as each submission is graded (self-paced).",
-};
-
-// Close events that take a "+ N minutes/hours/days" offset.
-const OFFSET_CLOSE_EVENTS = new Set<string>([
-  QuizCloseEventEnum.AssignmentDue,
-  QuizCloseEventEnum.Submission,
-  QuizCloseEventEnum.FeedbackReleased,
-]);
-
-const CLOSE_LABELS: Record<string, string> = {
-  [QuizCloseEventEnum.None]: 'No automatic close',
-  [QuizCloseEventEnum.AssignmentDue]: "At the assignment's deadline",
-  [QuizCloseEventEnum.Submission]: 'After the student submits',
-  [QuizCloseEventEnum.FeedbackReleased]: 'When feedback is released',
-  [QuizCloseEventEnum.FixedDate]: 'At a fixed date & time',
-};
-
-// Which close events make sense for each open trigger (a fixed date is always allowed).
-const CLOSE_OPTIONS_BY_TRIGGER: Record<string, QuizCloseEventEnum[]> = {
-  [QuizAssignmentTriggerEnum.During]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.FixedDate,
-  ],
-  [QuizAssignmentTriggerEnum.AfterAssignment]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.FixedDate,
-  ],
-  [QuizAssignmentTriggerEnum.AfterSubmission]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.Submission, QuizCloseEventEnum.FixedDate,
-  ],
-  [QuizAssignmentTriggerEnum.AfterFeedback]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
-  ],
-};
-
-// The close event pre-selected when switching to a trigger (submission-based is the natural
-// default when a quiz opens on submission).
-const DEFAULT_CLOSE_BY_TRIGGER: Record<string, QuizCloseEventEnum> = {
-  [QuizAssignmentTriggerEnum.During]: QuizCloseEventEnum.None,
-  [QuizAssignmentTriggerEnum.AfterAssignment]: QuizCloseEventEnum.None,
-  [QuizAssignmentTriggerEnum.AfterSubmission]: QuizCloseEventEnum.Submission,
-  [QuizAssignmentTriggerEnum.AfterFeedback]: QuizCloseEventEnum.None,
-};
-
-// A close whose anchor is the same moment the quiz opens — needs a positive offset or it
-// would close instantly.
-const isDegenerateClose = (trigger: string, event: string): boolean =>
-  (trigger === QuizAssignmentTriggerEnum.AfterSubmission && event === QuizCloseEventEnum.Submission) ||
-  (trigger === QuizAssignmentTriggerEnum.AfterFeedback && event === QuizCloseEventEnum.FeedbackReleased) ||
-  (trigger === QuizAssignmentTriggerEnum.AfterAssignment && event === QuizCloseEventEnum.AssignmentDue);
-
-const closeOptionsFor = (trigger: string): QuizCloseEventEnum[] =>
-  CLOSE_OPTIONS_BY_TRIGGER[trigger] ?? [QuizCloseEventEnum.None, QuizCloseEventEnum.FixedDate];
-
 const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const queryClient = useQueryClient();
   const { data: liveQuiz } = useQuizDetail(quiz.id);
@@ -208,168 +125,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const [reviewOpen, setReviewOpen] = React.useState(false);
   const [editingSection, setEditingSection] = React.useState<QuizGeneratedSection | null>(null);
 
-  // --- Quiz settings (title / description / attached assignment) ---
-  const [title, setTitle] = React.useState(current.title);
-  const [description, setDescription] = React.useState(current.description ?? '');
-  const [assignmentId, setAssignmentId] = React.useState<number | undefined>(current.assignment ?? undefined);
-  const [savingSettings, setSavingSettings] = React.useState(false);
-  // --- Availability + standard options ---
-  const TRIGGER_DEFAULT = QuizAssignmentTriggerEnum.During;
-  const SHOW_DEFAULT = QuizShowAnswersEnum.AfterSubmit;
-  const [assignmentTrigger, setAssignmentTrigger] = React.useState(current.assignmentTrigger || TRIGGER_DEFAULT);
-  const [availableFrom, setAvailableFrom] = React.useState<string | null>(current.availableFrom ?? null);
-  const [availableUntil, setAvailableUntil] = React.useState<string | null>(current.availableUntil ?? null);
-  // Attached-quiz close controls.
-  const CLOSE_DEFAULT = QuizCloseEventEnum.None;
-  const [closeEvent, setCloseEvent] = React.useState(current.closeEvent || CLOSE_DEFAULT);
-  const [offsetValue, setOffsetValue] = React.useState<number>(splitOffset(current.closeOffsetMinutes ?? 0).value);
-  const [offsetUnit, setOffsetUnit] = React.useState<OffsetUnit>(splitOffset(current.closeOffsetMinutes ?? 0).unit);
-  const [endAttemptsAtClose, setEndAttemptsAtClose] = React.useState<boolean>(current.endAttemptsAtClose ?? false);
-  const closeOffsetMinutes = offsetValue * UNIT_FACTOR[offsetUnit];
-
-  // A degenerate close (anchor == open moment) needs a positive offset, so seed one.
-  const ensureCloseOffset = (trigger: string, event: string) => {
-    if (isDegenerateClose(trigger, event) && closeOffsetMinutes === 0) {
-      setOffsetValue(1);
-      setOffsetUnit('days');
-    }
-  };
-  const handleTriggerChange = (t: QuizAssignmentTriggerEnum) => {
-    setAssignmentTrigger(t);
-    const allowed = closeOptionsFor(t);
-    const next = allowed.includes(closeEvent) ? closeEvent : DEFAULT_CLOSE_BY_TRIGGER[t] ?? QuizCloseEventEnum.None;
-    setCloseEvent(next);
-    ensureCloseOffset(t, next);
-  };
-  const handleCloseEventChange = (e: QuizCloseEventEnum) => {
-    setCloseEvent(e);
-    ensureCloseOffset(assignmentTrigger, e);
-  };
-  const [timeLimitMinutes, setTimeLimitMinutes] = React.useState<number | null>(current.timeLimitMinutes ?? null);
-  const [attemptsAllowed, setAttemptsAllowed] = React.useState<number>(current.attemptsAllowed ?? 1);
-  const [shuffleQuestions, setShuffleQuestions] = React.useState<boolean>(current.shuffleQuestions ?? false);
-  const [oneQuestionAtATime, setOneQuestionAtATime] = React.useState<boolean>(current.oneQuestionAtATime ?? false);
-  const [allowBacktracking, setAllowBacktracking] = React.useState<boolean>(current.allowBacktracking ?? true);
-  const [showCorrectAnswers, setShowCorrectAnswers] = React.useState(current.showCorrectAnswers || SHOW_DEFAULT);
-  const [passingScore, setPassingScore] = React.useState<number | null>(current.passingScore ?? null);
-  const UNIT_DEFAULT = QuizPassingScoreUnitEnum.Percent;
-  const [passingScoreUnit, setPassingScoreUnit] = React.useState(current.passingScoreUnit || UNIT_DEFAULT);
-  const [isPublished, setIsPublished] = React.useState<boolean>(current.isPublished ?? false);
-  // Per-student generated questions.
-  const [gradersCanReviewGenerated, setGradersCanReviewGenerated] =
-    React.useState<boolean>(current.gradersCanReviewGenerated ?? false);
-  const [autoPublishGenerated, setAutoPublishGenerated] =
-    React.useState<boolean>(current.autoPublishGenerated ?? false);
-
-  // Reset all settings state when switching quizzes. (Keyed on id so an unrelated
-  // detail refetch doesn't clobber in-progress edits.)
-  React.useEffect(() => {
-    setTitle(current.title);
-    setDescription(current.description ?? '');
-    setAssignmentId(current.assignment ?? undefined);
-    setAssignmentTrigger(current.assignmentTrigger || TRIGGER_DEFAULT);
-    setAvailableFrom(current.availableFrom ?? null);
-    setAvailableUntil(current.availableUntil ?? null);
-    setCloseEvent(current.closeEvent || CLOSE_DEFAULT);
-    setOffsetValue(splitOffset(current.closeOffsetMinutes ?? 0).value);
-    setOffsetUnit(splitOffset(current.closeOffsetMinutes ?? 0).unit);
-    setEndAttemptsAtClose(current.endAttemptsAtClose ?? false);
-    setTimeLimitMinutes(current.timeLimitMinutes ?? null);
-    setAttemptsAllowed(current.attemptsAllowed ?? 1);
-    setShuffleQuestions(current.shuffleQuestions ?? false);
-    setOneQuestionAtATime(current.oneQuestionAtATime ?? false);
-    setAllowBacktracking(current.allowBacktracking ?? true);
-    setShowCorrectAnswers(current.showCorrectAnswers || SHOW_DEFAULT);
-    setPassingScore(current.passingScore ?? null);
-    setPassingScoreUnit(current.passingScoreUnit || UNIT_DEFAULT);
-    setIsPublished(current.isPublished ?? false);
-    setGradersCanReviewGenerated(current.gradersCanReviewGenerated ?? false);
-    setAutoPublishGenerated(current.autoPublishGenerated ?? false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current.id]);
-
-  const settingsDirty =
-    title !== current.title ||
-    (description ?? '') !== (current.description ?? '') ||
-    (assignmentId ?? null) !== (current.assignment ?? null) ||
-    assignmentTrigger !== (current.assignmentTrigger || TRIGGER_DEFAULT) ||
-    (availableFrom ?? null) !== (current.availableFrom ?? null) ||
-    (availableUntil ?? null) !== (current.availableUntil ?? null) ||
-    closeEvent !== (current.closeEvent || CLOSE_DEFAULT) ||
-    closeOffsetMinutes !== (current.closeOffsetMinutes ?? 0) ||
-    endAttemptsAtClose !== (current.endAttemptsAtClose ?? false) ||
-    (timeLimitMinutes ?? null) !== (current.timeLimitMinutes ?? null) ||
-    attemptsAllowed !== (current.attemptsAllowed ?? 1) ||
-    shuffleQuestions !== (current.shuffleQuestions ?? false) ||
-    oneQuestionAtATime !== (current.oneQuestionAtATime ?? false) ||
-    allowBacktracking !== (current.allowBacktracking ?? true) ||
-    showCorrectAnswers !== (current.showCorrectAnswers || SHOW_DEFAULT) ||
-    (passingScore ?? null) !== (current.passingScore ?? null) ||
-    passingScoreUnit !== (current.passingScoreUnit || UNIT_DEFAULT) ||
-    isPublished !== (current.isPublished ?? false) ||
-    gradersCanReviewGenerated !== (current.gradersCanReviewGenerated ?? false) ||
-    autoPublishGenerated !== (current.autoPublishGenerated ?? false);
-
-  const handleSaveSettings = async (overrides?: { isPublished?: boolean }) => {
-    if (!title.trim()) {
-      message.warning('A quiz needs a title.');
-      return;
-    }
-    setSavingSettings(true);
-    try {
-      await quizzesApi.partialUpdate({
-        id: quiz.id!,
-        patchedQuiz: {
-          title: title.trim(),
-          description,
-          assignment: assignmentId ?? null,
-          assignmentTrigger,
-          availableFrom,
-          availableUntil,
-          closeEvent,
-          closeOffsetMinutes,
-          endAttemptsAtClose,
-          timeLimitMinutes,
-          attemptsAllowed,
-          shuffleQuestions,
-          oneQuestionAtATime,
-          allowBacktracking,
-          showCorrectAnswers,
-          passingScore,
-          passingScoreUnit,
-          isPublished: overrides?.isPublished ?? isPublished,
-          gradersCanReviewGenerated,
-          autoPublishGenerated,
-        },
-      });
-      message.success('Quiz settings saved.');
-      queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
-      queryClient.invalidateQueries({ queryKey: quizKeys.list(course.id!) });
-    } catch (err) {
-      const e = err as { body?: { title?: string[]; detail?: string } };
-      message.error(e?.body?.title?.[0] ?? e?.body?.detail ?? 'Failed to save quiz settings.');
-    } finally {
-      setSavingSettings(false);
-    }
-  };
-
-  // Publishing makes the quiz visible to students, so nudge the author to save any
-  // pending edits first (otherwise students would see a stale version).
-  const handlePublishToggle = (checked: boolean) => {
-    if (checked && settingsDirty) {
-      Modal.confirm({
-        title: 'Save changes and publish?',
-        content: 'This quiz has unsaved changes. Save them now so students see the latest version.',
-        okText: 'Save & publish',
-        cancelText: 'Not now',
-        onOk: async () => {
-          setIsPublished(true);
-          await handleSaveSettings({ isPublished: true });
-        },
-      });
-    }
-    setIsPublished(checked);
-  };
+  // --- Quiz settings draft (sparse; QuizSettingsCard owns normalization/dirty/save) ---
+  const [settingsDraft, setSettingsDraft] = React.useState<QuizSettingsDraft>({});
+  // Reset when switching quizzes. (Keyed on id so an unrelated detail refetch doesn't
+  // clobber in-progress edits.)
+  React.useEffect(() => setSettingsDraft({}), [current.id]);
+  const patchSettings = React.useCallback((p: QuizSettingsDraft) => setSettingsDraft((d) => ({ ...d, ...p })), []);
+  // The Add menu's AI item gates on the draft attachment (matches the settings card).
+  const draftAssignment = settingsDraft.assignment !== undefined ? settingsDraft.assignment : current.assignment ?? null;
 
   // --- Question membership ---
   const questionsById = React.useMemo(() => new Map(questions.map((q) => [q.id, q])), [questions]);
@@ -470,12 +233,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const readyCount = generatedSets.filter((s) => s.status === 'ready').length;
   // Needs-grading badge; shares the grading drawer's query key so grading refreshes it.
   // Quiz graders / admins only — a 403 for plain staff simply hides the count.
-  const { data: pendingAttempts = [] } = useQuery({
-    queryKey: [...quizKeys.attempts(quiz.id ?? -1), true],
-    queryFn: () => quizzesApi.attemptsList({ id: quiz.id!, needsGrading: true }),
-    enabled: !!quiz.id,
-    retry: false,
-  });
+  const { data: pendingAttempts = [] } = useQuizAttempts(quiz.id, { needsGrading: true });
   const needsGradingCount = pendingAttempts.length;
   // The authoring surface only shows when the course's AI feature is on; existing
   // sections stay manageable (with a warning) so they can be cleaned up after a
@@ -699,305 +457,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
 
   return (
     <>
-      {/* Quiz settings */}
-      <Card
-        title={
-          <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
-            Quiz Settings
-          </Typography.Title>
-        }
-        extra={
-          <Space size="middle">
-            <Space size={6}>
-              <Switch checked={isPublished} onChange={handlePublishToggle} />
-              <Text type={isPublished ? undefined : 'secondary'}>{isPublished ? 'Published' : 'Draft'}</Text>
-            </Space>
-            <CPButton
-              cpType="primary"
-              onClick={() => handleSaveSettings()}
-              disabled={!settingsDirty}
-              loading={savingSettings}
-            >
-              Save
-            </CPButton>
-          </Space>
-        }
-        style={{ marginBottom: 16 }}
-      >
-        <Flex vertical gap={12}>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Title
-            </Text>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={128} />
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Attached assignment
-            </Text>
-            <Select
-              allowClear
-              placeholder="Not attached - Attach to an assignment to control availability"
-              style={{ minWidth: 280 }}
-              value={assignmentId}
-              onChange={(v) => setAssignmentId(v)}
-              options={assignmentOptions}
-            />
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Availability
-            </Text>
-            {assignmentId ? (
-              <Flex vertical gap={12}>
-                <div>
-                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                    Opens
-                  </Text>
-                  <Select
-                    style={{ minWidth: 280 }}
-                    value={assignmentTrigger}
-                    onChange={handleTriggerChange}
-                    options={[
-                      { value: QuizAssignmentTriggerEnum.During, label: 'During the assignment' },
-                      { value: QuizAssignmentTriggerEnum.AfterAssignment, label: 'After the assignment closes' },
-                      { value: QuizAssignmentTriggerEnum.AfterSubmission, label: 'After the student submits' },
-                      { value: QuizAssignmentTriggerEnum.AfterFeedback, label: 'After feedback is released' },
-                      {
-                        value: QuizAssignmentTriggerEnum.AfterStudentFeedback,
-                        label: "After each student's feedback (self-paced)",
-                      },
-                    ]}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
-                    {TRIGGER_HELP[assignmentTrigger]}
-                  </Text>
-                </div>
-                <div>
-                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                    Closes
-                  </Text>
-                  <Flex gap={8} wrap align="center">
-                    <Select
-                      style={{ minWidth: 260 }}
-                      value={closeEvent}
-                      onChange={handleCloseEventChange}
-                      options={closeOptionsFor(assignmentTrigger).map((v) => ({ value: v, label: CLOSE_LABELS[v] }))}
-                    />
-                    {OFFSET_CLOSE_EVENTS.has(closeEvent) && (
-                      <>
-                        <Text type="secondary">+</Text>
-                        <InputNumber
-                          min={0}
-                          style={{ width: 80 }}
-                          value={offsetValue}
-                          onChange={(v) => setOffsetValue(v ?? 0)}
-                        />
-                        <Select
-                          style={{ width: 110 }}
-                          value={offsetUnit}
-                          onChange={(v) => setOffsetUnit(v as OffsetUnit)}
-                          options={[
-                            { value: 'minutes', label: 'minutes' },
-                            { value: 'hours', label: 'hours' },
-                            { value: 'days', label: 'days' },
-                          ]}
-                        />
-                      </>
-                    )}
-                    {closeEvent === QuizCloseEventEnum.FixedDate && (
-                      <DatePicker
-                        showTime
-                        placeholder="Closes at"
-                        value={availableUntil ? dayjs(availableUntil) : null}
-                        onChange={(d) => setAvailableUntil(d ? d.toISOString() : null)}
-                      />
-                    )}
-                  </Flex>
-                  {closeEvent === QuizCloseEventEnum.Submission && (
-                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 6 }}>
-                      Each student&apos;s window starts when they submit the assignment.
-                    </Text>
-                  )}
-                  {closeEvent !== QuizCloseEventEnum.None && (
-                    <Space style={{ marginTop: 8 }}>
-                      <Switch size="small" checked={endAttemptsAtClose} onChange={setEndAttemptsAtClose} />
-                      <Text type="secondary">
-                        End in-progress attempts at the close time (students see the time remaining)
-                      </Text>
-                    </Space>
-                  )}
-                </div>
-              </Flex>
-            ) : (
-              <div>
-                <Flex gap={8} wrap>
-                  <DatePicker
-                    showTime
-                    placeholder="Opens at"
-                    value={availableFrom ? dayjs(availableFrom) : null}
-                    onChange={(d) => {
-                      const iso = d ? d.toISOString() : null;
-                      setAvailableFrom(iso);
-                      // Keep the window valid: drop a close that's no longer after the new open.
-                      if (iso && availableUntil && !dayjs(availableUntil).isAfter(dayjs(iso))) {
-                        setAvailableUntil(null);
-                      }
-                    }}
-                  />
-                  <DatePicker
-                    showTime
-                    placeholder="Closes at"
-                    // Can't close before it opens.
-                    minDate={availableFrom ? dayjs(availableFrom) : undefined}
-                    value={availableUntil ? dayjs(availableUntil) : null}
-                    onChange={(d) => setAvailableUntil(d ? d.toISOString() : null)}
-                  />
-                </Flex>
-                {availableUntil && (
-                  <Space style={{ marginTop: 8 }}>
-                    <Switch size="small" checked={endAttemptsAtClose} onChange={setEndAttemptsAtClose} />
-                    <Text type="secondary">
-                      End in-progress attempts at the close time (students see the time remaining)
-                    </Text>
-                  </Space>
-                )}
-              </div>
-            )}
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Description (Markdown)
-            </Text>
-            <MarkdownField
-              value={description}
-              onChange={setDescription}
-              courseId={course.id!}
-              minRows={3}
-              placeholder="What this quiz covers — supports Markdown and images…"
-            />
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              Appears on the quiz page when the student is taking the quiz. Can be used to provide instructions or
-              context for the quiz.
-            </Text>
-          </div>
-
-          <Flex gap={16} wrap align="end">
-            <div>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                Time limit (min)
-              </Text>
-              <InputNumber
-                min={1}
-                placeholder="Untimed"
-                style={{ width: 130 }}
-                value={timeLimitMinutes ?? undefined}
-                onChange={(v) => setTimeLimitMinutes(v ?? null)}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                Attempts (0 = ∞)
-              </Text>
-              <InputNumber
-                min={0}
-                style={{ width: 110 }}
-                value={attemptsAllowed}
-                onChange={(v) => setAttemptsAllowed(v ?? 1)}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                Show correct answers
-              </Text>
-              <Select
-                style={{ width: 180 }}
-                value={showCorrectAnswers}
-                onChange={setShowCorrectAnswers}
-                options={[
-                  { value: QuizShowAnswersEnum.Never, label: 'Never' },
-                  { value: QuizShowAnswersEnum.AfterSubmit, label: 'After submitting' },
-                  { value: QuizShowAnswersEnum.AfterClose, label: 'After the quiz closes' },
-                ]}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                Passing score
-              </Text>
-              <Space.Compact>
-                <InputNumber
-                  min={0}
-                  max={passingScoreUnit === QuizPassingScoreUnitEnum.Percent ? 100 : undefined}
-                  placeholder="None"
-                  style={{ width: 110 }}
-                  value={passingScore ?? undefined}
-                  onChange={(v) => setPassingScore(v ?? null)}
-                />
-                <Select
-                  style={{ width: 100 }}
-                  value={passingScoreUnit}
-                  onChange={(u) => {
-                    setPassingScoreUnit(u);
-                    // Avoid a guaranteed 400: percent can't exceed 100.
-                    if (u === QuizPassingScoreUnitEnum.Percent && passingScore != null && passingScore > 100) {
-                      setPassingScore(100);
-                    }
-                  }}
-                  options={[
-                    { value: QuizPassingScoreUnitEnum.Percent, label: '%' },
-                    { value: QuizPassingScoreUnitEnum.Points, label: 'points' },
-                  ]}
-                />
-              </Space.Compact>
-            </div>
-          </Flex>
-
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
-              Question delivery
-            </Text>
-            <Flex vertical gap={10}>
-              <Space>
-                <Switch checked={shuffleQuestions} onChange={setShuffleQuestions} />
-                <Text>Shuffle question order</Text>
-              </Space>
-              <Space>
-                <Switch checked={oneQuestionAtATime} onChange={setOneQuestionAtATime} />
-                <Text>One question at a time</Text>
-              </Space>
-              {oneQuestionAtATime && (
-                <Space style={{ marginLeft: 36 }}>
-                  <Switch size="small" checked={allowBacktracking} onChange={setAllowBacktracking} />
-                  <Text type="secondary">Let students go back to previous questions</Text>
-                </Space>
-              )}
-            </Flex>
-          </div>
-          {orderedSections.length > 0 && (
-            <div>
-              <Text strong>AI-generated questions</Text>
-              <Flex vertical gap={10} style={{ marginTop: 8 }}>
-                <Space>
-                  <Switch checked={autoPublishGenerated} onChange={setAutoPublishGenerated} />
-                  <Text>Publish generated questions automatically (skip review)</Text>
-                </Space>
-                <Space>
-                  <Switch checked={gradersCanReviewGenerated} onChange={setGradersCanReviewGenerated} />
-                  <Text>Graders may review and publish generated questions</Text>
-                </Space>
-                {closeEvent === QuizCloseEventEnum.Submission && !autoPublishGenerated && (
-                  <Text type="warning" style={{ fontSize: 13 }}>
-                    This quiz closes relative to each student's submission, but their questions
-                    only open once reviewed — a slow review can eat into (or consume) their
-                    window. Review promptly, extend the close offset, or enable auto-publish.
-                  </Text>
-                )}
-              </Flex>
-            </div>
-          )}
-        </Flex>
-      </Card>
+      <QuizSettingsCard
+        courseId={course.id!}
+        quiz={current}
+        assignmentOptions={assignmentOptions}
+        hasGeneratedSections={orderedSections.length > 0}
+        draft={settingsDraft}
+        onDraftChange={patchSettings}
+      />
 
       {/* Quiz contents: fixed questions + random draws, unified */}
       <Card
@@ -1055,10 +522,10 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                     ? [{
                         key: 'ai',
                         icon: <RobotOutlined />,
-                        label: assignmentId == null
+                        label: draftAssignment == null
                           ? 'AI-generated questions (attach an assignment first)'
                           : 'AI-generated questions…',
-                        disabled: assignmentId == null,
+                        disabled: draftAssignment == null,
                       }]
                     : []),
                 ],

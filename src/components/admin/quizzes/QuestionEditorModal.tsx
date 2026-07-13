@@ -5,6 +5,7 @@ import CodeQuestionEditor from './CodeQuestionEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import ChoicesEditor from './ChoicesEditor';
 import MarkdownField from './MarkdownField';
@@ -159,8 +160,7 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
       queryClient.invalidateQueries({ queryKey: quizKeys.banks(courseId) });
       onClose();
     } catch (err) {
-      const e = err as { body?: { detail?: string; text?: string[] } };
-      message.error(e?.body?.text?.[0] ?? e?.body?.detail ?? 'Failed to save question.');
+      message.error(apiErrorMessage(err, 'text') ?? 'Failed to save question.');
     } finally {
       setSaving(false);
     }

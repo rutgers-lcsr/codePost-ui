@@ -8,7 +8,7 @@ import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useRegenerationSuggestions } from './queries';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 import AnswerPreview from './AnswerPreview';
 import SuggestionCard from './SuggestionCard';
 

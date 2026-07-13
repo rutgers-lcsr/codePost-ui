@@ -17,12 +17,12 @@ import { Course, Question, QuestionBank } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useBankQuestions, useQuestionBanks } from './queries';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
-import { typeMeta } from './questionMeta';
+import { typeMeta } from '../../core/questionMeta';
 import QuestionChoicesInline from './QuestionChoicesInline';
 import QuestionEditorModal from './QuestionEditorModal';
 import BankSuggestModal from './BankSuggestModal';
 import RegenerateQuestionModal from './RegenerateQuestionModal';
-import Markdown from './Markdown';
+import Markdown from '../../core/Markdown';
 
 const { Text } = Typography;
 

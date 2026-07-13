@@ -3,7 +3,7 @@ import * as React from 'react';
 import Editor from '@monaco-editor/react';
 import { useTreeSitter } from '../../../hooks/useTreeSitter';
 import { useSymbolExtraction } from '../../../hooks/useSymbolExtraction';
-import { monacoLang } from './questionMeta';
+import { monacoLang } from '../../core/questionMeta';
 
 interface IProps {
   value: string;
