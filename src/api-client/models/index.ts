@@ -1872,6 +1872,25 @@ export interface AsyncTaskResponse {
 /**
  *
  * @export
+ * @interface BackfillPreviewResponse
+ */
+export interface BackfillPreviewResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof BackfillPreviewResponse
+   */
+  wouldGenerate: number;
+  /**
+   *
+   * @type {number}
+   * @memberof BackfillPreviewResponse
+   */
+  missing: number;
+}
+/**
+ *
+ * @export
  * @interface BankCopyRequest
  */
 export interface BankCopyRequest {

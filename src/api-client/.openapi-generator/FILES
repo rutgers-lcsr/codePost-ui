@@ -105,6 +105,7 @@ docs/AsyncExecutionRequest.md
 docs/AsyncTaskResponse.md
 docs/AuthApi.md
 docs/AutograderApi.md
+docs/BackfillPreviewResponse.md
 docs/BankCopyRequest.md
 docs/BankQuestionsRequest.md
 docs/BatchCapabilitiesRequest.md

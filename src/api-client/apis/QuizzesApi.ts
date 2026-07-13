@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  BackfillPreviewResponse,
   GenerateForStudentRequest,
   GenerateMissingResponse,
   GeneratedQuestionSet,
@@ -32,6 +33,10 @@ import type {
 export interface AttemptsListRequest {
   id: number;
   needsGrading?: boolean;
+}
+
+export interface BackfillPreviewRetrieveRequest {
+  id: number;
 }
 
 export interface CreateRequest {
@@ -163,6 +168,66 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<StaffQuizAttempt>> {
     const response = await this.attemptsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: submitters without any set).
+   */
+  async backfillPreviewRetrieveRaw(
+    requestParameters: BackfillPreviewRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<BackfillPreviewResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling backfillPreviewRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/backfillPreview/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: submitters without any set).
+   */
+  async backfillPreviewRetrieve(
+    requestParameters: BackfillPreviewRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<BackfillPreviewResponse> {
+    const response = await this.backfillPreviewRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

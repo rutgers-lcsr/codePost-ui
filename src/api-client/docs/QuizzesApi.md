@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method                                                                   | HTTP request                                | Description |
 | ------------------------------------------------------------------------ | ------------------------------------------- | ----------- |
 | [**attemptsList**](QuizzesApi.md#attemptslist)                           | **GET** /quizzes/{id}/attempts/             |             |
+| [**backfillPreviewRetrieve**](QuizzesApi.md#backfillpreviewretrieve)     | **GET** /quizzes/{id}/backfillPreview/      |             |
 | [**create**](QuizzesApi.md#create)                                       | **POST** /quizzes/                          |             |
 | [**destroy**](QuizzesApi.md#destroy)                                     | **DELETE** /quizzes/{id}/                   |             |
 | [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)   | **POST** /quizzes/{id}/generateForStudent/  |             |
@@ -76,6 +77,77 @@ example().catch(console.error);
 ### Return type
 
 [**Array&lt;StaffQuizAttempt&gt;**](StaffQuizAttempt.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## backfillPreviewRetrieve
+
+> BackfillPreviewResponse backfillPreviewRetrieve(id)
+
+How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: submitters without any set).
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { BackfillPreviewRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies BackfillPreviewRetrieveRequest;
+
+  try {
+    const data = await api.backfillPreviewRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**BackfillPreviewResponse**](BackfillPreviewResponse.md)
 
 ### Authorization
 
