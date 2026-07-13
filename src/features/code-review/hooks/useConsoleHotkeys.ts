@@ -1,4 +1,4 @@
-// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial Licensed, included with this software.
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useEffect, useRef } from 'react';
 import { CURSOR_DOMAIN, ICodeConsoleState, PANEL_TYPE, PERMISSION_LEVEL } from '../../../types/CodeConsole.types';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
