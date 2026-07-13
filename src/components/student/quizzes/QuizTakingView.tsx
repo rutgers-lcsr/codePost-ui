@@ -1,15 +1,17 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, Flex, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
-import { ClockCircleOutlined, LeftOutlined } from '@ant-design/icons';
+import { Flex, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
+import { ClockCircleOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { studentKeys } from '../../../lib/queryKeys';
-import QuestionAnswerer, { AnswerValue, initialAnswer } from './QuestionAnswerer';
+import { bySortKey } from '../../core/questionMeta';
+import { AnswerValue, initialAnswer } from './QuestionAnswerer';
 import QuizQuestions from './QuizQuestions';
-import { useAvailableQuizzes } from './queries';
+import QuizResults from './QuizResults';
 
 const { Title, Text } = Typography;
 
@@ -22,9 +24,6 @@ interface IProps {
   onExit: () => void;
 }
 
-const parseErr = (e: unknown): string | undefined =>
-  (e as { body?: { detail?: string } })?.body?.detail;
-
 const formatRemaining = (ms: number): string => {
   const total = Math.floor(ms / 1000);
   const m = Math.floor(total / 60);
@@ -32,11 +31,19 @@ const formatRemaining = (ms: number): string => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
+const saveAnswer = (attemptId: number, responseId: number, val: AnswerValue) =>
+  quizAttemptsApi.saveAnswerPartialUpdate({
+    id: attemptId,
+    patchedSaveQuizAnswerRequest: {
+      response: responseId,
+      answerText: val.answerText,
+      selectedChoices: val.selectedChoices,
+    },
+  });
+
 const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewOnly = false, onExit }) => {
   const queryClient = useQueryClient();
   const [attempt, setAttempt] = React.useState<StudentQuizAttempt | null>(null);
-  // The student's submitted attempts (newest first) — the review history strip.
-  const [pastAttempts, setPastAttempts] = React.useState<StudentQuizAttempt[]>([]);
   const [answers, setAnswers] = React.useState<Record<number, AnswerValue>>({});
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -46,7 +53,6 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
 
   const startedRef = React.useRef(false);
   const timers = React.useRef<Record<number, ReturnType<typeof setTimeout>>>({});
-  const dirtyRef = React.useRef(false);
   // Local edits not yet confirmed saved, keyed by response id. The submit flush sends ONLY
   // these: re-saving an already-persisted earlier answer would trip the server's
   // no-backtracking guard (sortKey < furthestIndex ⇒ 400) and wrongly abort the submit.
@@ -69,38 +75,23 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   }, []);
 
   // Loads the student's submitted attempts (newest first); applies the latest when asked.
+  // Fetched through the query cache so QuizResults' useMyAttempts reuses it without a refetch.
   const loadSubmitted = React.useCallback(
     async (applyLatest: boolean): Promise<boolean> => {
-      const mine = await quizAttemptsApi.myAttemptsList({ quiz: quizId });
-      const submitted = mine
+      const mine = await queryClient.fetchQuery({
+        queryKey: studentKeys.quizAttempts(quizId),
+        queryFn: () => quizAttemptsApi.myAttemptsList({ quiz: quizId }),
+      });
+      const past = mine
         .filter((a) => a.status === 'submitted')
         .sort((a, b) => (b.attemptNumber ?? 0) - (a.attemptNumber ?? 0));
-      setPastAttempts(submitted);
-      if (applyLatest && submitted.length > 0) {
-        applyAttempt(submitted[0]);
+      if (applyLatest && past.length > 0) {
+        applyAttempt(past[0]);
       }
-      return submitted.length > 0;
+      return past.length > 0;
     },
-    [quizId, applyAttempt],
+    [quizId, applyAttempt, queryClient],
   );
-
-  // Quiz metadata (scoring policy) for the history strip — served from the course's cached
-  // availableQuizzes list, which the student almost always arrived through.
-  const { data: courseQuizzes } = useAvailableQuizzes(courseId);
-  const quizMeta = courseQuizzes?.find((q) => q.id === quizId);
-  const countingAttemptId = React.useMemo(() => {
-    // Mirrors the server's official_score: submitted, fully graded attempts only.
-    const policy = quizMeta?.scoringPolicy ?? 'highest';
-    if (policy === 'average') return null;
-    const graded = pastAttempts.filter((a) => a.score != null && !a.needsManualGrading);
-    if (graded.length === 0) return null;
-    if (policy === 'latest') {
-      return graded.reduce((x, y) => ((y.attemptNumber ?? 0) > (x.attemptNumber ?? 0) ? y : x)).id;
-    }
-    const ratio = (a: StudentQuizAttempt) =>
-      Number(a.maxScore) > 0 ? Number(a.score) / Number(a.maxScore) : 0;
-    return graded.reduce((x, y) => (ratio(y) > ratio(x) ? y : x)).id;
-  }, [pastAttempts, quizMeta?.scoringPolicy]);
 
   // Start (or resume) the attempt once on mount — or, in review mode, load past attempts.
   React.useEffect(() => {
@@ -125,7 +116,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         } catch {
           /* fall through to the error below */
         }
-        setError(parseErr(e) ?? 'This quiz could not be started.');
+        setError(apiErrorMessage(e) ?? 'This quiz could not be started.');
       } finally {
         setLoading(false);
       }
@@ -142,7 +133,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   // Warn on tab close with unsaved edits.
   React.useEffect(() => {
     const onUnload = (e: BeforeUnloadEvent) => {
-      if (!submitted && dirtyRef.current) {
+      if (!submitted && Object.keys(unsavedRef.current).length > 0) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -153,24 +144,15 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
 
   const scheduleSave = (responseId: number, val: AnswerValue) => {
     if (!attempt) return;
-    dirtyRef.current = true;
     if (timers.current[responseId]) clearTimeout(timers.current[responseId]);
     timers.current[responseId] = setTimeout(async () => {
       setSavingCount((c) => c + 1);
       try {
-        await quizAttemptsApi.saveAnswerPartialUpdate({
-          id: attempt.id,
-          patchedSaveQuizAnswerRequest: {
-            response: responseId,
-            answerText: val.answerText,
-            selectedChoices: val.selectedChoices,
-          },
-        });
-        dirtyRef.current = false;
+        await saveAnswer(attempt.id, responseId, val);
         // Saved — unless the student typed again while this request was in flight.
         if (unsavedRef.current[responseId] === val) delete unsavedRef.current[responseId];
       } catch (e) {
-        message.error(parseErr(e) ?? 'Failed to save your answer.');
+        message.error(apiErrorMessage(e) ?? 'Failed to save your answer.');
       } finally {
         setSavingCount((c) => c - 1);
       }
@@ -194,31 +176,19 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       // persisted earlier answer would trip the server's no-backtracking guard and wrongly
       // abort the submit (edits to earlier questions can't exist unless backtracking is on).
       const unsaved = Object.entries(unsavedRef.current);
-      await Promise.all(
-        unsaved.map(([responseId, val]) =>
-          quizAttemptsApi.saveAnswerPartialUpdate({
-            id: attempt.id,
-            patchedSaveQuizAnswerRequest: {
-              response: Number(responseId),
-              answerText: val.answerText,
-              selectedChoices: val.selectedChoices,
-            },
-          }),
-        ),
-      );
+      await Promise.all(unsaved.map(([responseId, val]) => saveAnswer(attempt.id, Number(responseId), val)));
       unsavedRef.current = {};
       const done = await quizAttemptsApi.submitCreate({ id: attempt.id });
-      dirtyRef.current = false;
       applyAttempt(done);
-      void loadSubmitted(false); // refresh the attempt-history strip
       queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
+      // Refreshes the attempt-history strip (QuizResults subscribes via useMyAttempts).
       queryClient.invalidateQueries({ queryKey: studentKeys.quizAttempts(quizId) });
     } catch (e) {
-      message.error(parseErr(e) ?? 'Failed to submit your quiz.');
+      message.error(apiErrorMessage(e) ?? 'Failed to submit your quiz.');
     } finally {
       setSubmitting(false);
     }
-  }, [attempt, submitting, answers, applyAttempt, loadSubmitted, queryClient, courseId, quizId]);
+  }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId]);
 
   // Auto-submit when the timer runs out. The countdown is anchored to the server clock
   // (serverNow at load + locally-measured elapsed) so a skewed device clock can't grant or
@@ -267,54 +237,23 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     );
   }
 
-  const responses = [...attempt.responses].sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
-  const answersRevealed = submitted && responses.some((r) => r.isCorrect !== undefined);
+  if (submitted) {
+    return (
+      <QuizResults
+        quizId={quizId}
+        courseId={courseId}
+        attempt={attempt}
+        quizTitle={quizTitle}
+        onExit={onExit}
+        onSelectAttempt={applyAttempt}
+      />
+    );
+  }
+
+  const responses = [...attempt.responses].sort(bySortKey);
   const answeredCount = responses.filter(
     (r) => (answers[r.id]?.answerText ?? '').trim() !== '' || (answers[r.id]?.selectedChoices.length ?? 0) > 0,
   ).length;
-
-  if (submitted) {
-    return (
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-results">
-        <CPButton cpType="link" onClick={onExit}>
-          <LeftOutlined /> Back to course
-        </CPButton>
-        <ResultsSummary attempt={attempt} title={quizTitle} />
-        {pastAttempts.length > 1 && (
-          <Flex gap={8} wrap align="center" justify="center" style={{ marginBottom: 12 }} data-testid="attempt-history">
-            <Text type="secondary">Attempts:</Text>
-            {pastAttempts.map((a) => (
-              <Tag.CheckableTag key={a.id} checked={a.id === attempt.id} onChange={() => applyAttempt(a)}>
-                #{a.attemptNumber}
-                {a.score != null ? ` · ${Number(a.score)}/${Number(a.maxScore)}` : ''}
-                {countingAttemptId === a.id ? ' · counts' : ''}
-              </Tag.CheckableTag>
-            ))}
-            {quizMeta?.scoringPolicy === 'average' && (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Final score is the average of all attempts.
-              </Text>
-            )}
-          </Flex>
-        )}
-        {/* The student's own answers (and any grader feedback) always show; correct-answer
-            markers inside follow the quiz's reveal policy. */}
-        <div style={{ marginTop: 16 }}>
-          {responses.map((r, i) => (
-            <QuestionAnswerer
-              key={r.id}
-              response={r}
-              index={i}
-              value={answers[r.id] ?? { answerText: '', selectedChoices: [] }}
-              disabled
-              reveal={answersRevealed}
-              onChange={() => undefined}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-taking">
@@ -376,42 +315,6 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         }
       />
     </div>
-  );
-};
-
-const ResultsSummary: React.FC<{ attempt: StudentQuizAttempt; title?: string }> = ({ attempt, title }) => {
-  const score = attempt.score ?? 0;
-  const max = attempt.maxScore ?? 0;
-  const pct = max > 0 ? Math.round((Number(score) / Number(max)) * 100) : null;
-  const statusTitle = attempt.needsManualGrading
-    ? 'Submitted — some answers await grading'
-    : `You scored ${score} / ${max}${pct !== null ? ` (${pct}%)` : ''}`;
-  const resultStatus = attempt.needsManualGrading ? 'info' : attempt.passed === false ? 'warning' : 'success';
-
-  return (
-    <Result
-      status={resultStatus}
-      title={title ?? 'Quiz submitted'}
-      subTitle={<span data-testid="quiz-score">{statusTitle}</span>}
-      extra={
-        attempt.passed === true ? (
-          <Tag color="success" data-testid="quiz-result-status">
-            Passed
-          </Tag>
-        ) : attempt.passed === false ? (
-          <Tag color="error" data-testid="quiz-result-status">
-            Did not pass
-          </Tag>
-        ) : attempt.needsManualGrading ? (
-          <Alert
-            type="info"
-            showIcon
-            data-testid="quiz-result-status"
-            message="Your final score will be available once grading is complete."
-          />
-        ) : null
-      }
-    />
   );
 };
 

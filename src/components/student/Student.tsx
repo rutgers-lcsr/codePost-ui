@@ -23,7 +23,7 @@ import { Badge, Button, Card, Empty, Flex, Modal, Skeleton, Spin, Statistic, Tag
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';
@@ -34,11 +34,10 @@ import { CLIENT_URL } from '../../config';
 import { USER_TYPE } from '../../types/common';
 
 import { Assignment, UploadFile as SubmissionUploadFile } from '../../types/common';
-import { Course, StudentQuiz, StudentSubmission, Submission } from '../../api-client';
+import { Course, StudentSubmission, Submission } from '../../api-client';
 import StudentQuizzesSection from './quizzes/StudentQuizzesSection';
-import QuizTakeRoute from './quizzes/QuizTakeRoute';
-import QuizReviewRoute from './quizzes/QuizReviewRoute';
-import { useAvailableQuizzes } from './quizzes/queries';
+import QuizRoute from './quizzes/QuizRoute';
+import { useStudentQuizzes } from './quizzes/useStudentQuizzes';
 import type {
   StudentUploadCreateRequest,
   StudentUploadPartialUpdateRequest,
@@ -64,7 +63,8 @@ import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
 import AssignmentRow from './AssignmentRow';
 import { SubmissionStatus } from './submissionStatus';
-import { assignmentNeedsAction, quizNeedsAction } from './actionStatus';
+import { assignmentNeedsAction } from './actionStatus';
+import { getSubmissionStatusFor, groupAssignments, updateHistory } from './useStudentData';
 import AssignmentSection from './AssignmentSection';
 import StudentNav from './StudentNav';
 import styles from './Student.module.scss';
@@ -104,35 +104,6 @@ type StudentProps = IComponentProps & IWithWindowWatcherProps & IStudentProps;
 const getFileExtensionFromName = (fileName: string): string => {
   const split = fileName.split('.');
   return split.length === 1 ? 'txt' : split[split.length - 1];
-};
-
-const sortAssignments = <T extends { sortKey?: number; id: number }>(objs: T[]): T[] => {
-  return objs.sort((a, b) => {
-    if (a.sortKey === b.sortKey || !a.sortKey || !b.sortKey) {
-      return a.id - b.id;
-    }
-    return a.sortKey - b.sortKey;
-  });
-};
-
-const updateHistory = async (
-  submissionId: number,
-  payload: Record<string, unknown>,
-  urlArgs: Record<string, string>,
-): Promise<unknown> => {
-  const params = Object.keys(urlArgs)
-    .map((key, i) => (i === 0 ? `?${key}=${urlArgs[key]}` : `&${key}=${urlArgs[key]}`))
-    .join('');
-
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/submissions/${submissionId}/history/${params}`, {
-    headers: getHeaders(),
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
-  if (res.ok) {
-    return res.json();
-  }
-  return [];
 };
 
 const toSubmission = (submission: StudentSubmission): Submission => {
@@ -177,27 +148,6 @@ const downloadAssignmentZip = async (id: number): Promise<{ zip: string; filenam
 const StudentComponent: React.FC<StudentProps> = (props) => {
   const { initialCourses, currentCourse, user, uploadShortcut, handleLogout } = props;
   const navigate = useNavigate();
-  const location = useLocation();
-  const handleTakeQuiz = useCallback(
-    (quiz: StudentQuiz) => {
-      if (!currentCourse) return;
-      // Absolute path: this can fire from either the Assignments or Quizzes page,
-      // so a relative `quizzes/...` would double up on the latter.
-      navigate(encodedCourseLink('student', currentCourse, `quizzes/${quiz.id}/take`), {
-        state: { title: quiz.title, from: location.pathname },
-      });
-    },
-    [navigate, currentCourse, location.pathname],
-  );
-  const handleReviewQuiz = useCallback(
-    (quiz: StudentQuiz) => {
-      if (!currentCourse) return;
-      navigate(encodedCourseLink('student', currentCourse, `quizzes/${quiz.id}/review`), {
-        state: { title: quiz.title, from: location.pathname },
-      });
-    },
-    [navigate, currentCourse, location.pathname],
-  );
   const queryClient = useQueryClient();
 
   // Subscribe to the permissions cache so capability checks in renderAssignmentRow re-evaluate
@@ -208,18 +158,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const currentCourseAssignments = assignmentsQuery.data ?? [];
   const isLoadingAssignments = assignmentsQuery.isPending;
 
-  // Attached quizzes surface on their assignment card; group them by assignment id.
-  const { data: courseQuizzes = [], isLoading: isLoadingQuizzes } = useAvailableQuizzes(currentCourse?.id);
-  const quizzesByAssignment = React.useMemo(() => {
-    const map = new Map<number, StudentQuiz[]>();
-    for (const quiz of courseQuizzes) {
-      if (quiz.assignment == null) continue;
-      const list = map.get(quiz.assignment) ?? [];
-      list.push(quiz);
-      map.set(quiz.assignment, list);
-    }
-    return map;
-  }, [courseQuizzes]);
+  const { courseQuizzes, isLoadingQuizzes, quizzesByAssignment, quizzesNeedingAction, handleTakeQuiz, handleReviewQuiz } =
+    useStudentQuizzes(currentCourse);
 
   const submissionsQuery = useStudentSubmissionsQuery(
     currentCourse?.id,
@@ -316,9 +256,6 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
     [user.email],
   );
 
-  // Use the extracted helper function
-  const getFileExtension = getFileExtensionFromName;
-
   // Upload a submission as a student
   const uploadSubmission = useCallback(
     (
@@ -336,7 +273,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         return {
           name: file.name,
           data: file.data,
-          extension: getFileExtension(file.name),
+          extension: getFileExtensionFromName(file.name),
           path: file.path,
         };
       });
@@ -363,7 +300,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         return newSub;
       });
     },
-    [getFileExtension],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- matches the long-standing memoization; currentCourse/queryClient are intentionally not deps
+    [],
   );
 
   const onUploadSuccess = useCallback(
@@ -436,79 +374,18 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   /* Render function
   /**********************************************************************************/
 
-  // Helper to determine submission status
+  // Helper to determine submission status (shared logic lives in useStudentData.ts)
   const getSubmissionStatus = useCallback(
-    (assignment: Assignment, submission?: Submission): SubmissionStatus => {
-      // Not published only if none of the student-facing modes are enabled
-      if (!assignment.isReleased && !assignment.liveFeedbackMode && !assignment.allowStudentUpload) {
-        return SubmissionStatus.NOT_PUBLISHED;
-      }
-      if (!submission) {
-        return SubmissionStatus.NO_SUBMISSION;
-      }
-      // feedbackReleased is a separate flag from isReleased — feedback can be
-      // withheld even after the assignment is released for uploads.
-      const isFeedbackAvailable = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
-      if (!isFeedbackAvailable) {
-        return SubmissionStatus.NOT_REVIEWED;
-      }
-      const isViewed = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
-      return isViewed ? SubmissionStatus.SUBMITTED : SubmissionStatus.PENDING;
-    },
+    (assignment: Assignment, submission?: Submission): SubmissionStatus =>
+      getSubmissionStatusFor(assignment, submission, viewsBySubmission),
     [viewsBySubmission],
   );
 
   // Group assignments into temporal sections
   const groupedSections = useMemo(() => {
     if (!currentCourse || currentCourseAssignments.length === 0) return null;
-
-    const assignmentList = sortAssignments(currentCourseAssignments);
-    const now = new Date();
-    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-    const overdue: Assignment[] = [];
-    const dueToday: Assignment[] = [];
-    const dueSoon: Assignment[] = [];
-    const upcoming: Assignment[] = [];
-    const completed: Assignment[] = [];
-    const unpublished: Assignment[] = [];
-
-    for (const assignment of assignmentList) {
-      const submission = assignment.id in submissions ? submissions[assignment.id][0] : undefined;
-      const status = getSubmissionStatus(assignment, submission);
-
-      if (status === SubmissionStatus.NOT_PUBLISHED) {
-        unpublished.push(assignment);
-      } else if (
-        status === SubmissionStatus.SUBMITTED ||
-        status === SubmissionStatus.NOT_REVIEWED ||
-        status === SubmissionStatus.PENDING
-      ) {
-        completed.push(assignment);
-      } else if (assignment.uploadDueDate) {
-        const dueDate = new Date(assignment.uploadDueDate);
-        if (dueDate < now) {
-          // Past due date — overdue if no submission, due today if within last 24h
-          if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
-            dueToday.push(assignment);
-          } else {
-            overdue.push(assignment);
-          }
-        } else if (dueDate <= endOfToday) {
-          dueToday.push(assignment);
-        } else if (dueDate <= weekFromNow) {
-          dueSoon.push(assignment);
-        } else {
-          upcoming.push(assignment);
-        }
-      } else {
-        upcoming.push(assignment);
-      }
-    }
-
-    return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
-  }, [currentCourse, currentCourseAssignments, submissions, getSubmissionStatus]);
+    return groupAssignments(currentCourseAssignments, submissions, viewsBySubmission);
+  }, [currentCourse, currentCourseAssignments, submissions, viewsBySubmission]);
 
   // Summary stats (mirrors the dashboard's summary card)
   const stats = useMemo(() => {
@@ -542,9 +419,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           quizzes: quizzesByAssignment.get(a.id) ?? [],
         }),
       ).length,
-      quizzes: courseQuizzes.filter(quizNeedsAction).length,
+      quizzes: quizzesNeedingAction,
     }),
-    [currentCourseAssignments, submissions, getSubmissionStatus, quizzesByAssignment, courseQuizzes],
+    [currentCourseAssignments, submissions, getSubmissionStatus, quizzesByAssignment, quizzesNeedingAction],
   );
 
   // Build a row for an assignment (shared renderer)
@@ -974,8 +851,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   return (
     <Routes>
       {/* Full-page quiz taking / reviewing, outside the normal course chrome. */}
-      <Route path="quizzes/:quizId/take" element={<QuizTakeRoute courseId={currentCourse?.id} />} />
-      <Route path="quizzes/:quizId/review" element={<QuizReviewRoute courseId={currentCourse?.id} />} />
+      <Route path="quizzes/:quizId/take" element={<QuizRoute mode="take" courseId={currentCourse?.id} />} />
+      <Route path="quizzes/:quizId/review" element={<QuizRoute mode="review" courseId={currentCourse?.id} />} />
       <Route path="quizzes" element={shell(quizzesContent)} />
       <Route path="*" element={shell(studentContent)} />
     </Routes>

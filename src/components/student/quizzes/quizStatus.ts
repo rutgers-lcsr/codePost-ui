@@ -9,7 +9,7 @@ export const canStart = (quiz: StudentQuiz): boolean => {
 };
 
 /** The button label for an open, actionable quiz. */
-export const startLabel = (quiz: StudentQuiz): string => (quiz.attemptsUsed > 0 ? 'New attempt' : 'Start quiz');
+const startLabel = (quiz: StudentQuiz): string => (quiz.attemptsUsed > 0 ? 'New attempt' : 'Start quiz');
 
 /** Whether the student has past submitted attempts to look back at — independent of
  *  whether they can also start another one. */

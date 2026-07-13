@@ -7,28 +7,16 @@
 // Instructor auth comes from the instructor storageState written by global.setup.ts.
 import { test, expect, type Page } from '@playwright/test';
 import { COURSE_NAME, COURSE_PERIOD } from './constants';
+import { courseUrl, openQuiz, submitQuiz } from './helpers';
 
-const courseUrl = `/student/${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}`;
 const adminQuizzesUrl = `/admin/${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}/quizzes`;
 const QUIZ_TITLE = 'QT · Essay · manual grading';
 
 /** Submit a fresh essay attempt as the student (default storageState). */
 async function submitEssayAttempt(page: Page) {
-  await page.goto(`${courseUrl}/quizzes`);
-  const card = page.getByTestId('student-quiz-card').filter({ hasText: QUIZ_TITLE });
-  await card.getByTestId('student-quiz-action').click();
-  await expect(page.getByTestId('quiz-taking')).toBeVisible();
+  await openQuiz(page, QUIZ_TITLE);
   await page.getByTestId('quiz-answer-text').fill('A stack is LIFO; a queue is FIFO.');
-  // Retry the submit click — it can land mid-re-render (debounced autosave) and get swallowed.
-  const confirm = page.getByRole('button', { name: 'Submit', exact: true });
-  await expect(async () => {
-    if (!(await confirm.isVisible())) {
-      await page.getByTestId('quiz-submit').click();
-    }
-    await expect(confirm).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 15000 });
-  await confirm.click();
-  await expect(page.getByTestId('quiz-results')).toBeVisible();
+  await submitQuiz(page);
   await expect(page.getByTestId('quiz-score')).toContainText('await grading');
 }
 

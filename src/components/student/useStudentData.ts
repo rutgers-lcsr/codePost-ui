@@ -100,6 +100,61 @@ export interface GroupedSections {
   all: Assignment[];
 }
 
+/** Groups a course's assignments into the temporal sections both the dashboard and the
+ *  course view render. Sorts a copy — never the caller's (possibly cached) array. */
+export function groupAssignments(
+  assignments: Assignment[],
+  submissions: Record<number, Submission[]>,
+  viewsBySubmission: Record<number, boolean>,
+): GroupedSections {
+  const assignmentList = sortAssignments(assignments);
+  const now = new Date();
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const overdue: Assignment[] = [];
+  const dueToday: Assignment[] = [];
+  const dueSoon: Assignment[] = [];
+  const upcoming: Assignment[] = [];
+  const completed: Assignment[] = [];
+  const unpublished: Assignment[] = [];
+
+  for (const assignment of assignmentList) {
+    const submission = submissions[assignment.id]?.[0];
+    const status = getSubmissionStatusFor(assignment, submission, viewsBySubmission);
+
+    if (status === SubmissionStatus.NOT_PUBLISHED) {
+      unpublished.push(assignment);
+    } else if (
+      status === SubmissionStatus.SUBMITTED ||
+      status === SubmissionStatus.NOT_REVIEWED ||
+      status === SubmissionStatus.PENDING
+    ) {
+      completed.push(assignment);
+    } else if (assignment.uploadDueDate) {
+      const dueDate = new Date(assignment.uploadDueDate);
+      if (dueDate < now) {
+        // Past due date — overdue if no submission, due today if within last 24h
+        if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
+          dueToday.push(assignment);
+        } else {
+          overdue.push(assignment);
+        }
+      } else if (dueDate <= endOfToday) {
+        dueToday.push(assignment);
+      } else if (dueDate <= weekFromNow) {
+        dueSoon.push(assignment);
+      } else {
+        upcoming.push(assignment);
+      }
+    } else {
+      upcoming.push(assignment);
+    }
+  }
+
+  return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
+}
+
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Hook: useStudentData                                                      */
 /* Loads assignments, submissions, and view history for a set of courses.    */
@@ -227,52 +282,7 @@ export function useStudentData(courses: Course[], userEmail: string, studentSect
   const getGroupedSections = useCallback(
     (courseId: number): GroupedSections | null => {
       if (!assignments[courseId]) return null;
-      const assignmentList = sortAssignments(assignments[courseId]);
-      const now = new Date();
-      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-      const overdue: Assignment[] = [];
-      const dueToday: Assignment[] = [];
-      const dueSoon: Assignment[] = [];
-      const upcoming: Assignment[] = [];
-      const completed: Assignment[] = [];
-      const unpublished: Assignment[] = [];
-
-      for (const assignment of assignmentList) {
-        const submission = submissions[assignment.id]?.[0];
-        const status = getSubmissionStatusFor(assignment, submission, viewsBySubmission);
-
-        if (status === SubmissionStatus.NOT_PUBLISHED) {
-          unpublished.push(assignment);
-        } else if (
-          status === SubmissionStatus.SUBMITTED ||
-          status === SubmissionStatus.NOT_REVIEWED ||
-          status === SubmissionStatus.PENDING
-        ) {
-          completed.push(assignment);
-        } else if (assignment.uploadDueDate) {
-          const dueDate = new Date(assignment.uploadDueDate);
-          if (dueDate < now) {
-            // Past due date — overdue if no submission, due today if within last 24h
-            if (dueDate >= new Date(now.getTime() - 24 * 60 * 60 * 1000)) {
-              dueToday.push(assignment);
-            } else {
-              overdue.push(assignment);
-            }
-          } else if (dueDate <= endOfToday) {
-            dueToday.push(assignment);
-          } else if (dueDate <= weekFromNow) {
-            dueSoon.push(assignment);
-          } else {
-            upcoming.push(assignment);
-          }
-        } else {
-          upcoming.push(assignment);
-        }
-      }
-
-      return { overdue, dueToday, dueSoon, upcoming, completed, unpublished, all: assignmentList };
+      return groupAssignments(assignments[courseId], submissions, viewsBySubmission);
     },
     [assignments, submissions, viewsBySubmission],
   );

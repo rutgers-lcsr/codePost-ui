@@ -5,38 +5,11 @@
 // written by global.setup.ts. Correct answers are the seed's:
 //   2+2 → 4 · primes → 2 & 3 · "Earth is flat" → False · capital of France → Paris · √144 → 12
 import { test, expect, type Page } from '@playwright/test';
-import { COURSE_NAME, COURSE_PERIOD } from './constants';
-
-const courseUrl = `/student/${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}`;
-
-/** Open a standalone quiz from the course view's Quizzes page by (partial) title. */
-async function openQuiz(page: Page, titleFragment: string) {
-  await page.goto(`${courseUrl}/quizzes`);
-  const card = page.getByTestId('student-quiz-card').filter({ hasText: titleFragment });
-  await card.getByTestId('student-quiz-action').click();
-  await expect(page.getByTestId('quiz-taking')).toBeVisible();
-}
-
-type Scope = Page | ReturnType<Page['locator']>;
+import { courseUrl, openQuiz, pickChoice, submitQuiz } from './helpers';
 
 /** The question card of a given type (e.g. within a one-page quiz). */
 function questionOfType(page: Page, type: string) {
   return page.locator(`[data-question-type="${type}"]`);
-}
-
-/** Click a choice (radio/checkbox) by its exact visible text, within a question scope.
- *  Clicking the label reliably toggles antd radios AND checkboxes. A click can land
- *  mid-re-render (the debounced autosave of the previous answer) and get swallowed,
- *  so verify the control actually toggled and retry if it didn't. */
-async function pickChoice(scope: Scope, text: string) {
-  const choice = scope.getByTestId('quiz-choice').filter({ hasText: new RegExp(`^${text}$`) });
-  const input = choice.locator('xpath=ancestor::label//input');
-  await expect(async () => {
-    if (!(await input.isChecked())) {
-      await choice.click();
-    }
-    await expect(input).toBeChecked({ timeout: 1000 });
-  }).toPass({ timeout: 30000 });
 }
 
 /** Answer the five auto-graded questions of a one-page quiz correctly. */
@@ -71,21 +44,6 @@ async function answerCurrentSequential(page: Page) {
       await question.getByTestId('quiz-answer-text').fill('12');
       break;
   }
-}
-
-/** Click Submit and confirm the Popconfirm, then wait for the results screen. The submit
- *  click can land mid-re-render (debounced autosave) and get swallowed — same race as
- *  pickChoice — so retry until the confirm actually shows. */
-async function submitQuiz(page: Page) {
-  const confirm = page.getByRole('button', { name: 'Submit', exact: true });
-  await expect(async () => {
-    if (!(await confirm.isVisible())) {
-      await page.getByTestId('quiz-submit').click();
-    }
-    await expect(confirm).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 15000 });
-  await confirm.click();
-  await expect(page.getByTestId('quiz-results')).toBeVisible();
 }
 
 test.describe('student quiz taking', () => {

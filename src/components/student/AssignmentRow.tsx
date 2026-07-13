@@ -10,13 +10,12 @@ import {
   DownloadOutlined,
   CalendarOutlined,
   FormOutlined,
-  LockOutlined,
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { CodePostDate } from '../utils/CodepostDate';
 import { SubmissionStatus } from './submissionStatus';
 import { StudentQuiz } from '../../api-client';
-import { canReview, quizAction, quizActionLabel } from './quizzes/quizStatus';
+import QuizActions from './quizzes/QuizActions';
 import QuizScoreTags from './quizzes/QuizScoreTags';
 import { assignmentIsDone, assignmentNeedsAction } from './actionStatus';
 
@@ -416,7 +415,6 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
       {quizzes.length > 0 && (
         <Flex vertical gap={8} style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f0f0f0' }}>
           {quizzes.map((quiz) => {
-            const action = quizAction(quiz);
             return (
               <Flex key={quiz.id} justify="space-between" align="center" gap={8} data-testid="attached-quiz-row">
                 <Flex align="center" gap={6} style={{ minWidth: 0 }}>
@@ -437,42 +435,13 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
                 </Flex>
                 <Flex align="center" gap={6} style={{ flexShrink: 0 }}>
                   <QuizScoreTags quiz={quiz} />
-                  {/* Past results stay reachable even when the primary action starts a new attempt. */}
-                  {onReviewQuiz && canReview(quiz) && action !== 'review' && (
-                    <Button
-                      type="link"
-                      size="small"
-                      icon={<EyeOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onReviewQuiz(quiz);
-                      }}
-                      data-testid="attached-quiz-review"
-                    >
-                      Review
-                    </Button>
-                  )}
-                  {action === 'locked' ? (
-                    <Tooltip title="This quiz isn't open yet">
-                      <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid="attached-quiz-locked">
-                        {quizActionLabel(quiz)}
-                      </Tag>
-                    </Tooltip>
-                  ) : (
-                    <Button
-                      type={action === 'review' ? 'default' : 'primary'}
-                      size="small"
-                      icon={action === 'review' ? <EyeOutlined /> : undefined}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (action === 'review' && onReviewQuiz) onReviewQuiz(quiz);
-                        else onTakeQuiz?.(quiz);
-                      }}
-                      data-testid="attached-quiz-action"
-                    >
-                      {quizActionLabel(quiz)}
-                    </Button>
-                  )}
+                  <QuizActions
+                    quiz={quiz}
+                    onTake={() => onTakeQuiz?.(quiz)}
+                    onReview={onReviewQuiz && (() => onReviewQuiz(quiz))}
+                    testIdPrefix="attached-quiz"
+                    compact
+                  />
                 </Flex>
               </Flex>
             );

@@ -1,12 +1,12 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Card, Flex, Space, Spin, Tag, Typography } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
-import CPButton from '../../core/CPButton';
+import { CalendarOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import { StudentQuiz } from '../../../api-client';
 import { CodePostDate } from '../../utils/CodepostDate';
 import { useAvailableQuizzes } from './queries';
-import { canReview, quizAction, quizActionLabel, quizLockText } from './quizStatus';
+import { quizAction, quizLockText } from './quizStatus';
+import QuizActions from './QuizActions';
 import QuizScoreTags from './QuizScoreTags';
 
 const { Title, Text } = Typography;
@@ -66,23 +66,7 @@ const QuizCard: React.FC<{
           </Flex>
         </div>
         <Space>
-          {/* Past results stay reachable even when the primary action starts a new attempt. */}
-          {onReview && canReview(quiz) && action !== 'review' && (
-            <CPButton cpType="link" icon={<EyeOutlined />} onClick={onReview} data-testid="student-quiz-review">
-              Review
-            </CPButton>
-          )}
-          {action === 'locked' ? (
-            <Tag data-testid="student-quiz-locked">{quizActionLabel(quiz)}</Tag>
-          ) : (
-            <CPButton
-              cpType={action === 'review' ? 'secondary' : 'primary'}
-              onClick={action === 'review' && onReview ? onReview : onTake}
-              data-testid="student-quiz-action"
-            >
-              {quizActionLabel(quiz)}
-            </CPButton>
-          )}
+          <QuizActions quiz={quiz} onTake={onTake} onReview={onReview} testIdPrefix="student-quiz" />
         </Space>
       </Flex>
     </Card>
