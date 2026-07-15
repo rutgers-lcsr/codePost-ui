@@ -41,7 +41,10 @@ const QuizzesManager: React.FC<IProps> = ({ course }) => {
       </Col>
       <Col xs={24} lg={15}>
         {selectedQuiz ? (
-          <QuizBuilder course={course} quiz={selectedQuiz} />
+          // Keyed so switching quizzes remounts the builder — its tab panes stay mounted
+          // once visited, so without this quiz A's grading/review state would show against
+          // quiz B's data.
+          <QuizBuilder key={selectedQuiz.id} course={course} quiz={selectedQuiz} />
         ) : (
           <Empty
             description="Select a quiz to build it from your question banks"

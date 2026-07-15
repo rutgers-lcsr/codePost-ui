@@ -1,12 +1,15 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 //
 // Quiz grading for the grader console: published quizzes in the course with how many
-// attempts await manual grading, opening the shared grading drawer. Reached via the
-// "Quiz Grading" nav entry, which is gated on the grade_quiz capability (course admins
-// and quiz graders — the per-course role granted in Roster → Graders).
+// attempts await manual grading; picking one shows the shared grading view inline in
+// place of the list. Reached via the "Quiz Grading" nav entry, which is gated on the
+// grade_quiz capability (course admins and quiz graders — the per-course role granted
+// in Roster → Graders).
 import * as React from 'react';
 
 import { Empty, Flex, Table, Tag, Typography } from 'antd';
+
+import { LeftOutlined } from '@ant-design/icons';
 
 import { useQueries } from '@tanstack/react-query';
 
@@ -15,7 +18,7 @@ import { quizzesApi } from '../../api-client/clients';
 import { Course, Quiz } from '../../api-client';
 import { quizKeys } from '../../lib/queryKeys';
 import { useCourseQuizzes } from '../admin/quizzes/queries';
-import QuizGradingDrawer from '../admin/quizzes/QuizGradingDrawer';
+import QuizGradingView from '../admin/quizzes/QuizGradingView';
 
 const { Title, Text } = Typography;
 
@@ -73,6 +76,24 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
     },
   ];
 
+  // Picking a quiz swaps the list for the shared grading view; unmounting on back
+  // resets its selection state.
+  if (gradingQuiz) {
+    return (
+      <div style={{ padding: 24, maxWidth: 1000 }}>
+        <Flex align="center" gap={8} style={{ marginBottom: 16 }}>
+          <CPButton cpType="link" small onClick={() => setGradingQuiz(null)}>
+            <LeftOutlined /> All quizzes
+          </CPButton>
+          <Title level={4} style={{ margin: 0 }}>
+            Grading — {gradingQuiz.title}
+          </Title>
+        </Flex>
+        <QuizGradingView quiz={gradingQuiz} active />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 24, maxWidth: 1000 }}>
       <Title level={4}>Quiz Grading</Title>
@@ -95,10 +116,6 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
           />
         )}
       </div>
-
-      {gradingQuiz && (
-        <QuizGradingDrawer open onClose={() => setGradingQuiz(null)} quiz={gradingQuiz} />
-      )}
     </div>
   );
 };

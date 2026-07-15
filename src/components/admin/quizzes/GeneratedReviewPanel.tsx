@@ -5,9 +5,11 @@
 // (publishing the quiz for that student), regenerate, or bulk-publish everything awaiting
 // review. Access is enforced server-side (course admins always; graders only when the
 // quiz's gradersCanReviewGenerated flag is on) — a 403 here means the viewer lacks access.
+// Embedded as the quiz page's Review tab; `active` gates the queries (and the pending-set
+// polling) so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, AutoComplete, Drawer, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag,
+  Alert, AutoComplete, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag,
   Tooltip, Typography, message,
 } from 'antd';
 import { LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
@@ -42,10 +44,10 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 };
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
   quiz: Quiz;
   courseId: number;
+  /** Whether this view is the visible tab — gates all data fetching. */
+  active: boolean;
 }
 
 /** One editable generated question: stem, description, choices, and points. */
@@ -170,23 +172,19 @@ const GeneratedQuestionCard: React.FC<{
   );
 };
 
-const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId }) => {
+const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
   const queryClient = useQueryClient();
   const [currentId, setCurrentId] = React.useState<number | null>(null);
 
-  const { data: sets = [], isLoading, error } = useGeneratedSets(open ? quiz.id : undefined);
+  const { data: sets = [], isLoading, error } = useGeneratedSets(active ? quiz.id : undefined);
   // Students with a submission but no set — shown on the Generate-missing button.
-  const { data: backfillPreview } = useBackfillPreview(quiz.id, open);
+  const { data: backfillPreview } = useBackfillPreview(quiz.id, active);
   const missingCount = backfillPreview?.missing ?? 0;
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
   // Roster emails feed the generate-for-student picker; if the viewer can't read the
   // roster (403) the field simply falls back to free typing.
-  const { data: roster } = useRosterQuery(open ? courseId : undefined);
+  const { data: roster } = useRosterQuery(active ? courseId : undefined);
   const [genEmail, setGenEmail] = React.useState('');
-
-  React.useEffect(() => {
-    if (!open) setCurrentId(null);
-  }, [open]);
 
   const generateFor = (email: string) =>
     act(async () => {
@@ -295,19 +293,7 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
   const detailEditable = current?.status === 'ready' || current?.status === 'approved';
 
   return (
-    <Drawer
-      title={current
-        ? `Review — ${current.studentEmail}`
-        : `Generated questions — ${quiz.title}`}
-      width={860}
-      open={open}
-      onClose={onClose}
-      extra={!current && (
-        <CPButton cpType="primary" disabled={readyCount === 0} loading={acting} onClick={publishAll}>
-          Publish all ({readyCount})
-        </CPButton>
-      )}
-    >
+    <>
       {error != null && (
         <Alert
           type="warning"
@@ -317,7 +303,8 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
         />
       )}
       {!current && error == null && (
-        <Space style={{ marginBottom: 12 }}>
+        <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
+          <Space>
           <AutoComplete
             style={{ width: 280 }}
             placeholder="Generate for a student (email)…"
@@ -350,7 +337,11 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
               Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
             </CPButton>
           </Tooltip>
-        </Space>
+          </Space>
+          <CPButton cpType="primary" disabled={readyCount === 0} loading={acting} onClick={publishAll}>
+            Publish all ({readyCount})
+          </CPButton>
+        </Flex>
       )}
       {!current && (
         isLoading ? (
@@ -371,11 +362,12 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
       )}
       {current && (
         <Flex vertical gap={12}>
-          <div>
+          <Flex align="center" gap={8}>
             <CPButton size="small" icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
               All students
             </CPButton>
-          </div>
+            <Text strong>Review — {current.studentEmail}</Text>
+          </Flex>
           {current.status === 'failed' && (
             <Alert type="error" showIcon title="Generation failed"
                    description={current.errorMessage || 'Unknown error.'} />
@@ -415,8 +407,8 @@ const GeneratedReviewDrawer: React.FC<IProps> = ({ open, onClose, quiz, courseId
           </Space>
         </Flex>
       )}
-    </Drawer>
+    </>
   );
 };
 
-export default GeneratedReviewDrawer;
+export default GeneratedReviewPanel;

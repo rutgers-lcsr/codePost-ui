@@ -33,8 +33,8 @@ test.describe('staff quiz grading', () => {
     await ipage.goto(adminQuizzesUrl);
     await ipage.getByRole('tab', { name: 'Quizzes' }).click();
     await ipage.getByRole('cell', { name: QUIZ_TITLE }).click();
-    // The header button shows the needs-grading count.
-    await ipage.getByRole('button', { name: /Grading \(\d+\)/ }).click();
+    // The quiz page's Grading tab shows the needs-grading count in its label.
+    await ipage.getByRole('tab', { name: /Grading \(\d+\)/ }).click();
 
     // Attempts tab (needs-grading only, on by default) lists the pending attempt.
     await ipage.getByTestId('grading-open-attempt').first().click();
@@ -71,8 +71,8 @@ test.describe('staff quiz grading', () => {
     await expect(row.getByText('Passed')).toBeVisible();
     await expect(ipage.getByTestId('results-export')).toBeEnabled();
 
-    // ── Questions tab: item analysis shows the essay averaging 90% ─────────
-    await ipage.getByRole('tab', { name: 'Questions' }).click();
+    // ── Item analysis tab: shows the essay averaging 90% ───────────────────
+    await ipage.getByRole('tab', { name: 'Item analysis' }).click();
     const statRow = ipage
       .getByTestId('question-stats-table')
       .locator('tr', { hasText: 'stack' }); // essay stem mentions stack vs queue

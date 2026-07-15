@@ -5,10 +5,11 @@
 // saved grade. A Results tab shows each student's official score (per scoringPolicy) with a
 // CSV export. Auto-graded answers are shown read-only for context. Access is enforced
 // server-side (Course.quizGraders role or course admin) — a 403 here means the viewer lacks
-// the role.
+// the role. Embedded as the quiz page's Grading tab and inline in the grader console;
+// `active` gates the queries so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, Drawer, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Space, Spin, Switch, Table,
+  Alert, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Space, Spin, Switch, Table,
   Tabs, Tag, Typography, message,
 } from 'antd';
 import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -28,9 +29,9 @@ import QuestionAnswerer from '../../student/quizzes/QuestionAnswerer';
 const { Text } = Typography;
 
 interface IProps {
-  open: boolean;
-  onClose: () => void;
   quiz: Quiz;
+  /** Whether this view is the visible tab/screen — gates all data fetching. */
+  active: boolean;
 }
 
 /** Points + feedback editor for one manual (essay/code) response, with reopen for saved grades. */
@@ -121,27 +122,23 @@ const GradeControls: React.FC<{
   );
 };
 
-const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
+const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const queryClient = useQueryClient();
   const [needsGradingOnly, setNeedsGradingOnly] = React.useState(true);
   const [current, setCurrent] = React.useState<StaffQuizAttempt | null>(null);
 
   const { data: attempts = [], isLoading, error } = useQuizAttempts(quiz.id, {
     needsGrading: needsGradingOnly,
-    enabled: open,
+    enabled: active,
   });
 
-  const { data: results = [], isLoading: resultsLoading } = useQuizResults(quiz.id, open);
+  const { data: results = [], isLoading: resultsLoading } = useQuizResults(quiz.id, active);
 
   // Every submitted attempt (unfiltered) feeds the per-question item analysis. Shares the
   // needsGrading=false variant of the attempts key, so grading invalidates it too.
   const { data: allAttempts = [], isLoading: statsLoading } = useQuizAttempts(quiz.id, {
-    enabled: open,
+    enabled: active,
   });
-
-  React.useEffect(() => {
-    if (!open) setCurrent(null);
-  }, [open]);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: quizKeys.attempts(quiz.id!) });
@@ -448,13 +445,29 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
 
   const responses = current ? [...current.responses].sort(bySortKey) : [];
 
-  return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      width={860}
-      title={
-        current ? (
+  if (error != null) {
+    return (
+      <Alert
+        type="warning"
+        showIcon
+        message="You don't have access to grade this quiz."
+        description="Course admins can grade quizzes; graders need the Quiz Grader role (Roster → Graders)."
+      />
+    );
+  }
+  if (isLoading) {
+    return (
+      <Flex justify="center" style={{ padding: 40 }}>
+        <Spin />
+      </Flex>
+    );
+  }
+  if (current) {
+    return (
+      // Cap the grading detail at the question column width the old 860px drawer (and the
+      // student taking view) used — full-width questions read stretched.
+      <div style={{ maxWidth: 812 }}>
+        <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
           <Flex align="center" gap={8}>
             <CPButton cpType="link" small onClick={() => setCurrent(null)}>
               <LeftOutlined /> All attempts
@@ -463,12 +476,6 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
               {current.student} — attempt #{current.attemptNumber}
             </Text>
           </Flex>
-        ) : (
-          `Grading — ${quiz.title}`
-        )
-      }
-      extra={
-        current && (
           <Space>
             {pendingPosition >= 0 && (
               <Text type="secondary">
@@ -481,60 +488,45 @@ const QuizGradingDrawer: React.FC<IProps> = ({ open, onClose, quiz }) => {
               </CPButton>
             )}
           </Space>
-        )
-      }
-    >
-      {error != null ? (
-        <Alert
-          type="warning"
-          showIcon
-          message="You don't have access to grade this quiz."
-          description="Course admins can grade quizzes; graders need the Quiz Grader role (Roster → Graders)."
-        />
-      ) : isLoading ? (
-        <Flex justify="center" style={{ padding: 40 }}>
-          <Spin />
         </Flex>
-      ) : current ? (
-        <>
-          <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
-            <Text strong data-testid="grading-attempt-score">
-              Score: {current.score ?? '—'} / {current.maxScore ?? '—'}
-            </Text>
-            {current.needsManualGrading ? (
-              <Tag color="gold">Awaiting manual grades</Tag>
-            ) : (
-              <PassedTag passed={current.passed} />
+        <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+          <Text strong data-testid="grading-attempt-score">
+            Score: {current.score ?? '—'} / {current.maxScore ?? '—'}
+          </Text>
+          {current.needsManualGrading ? (
+            <Tag color="gold">Awaiting manual grades</Tag>
+          ) : (
+            <PassedTag passed={current.passed} />
+          )}
+        </Flex>
+        {responses.map((r, i) => (
+          <div key={r.id}>
+            <QuestionAnswerer
+              response={r}
+              index={i}
+              value={{ answerText: r.answerText ?? '', selectedChoices: [...r.selectedChoices] }}
+              disabled
+              reveal
+              onChange={() => undefined}
+            />
+            {isManuallyGraded(r.question.questionType) && (
+              <GradeControls attemptId={current.id} response={r} onGraded={handleGraded} />
             )}
-          </Flex>
-          {responses.map((r, i) => (
-            <div key={r.id}>
-              <QuestionAnswerer
-                response={r}
-                index={i}
-                value={{ answerText: r.answerText ?? '', selectedChoices: [...r.selectedChoices] }}
-                disabled
-                reveal
-                onChange={() => undefined}
-              />
-              {isManuallyGraded(r.question.questionType) && (
-                <GradeControls attemptId={current.id} response={r} onGraded={handleGraded} />
-              )}
-            </div>
-          ))}
-        </>
-      ) : (
-        <Tabs
-          defaultActiveKey="attempts"
-          items={[
-            { key: 'attempts', label: 'Attempts', children: attemptsTab },
-            { key: 'results', label: 'Results', children: resultsTab },
-            { key: 'questions', label: 'Questions', children: questionsTab },
-          ]}
-        />
-      )}
-    </Drawer>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <Tabs
+      defaultActiveKey="attempts"
+      items={[
+        { key: 'attempts', label: 'Attempts', children: attemptsTab },
+        { key: 'results', label: 'Results', children: resultsTab },
+        { key: 'questions', label: 'Item analysis', children: questionsTab },
+      ]}
+    />
   );
 };
 
-export default QuizGradingDrawer;
+export default QuizGradingView;

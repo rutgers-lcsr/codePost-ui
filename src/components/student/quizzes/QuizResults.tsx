@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, Flex, Result, Tag, Typography } from 'antd';
+import { Alert, Card, Result, Table, Tag, Typography } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import { StudentQuizAttempt } from '../../../api-client';
@@ -62,22 +62,67 @@ const QuizResults: React.FC<IProps> = ({ quizId, courseId, attempt, quizTitle, o
         <LeftOutlined /> Back to course
       </CPButton>
       <ResultsSummary attempt={attempt} title={quizTitle} />
-      {pastAttempts.length > 1 && (
-        <Flex gap={8} wrap align="center" justify="center" style={{ marginBottom: 12 }} data-testid="attempt-history">
-          <Text type="secondary">Attempts:</Text>
-          {pastAttempts.map((a) => (
-            <Tag.CheckableTag key={a.id} checked={a.id === attempt.id} onChange={() => onSelectAttempt(a)}>
-              #{a.attemptNumber}
-              {a.score != null ? ` · ${Number(a.score)}/${Number(a.maxScore)}` : ''}
-              {countingAttemptId === a.id ? ' · counts' : ''}
-            </Tag.CheckableTag>
-          ))}
+      {pastAttempts.length >= 1 && (
+        <Card size="small" title="Your attempts" style={{ marginBottom: 12 }} data-testid="attempt-history">
+          <Table<StudentQuizAttempt>
+            size="small"
+            pagination={false}
+            rowKey={(a) => a.id}
+            dataSource={pastAttempts}
+            rowClassName={(a) => (a.id === attempt.id ? 'ant-table-row-selected' : '')}
+            onRow={(a) => ({
+              onClick: () => onSelectAttempt(a),
+              style: { cursor: 'pointer' },
+              'data-testid': 'attempt-history-row',
+            })}
+            columns={[
+              {
+                title: 'Attempt',
+                dataIndex: 'attemptNumber',
+                render: (n: number, a) => <Text strong={a.id === attempt.id}>#{n}</Text>,
+              },
+              {
+                title: 'Submitted',
+                dataIndex: 'submittedAt',
+                render: (d: string | null) =>
+                  d
+                    ? new Date(d).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })
+                    : '—',
+              },
+              {
+                title: 'Score',
+                dataIndex: 'score',
+                render: (s: string | null, a) => (s != null ? `${Number(s)} / ${Number(a.maxScore)}` : '—'),
+              },
+              {
+                title: 'Status',
+                key: 'status',
+                render: (_, a) => (
+                  <>
+                    {a.needsManualGrading ? (
+                      <Tag color="gold">Pending grading</Tag>
+                    ) : a.passed === true ? (
+                      <Tag color="success">Passed</Tag>
+                    ) : a.passed === false ? (
+                      <Tag color="error">Did not pass</Tag>
+                    ) : null}
+                    {countingAttemptId === a.id && <Tag>Counts toward grade</Tag>}
+                  </>
+                ),
+              },
+            ]}
+          />
           {quizMeta?.scoringPolicy === 'average' && (
             <Text type="secondary" style={{ fontSize: 12 }}>
               Final score is the average of all attempts.
             </Text>
           )}
-        </Flex>
+        </Card>
       )}
       {/* The student's own answers (and any grader feedback) always show; correct-answer
           markers inside follow the quiz's reveal policy. */}

@@ -12,6 +12,7 @@ import {
   Space,
   Spin,
   Table,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -23,7 +24,6 @@ import {
   DeleteOutlined,
   DownOutlined,
   EditOutlined,
-  CheckSquareOutlined,
   EyeOutlined,
   PlusOutlined,
   RetweetOutlined,
@@ -43,9 +43,9 @@ import { typeMeta } from '../../core/questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
 import GeneratedSectionModal from './GeneratedSectionModal';
-import GeneratedReviewDrawer from './GeneratedReviewDrawer';
+import GeneratedReviewPanel from './GeneratedReviewPanel';
 import QuizPreviewDrawer, { PreviewItem } from './QuizPreviewDrawer';
-import QuizGradingDrawer from './QuizGradingDrawer';
+import QuizGradingView from './QuizGradingView';
 import QuizSettingsCard, { QuizSettingsDraft } from './QuizSettingsCard';
 
 const { Text } = Typography;
@@ -104,6 +104,8 @@ const PointsOverrideInput: React.FC<{
   );
 };
 
+type BuilderTab = 'settings' | 'questions' | 'grading' | 'review';
+
 const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const queryClient = useQueryClient();
   const { data: liveQuiz } = useQuizDetail(quiz.id);
@@ -119,11 +121,18 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   const [addOpen, setAddOpen] = React.useState(false);
   const [groupOpen, setGroupOpen] = React.useState(false);
   const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [gradingOpen, setGradingOpen] = React.useState(false);
   const [editingGroup, setEditingGroup] = React.useState<QuizQuestionGroup | null>(null);
   const [sectionOpen, setSectionOpen] = React.useState(false);
-  const [reviewOpen, setReviewOpen] = React.useState(false);
   const [editingSection, setEditingSection] = React.useState<QuizGeneratedSection | null>(null);
+
+  // Page-level tab. Controlled: the Grading/Review panes gate their queries on being the
+  // active tab, and the Review tab's disappearance needs a fallback.
+  const [activeTab, setActiveTab] = React.useState<BuilderTab>('settings');
+  // The Review tab exists only while the quiz has AI sections; if the last one is
+  // removed while it's active, fall back to Questions.
+  React.useEffect(() => {
+    if (activeTab === 'review' && sections.length === 0) setActiveTab('questions');
+  }, [activeTab, sections.length]);
 
   // --- Quiz settings draft (sparse; QuizSettingsCard owns normalization/dirty/save) ---
   const [settingsDraft, setSettingsDraft] = React.useState<QuizSettingsDraft>({});
@@ -455,19 +464,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
     return [...fixed, ...drawn];
   }, [orderedQuestions, orderedGroups, questionsById, questions]);
 
-  return (
-    <>
-      <QuizSettingsCard
-        courseId={course.id!}
-        quiz={current}
-        assignmentOptions={assignmentOptions}
-        hasGeneratedSections={orderedSections.length > 0}
-        draft={settingsDraft}
-        onDraftChange={patchSettings}
-      />
-
-      {/* Quiz contents: fixed questions + random draws, unified */}
-      <Card
+  // Quiz contents: fixed questions + random draws, unified.
+  const questionsCard = (
+    <Card
         title={
           <Flex align="center" gap={8}>
             <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
@@ -500,18 +499,6 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                 Preview
               </CPButton>
             </Tooltip>
-            <Tooltip title="Review submitted attempts and grade essay/code responses">
-              <CPButton cpType="link" icon={<CheckSquareOutlined />} onClick={() => setGradingOpen(true)}>
-                Grading{needsGradingCount > 0 ? ` (${needsGradingCount})` : ''}
-              </CPButton>
-            </Tooltip>
-            {orderedSections.length > 0 && (
-              <Tooltip title="Review each student's generated questions before their quiz opens">
-                <CPButton cpType="link" icon={<RobotOutlined />} onClick={() => setReviewOpen(true)}>
-                  Review Generated{readyCount > 0 ? ` (${readyCount})` : ''}
-                </CPButton>
-              </Tooltip>
-            )}
             <Dropdown
               trigger={['click']}
               menu={{
@@ -570,6 +557,45 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           <Table dataSource={rows} columns={columns} rowKey="key" size="small" pagination={false} />
         )}
       </Card>
+  );
+
+  return (
+    <>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(k) => setActiveTab(k as BuilderTab)}
+        items={[
+          {
+            key: 'settings',
+            label: 'Settings',
+            children: (
+              <QuizSettingsCard
+                courseId={course.id!}
+                quiz={current}
+                assignmentOptions={assignmentOptions}
+                hasGeneratedSections={orderedSections.length > 0}
+                draft={settingsDraft}
+                onDraftChange={patchSettings}
+              />
+            ),
+          },
+          { key: 'questions', label: 'Questions', children: questionsCard },
+          {
+            key: 'grading',
+            label: `Grading${needsGradingCount > 0 ? ` (${needsGradingCount})` : ''}`,
+            children: <QuizGradingView quiz={current} active={activeTab === 'grading'} />,
+          },
+          ...(orderedSections.length > 0
+            ? [{
+                key: 'review',
+                label: `Review${readyCount > 0 ? ` (${readyCount})` : ''}`,
+                children: (
+                  <GeneratedReviewPanel quiz={current} courseId={course.id!} active={activeTab === 'review'} />
+                ),
+              }]
+            : []),
+        ]}
+      />
 
       <AddQuestionsModal
         open={addOpen}
@@ -597,8 +623,6 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         hasGroups={orderedGroups.length > 0}
       />
 
-      <QuizGradingDrawer open={gradingOpen} onClose={() => setGradingOpen(false)} quiz={current} />
-
       <GeneratedSectionModal
         open={sectionOpen}
         courseId={course.id!}
@@ -608,12 +632,6 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         onClose={() => setSectionOpen(false)}
       />
 
-      <GeneratedReviewDrawer
-        open={reviewOpen}
-        onClose={() => setReviewOpen(false)}
-        quiz={current}
-        courseId={course.id!}
-      />
     </>
   );
 };

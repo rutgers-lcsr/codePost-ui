@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } from 'antd';
-import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
+import { Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } from 'antd';
+import { CheckCircleTwoTone, CloseCircleTwoTone, CommentOutlined } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
 import { StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
 import Markdown from '../../core/Markdown';
@@ -159,14 +159,12 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
       <div style={{ marginTop: 12 }}>{renderInput()}</div>
       {/* Server-gated: present once the attempt is submitted, regardless of answer reveal. */}
       {response.graderFeedback && (
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginTop: 12 }}
-          message="Grader feedback"
-          description={response.graderFeedback}
-          data-testid="quiz-grader-feedback"
-        />
+        <div style={{ marginTop: 12 }} data-testid="quiz-grader-feedback">
+          <Text type="secondary">
+            <CommentOutlined /> Grader:{' '}
+          </Text>
+          <Text style={{ whiteSpace: 'pre-wrap' }}>{response.graderFeedback}</Text>
+        </div>
       )}
       {reveal && question.generalFeedback && (
         <div style={{ marginTop: 12 }}>
