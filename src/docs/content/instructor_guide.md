@@ -17,6 +17,7 @@ This page is the instructor home base for codePost docs. If you are setting up a
 3. [Assignment Workflow](/docs/instructor-assignment-workflow)
 4. [Environment & Testing Ops](/docs/instructor-environment-testing)
 5. [Grading, Release & Exports](/docs/instructor-grading-publishing)
+6. [Quizzes](/docs/instructor-quizzes)
 
 ## What each page covers
 
@@ -50,6 +51,13 @@ This page is the instructor home base for codePost docs. If you are setting up a
 - Grading operations in Code Console
 - Finalization and publish controls
 - Exporting grades and operational checks
+
+### Quizzes
+
+- Author question banks and questions (including import from Canvas)
+- Build quizzes with fixed questions, random draws, and per-student AI-generated questions
+- Configure availability, timing, attempts, and scoring; publish
+- Grade essay/code responses, review results, and export scores
 
 ## Related guides
 

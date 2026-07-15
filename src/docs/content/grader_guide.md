@@ -175,6 +175,31 @@ When viewing a submission that has a regrade request:
 
 ---
 
+## Grading quizzes
+
+Some question types on a quiz — **essay** and **code** — can't be graded automatically and need a
+person. Everything else (multiple choice, true/false, short answer, numerical) is scored the moment
+the student submits, so you only ever see the responses that genuinely need a human.
+
+> [!IMPORTANT]
+> Grading quizzes requires the **Quiz Grader** role. Being an assignment grader is **not** enough —
+> an instructor has to grant Quiz Grader in Roster → Graders. Once granted, a **Quiz Grading** item
+> appears in your grader navigation. (Course admins can always grade quizzes.)
+
+To grade:
+
+1. Open **Quiz Grading** and pick a quiz — its "needs grading" count is shown.
+2. Work through the responses. For each essay/code response, assign points and optionally leave
+   **feedback** for the student.
+3. Use **Grade and next** to jump straight to the next response awaiting grading.
+4. Use **Reopen** to undo a grade you already saved and send it back to the queue (your feedback is
+   kept as a draft).
+
+If the quiz's instructor enabled **Graders can review generated**, you may also review the
+AI-generated per-student question sets; otherwise that stays admin-only.
+
+---
+
 ## AI tools
 
 When the course instructor has enabled AI features, you have three AI tools available in the Code Console.

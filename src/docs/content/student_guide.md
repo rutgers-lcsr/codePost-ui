@@ -116,6 +116,46 @@ If your instructor has set a regrade deadline, you will not be able to submit a 
 > [!IMPORTANT]
 > Use regrade requests responsibly. You can only submit one request per submission — make sure to include all relevant details. Frivolous requests may be penalized depending on course policy.
 
+## Quizzes
+
+Some courses use **quizzes** in codePost. A quiz may be **standalone** or **attached to an
+assignment**.
+
+### Finding a quiz
+
+Quizzes show up in three places:
+
+- **On the assignment card** — for quizzes attached to an assignment you're working on.
+- **On the Quizzes page** — standalone quizzes live here, and attached quizzes also appear under
+  "Assignment Quizzes."
+- **On your dashboard** — a **"Quizzes to Take"** rail highlights open quizzes across all your
+  courses.
+
+If a quiz isn't open yet, it shows a **locked** state with a plain-language reason, such as "Opens
+after you submit," "Opens after the assignment closes," or "Your quiz is being prepared."
+
+### Taking a quiz
+
+- **Autosave** — your answers save as you go; you'll see a **"Saving… / Saved"** indicator, and the
+  app warns you if you try to leave with unsaved changes.
+- **Timer** — timed quizzes show a countdown that turns red in the final minute and **auto-submits**
+  when it reaches zero.
+- **One question at a time** — some quizzes step you through questions one at a time; depending on
+  the settings you may or may not be able to go back.
+- **Attempts** — some quizzes allow more than one attempt. When you have multiple, the quiz's
+  scoring policy decides which one counts (highest, latest, or average).
+
+### Reviewing your results
+
+Once you've submitted (and if your instructor allows it), you can review your attempt: your
+**score**, whether you **passed**, per-question **feedback** from graders, and — when the quiz
+reveals them — the **correct answers**. If you had multiple attempts, an **attempt-history** list
+shows each one and marks which attempt **counts toward your grade**.
+
+> [!NOTE]
+> Some questions (essays and code) are graded by a person, so part of your score may show as
+> **"Awaiting grading"** until a grader gets to it.
+
 ## Troubleshooting
 
 - **Invite Code Invalid**: Double-check the code with your instructor.

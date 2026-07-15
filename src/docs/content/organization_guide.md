@@ -114,3 +114,18 @@ Organization admins can configure a shared AI provider and API key that courses 
    - **Disabled** — courses must use their own keys.
 
 See the [AI Settings & Usage Guide](/docs/ai-guide) for full details on configuration, inheritance, and usage tracking.
+
+## Quizzes
+
+Quizzes are a **course-level** feature that instructors build and grade themselves — there is no
+organization-level quiz management. Two things you control at the org level do affect them, though:
+
+- **AI provider & key** — the AI that drafts quiz questions and generates per-student questions runs
+  on the shared AI provider you configure above (or a course's own key). If courses have no AI
+  access, instructors simply author quiz questions manually. Quiz AI usage is included in the same
+  usage tracking as other AI features.
+- **Course access** — quizzes follow the normal course roster and roles; the per-course **Quiz
+  Grader** role is managed by each course's admins.
+
+For the full authoring and grading workflow, see the instructor [Quizzes](/docs/instructor-quizzes)
+guide.
