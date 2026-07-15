@@ -18,6 +18,8 @@ export { GeneratedQuestionSetsApi } from './GeneratedQuestionSetsApi';
 export { GeneratedQuizQuestionsApi } from './GeneratedQuizQuestionsApi';
 export { ImpersonateApi } from './ImpersonateApi';
 export { LearningObjectivesApi } from './LearningObjectivesApi';
+export { LogoutApi } from './LogoutApi';
+export { LogoutAllApi } from './LogoutAllApi';
 export { LogsApi } from './LogsApi';
 export { OrganizationsApi } from './OrganizationsApi';
 export { OttApi } from './OttApi';

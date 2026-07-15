@@ -15,6 +15,8 @@ apis/GeneratedQuestionSetsApi.ts
 apis/GeneratedQuizQuestionsApi.ts
 apis/ImpersonateApi.ts
 apis/LearningObjectivesApi.ts
+apis/LogoutAllApi.ts
+apis/LogoutApi.ts
 apis/LogsApi.ts
 apis/OrganizationsApi.ts
 apis/OttApi.ts
@@ -196,6 +198,10 @@ docs/LogDumpRequest.md
 docs/LogErrorRequest.md
 docs/LogHappinessRequest.md
 docs/LogSuccessResponse.md
+docs/LogoutAllApi.md
+docs/LogoutApi.md
+docs/LogoutRequest.md
+docs/LogoutResponse.md
 docs/LogsApi.md
 docs/MainOrgSSOConfig.md
 docs/MaintenanceBannerResponse.md
@@ -381,8 +387,8 @@ docs/TestExecutionRequest.md
 docs/TestExecutionResult.md
 docs/TmpScriptApi.md
 docs/TokenAuthApi.md
+docs/TokenRefresh.md
 docs/TokenRefreshApi.md
-docs/TokenRefreshSliding.md
 docs/TokenVerify.md
 docs/TokenVerifyApi.md
 docs/TypeEnum.md

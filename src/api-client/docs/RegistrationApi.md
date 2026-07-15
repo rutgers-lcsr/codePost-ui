@@ -85,7 +85,7 @@ This endpoint does not need any parameter.
 
 > User currentUserRetrieve()
 
-Determine the current user by their token, and return their data
+Determine the current user by their token, and return their data. Returns a fresh access token (as &#x60;&#x60;token&#x60;&#x60;) plus a &#x60;&#x60;refresh&#x60;&#x60; token. This is also how an SSO session (which only receives an access token via the redirect URL) obtains its refresh token, without ever putting the refresh token in a URL.
 
 ### Example
 

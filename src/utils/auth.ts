@@ -2,10 +2,40 @@
 import { clearLocalSettings } from '../components/utils/LocalSettings';
 
 /**
- * Gets the authorization token from localStorage
+ * Gets the access token from localStorage.
+ *
+ * (Stored under the historical `token` key so every existing consumer keeps
+ * working; the long-lived refresh token lives under `refresh`.)
  */
 export function getAuthToken(): string {
   return localStorage.getItem('token') || '';
+}
+
+/**
+ * Gets the refresh token from localStorage.
+ */
+export function getRefreshToken(): string {
+  return localStorage.getItem('refresh') || '';
+}
+
+/**
+ * Persist an access token and, when provided, a refresh token. A refresh token
+ * is only overwritten when one is supplied, so responses that carry just an
+ * access token (e.g. profile saves) leave the existing refresh token intact.
+ */
+export function setTokens(access: string, refresh?: string | null): void {
+  localStorage.setItem('token', access);
+  if (refresh) {
+    localStorage.setItem('refresh', refresh);
+  }
+}
+
+/**
+ * Clear both tokens from localStorage.
+ */
+export function clearTokens(): void {
+  localStorage.removeItem('token');
+  localStorage.removeItem('refresh');
 }
 
 /**
@@ -40,28 +70,31 @@ export function isTokenExpired(): boolean {
 let refreshPromise: Promise<boolean> | null = null;
 
 /**
- * Attempt to refresh the current JWT token via the sliding-token endpoint.
- * Returns `true` if the token was refreshed, `false` otherwise.
+ * Attempt to exchange the refresh token for a fresh access token.
+ *
+ * Because rotation is enabled server-side, a new refresh token is returned too
+ * and stored. Returns `true` if a new access token was obtained, `false`
+ * otherwise. Concurrent callers share a single in-flight request.
  */
 export async function tryRefreshToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
-    const token = getAuthToken();
-    if (!token) return false;
+    const refresh = getRefreshToken();
+    if (!refresh) return false;
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ refresh }),
       });
 
       if (!res.ok) return false;
 
-      const data: { token?: string } = await res.json();
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      const data: { access?: string; refresh?: string } = await res.json();
+      if (data.access) {
+        setTokens(data.access, data.refresh);
         return true;
       }
       return false;
@@ -73,6 +106,30 @@ export async function tryRefreshToken(): Promise<boolean> {
   })();
 
   return refreshPromise;
+}
+
+/**
+ * Revoke the current session server-side (blacklists the refresh token) on a
+ * best-effort basis, then clear local tokens. Safe to call even if the network
+ * request fails — local state is always cleared.
+ */
+export async function logout(): Promise<void> {
+  const refresh = getRefreshToken();
+  if (refresh) {
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL}/logout/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+        },
+        body: JSON.stringify({ refresh }),
+      });
+    } catch {
+      // Best effort — fall through and clear local state regardless.
+    }
+  }
+  clearTokens();
 }
 
 /**
@@ -94,7 +151,7 @@ export function resolveSafeRedirectPath(value: string): string | null {
  * Redirect to login page
  */
 export function redirectToLogin(): void {
-  localStorage.removeItem('token');
+  clearTokens();
   window.location.href = '/';
   // Root renders the login screen for unauthenticated users
 }
@@ -105,9 +162,9 @@ let didHandleUnauthorized = false;
  * Clear auth state and force the user to re-authenticate.
  * This is intended to be called when the API returns 401.
  *
- * If the token looks expired (based on the JWT `exp` claim), we first
- * attempt a sliding-token refresh.  Only when the refresh also fails do
- * we log the user out and redirect.
+ * If the access token looks expired (based on its JWT `exp` claim), we first
+ * attempt a refresh using the refresh token.  Only when the refresh also fails
+ * do we log the user out and redirect.
  */
 export async function handleUnauthorized(): Promise<void> {
   if (didHandleUnauthorized) {
@@ -119,7 +176,7 @@ export async function handleUnauthorized(): Promise<void> {
     return;
   }
 
-  // If the token is expired (or about to expire), try to refresh it
+  // If the access token is expired (or about to expire), try to refresh it
   // before giving up and logging the user out.
   if (isTokenExpired()) {
     const refreshed = await tryRefreshToken();
@@ -135,7 +192,7 @@ export async function handleUnauthorized(): Promise<void> {
   didHandleUnauthorized = true;
 
   try {
-    localStorage.removeItem('token');
+    clearTokens();
     localStorage.removeItem('isSuperUser');
   } catch (error) {
     console.error('Failed clearing auth storage:', error);

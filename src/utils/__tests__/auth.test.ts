@@ -143,27 +143,29 @@ describe('tryRefreshToken', () => {
     expect(result).toBe(false);
   });
 
-  it('returns true and stores new token on success', async () => {
+  it('returns true and stores the rotated access + refresh tokens on success', async () => {
     vi.resetModules();
     vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
 
     const { mock: lsMock, store } = createLocalStorageMock();
-    store['token'] = 'old-token';
+    store['refresh'] = 'old-refresh';
     installLocalStorageMock(lsMock);
 
-    const newToken = buildValidJwt();
+    const newAccess = buildValidJwt();
+    const newRefresh = buildValidJwt();
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ token: newToken }),
+        json: () => Promise.resolve({ access: newAccess, refresh: newRefresh }),
       }),
     );
 
     const { tryRefreshToken } = await import('../auth');
     const result = await tryRefreshToken();
     expect(result).toBe(true);
-    expect(localStorage.setItem).toHaveBeenCalledWith('token', newToken);
+    expect(localStorage.setItem).toHaveBeenCalledWith('token', newAccess);
+    expect(localStorage.setItem).toHaveBeenCalledWith('refresh', newRefresh);
   });
 
   it('returns false when refresh endpoint returns not ok', async () => {
@@ -212,12 +214,12 @@ describe('tryRefreshToken', () => {
     vi.resetModules();
     vi.mock('../../components/utils/LocalSettings', () => ({ clearLocalSettings: vi.fn() }));
 
-    vi.mocked(localStorage.getItem).mockReturnValue('old-token');
+    vi.mocked(localStorage.getItem).mockReturnValue('old-refresh');
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ token: buildValidJwt() }),
+        json: () => Promise.resolve({ access: buildValidJwt() }),
       }),
     );
 
@@ -245,6 +247,7 @@ describe('handleUnauthorized', () => {
 
     const { mock: lsMock, store } = createLocalStorageMock();
     store['token'] = buildExpiredJwt();
+    store['refresh'] = 'valid-refresh';
     installLocalStorageMock(lsMock);
 
     Object.defineProperty(window, 'location', {
@@ -253,13 +256,13 @@ describe('handleUnauthorized', () => {
       configurable: true,
     });
 
-    // Mock a successful refresh
+    // Mock a successful refresh (returns a rotated access token)
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: () => Promise.resolve({ token: buildValidJwt() }),
+        json: () => Promise.resolve({ access: buildValidJwt() }),
       }),
     );
 

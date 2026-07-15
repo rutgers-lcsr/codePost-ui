@@ -1,5 +1,7 @@
 # JWT
 
+Password-login serializer issuing an access + refresh pair. Extends the standard pair serializer to attach codePost\'s custom claims and to embed the serialized user (and a backward-compatible `token` alias for the access token) in the response.
+
 ## Properties
 
 | Name       | Type   |

@@ -10,7 +10,7 @@ All URIs are relative to *http://localhost*
 
 > JWT create(jWT)
 
-Takes a set of user credentials and returns a sliding JSON web token to prove the authentication of those credentials.
+Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
 
 ### Example
 

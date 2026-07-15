@@ -5165,7 +5165,11 @@ export interface ImpersonateRequest {
   neverExpire?: boolean;
 }
 /**
+ * Password-login serializer issuing an access + refresh pair.
  *
+ * Extends the standard pair serializer to attach codePost's custom claims and to
+ * embed the serialized user (and a backward-compatible ``token`` alias for the
+ * access token) in the response.
  * @export
  * @interface JWT
  */
@@ -5454,6 +5458,32 @@ export interface LogSuccessResponse {
    * @memberof LogSuccessResponse
    */
   success: boolean;
+}
+/**
+ *
+ * @export
+ * @interface LogoutRequest
+ */
+export interface LogoutRequest {
+  /**
+   * The refresh token to blacklist.
+   * @type {string}
+   * @memberof LogoutRequest
+   */
+  refresh: string;
+}
+/**
+ *
+ * @export
+ * @interface LogoutResponse
+ */
+export interface LogoutResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof LogoutResponse
+   */
+  detail: string;
 }
 /**
  *
@@ -13838,15 +13868,21 @@ export interface TestExecutionResult {
 /**
  *
  * @export
- * @interface TokenRefreshSliding
+ * @interface TokenRefresh
  */
-export interface TokenRefreshSliding {
+export interface TokenRefresh {
   /**
    *
    * @type {string}
-   * @memberof TokenRefreshSliding
+   * @memberof TokenRefresh
    */
-  token: string;
+  readonly access: string;
+  /**
+   *
+   * @type {string}
+   * @memberof TokenRefresh
+   */
+  refresh: string;
 }
 /**
  *

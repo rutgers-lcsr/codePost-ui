@@ -14,34 +14,34 @@
  */
 
 import * as runtime from '../runtime';
-import type { JWT } from '../models/index';
-
-export interface CreateRequest {
-  jWT: JWT;
-}
+import type { LogoutResponse } from '../models/index';
 
 /**
  *
  */
-export class TokenAuthApi extends runtime.BaseAPI {
+export class LogoutAllApi extends runtime.BaseAPI {
   /**
-   * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+   * Revoke every session for the authenticated user (\"log out everywhere\") by blacklisting all of their outstanding refresh tokens.
    */
   async createRaw(
-    requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<JWT>> {
-    if (requestParameters['jWT'] == null) {
-      throw new runtime.RequiredError('jWT', 'Required parameter "jWT" was null or undefined when calling create().');
-    }
-
+  ): Promise<runtime.ApiResponse<LogoutResponse>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
 
-    headerParameters['Content-Type'] = 'application/json';
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
 
-    let urlPath = `/token-auth/`;
+    let urlPath = `/logout-all/`;
 
     const response = await this.request(
       {
@@ -49,7 +49,6 @@ export class TokenAuthApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['jWT'],
       },
       initOverrides,
     );
@@ -58,13 +57,10 @@ export class TokenAuthApi extends runtime.BaseAPI {
   }
 
   /**
-   * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+   * Revoke every session for the authenticated user (\"log out everywhere\") by blacklisting all of their outstanding refresh tokens.
    */
-  async create(
-    requestParameters: CreateRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<JWT> {
-    const response = await this.createRaw(requestParameters, initOverrides);
+  async create(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LogoutResponse> {
+    const response = await this.createRaw(initOverrides);
     return await response.value();
   }
 }

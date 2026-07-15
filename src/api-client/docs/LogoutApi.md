@@ -1,23 +1,23 @@
-# TokenRefreshApi
+# LogoutApi
 
 All URIs are relative to *http://localhost*
 
-| Method                                  | HTTP request             | Description |
-| --------------------------------------- | ------------------------ | ----------- |
-| [**create**](TokenRefreshApi.md#create) | **POST** /token-refresh/ |             |
+| Method                            | HTTP request      | Description |
+| --------------------------------- | ----------------- | ----------- |
+| [**create**](LogoutApi.md#create) | **POST** /logout/ |             |
 
 ## create
 
-> TokenRefresh create(tokenRefresh)
+> LogoutResponse create(logoutRequest)
 
-Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
+Revoke a single session by blacklisting its refresh token. Idempotent: an already-blacklisted, expired, or malformed token still returns 200 so the client can proceed to clear local state and redirect to login.
 
 ### Example
 
 ```ts
 import {
   Configuration,
-  TokenRefreshApi,
+  LogoutApi,
 } from '';
 import type { CreateRequest } from '';
 
@@ -32,11 +32,11 @@ async function example() {
     // To configure API key authorization: cookieAuth
     apiKey: "YOUR API KEY",
   });
-  const api = new TokenRefreshApi(config);
+  const api = new LogoutApi(config);
 
   const body = {
-    // TokenRefresh
-    tokenRefresh: ...,
+    // LogoutRequest
+    logoutRequest: ...,
   } satisfies CreateRequest;
 
   try {
@@ -53,13 +53,13 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name             | Type                            | Description | Notes |
-| ---------------- | ------------------------------- | ----------- | ----- |
-| **tokenRefresh** | [TokenRefresh](TokenRefresh.md) |             |       |
+| Name              | Type                              | Description | Notes |
+| ----------------- | --------------------------------- | ----------- | ----- |
+| **logoutRequest** | [LogoutRequest](LogoutRequest.md) |             |       |
 
 ### Return type
 
-[**TokenRefresh**](TokenRefresh.md)
+[**LogoutResponse**](LogoutResponse.md)
 
 ### Authorization
 

@@ -14,10 +14,10 @@
  */
 
 import * as runtime from '../runtime';
-import type { TokenRefreshSliding } from '../models/index';
+import type { TokenRefresh } from '../models/index';
 
 export interface CreateRequest {
-  tokenRefreshSliding: TokenRefreshSliding;
+  tokenRefresh: Omit<TokenRefresh, 'access'>;
 }
 
 /**
@@ -25,16 +25,16 @@ export interface CreateRequest {
  */
 export class TokenRefreshApi extends runtime.BaseAPI {
   /**
-   * Takes a sliding JSON web token and returns a new, refreshed version if the token\'s refresh period has not expired.
+   * Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
    */
   async createRaw(
     requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<TokenRefreshSliding>> {
-    if (requestParameters['tokenRefreshSliding'] == null) {
+  ): Promise<runtime.ApiResponse<TokenRefresh>> {
+    if (requestParameters['tokenRefresh'] == null) {
       throw new runtime.RequiredError(
-        'tokenRefreshSliding',
-        'Required parameter "tokenRefreshSliding" was null or undefined when calling create().',
+        'tokenRefresh',
+        'Required parameter "tokenRefresh" was null or undefined when calling create().',
       );
     }
 
@@ -63,7 +63,7 @@ export class TokenRefreshApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['tokenRefreshSliding'],
+        body: requestParameters['tokenRefresh'],
       },
       initOverrides,
     );
@@ -72,12 +72,12 @@ export class TokenRefreshApi extends runtime.BaseAPI {
   }
 
   /**
-   * Takes a sliding JSON web token and returns a new, refreshed version if the token\'s refresh period has not expired.
+   * Takes a refresh type JSON web token and returns an access type JSON web token if the refresh token is valid.
    */
   async create(
     requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<TokenRefreshSliding> {
+  ): Promise<TokenRefresh> {
     const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }

@@ -23,11 +23,11 @@ import { ADMIN, CODE, CODE_DEMO, GRADER, HEALTH_CHECK, HOME, STUDENT } from './r
 import { Course, User } from './api-client';
 import { Assignment } from './types/common';
 
-import { registrationApi, tokenAuthApi, tokenRefreshApi } from './api-client/clients';
+import { registrationApi, tokenAuthApi } from './api-client/clients';
 import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 
 import { normalizeUser } from './utils/normalizeUser';
-import { resolveSafeRedirectPath } from './utils/auth';
+import { resolveSafeRedirectPath, tryRefreshToken, setTokens, clearTokens, logout } from './utils/auth';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import ChangeLog from './components/pre-auth/ChangeLog';
@@ -147,6 +147,10 @@ Firefox:
     const redirectUrl = urlParams.get('redirect');
 
     if (urlToken) {
+      // SSO / redirect hand-off carries only an access token; drop any stale
+      // refresh token from a previous identity. current_user (in tryToLogin)
+      // supplies the matching refresh token for this session.
+      localStorage.removeItem('refresh');
       localStorage.setItem('token', urlToken);
 
       const newUrl = new URL(window.location.href);
@@ -168,8 +172,8 @@ Firefox:
       if (urlError) {
         setError(decodeURIComponent(urlError));
 
-        // Clear any existing token to prevent auto-login retry interference
-        localStorage.removeItem('token');
+        // Clear any existing tokens to prevent auto-login retry interference
+        clearTokens();
         setHasToken(false); // Update state to reflect logout
 
         const newUrl = new URL(window.location.href);
@@ -213,10 +217,13 @@ Firefox:
     setIsSuperUser(isSuperUserParam);
 
     if (newUser.token) {
-      localStorage.setItem('token', newUser.token);
+      // Identity-switch responses (impersonate / dev login-as) also carry a
+      // refresh token; capture it so the new identity's session can refresh.
+      const refresh = (newUser as { refresh?: unknown }).refresh;
+      setTokens(newUser.token, typeof refresh === 'string' ? refresh : undefined);
       setHasToken(true);
     } else {
-      localStorage.removeItem('token');
+      clearTokens();
       setHasToken(false);
     }
   }, []);
@@ -283,18 +290,22 @@ Firefox:
         return;
       }
 
-      tokenRefreshApi
-        .create({ tokenRefreshSliding: { token: existingToken } })
-        .then((json: { token: string }) => {
-          // If token changed while this request was in-flight (e.g., loginAs),
-          // ignore this stale refresh response to avoid switching identities back.
-          const currentToken = localStorage.getItem('token') || '';
-          if (!currentToken || currentToken !== existingToken) {
+      // Proactively exchange the refresh token for a fresh access token, then
+      // reschedule just before the new access token expires. tryRefreshToken()
+      // reads the current refresh token from storage and coalesces concurrent
+      // calls, so it will not resurrect a previous identity after a loginAs.
+      tryRefreshToken()
+        .then((ok) => {
+          if (!ok) {
             return;
           }
 
-          localStorage.setItem('token', json.token);
-          const exp = getTokenExpiration(json.token);
+          const newToken = localStorage.getItem('token') || '';
+          if (!newToken) {
+            return;
+          }
+
+          const exp = getTokenExpiration(newToken);
           const now = new Date().getTime();
 
           refreshTimerRef.current = setTimeout(
@@ -322,7 +333,9 @@ Firefox:
 
   // Login/Logout handlers
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
+    // Best-effort server-side revocation (blacklists the refresh token), then
+    // clear both tokens locally.
+    void logout();
     clearLocalSettings();
 
     // Clear refresh timer
@@ -343,9 +356,9 @@ Firefox:
       return tokenAuthApi
         .createRaw({ jWT: { username, password } })
         .then((response) => response.raw.json())
-        .then((json: { token: string; user: unknown }) => {
+        .then((json: { token: string; refresh?: string; user: unknown }) => {
           const jwtToken = json.token;
-          localStorage.setItem('token', json.token);
+          setTokens(json.token, json.refresh);
 
           setError('');
           setHasToken(true);
@@ -374,7 +387,7 @@ Firefox:
           );
         })
         .catch((_error) => {
-          localStorage.removeItem('token');
+          clearTokens();
           setHasToken(false);
           setUser(undefined);
           setError('invalid');
@@ -413,9 +426,12 @@ Firefox:
             const normalizedUser = normalizeUser(currentUser);
 
             if (normalizedUser.token) {
-              localStorage.setItem('token', normalizedUser.token);
+              // current_user also returns a refresh token — this is how an SSO
+              // session (which only received an access token via the URL) gets one.
+              const refresh = (currentUser as { refresh?: unknown }).refresh;
+              setTokens(normalizedUser.token, typeof refresh === 'string' ? refresh : undefined);
             } else {
-              localStorage.removeItem('token');
+              clearTokens();
             }
             setUser(normalizedUser);
             setTriedLoading(true);

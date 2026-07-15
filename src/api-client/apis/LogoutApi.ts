@@ -14,25 +14,28 @@
  */
 
 import * as runtime from '../runtime';
-import type { JWT } from '../models/index';
+import type { LogoutRequest, LogoutResponse } from '../models/index';
 
 export interface CreateRequest {
-  jWT: JWT;
+  logoutRequest: LogoutRequest;
 }
 
 /**
  *
  */
-export class TokenAuthApi extends runtime.BaseAPI {
+export class LogoutApi extends runtime.BaseAPI {
   /**
-   * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+   * Revoke a single session by blacklisting its refresh token.  Idempotent: an already-blacklisted, expired, or malformed token still returns 200 so the client can proceed to clear local state and redirect to login.
    */
   async createRaw(
     requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<JWT>> {
-    if (requestParameters['jWT'] == null) {
-      throw new runtime.RequiredError('jWT', 'Required parameter "jWT" was null or undefined when calling create().');
+  ): Promise<runtime.ApiResponse<LogoutResponse>> {
+    if (requestParameters['logoutRequest'] == null) {
+      throw new runtime.RequiredError(
+        'logoutRequest',
+        'Required parameter "logoutRequest" was null or undefined when calling create().',
+      );
     }
 
     const queryParameters: any = {};
@@ -41,7 +44,18 @@ export class TokenAuthApi extends runtime.BaseAPI {
 
     headerParameters['Content-Type'] = 'application/json';
 
-    let urlPath = `/token-auth/`;
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    let urlPath = `/logout/`;
 
     const response = await this.request(
       {
@@ -49,7 +63,7 @@ export class TokenAuthApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters['jWT'],
+        body: requestParameters['logoutRequest'],
       },
       initOverrides,
     );
@@ -58,12 +72,12 @@ export class TokenAuthApi extends runtime.BaseAPI {
   }
 
   /**
-   * Takes a set of user credentials and returns an access and refresh JSON web token pair to prove the authentication of those credentials.
+   * Revoke a single session by blacklisting its refresh token.  Idempotent: an already-blacklisted, expired, or malformed token still returns 200 so the client can proceed to clear local state and redirect to login.
    */
   async create(
     requestParameters: CreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<JWT> {
+  ): Promise<LogoutResponse> {
     const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
   }

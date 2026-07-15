@@ -123,7 +123,7 @@ export class RegistrationApi extends runtime.BaseAPI {
   }
 
   /**
-   * Determine the current user by their token, and return their data
+   * Determine the current user by their token, and return their data.  Returns a fresh access token (as ``token``) plus a ``refresh`` token. This is also how an SSO session (which only receives an access token via the redirect URL) obtains its refresh token, without ever putting the refresh token in a URL.
    */
   async currentUserRetrieveRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
@@ -159,7 +159,7 @@ export class RegistrationApi extends runtime.BaseAPI {
   }
 
   /**
-   * Determine the current user by their token, and return their data
+   * Determine the current user by their token, and return their data.  Returns a fresh access token (as ``token``) plus a ``refresh`` token. This is also how an SSO session (which only receives an access token via the redirect URL) obtains its refresh token, without ever putting the refresh token in a URL.
    */
   async currentUserRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<User> {
     const response = await this.currentUserRetrieveRaw(initOverrides);

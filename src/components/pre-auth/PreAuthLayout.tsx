@@ -37,6 +37,9 @@ class PreAuthLayout extends React.Component<IProps> {
     if (token && typeof redirect === 'string') {
       const safePath = resolveSafeRedirectPath(redirect);
       if (safePath) {
+        // Access-token-only hand-off; drop any stale refresh token so the pair
+        // stays consistent (current_user supplies the matching refresh token).
+        window.localStorage.removeItem('refresh');
         window.localStorage.setItem('token', token as string);
         window.location.assign(safePath);
       }
