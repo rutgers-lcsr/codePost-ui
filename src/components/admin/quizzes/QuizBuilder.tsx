@@ -2,6 +2,7 @@
 import * as React from 'react';
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Dropdown,
@@ -588,7 +589,14 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           ...(orderedSections.length > 0
             ? [{
                 key: 'review',
-                label: `Review${readyCount > 0 ? ` (${readyCount})` : ''}`,
+                // The gold count flags sets awaiting review — those students' quizzes stay
+                // closed until approved.
+                label: (
+                  <Space size={6}>
+                    Review
+                    <Badge count={readyCount} style={{ backgroundColor: '#faad14' }} />
+                  </Space>
+                ),
                 children: (
                   <GeneratedReviewPanel quiz={current} courseId={course.id!} active={activeTab === 'review'} />
                 ),

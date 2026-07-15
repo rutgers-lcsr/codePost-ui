@@ -126,6 +126,9 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const queryClient = useQueryClient();
   const [needsGradingOnly, setNeedsGradingOnly] = React.useState(true);
   const [current, setCurrent] = React.useState<StaffQuizAttempt | null>(null);
+  // Controlled so backing out of an attempt returns to the tab it was opened from
+  // (e.g. a Results row's "View attempt"), not always to Attempts.
+  const [innerTab, setInnerTab] = React.useState('attempts');
 
   const { data: attempts = [], isLoading, error } = useQuizAttempts(quiz.id, {
     needsGrading: needsGradingOnly,
@@ -152,13 +155,19 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
 
   // Item analysis: aggregate every submitted response per question. Fixed and random-draw
   // questions share stable ids across attempts; AI-generated ones are per-student and
-  // collapse into one aggregate bucket.
+  // collapse into one aggregate bucket — the bucket keeps the individual questions so the
+  // expanded row can show what was actually asked (and how each student did).
   const questionStats = React.useMemo(() => {
     interface ChoiceStat { id: number; text: string; isCorrect: boolean; picks: number }
+    interface GeneratedItem {
+      key: string; student: string; attemptNumber?: number; text: string; qtype: string;
+      needsManualGrading: boolean; isCorrect?: boolean | null;
+      pointsEarned?: string | number | null; points?: string | number | null;
+    }
     interface Acc {
       key: string; title: string; qtype: string; n: number; pending: number;
-      choices: ChoiceStat[] | null; earnedSum: number; gradedN: number;
-      correctN: number; correctableN: number;
+      choices: ChoiceStat[] | null; items: GeneratedItem[] | null;
+      earnedSum: number; gradedN: number; correctN: number; correctableN: number;
     }
     const byQuestion = new Map<string, Acc>();
     const selectableTypes = new Set<string>([
@@ -182,6 +191,7 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
                   id: c.id!, text: c.text ?? '', isCorrect: !!c.isCorrect, picks: 0,
                 }))
               : null,
+            items: key === 'generated' ? [] : null,
             earnedSum: 0, gradedN: 0, correctN: 0, correctableN: 0,
           };
           byQuestion.set(key, s);
@@ -202,10 +212,26 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
             if (c) c.picks += 1;
           }
         }
+        if (s.items) {
+          s.items.push({
+            key: `${a.id}-${r.id}`,
+            student: a.student,
+            attemptNumber: a.attemptNumber,
+            text: r.question?.text ?? '—',
+            qtype: r.question?.questionType ?? '',
+            needsManualGrading: !!r.needsManualGrading,
+            isCorrect: r.isCorrect,
+            pointsEarned: r.pointsEarned,
+            points: r.points,
+          });
+        }
       }
     }
     const rows = [...byQuestion.values()].map((s) => ({
       ...s,
+      items: s.items
+        ? [...s.items].sort((a, b) => a.student.localeCompare(b.student) || (a.attemptNumber ?? 0) - (b.attemptNumber ?? 0))
+        : null,
       avgPct: s.gradedN > 0 ? Math.round((s.earnedSum / s.gradedN) * 100) : null,
       correctPct: s.correctableN > 0 ? Math.round((s.correctN / s.correctableN) * 100) : null,
     }));
@@ -219,6 +245,22 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const pending = attempts.filter((a) => a.needsManualGrading);
   const nextPending = current ? pending.find((a) => a.id !== current.id) : undefined;
   const pendingPosition = current ? pending.findIndex((a) => a.id === current.id) : -1;
+
+  // Open a student's quiz from their Results row: the attempt behind their official score
+  // (best for the default highest policy, latest otherwise — average has no single one).
+  const openStudentAttempt = (student: string) => {
+    const mine = allAttempts.filter((a) => a.student === student);
+    if (mine.length === 0) return;
+    const graded = mine.filter((a) => a.score != null && !a.needsManualGrading);
+    const pool = graded.length > 0 ? graded : mine;
+    const ratio = (a: StaffQuizAttempt) =>
+      Number(a.maxScore) > 0 ? Number(a.score) / Number(a.maxScore) : 0;
+    const pick =
+      quiz.scoringPolicy === 'highest' || quiz.scoringPolicy == null
+        ? pool.reduce((x, y) => (ratio(y) > ratio(x) ? y : x))
+        : pool.reduce((x, y) => ((y.attemptNumber ?? 0) > (x.attemptNumber ?? 0) ? y : x));
+    setCurrent(pick);
+  };
 
   const columns = [
     { title: 'Student', dataIndex: 'student', key: 'student' },
@@ -287,6 +329,16 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
       key: 'lastSubmittedAt',
       render: (_: unknown, r: QuizResultRow) =>
         r.lastSubmittedAt ? <CodePostDate datetime={String(r.lastSubmittedAt)} /> : null,
+    },
+    {
+      title: '',
+      key: 'open',
+      width: 120,
+      render: (_: unknown, r: QuizResultRow) => (
+        <CPButton small onClick={() => openStudentAttempt(r.student)} data-testid="result-view-attempt">
+          View attempt
+        </CPButton>
+      ),
     },
   ];
 
@@ -413,32 +465,84 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
         },
       ]}
       expandable={{
-        rowExpandable: (s: QuestionStat) => !!s.choices?.length,
-        expandedRowRender: (s: QuestionStat) => (
-          <Flex vertical gap={6} style={{ padding: '4px 8px' }}>
-            {(s.choices ?? []).map((c) => (
-              <Flex key={c.id} align="center" gap={8}>
-                <Text ellipsis style={{ width: 320 }}>
-                  {c.text}
-                </Text>
-                {c.isCorrect && (
-                  <Tag color="success" style={{ margin: 0 }}>
-                    correct
-                  </Tag>
-                )}
-                <Progress
-                  percent={s.n > 0 ? Math.round((c.picks / s.n) * 100) : 0}
-                  showInfo={false}
-                  size="small"
-                  style={{ width: 120 }}
-                />
-                <Text type="secondary">
-                  {c.picks} {c.picks === 1 ? 'pick' : 'picks'}
-                </Text>
-              </Flex>
-            ))}
-          </Flex>
-        ),
+        rowExpandable: (s: QuestionStat) => !!s.choices?.length || !!s.items?.length,
+        expandedRowRender: (s: QuestionStat) =>
+          s.items ? (
+            // The per-student generated questions behind the aggregate bucket.
+            <Table
+              dataSource={s.items}
+              rowKey="key"
+              size="small"
+              pagination={false}
+              data-testid="generated-question-items"
+              columns={[
+                {
+                  title: 'Student',
+                  key: 'student',
+                  width: 220,
+                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) => (
+                    <Text type="secondary">
+                      {it.student} · #{it.attemptNumber}
+                    </Text>
+                  ),
+                },
+                {
+                  title: 'Question',
+                  key: 'text',
+                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) => (
+                    <Flex align="center" gap={6} style={{ minWidth: 0 }}>
+                      <Typography.Paragraph
+                        style={{ margin: 0 }}
+                        ellipsis={{ rows: 2, expandable: true, symbol: 'more' }}
+                      >
+                        {it.text}
+                      </Typography.Paragraph>
+                      <Tag style={{ flexShrink: 0 }}>{it.qtype.replace(/_/g, ' ')}</Tag>
+                    </Flex>
+                  ),
+                },
+                {
+                  title: 'Result',
+                  key: 'result',
+                  width: 160,
+                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) =>
+                    it.needsManualGrading ? (
+                      <Tag color="gold">pending</Tag>
+                    ) : (
+                      <Space size={6}>
+                        {it.pointsEarned != null && <Text>{formatScore(it.pointsEarned, it.points)}</Text>}
+                        {it.isCorrect === true && <Tag color="success" style={{ margin: 0 }}>correct</Tag>}
+                        {it.isCorrect === false && <Tag color="error" style={{ margin: 0 }}>incorrect</Tag>}
+                      </Space>
+                    ),
+                },
+              ]}
+            />
+          ) : (
+            <Flex vertical gap={6} style={{ padding: '4px 8px' }}>
+              {(s.choices ?? []).map((c) => (
+                <Flex key={c.id} align="center" gap={8}>
+                  <Text ellipsis style={{ width: 320 }}>
+                    {c.text}
+                  </Text>
+                  {c.isCorrect && (
+                    <Tag color="success" style={{ margin: 0 }}>
+                      correct
+                    </Tag>
+                  )}
+                  <Progress
+                    percent={s.n > 0 ? Math.round((c.picks / s.n) * 100) : 0}
+                    showInfo={false}
+                    size="small"
+                    style={{ width: 120 }}
+                  />
+                  <Text type="secondary">
+                    {c.picks} {c.picks === 1 ? 'pick' : 'picks'}
+                  </Text>
+                </Flex>
+              ))}
+            </Flex>
+          ),
       }}
     />
   );
@@ -519,7 +623,8 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   }
   return (
     <Tabs
-      defaultActiveKey="attempts"
+      activeKey={innerTab}
+      onChange={setInnerTab}
       items={[
         { key: 'attempts', label: 'Attempts', children: attemptsTab },
         { key: 'results', label: 'Results', children: resultsTab },

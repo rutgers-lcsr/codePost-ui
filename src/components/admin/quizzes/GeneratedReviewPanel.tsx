@@ -9,10 +9,10 @@
 // polling) so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, AutoComplete, Empty, Flex, Input, InputNumber, Modal, Space, Spin, Table, Tag,
-  Tooltip, Typography, message,
+  Alert, AutoComplete, Collapse, Divider, Empty, Flex, Input, InputNumber, Modal, Space, Spin,
+  Table, Tag, Tooltip, Typography, message,
 } from 'antd';
-import { LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
@@ -34,6 +34,19 @@ import MarkdownField from './MarkdownField';
 import { typeMeta } from '../../core/questionMeta';
 
 const { Text } = Typography;
+
+const PROMPT_PRE_STYLE: React.CSSProperties = {
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  background: '#fafafa',
+  border: '1px solid #f0f0f0',
+  borderRadius: 6,
+  padding: 12,
+  margin: 0,
+  fontSize: 12,
+  maxHeight: 360,
+  overflow: 'auto',
+};
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   pending: { label: 'Queued', color: 'default' },
@@ -125,48 +138,70 @@ const GeneratedQuestionCard: React.FC<{
   };
 
   const meta = typeMeta(question.questionType);
+  const fieldLabel = (label: string) => (
+    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+      {label}
+    </Text>
+  );
   return (
-    <Flex vertical gap={8} style={{ padding: 12, border: '1px solid #f0f0f0', borderRadius: 8 }}>
-      <Space wrap>
-        <Tag color={meta.color}>{meta.label}</Tag>
-        <Text type="secondary">Points:</Text>
-        <InputNumber min={0} step={1} value={points} disabled={!editable}
-                     onChange={(v) => setPoints(v ?? 0)} size="small" />
-      </Space>
-      <Input.TextArea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        autoSize={{ minRows: 2 }}
-        disabled={!editable}
-        placeholder="Question stem"
-      />
-      <MarkdownField
-        value={description}
-        onChange={setDescription}
-        courseId={courseId}
-        minRows={2}
-        placeholder="Optional description shown beneath the stem…"
-      />
+    <Flex vertical gap={20} style={{ padding: '16px 20px', border: '1px solid #f0f0f0', borderRadius: 8 }}>
+      <Flex justify="space-between" align="center" wrap gap={8}>
+        <Tag color={meta.color} style={{ margin: 0 }}>{meta.label}</Tag>
+        <Space size={6}>
+          <Text type="secondary" style={{ fontSize: 12 }}>Points</Text>
+          <InputNumber min={0} step={1} value={points} disabled={!editable}
+                       onChange={(v) => setPoints(v ?? 0)} size="small" style={{ width: 72 }} />
+        </Space>
+      </Flex>
+      <div>
+        {fieldLabel('Question')}
+        <Input.TextArea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          autoSize={{ minRows: 2 }}
+          disabled={!editable}
+          placeholder="Question stem"
+        />
+      </div>
+      <div>
+        {fieldLabel('Description — shown beneath the question (Markdown, optional)')}
+        <MarkdownField
+          value={description}
+          onChange={setDescription}
+          courseId={courseId}
+          minRows={2}
+          placeholder="Optional description shown beneath the stem…"
+        />
+      </div>
       {hasChoiceEditor(questionType) && (
-        <ChoicesEditor questionType={questionType} value={choices} onChange={setChoices} />
+        <div>
+          {fieldLabel('Choices')}
+          <ChoicesEditor questionType={questionType} value={choices} onChange={setChoices} />
+        </div>
       )}
       {questionType === QuestionTypeEnum.Code && (
-        <CodeQuestionEditor
-          value={starterCode}
-          onChange={setStarterCode}
-          language={question.language}
-          readOnly={!editable}
-        />
+        <div>
+          {fieldLabel('Starter code')}
+          <CodeQuestionEditor
+            value={starterCode}
+            onChange={setStarterCode}
+            language={question.language}
+            readOnly={!editable}
+          />
+        </div>
       )}
       {editable && (
-        <Space>
-          <CPButton cpType="primary" size="small" onClick={save} loading={saving} disabled={!dirty}>
-            Save question
-          </CPButton>
-          <CPButton size="small" danger onClick={remove}>
-            Remove
-          </CPButton>
-        </Space>
+        <>
+          <Divider style={{ margin: 0 }} />
+          <Space>
+            <CPButton cpType="primary" size="small" onClick={save} loading={saving} disabled={!dirty}>
+              Save question
+            </CPButton>
+            <CPButton size="small" danger onClick={remove}>
+              Remove
+            </CPButton>
+          </Space>
+        </>
       )}
     </Flex>
   );
@@ -290,7 +325,21 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
   ];
 
   const readyCount = sets.filter((s) => s.status === 'ready').length;
+  const failedCount = sets.filter((s) => s.status === 'failed').length;
   const detailEditable = current?.status === 'ready' || current?.status === 'approved';
+
+  // What's being reviewed, from the quiz's own sections: N questions per student.
+  const sections = quiz.generatedSections ?? [];
+  const questionsPerStudent = sections.reduce((sum, s) => sum + (s.numQuestions ?? 3), 0);
+
+  // The resolved per-section prompts recorded at generation time (older sets predate this
+  // and fall back to showing the section templates).
+  const genMeta = (current?.generationMetadata ?? null) as {
+    provider?: string;
+    model?: string;
+    sections?: { sectionId?: number; sectionName?: string; prompt?: string }[];
+  } | null;
+  const promptSections = genMeta?.sections?.length ? genMeta.sections : null;
 
   return (
     <>
@@ -302,9 +351,32 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
           style={{ marginBottom: 12 }}
         />
       )}
+      {!current && error == null && failedCount > 0 && (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 12 }}
+          title={`${failedCount} generation${failedCount === 1 ? '' : 's'} failed`}
+          description="Open the set to see the error, then regenerate it."
+        />
+      )}
       {!current && error == null && (
         <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
           <Space>
+          <Tooltip
+            styles={{ root: { maxWidth: 380 } }}
+            title={`Each student gets their own set of ${questionsPerStudent} AI-generated question${
+              questionsPerStudent === 1 ? '' : 's'
+            }, produced from their submission by this quiz's ${
+              sections.length === 1 ? 'AI section' : `${sections.length} AI sections`
+            }. ${
+              quiz.autoPublishGenerated
+                ? 'Auto-publish is on for this quiz, so new sets are published without review — you can still edit, unapprove, or regenerate a set here.'
+                : 'Approving a set publishes its questions and opens the quiz for that student — until then they see "Your quiz is being prepared." Sets marked "Needs review" are waiting on you.'
+            }`}
+          >
+            <InfoCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)', cursor: 'help' }} />
+          </Tooltip>
           <AutoComplete
             style={{ width: 280 }}
             placeholder="Generate for a student (email)…"
@@ -361,7 +433,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
         )
       )}
       {current && (
-        <Flex vertical gap={12}>
+        <Flex vertical gap={16}>
           <Flex align="center" gap={8}>
             <CPButton size="small" icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
               All students
@@ -372,6 +444,52 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
             <Alert type="error" showIcon title="Generation failed"
                    description={current.errorMessage || 'Unknown error.'} />
           )}
+          <Collapse
+            size="small"
+            items={[{
+              key: 'prompt',
+              label: 'Prompt used to generate these questions',
+              children: (
+                <Flex vertical gap={12}>
+                  {promptSections ? (
+                    promptSections.map((p, i) => (
+                      <div key={p.sectionId ?? i}>
+                        {promptSections.length > 1 && (
+                          <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                            {p.sectionName || `AI section ${i + 1}`}
+                          </Text>
+                        )}
+                        <pre style={PROMPT_PRE_STYLE}>{p.prompt}</pre>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <Text type="secondary">
+                        The exact prompt wasn&apos;t recorded for this set (it was generated before prompt
+                        capture; regenerating records it). Below is the section&apos;s prompt template — its
+                        variables are filled from this student&apos;s submission at generation time.
+                      </Text>
+                      {sections.map((s, i) => (
+                        <div key={s.id}>
+                          {sections.length > 1 && (
+                            <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                              {s.name || `AI section ${i + 1}`}
+                            </Text>
+                          )}
+                          <pre style={PROMPT_PRE_STYLE}>{s.systemPrompt}</pre>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {genMeta?.model && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Generated by {genMeta.provider} · {genMeta.model}
+                    </Text>
+                  )}
+                </Flex>
+              ),
+            }]}
+          />
           {(current.questions ?? []).map((q) => (
             <GeneratedQuestionCard
               key={q.id}
