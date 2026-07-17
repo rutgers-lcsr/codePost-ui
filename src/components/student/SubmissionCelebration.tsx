@@ -60,11 +60,18 @@ const SubmissionCelebration: React.FC<SubmissionCelebrationProps> = ({ trigger, 
   const [visible, setVisible] = useState(false);
   const [msg, setMsg] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const continueRef = useRef<HTMLButtonElement>(null);
+  const titleId = React.useId();
 
   const dismiss = useCallback(() => {
     setVisible(false);
     onComplete?.();
   }, [onComplete]);
+
+  // Move focus into the dialog when it opens so keyboard/SR users land on the Continue action.
+  useEffect(() => {
+    if (visible) continueRef.current?.focus();
+  }, [visible]);
 
   useEffect(() => {
     if (trigger) {
@@ -88,6 +95,9 @@ const SubmissionCelebration: React.FC<SubmissionCelebrationProps> = ({ trigger, 
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={dismiss}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') dismiss();
+          }}
           style={{
             position: 'fixed',
             inset: 0,
@@ -105,6 +115,9 @@ const SubmissionCelebration: React.FC<SubmissionCelebrationProps> = ({ trigger, 
             exit={{ scale: 0.9, opacity: 0, y: -20 }}
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
             style={{
               background: '#fff',
               borderRadius: 16,
@@ -114,13 +127,13 @@ const SubmissionCelebration: React.FC<SubmissionCelebrationProps> = ({ trigger, 
               maxWidth: 360,
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
-            <Typography.Title level={3} style={{ margin: '0 0 8px' }}>
+            <div aria-hidden style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+            <Typography.Title id={titleId} level={3} style={{ margin: '0 0 8px' }}>
               {msg}
             </Typography.Title>
             <Typography.Text type="secondary">Your submission has been received.</Typography.Text>
             <div style={{ marginTop: 24 }}>
-              <Button type="primary" onClick={dismiss}>
+              <Button ref={continueRef} type="primary" onClick={dismiss}>
                 Continue
               </Button>
             </div>

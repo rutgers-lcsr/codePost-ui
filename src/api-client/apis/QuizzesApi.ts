@@ -172,7 +172,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: submitters without any set).
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).
    */
   async backfillPreviewRetrieveRaw(
     requestParameters: BackfillPreviewRetrieveRequest,
@@ -221,7 +221,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: submitters without any set).
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).
    */
   async backfillPreviewRetrieve(
     requestParameters: BackfillPreviewRetrieveRequest,

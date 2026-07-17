@@ -21,6 +21,7 @@
 | `oneQuestionAtATime`        | boolean                                                               |
 | `allowBacktracking`         | boolean                                                               |
 | `showCorrectAnswers`        | [QuizShowAnswersEnum](QuizShowAnswersEnum.md)                         |
+| `showResponses`             | boolean                                                               |
 | `passingScore`              | number                                                                |
 | `passingScoreUnit`          | [QuizPassingScoreUnitEnum](QuizPassingScoreUnitEnum.md)               |
 | `scoringPolicy`             | [QuizScoringPolicyEnum](QuizScoringPolicyEnum.md)                     |

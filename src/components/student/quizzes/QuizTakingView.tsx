@@ -21,6 +21,9 @@ interface IProps {
   quizTitle?: string;
   /** Review a past submitted attempt instead of starting/resuming one. */
   reviewOnly?: boolean;
+  /** Notified when the view lands on a submitted attempt (submit, expired resume, or the
+   *  review fallback) so the /take URL can be rewritten to /review before any refresh. */
+  onSubmitted?: () => void;
   onExit: () => void;
 }
 
@@ -41,7 +44,7 @@ const saveAnswer = (attemptId: number, responseId: number, val: AnswerValue) =>
     },
   });
 
-const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewOnly = false, onExit }) => {
+const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewOnly = false, onSubmitted, onExit }) => {
   const queryClient = useQueryClient();
   const [attempt, setAttempt] = React.useState<StudentQuizAttempt | null>(null);
   const [answers, setAnswers] = React.useState<Record<number, AnswerValue>>({});
@@ -50,6 +53,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   const [submitting, setSubmitting] = React.useState(false);
   const [savingCount, setSavingCount] = React.useState(0);
   const [nowMs, setNowMs] = React.useState(Date.now());
+  // Screen-reader time-warning text (the visible countdown is a silent role="timer").
+  const [timeAnnounce, setTimeAnnounce] = React.useState('');
 
   const startedRef = React.useRef(false);
   const timers = React.useRef<Record<number, ReturnType<typeof setTimeout>>>({});
@@ -59,6 +64,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   const unsavedRef = React.useRef<Record<number, AnswerValue>>({});
   // Server-clock anchor: the server's time at load + how long ago (locally measured) we got it.
   const anchorRef = React.useRef<{ serverMs: number; localMs: number } | null>(null);
+  // Remaining-time thresholds already announced to screen readers this attempt.
+  const announcedThresholds = React.useRef<Set<number>>(new Set());
 
   const submitted = attempt?.status === 'submitted';
 
@@ -107,10 +114,13 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         }
         const a = await quizAttemptsApi.create({ startQuizAttemptRequest: { quiz: quizId } });
         applyAttempt(a);
+        // Resuming an expired attempt auto-submits it server-side — land on /review.
+        if (a.status === 'submitted') onSubmitted?.();
       } catch (e) {
         // Can't start (e.g. no attempts remaining) — fall back to reviewing the latest submitted attempt.
         try {
           if (await loadSubmitted(true)) {
+            onSubmitted?.();
             return;
           }
         } catch {
@@ -121,7 +131,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         setLoading(false);
       }
     })();
-  }, [quizId, reviewOnly, applyAttempt, loadSubmitted]);
+  }, [quizId, reviewOnly, applyAttempt, loadSubmitted, onSubmitted]);
 
   // Tick the clock while taking.
   React.useEffect(() => {
@@ -180,6 +190,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       unsavedRef.current = {};
       const done = await quizAttemptsApi.submitCreate({ id: attempt.id });
       applyAttempt(done);
+      onSubmitted?.();
       queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
       // Refreshes the attempt-history strip (QuizResults subscribes via useMyAttempts).
       queryClient.invalidateQueries({ queryKey: studentKeys.quizAttempts(quizId) });
@@ -188,7 +199,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     } finally {
       setSubmitting(false);
     }
-  }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId]);
+  }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId, onSubmitted]);
 
   // Auto-submit when the timer runs out. The countdown is anchored to the server clock
   // (serverNow at load + locally-measured elapsed) so a skewed device clock can't grant or
@@ -205,14 +216,55 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   const autoSubmittedRef = React.useRef(false);
   React.useEffect(() => {
     autoSubmittedRef.current = false;
+    announcedThresholds.current = new Set();
+    setTimeAnnounce('');
   }, [attempt?.id]);
   React.useEffect(() => {
-    if (remainingMs === 0 && attempt?.status === 'in_progress' && !autoSubmittedRef.current) {
-      autoSubmittedRef.current = true;
+    if (remainingMs !== 0 || attempt?.status !== 'in_progress' || autoSubmittedRef.current) return;
+    autoSubmittedRef.current = true;
+    (async () => {
+      // Re-sync before force-submitting: the deadline may have moved since load (the
+      // instructor extended the time limit or close, or granted an accommodation), and
+      // submitting on the stale countdown would steal the added time.
+      try {
+        const fresh = await quizAttemptsApi.retrieve({ id: attempt.id });
+        if (fresh.status === 'submitted') {
+          // Already finalized server-side — show the results.
+          applyAttempt(fresh);
+          onSubmitted?.();
+          return;
+        }
+        if ((fresh.deadline ?? null) !== (attempt.deadline ?? null)) {
+          // Adopt the new deadline (or its removal) and keep going.
+          if (fresh.serverNow) {
+            anchorRef.current = { serverMs: new Date(fresh.serverNow).getTime(), localMs: Date.now() };
+          }
+          setAttempt((prev) => (prev ? { ...prev, deadline: fresh.deadline } : prev));
+          autoSubmittedRef.current = false;
+          return;
+        }
+      } catch {
+        /* can't re-check — submit on the local countdown */
+      }
       message.warning('Time is up — submitting your quiz.');
+      setTimeAnnounce('Time is up. Submitting your quiz.');
       handleSubmit();
+    })();
+  }, [remainingMs, attempt, handleSubmit, applyAttempt, onSubmitted]);
+
+  // Announce remaining-time milestones to screen readers — the visible countdown is a
+  // role="timer", which AT keep silent by design, so a per-tick live region would be noise.
+  React.useEffect(() => {
+    if (remainingMs === null || submitted) return;
+    for (const at of [300000, 60000, 30000]) {
+      if (remainingMs <= at && !announcedThresholds.current.has(at)) {
+        announcedThresholds.current.add(at);
+        setTimeAnnounce(
+          at >= 60000 ? `${at / 60000} minute${at === 60000 ? '' : 's'} remaining.` : `${at / 1000} seconds remaining.`,
+        );
+      }
     }
-  }, [remainingMs, attempt, handleSubmit]);
+  }, [remainingMs, submitted]);
 
   if (loading) {
     return (
@@ -256,26 +308,31 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   ).length;
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-taking">
+    <main style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-taking">
+      {/* Assertive SR region for time-remaining warnings and the time-up notice. */}
+      <Text className="sr-only" aria-live="assertive">
+        {timeAnnounce}
+      </Text>
       <Flex justify="space-between" align="center" wrap gap={12} style={{ marginBottom: 16 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>
+          {/* h1: the quiz route renders as its own full page, outside the app shell. */}
+          <Title level={1} style={{ margin: 0, fontSize: 24 }}>
             {quizTitle ?? 'Quiz'}
           </Title>
           <Text type="secondary">Attempt #{attempt.attemptNumber}</Text>
         </div>
         <Flex align="center" gap={12}>
-          {savingCount > 0 ? (
-            <Text type="secondary">Saving…</Text>
-          ) : (
-            <Text type="secondary">Saved</Text>
-          )}
+          <Text type="secondary" role="status" aria-live="polite">
+            {savingCount > 0 ? 'Saving…' : 'Saved'}
+          </Text>
           {remainingMs !== null && (
             <Tag
               color={remainingMs < 60000 ? 'red' : 'blue'}
               icon={<ClockCircleOutlined />}
               style={{ fontSize: 14 }}
               data-testid="quiz-timer"
+              role="timer"
+              aria-label={`Time remaining: ${formatRemaining(remainingMs)}`}
             >
               {formatRemaining(remainingMs)}
             </Tag>
@@ -286,6 +343,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       <Progress
         percent={Math.round((answeredCount / Math.max(responses.length, 1)) * 100)}
         format={() => `${answeredCount}/${responses.length}`}
+        // Name + real count for AT — the bare progressbar otherwise announces only "60".
+        aria-label={`Questions answered: ${answeredCount} of ${responses.length}`}
         style={{ marginBottom: 16 }}
       />
 
@@ -314,7 +373,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
           </Popconfirm>
         }
       />
-    </div>
+    </main>
   );
 };
 

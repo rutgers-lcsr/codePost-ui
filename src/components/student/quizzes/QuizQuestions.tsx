@@ -41,6 +41,18 @@ const QuizQuestions: React.FC<IProps> = ({
     setCurrent((c) => Math.min(c, Math.max(responses.length - 1, 0)));
   }, [responses.length]);
 
+  // Move focus to the current question when paging (sequential mode) so keyboard/SR users
+  // land on the new question instead of a Prev/Next button that may have moved or unmounted.
+  const questionRef = React.useRef<HTMLDivElement>(null);
+  const firstRender = React.useRef(true);
+  React.useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    questionRef.current?.focus();
+  }, [current]);
+
   if (!oneAtATime) {
     return (
       <>
@@ -69,18 +81,26 @@ const QuizQuestions: React.FC<IProps> = ({
 
   return (
     <>
-      <Text type="secondary">
-        Question {i + 1} of {responses.length}
-      </Text>
-      <QuestionAnswerer
-        key={i}
-        response={responses[i]}
-        index={i}
-        value={value(i)}
-        disabled={!!disabled}
-        reveal={reveal}
-        onChange={(v) => onChange(i, v)}
-      />
+      <div
+        ref={questionRef}
+        tabIndex={-1}
+        role="group"
+        aria-label={`Question ${i + 1} of ${responses.length}`}
+        style={{ outline: 'none' }}
+      >
+        <Text type="secondary">
+          Question {i + 1} of {responses.length}
+        </Text>
+        <QuestionAnswerer
+          key={i}
+          response={responses[i]}
+          index={i}
+          value={value(i)}
+          disabled={!!disabled}
+          reveal={reveal}
+          onChange={(v) => onChange(i, v)}
+        />
+      </div>
       <Flex justify="space-between" align="center" style={{ marginTop: 16 }}>
         <div>
           {allowBack && i > 0 && (

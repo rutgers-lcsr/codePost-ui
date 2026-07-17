@@ -9,8 +9,8 @@
 // polling) so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, AutoComplete, Collapse, Divider, Empty, Flex, Input, InputNumber, Modal, Space, Spin,
-  Table, Tag, Tooltip, Typography, message,
+  Alert, AutoComplete, Collapse, Divider, Empty, Flex, Input, InputNumber, Modal, Select, Space,
+  Spin, Table, Tag, Tooltip, Typography, message,
 } from 'antd';
 import { InfoCircleOutlined, LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ import {
 import { apiErrorMessage } from '../../../lib/apiError';
 import { useApiAction } from '../../../hooks/useApiAction';
 import { quizKeys } from '../../../lib/queryKeys';
-import { useBackfillPreview, useGeneratedSetDetail, useGeneratedSets } from './queries';
+import { useBackfillPreview, useGeneratedSetDetail, useGeneratedSets, useStaffSections } from './queries';
 import { useRosterQuery } from '../hooks/useRosterQuery';
 import ChoicesEditor from './ChoicesEditor';
 import CodeQuestionEditor from './CodeQuestionEditor';
@@ -61,6 +61,11 @@ interface IProps {
   courseId: number;
   /** Whether this view is the visible tab — gates all data fetching. */
   active: boolean;
+  /** Show the admin-only actions: bulk "Publish all" and the generation controls
+   *  (generate-for-student / generate-missing / regenerate) — those endpoints spend AI
+   *  credits and reject non-admins, so grader-console embeds pass false (graders review,
+   *  edit, and approve per set instead). Defaults to true (admin builder). */
+  adminActions?: boolean;
 }
 
 /** One editable generated question: stem, description, choices, and points. */
@@ -149,13 +154,14 @@ const GeneratedQuestionCard: React.FC<{
         <Tag color={meta.color} style={{ margin: 0 }}>{meta.label}</Tag>
         <Space size={6}>
           <Text type="secondary" style={{ fontSize: 12 }}>Points</Text>
-          <InputNumber min={0} step={1} value={points} disabled={!editable}
+          <InputNumber min={0} step={1} value={points} disabled={!editable} aria-label="Points"
                        onChange={(v) => setPoints(v ?? 0)} size="small" style={{ width: 72 }} />
         </Space>
       </Flex>
       <div>
         {fieldLabel('Question')}
         <Input.TextArea
+          aria-label="Question stem"
           value={text}
           onChange={(e) => setText(e.target.value)}
           autoSize={{ minRows: 2 }}
@@ -170,6 +176,7 @@ const GeneratedQuestionCard: React.FC<{
           onChange={setDescription}
           courseId={courseId}
           minRows={2}
+          ariaLabel="Question description"
           placeholder="Optional description shown beneath the stem…"
         />
       </div>
@@ -207,19 +214,49 @@ const GeneratedQuestionCard: React.FC<{
   );
 };
 
-const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
+const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminActions = true }) => {
   const queryClient = useQueryClient();
   const [currentId, setCurrentId] = React.useState<number | null>(null);
 
   const { data: sets = [], isLoading, error } = useGeneratedSets(active ? quiz.id : undefined);
   // Students with a submission but no set — shown on the Generate-missing button.
-  const { data: backfillPreview } = useBackfillPreview(quiz.id, active);
+  const { data: backfillPreview } = useBackfillPreview(quiz.id, active && adminActions);
   const missingCount = backfillPreview?.missing ?? 0;
+  // Submission-free quizzes generate eagerly for enrolled students; undefined (e.g. the
+  // preview isn't fetched for graders) falls back to the submission-seeded copy.
+  const needsSubmission = backfillPreview?.needsSubmission !== false;
+
+  // Section filter: a grader picks their section and reviews only those students' sets.
+  const [sectionId, setSectionId] = React.useState<number | null>(null);
+  const { data: courseSections = [] } = useStaffSections(courseId, active);
+  const sectionEmails = React.useMemo(() => {
+    if (sectionId == null) return null;
+    const section = courseSections.find((s) => s.id === sectionId);
+    return section ? new Set((section.students ?? []).map(String)) : null;
+  }, [sectionId, courseSections]);
+  const visibleSets = sectionEmails
+    ? sets.filter((s) => s.studentEmail && sectionEmails.has(s.studentEmail))
+    : sets;
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
-  // Roster emails feed the generate-for-student picker; if the viewer can't read the
-  // roster (403) the field simply falls back to free typing.
-  const { data: roster } = useRosterQuery(active ? courseId : undefined);
+  // Roster emails feed the generate-for-student picker (admin-only); if the viewer can't
+  // read the roster (403) the field simply falls back to free typing.
+  const { data: roster } = useRosterQuery(active && adminActions ? courseId : undefined);
   const [genEmail, setGenEmail] = React.useState('');
+
+  // Focus management for the inline detail view swap (same pattern as QuizGradingView):
+  // move focus into the detail heading when a set opens, and back to the list on close.
+  // Keyed on set id so in-place refreshes (approve/regenerate) don't steal focus.
+  const detailHeadingRef = React.useRef<HTMLSpanElement>(null);
+  const listFocusRef = React.useRef<HTMLDivElement>(null);
+  const prevDetailId = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    const id = current?.id ?? null;
+    if (id !== prevDetailId.current) {
+      if (id != null) detailHeadingRef.current?.focus();
+      else if (prevDetailId.current != null) listFocusRef.current?.focus();
+    }
+    prevDetailId.current = id;
+  }, [current]);
 
   const generateFor = (email: string) =>
     act(async () => {
@@ -326,11 +363,25 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
 
   const readyCount = sets.filter((s) => s.status === 'ready').length;
   const failedCount = sets.filter((s) => s.status === 'failed').length;
+  const generatingCount = sets.filter((s) => s.status === 'pending' || s.status === 'generating').length;
   const detailEditable = current?.status === 'ready' || current?.status === 'approved';
 
   // What's being reviewed, from the quiz's own sections: N questions per student.
   const sections = quiz.generatedSections ?? [];
   const questionsPerStudent = sections.reduce((sum, s) => sum + (s.numQuestions ?? 3), 0);
+
+  // Shared by the Tooltip (sighted hover) and the icon's aria-label (screen readers /
+  // keyboard focus) so the explanation isn't hover-only.
+  const genHelp =
+    `Each student gets their own set of ${questionsPerStudent} AI-generated question${
+      questionsPerStudent === 1 ? '' : 's'
+    }, produced ${needsSubmission ? 'from their submission ' : ''}by this quiz's ${
+      sections.length === 1 ? 'AI section' : `${sections.length} AI sections`
+    }. ${
+      quiz.autoPublishGenerated
+        ? 'Auto-publish is on for this quiz, so new sets are published without review — you can still edit, unapprove, or regenerate a set here.'
+        : 'Approving a set publishes its questions and opens the quiz for that student — until then they see "Your quiz is being prepared." Sets marked "Needs review" are waiting on you.'
+    }`;
 
   // The resolved per-section prompts recorded at generation time (older sets predate this
   // and fall back to showing the section templates).
@@ -342,7 +393,13 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
   const promptSections = genMeta?.sections?.length ? genMeta.sections : null;
 
   return (
-    <>
+    <div ref={listFocusRef} tabIndex={-1} style={{ outline: 'none' }}>
+      {/* Polite live region — announces generation progress as sets poll to completion. */}
+      <div className="sr-only" aria-live="polite" data-testid="generation-status-live">
+        {generatingCount > 0 ? `${generatingCount} generating. ` : ''}
+        {`${readyCount} ready for review.`}
+        {failedCount > 0 ? ` ${failedCount} failed.` : ''}
+      </div>
       {error != null && (
         <Alert
           type="warning"
@@ -362,71 +419,100 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
       )}
       {!current && error == null && (
         <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
-          <Space>
-          <Tooltip
-            styles={{ root: { maxWidth: 380 } }}
-            title={`Each student gets their own set of ${questionsPerStudent} AI-generated question${
-              questionsPerStudent === 1 ? '' : 's'
-            }, produced from their submission by this quiz's ${
-              sections.length === 1 ? 'AI section' : `${sections.length} AI sections`
-            }. ${
-              quiz.autoPublishGenerated
-                ? 'Auto-publish is on for this quiz, so new sets are published without review — you can still edit, unapprove, or regenerate a set here.'
-                : 'Approving a set publishes its questions and opens the quiz for that student — until then they see "Your quiz is being prepared." Sets marked "Needs review" are waiting on you.'
-            }`}
-          >
-            <InfoCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)', cursor: 'help' }} />
+          <Space wrap>
+          <Tooltip styles={{ root: { maxWidth: 380 } }} title={genHelp}>
+            <InfoCircleOutlined
+              role="img"
+              aria-label={genHelp}
+              tabIndex={0}
+              style={{ color: 'rgba(0, 0, 0, 0.45)', cursor: 'help' }}
+            />
           </Tooltip>
-          <AutoComplete
-            style={{ width: 280 }}
-            placeholder="Generate for a student (email)…"
-            value={genEmail}
-            onChange={setGenEmail}
-            options={(roster?.students ?? [])
-              .filter((s): s is string => !!s)
-              .map((s) => ({ value: s }))}
-            filterOption={(input, option) =>
-              String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
-            }
-            data-testid="generate-for-student-email"
-          />
-          <CPButton
-            icon={<RobotOutlined />}
-            loading={acting}
-            disabled={!genEmail.trim()}
-            onClick={() => generateFor(genEmail.trim())}
-            data-testid="generate-for-student"
-          >
-            Generate
-          </CPButton>
-          <Tooltip title="Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).">
-            <CPButton
-              loading={acting}
-              disabled={missingCount === 0}
-              onClick={generateMissing}
-              data-testid="generate-missing"
-            >
-              Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
-            </CPButton>
-          </Tooltip>
+          {courseSections.length > 0 && (
+            <Select
+              size="small"
+              aria-label="Filter by section"
+              style={{ minWidth: 160 }}
+              value={sectionId ?? 'all'}
+              onChange={(v) => setSectionId(v === 'all' ? null : Number(v))}
+              options={[
+                { value: 'all' as const, label: 'All sections' },
+                ...courseSections.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+              popupMatchSelectWidth={false}
+              data-testid="review-section-filter"
+            />
+          )}
+          {adminActions && (
+            <>
+              <AutoComplete
+                style={{ width: 280 }}
+                aria-label="Generate questions for a student by email"
+                placeholder="Generate for a student (email)…"
+                value={genEmail}
+                onChange={setGenEmail}
+                options={(roster?.students ?? [])
+                  .filter((s): s is string => !!s)
+                  .map((s) => ({ value: s }))}
+                filterOption={(input, option) =>
+                  String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+                data-testid="generate-for-student-email"
+              />
+              <CPButton
+                icon={<RobotOutlined />}
+                loading={acting}
+                disabled={!genEmail.trim()}
+                onClick={() => generateFor(genEmail.trim())}
+                data-testid="generate-for-student"
+              >
+                Generate
+              </CPButton>
+              <Tooltip
+                title={
+                  needsSubmission
+                    ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
+                    : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
+                }
+              >
+                <CPButton
+                  loading={acting}
+                  disabled={missingCount === 0}
+                  onClick={generateMissing}
+                  data-testid="generate-missing"
+                >
+                  Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
+                </CPButton>
+              </Tooltip>
+            </>
+          )}
           </Space>
-          <CPButton cpType="primary" disabled={readyCount === 0} loading={acting} onClick={publishAll}>
-            Publish all ({readyCount})
-          </CPButton>
+          {adminActions && (
+            <CPButton cpType="primary" disabled={readyCount === 0} loading={acting} onClick={publishAll}>
+              Publish all ({readyCount})
+            </CPButton>
+          )}
         </Flex>
       )}
       {!current && (
         isLoading ? (
           <Spin />
-        ) : sets.length === 0 ? (
-          <Empty description="No generated sets yet — they appear when students submit the assignment,
-            or generate one for a specific student above." />
+        ) : visibleSets.length === 0 ? (
+          <Empty
+            description={
+              sectionEmails
+                ? 'No generated sets for students in this section.'
+                : needsSubmission
+                ? 'No generated sets yet — they appear when students submit the assignment.'
+                : 'No generated sets yet — use Generate missing to create them for enrolled students.'
+            }
+          />
         ) : (
           <Table
             rowKey="id"
             size="small"
             columns={columns}
-            dataSource={sets}
+            dataSource={visibleSets}
             pagination={false}
             data-testid="generated-sets-table"
           />
@@ -435,10 +521,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
       {current && (
         <Flex vertical gap={16}>
           <Flex align="center" gap={8}>
-            <CPButton size="small" icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
+            <CPButton cpType="link" small icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
               All students
             </CPButton>
-            <Text strong>Review — {current.studentEmail}</Text>
+            <Text strong ref={detailHeadingRef} tabIndex={-1} style={{ outline: 'none' }}>
+              Review — {current.studentEmail}
+            </Text>
           </Flex>
           {current.status === 'failed' && (
             <Alert type="error" showIcon title="Generation failed"
@@ -511,7 +599,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
                 Unapprove
               </CPButton>
             )}
-            {current.submission != null && (
+            {adminActions && current.submission != null && (
               <CPButton loading={acting} onClick={() => regenerate(current.id!)}>
                 Regenerate
               </CPButton>
@@ -525,7 +613,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active }) => {
           </Space>
         </Flex>
       )}
-    </>
+    </div>
   );
 };
 

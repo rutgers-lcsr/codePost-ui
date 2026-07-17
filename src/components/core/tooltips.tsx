@@ -191,8 +191,9 @@ const ADMIN_SECTIONROSTER_TITLE =
 const ADMIN_DOWNLOADROSTER_CHOOSEGROUP = 'You must select at least one group to include.';
 const ADMIN_UPLOADROSTER_ERROR = 'Fix all errors before proceeding';
 
-const ADMIN_NEWCOURSE_CLONE = `Cloning a course will copy all assignments (including rubrics) and course settings
-from the old course into your new course. All other information (including rosters) won't be copied.`;
+const ADMIN_NEWCOURSE_CLONE = `Cloning a course will copy all assignments (including rubrics), quizzes and question
+banks (as unpublished drafts), and course settings from the old course into your new course. All other information
+(including rosters, submissions, and quiz attempts) won't be copied.`;
 
 // ************************ Pre auth tooltips ************************
 const PREAUTH_CREATE_PROPRICING = (

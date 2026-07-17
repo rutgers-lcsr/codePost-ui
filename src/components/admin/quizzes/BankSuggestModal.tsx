@@ -97,6 +97,7 @@ const BankSuggestModal: React.FC<IProps> = ({ open, course, bankId, bankAssignme
             Source assignment
           </Text>
           <Select
+            aria-label="Source assignment"
             placeholder="Choose an assignment"
             style={{ minWidth: 240 }}
             value={assignmentId}
@@ -111,7 +112,7 @@ const BankSuggestModal: React.FC<IProps> = ({ open, course, bankId, bankAssignme
           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
             How many
           </Text>
-          <InputNumber min={1} max={20} value={numQuestions} onChange={(v) => setNumQuestions(Number(v ?? 5))} />
+          <InputNumber aria-label="How many questions" min={1} max={20} value={numQuestions} onChange={(v) => setNumQuestions(Number(v ?? 5))} />
         </div>
         <div>
           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
@@ -120,6 +121,7 @@ const BankSuggestModal: React.FC<IProps> = ({ open, course, bankId, bankAssignme
           <Select
             mode="multiple"
             allowClear
+            aria-label="Question types"
             placeholder="Any type"
             style={{ minWidth: 220 }}
             value={questionTypes}
@@ -134,7 +136,7 @@ const BankSuggestModal: React.FC<IProps> = ({ open, course, bankId, bankAssignme
       </Flex>
 
       {generating ? (
-        <Flex align="center" gap={8} style={{ padding: 24 }}>
+        <Flex align="center" gap={8} style={{ padding: 24 }} role="status">
           <Spin />
           <Text type="secondary">Generating suggestions…</Text>
         </Flex>

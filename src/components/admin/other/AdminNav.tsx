@@ -10,6 +10,7 @@ import {
   InboxOutlined,
   PushpinOutlined,
   SettingOutlined,
+  TableOutlined,
   TeamOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
@@ -36,6 +37,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const canManageSections = courseCaps.manage_sections !== false;
   const canViewAuditLog = courseCaps.view_audit_log !== false;
   const canEditSettings = courseCaps.edit_course_settings !== false;
+  const canViewGradebook = courseCaps.view_analytics !== false;
 
   // Track openKeys so we can clear them while collapsed. AntD renders any
   // keys in the open set as popover overlays on mount when the Sider is
@@ -83,6 +85,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings/general';
 
     if (/\/quizzes(?:\/|$)/.test(pathname)) return 'quizzes';
+
+    if (/\/gradebook(?:\/|$)/.test(pathname)) return 'gradebook';
 
     if (/\/activity-log(?:\/|$)/.test(pathname)) return 'activity-log';
 
@@ -136,6 +140,15 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           icon: <FormOutlined />,
           label: <Link to={`${courseBaseURL}/quizzes`}>Quizzes</Link>,
         },
+        ...(canViewGradebook
+          ? [
+              {
+                key: 'gradebook',
+                icon: <TableOutlined />,
+                label: <Link to={`${courseBaseURL}/gradebook`}>Gradebook</Link>,
+              },
+            ]
+          : []),
         {
           key: 'submissions',
           icon: <InboxOutlined />,

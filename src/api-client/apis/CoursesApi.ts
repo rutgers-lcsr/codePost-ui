@@ -27,6 +27,7 @@ import type {
   CourseRosterMap,
   CourseSettings,
   CourseStudentCaptions,
+  GradebookResponse,
   PaginatedCourseAuditEventList,
   PaginatedSectionList,
   PatchedCourse,
@@ -163,6 +164,17 @@ export interface DeleteRubricCategoryPartialUpdateRequest {
 }
 
 export interface DestroyRequest {
+  id: number;
+}
+
+export interface GradebookExportRetrieveRequest {
+  id: number;
+  assignments?: string;
+  quizzes?: string;
+  section?: string;
+}
+
+export interface GradebookRetrieveRequest {
   id: number;
 }
 
@@ -1446,6 +1458,142 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<void> {
     await this.destroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   * Export the course gradebook as CSV (course admins only). Same data as the gradebook endpoint: one row per active student, blank cells for pending/missing. Totals are computed over the included columns only.
+   */
+  async gradebookExportRetrieveRaw(
+    requestParameters: GradebookExportRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<string>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling gradebookExportRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['assignments'] != null) {
+      queryParameters['assignments'] = requestParameters['assignments'];
+    }
+
+    if (requestParameters['quizzes'] != null) {
+      queryParameters['quizzes'] = requestParameters['quizzes'];
+    }
+
+    if (requestParameters['section'] != null) {
+      queryParameters['section'] = requestParameters['section'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/gradebookExport/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    if (this.isJsonMime(response.headers.get('content-type'))) {
+      return new runtime.JSONApiResponse<string>(response);
+    } else {
+      return new runtime.TextApiResponse(response) as any;
+    }
+  }
+
+  /**
+   * Export the course gradebook as CSV (course admins only). Same data as the gradebook endpoint: one row per active student, blank cells for pending/missing. Totals are computed over the included columns only.
+   */
+  async gradebookExportRetrieve(
+    requestParameters: GradebookExportRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<string> {
+    const response = await this.gradebookExportRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * The course gradebook: every active student × every assignment and quiz, with totals over graded work (course admins only).
+   */
+  async gradebookRetrieveRaw(
+    requestParameters: GradebookRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<GradebookResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling gradebookRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/gradebook/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * The course gradebook: every active student × every assignment and quiz, with totals over graded work (course admins only).
+   */
+  async gradebookRetrieve(
+    requestParameters: GradebookRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<GradebookResponse> {
+    const response = await this.gradebookRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
   }
 
   /**

@@ -22,10 +22,17 @@ Their submission:
 Their autograder results:
 {submission_test_results}`;
 
+// Standalone quizzes have no assignment/submission to reference — questions come from
+// the prompt alone and generate for every enrolled student as soon as the section saves.
+const DEFAULT_STANDALONE_PROMPT = `Ask {num_questions} questions that check the student understands the topics this quiz covers. Vary the questions between students.`;
+
 interface IProps {
   open: boolean;
   courseId: number;
   quizId: number;
+  /** Whether the quiz is attached to an assignment (drives the default prompt and copy —
+   *  unattached prompts can't reference assignment/submission variables). */
+  attached: boolean;
   section: QuizGeneratedSection | null; // null => create
   nextSortKey: number;
   onClose: () => void;
@@ -39,7 +46,7 @@ interface ISectionForm {
   questionTypes?: string[];
 }
 
-const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, section, nextSortKey, onClose }) => {
+const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attached, section, nextSortKey, onClose }) => {
   const queryClient = useQueryClient();
   const { data: variables = [] } = usePromptVariables(open ? quizId : undefined);
   const [form] = Form.useForm<ISectionForm>();
@@ -64,10 +71,10 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
       form.resetFields();
       form.setFieldsValue({
         numQuestions: 3, pointsPerQuestion: 1, questionTypes: [],
-        systemPrompt: DEFAULT_SECTION_PROMPT,
+        systemPrompt: attached ? DEFAULT_SECTION_PROMPT : DEFAULT_STANDALONE_PROMPT,
       });
     }
-  }, [open, section, form]);
+  }, [open, section, form, attached]);
 
   const handleSave = async () => {
     const values = await form.validateFields();
@@ -126,14 +133,33 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
       destroyOnHidden
       width={640}
     >
-      <Text type="secondary" style={{ fontSize: 13 }}>
-        When a student submits the assignment, questions are generated for them from your
-        prompt — and right away for anyone who has already submitted. The AI sees exactly
-        what your prompt references — use {'{'}variables{'}'} to attach assignment files, the
-        student's submission, or their test results. You review and approve each student's
-        questions before their quiz opens (unless auto-publish is on).
-      </Text>
-      {backfillCount > 0 && (
+      {attached ? (
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Each student gets their own questions generated from your prompt. Reference the
+          student's submission with {'{'}variables{'}'} and generation waits for each student
+          to submit; a prompt without submission variables generates for everyone right away.
+          You review and approve each student's questions before their quiz opens (unless
+          auto-publish is on).
+        </Text>
+      ) : (
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Each student gets their own questions generated from your prompt. This quiz isn't
+          attached to an assignment, so the prompt can't reference assignment or submission
+          {' {'}variables{'}'} — questions generate for every enrolled student as soon as you
+          save. You review and approve each student's questions before their quiz opens
+          (unless auto-publish is on).
+        </Text>
+      )}
+      {!section && !attached && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginTop: 12 }}
+          title="Saving this section generates questions for every enrolled student right away (one AI call per student)."
+          data-testid="backfill-notice"
+        />
+      )}
+      {backfillCount > 0 && attached && (
         <Alert
           type="info"
           showIcon
@@ -162,8 +188,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, secti
           <TemplateTextArea
             variables={variables}
             placeholder={
-              'e.g., Ask questions about the student\'s code in {submission_files}. ' +
-              'Only what you reference here is sent to the AI.'
+              attached
+                ? 'e.g., Ask questions about the student\'s code in {submission_files}. ' +
+                  'Only what you reference here is sent to the AI.'
+                : "e.g., Ask conceptual questions about this quiz's topics. " +
+                  'Only what you reference here is sent to the AI.'
             }
           />
         </Form.Item>

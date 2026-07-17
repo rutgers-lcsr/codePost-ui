@@ -123,6 +123,13 @@ Object.defineProperty(globalThis, 'fetch', {
       payload = { ...mockUser, api_token: 'api-token-123' };
     } else if (url?.includes('/registration/emailPasswordReset/') && method === 'POST') {
       payload = { success: true };
+    } else if (
+      (url?.includes('/quizAttempts/availableQuizzes/') || url?.includes('/quizAttempts/myAttempts/')) &&
+      method === 'GET'
+    ) {
+      // List endpoints — components iterate the response, so the default `{}` payload
+      // throws "not iterable" inside useStudentQuizzes.
+      payload = [];
     }
 
     return new Response(JSON.stringify(payload), {

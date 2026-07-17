@@ -8,7 +8,6 @@ import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router-dom';
 
 import { Course } from '../../api-client';
-import { colors } from '../../theme/colors';
 import { encodedCourseLink } from '../core/CourseMenu';
 
 interface IProps {
@@ -26,8 +25,10 @@ const countPill = (count: number, selected: boolean) =>
         lineHeight: '18px',
         padding: '0 7px',
         borderRadius: 9,
-        background: selected ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.06)',
-        color: selected ? '#fff' : colors.neutralSecondaryText,
+        // Darker chip + text so both states clear WCAG AA: white-on-25%-white over green
+        // was near-invisible; the muted 0.6 text was borderline on the light pill.
+        background: selected ? 'rgba(0, 0, 0, 0.32)' : 'rgba(0, 0, 0, 0.06)',
+        color: selected ? '#fff' : 'rgba(0, 0, 0, 0.75)',
       }}
     >
       {count > 99 ? '99+' : count}

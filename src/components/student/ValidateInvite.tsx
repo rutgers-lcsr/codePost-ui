@@ -104,9 +104,9 @@ const ValidateInvite = (props: IValidateInviteProps) => {
         message="Successfully joined submission!"
         description={
           <div>
-            <span style={{ color: colors.brandPrimary }} onClick={redirect}>
+            <Button type="link" style={{ color: colors.brandPrimary, padding: 0 }} onClick={redirect}>
               Click here
-            </span>{' '}
+            </Button>{' '}
             to go to the Student Console.
           </div>
         }

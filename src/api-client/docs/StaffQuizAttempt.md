@@ -17,8 +17,10 @@ A quiz attempt as staff (grading) sees it: the student\'s identity plus every re
 | `maxScore`           | number                                                     |
 | `needsManualGrading` | boolean                                                    |
 | `passed`             | boolean                                                    |
+| `isOfficialOverride` | boolean                                                    |
 | `oneQuestionAtATime` | boolean                                                    |
 | `allowBacktracking`  | boolean                                                    |
+| `showResponses`      | boolean                                                    |
 | `serverNow`          | string                                                     |
 | `responses`          | [Array&lt;StudentQuizResponse&gt;](StudentQuizResponse.md) |
 | `student`            | string                                                     |

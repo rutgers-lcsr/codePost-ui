@@ -18,6 +18,7 @@ import type {
   GradeQuizResponseRequest,
   PatchedSaveQuizAnswerRequest,
   ReopenQuizResponseRequest,
+  SetOfficialAttemptRequest,
   StaffQuizAttempt,
   StartQuizAttemptRequest,
   StudentQuiz,
@@ -54,6 +55,11 @@ export interface RetrieveRequest {
 export interface SaveAnswerPartialUpdateRequest {
   id: number;
   patchedSaveQuizAnswerRequest?: PatchedSaveQuizAnswerRequest;
+}
+
+export interface SetOfficialCreateRequest {
+  id: number;
+  setOfficialAttemptRequest?: SetOfficialAttemptRequest;
 }
 
 export interface SubmitCreateRequest {
@@ -509,6 +515,69 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<StudentQuizResponse> {
     const response = await this.saveAnswerPartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Pin this submitted attempt as the student\'s official score, overriding the quiz\'s scoringPolicy — or unpin with official=false to return to the policy. Quiz graders and course admins only; at most one pin per student.
+   */
+  async setOfficialCreateRaw(
+    requestParameters: SetOfficialCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<StaffQuizAttempt>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling setOfficialCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/{id}/setOfficial/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['setOfficialAttemptRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Pin this submitted attempt as the student\'s official score, overriding the quiz\'s scoringPolicy — or unpin with official=false to return to the policy. Quiz graders and course admins only; at most one pin per student.
+   */
+  async setOfficialCreate(
+    requestParameters: SetOfficialCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<StaffQuizAttempt> {
+    const response = await this.setOfficialCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

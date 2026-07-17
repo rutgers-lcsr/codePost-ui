@@ -12,14 +12,36 @@ const QuizRoute: React.FC<{ courseId?: number; mode: 'take' | 'review' }> = ({ c
   const navigate = useNavigate();
 
   const quizId = Number(params.quizId);
+  const routeState = location.state as { title?: string; from?: string } | null;
+
+  // WCAG 2.4.2: the quiz is a full-page view, so mirror its title into the tab title
+  // (the consoles only set document.title once on mount). Restore on exit.
+  React.useEffect(() => {
+    const previous = document.title;
+    const name = routeState?.title ?? 'Quiz';
+    document.title = mode === 'review' ? `${name} — results — codePost` : `${name} — codePost`;
+    return () => {
+      document.title = previous;
+    };
+  }, [routeState?.title, mode]);
+
+  // Once the attempt is submitted (or /take falls back to reviewing past attempts), swap
+  // the URL to /review in place — otherwise refreshing on /take would start a new attempt.
+  // Both routes render this same component, so React keeps the view mounted across the swap.
+  const handleSubmitted = React.useCallback(() => {
+    navigate(location.pathname.replace(/\/take\/?$/, '/review'), {
+      replace: true,
+      state: location.state,
+    });
+  }, [navigate, location.pathname, location.state]);
+
   if (!courseId || !quizId) return <Navigate to="/student" replace />;
 
   const base = location.pathname.replace(/\/quizzes\/[^/]+\/(take|review)\/?$/, '') || '/student';
-  const state = location.state as { title?: string; from?: string } | null;
-  const title = state?.title;
+  const title = routeState?.title;
   // Return to the page the quiz was opened from (Assignments or Quizzes);
   // deep links carry no state and fall back to the course root.
-  const back = state?.from ?? base;
+  const back = routeState?.from ?? base;
 
   return (
     <QuizTakingView
@@ -27,6 +49,7 @@ const QuizRoute: React.FC<{ courseId?: number; mode: 'take' | 'review' }> = ({ c
       courseId={courseId}
       quizTitle={title}
       reviewOnly={mode === 'review'}
+      onSubmitted={mode === 'take' ? handleSubmitted : undefined}
       onExit={() => navigate(back)}
     />
   );

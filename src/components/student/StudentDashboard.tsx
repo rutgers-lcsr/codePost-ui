@@ -267,7 +267,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
 
   if (courses.length === 0) {
     return (
-      <div className={styles.dashboard}>
+      <main className={styles.dashboard}>
         <Empty
           image={<InboxOutlined style={{ fontSize: 48, color: '#bbb' }} />}
           description={
@@ -283,7 +283,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
           }
           style={{ padding: '80px 0' }}
         />
-      </div>
+      </main>
     );
   }
 
@@ -293,7 +293,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
   /* ── Render ──────────────────────────────────────────────────────────── */
 
   return (
-    <div className={styles.dashboard}>
+    <main className={styles.dashboard}>
       {/* ── Greeting ────────────────────────────────────────────────────── */}
       <header style={{ marginBottom: 36 }}>
         <Title level={2} style={{ margin: 0, fontSize: 28 }}>
@@ -339,18 +339,29 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
 
       {/* ── Period filter ───────────────────────────────────────────────── */}
       {!isLoading && sortedPeriods.length > 1 && (
-        <Flex gap={6} align="center" wrap="wrap" style={{ marginBottom: 24 }}>
-          <Tag.CheckableTag checked={selectedPeriod === null} onChange={() => setSelectedPeriod(null)}>
+        <Flex gap={6} align="center" wrap="wrap" style={{ marginBottom: 24 }} role="group" aria-label="Filter courses by period">
+          {/* Toggle buttons (not Tag.CheckableTag, which renders a non-focusable span) so the
+              filter is keyboard-operable and its pressed state is announced. */}
+          <Button
+            size="small"
+            shape="round"
+            type={selectedPeriod === null ? 'primary' : 'default'}
+            aria-pressed={selectedPeriod === null}
+            onClick={() => setSelectedPeriod(null)}
+          >
             All
-          </Tag.CheckableTag>
+          </Button>
           {visiblePeriods.map((period) => (
-            <Tag.CheckableTag
+            <Button
               key={period}
-              checked={selectedPeriod === period}
-              onChange={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
+              size="small"
+              shape="round"
+              type={selectedPeriod === period ? 'primary' : 'default'}
+              aria-pressed={selectedPeriod === period}
+              onClick={() => setSelectedPeriod(selectedPeriod === period ? null : period)}
             >
               {period}
-            </Tag.CheckableTag>
+            </Button>
           ))}
           {!showAllPeriods && hiddenPeriodCount > 0 && (
             <Button type="link" size="small" onClick={() => setShowAllPeriods(true)}>
@@ -369,7 +380,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
         >
-          <Title level={5} style={{ marginBottom: 12 }}>
+          <Title level={3} style={{ marginBottom: 12, fontSize: 16 }}>
             Your Courses
           </Title>
           <div className={styles.courseGrid}>
@@ -467,7 +478,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
               >
                 <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
                   <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
-                  <Title level={5} style={{ margin: 0 }}>
+                  <Title level={3} style={{ margin: 0, fontSize: 16 }}>
                     Overdue
                   </Title>
                   <Badge count={overdue.length} size="small" />
@@ -491,7 +502,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
               >
                 <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
                   <FireOutlined style={{ color: '#faad14' }} />
-                  <Title level={5} style={{ margin: 0 }}>
+                  <Title level={3} style={{ margin: 0, fontSize: 16 }}>
                     Due Soon
                   </Title>
                   <Badge count={dueSoon.length} size="small" color="#faad14" />
@@ -515,7 +526,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
               >
                 <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
                   <FormOutlined style={{ color: '#198665' }} />
-                  <Title level={5} style={{ margin: 0 }}>
+                  <Title level={3} style={{ margin: 0, fontSize: 16 }}>
                     Quizzes to Take
                   </Title>
                   <Badge count={quizzesToTake.length} size="small" />
@@ -561,7 +572,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
               >
                 <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
                   <EyeOutlined style={{ color: '#1677ff' }} />
-                  <Title level={5} style={{ margin: 0 }}>
+                  <Title level={3} style={{ margin: 0, fontSize: 16 }}>
                     New Feedback
                   </Title>
                   <Badge count={pendingFeedback.length} size="small" color="blue" />
@@ -611,7 +622,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ courses, userEmail,
         )}
       </div>
 
-    </div>
+    </main>
   );
 };
 

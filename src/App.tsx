@@ -8,6 +8,7 @@ import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useMem
 
 /* other library imports */
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { message } from 'antd';
 
 /* codePost imports */
 import { CLIENT_URL } from './config';
@@ -444,6 +445,10 @@ Firefox:
         .catch((error: unknown) => {
           if (error instanceof ResponseError && error.response?.status === 401) {
             setTriedLoading(true);
+            // Surface the expiry (announced via the message live region) instead of a
+            // silent redirect, so the user — screen-reader users especially — knows why
+            // they're back at the login screen.
+            message.info('Your session has expired. Please sign in again.');
             handleLogout();
             return;
           }

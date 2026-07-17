@@ -39,6 +39,7 @@ import {
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
+import { clickableProps } from '../core/clickable';
 import { tooltips } from '../core/tooltips';
 
 import { compare } from '../utils/SortUtils';
@@ -553,11 +554,13 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         ...formatSub(sub, assignment),
         key: sub.id,
         student: (
-          <a onClick={() => openGradePage(sub)} className="text-link">
+          // span + clickableProps (not a bare href-less <a>) so the grade link is
+          // keyboard-focusable and announced as a button.
+          <span {...clickableProps(() => openGradePage(sub))} className="text-link" style={{ cursor: 'pointer' }}>
             <Typography.Text strong className="text-link">
               {students}
             </Typography.Text>
-          </a>
+          </span>
         ),
         release: (
           <Popconfirm

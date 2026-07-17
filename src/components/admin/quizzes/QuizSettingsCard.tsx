@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Card, DatePicker, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
+import { Card, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -11,6 +11,7 @@ import {
   QuizShowAnswersEnum,
   QuizPassingScoreUnitEnum,
   QuizCloseEventEnum,
+  QuizScoringPolicyEnum,
 } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
@@ -86,6 +87,27 @@ const isDegenerateClose = (trigger: string, event: string): boolean =>
 const closeOptionsFor = (trigger: string): QuizCloseEventEnum[] =>
   CLOSE_OPTIONS_BY_TRIGGER[trigger] ?? [QuizCloseEventEnum.None, QuizCloseEventEnum.FixedDate];
 
+/** A titled settings section, so the page scans as setup steps. */
+const Section: React.FC<{ title: string; hint?: string; first?: boolean; children: React.ReactNode }> = ({
+  title,
+  hint,
+  first,
+  children,
+}) => (
+  <div>
+    {!first && <Divider style={{ margin: '4px 0 12px' }} />}
+    <Text strong style={{ display: 'block', marginBottom: hint ? 2 : 12 }}>
+      {title}
+    </Text>
+    {hint && (
+      <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12 }}>
+        {hint}
+      </Text>
+    )}
+    {children}
+  </div>
+);
+
 const TRIGGER_DEFAULT = QuizAssignmentTriggerEnum.During;
 const SHOW_DEFAULT = QuizShowAnswersEnum.AfterSubmit;
 const CLOSE_DEFAULT = QuizCloseEventEnum.None;
@@ -108,6 +130,8 @@ const settingsOf = (q: Quiz) => ({
   oneQuestionAtATime: q.oneQuestionAtATime ?? false,
   allowBacktracking: q.allowBacktracking ?? true,
   showCorrectAnswers: q.showCorrectAnswers || SHOW_DEFAULT,
+  showResponses: q.showResponses ?? true,
+  scoringPolicy: q.scoringPolicy || QuizScoringPolicyEnum.Highest,
   passingScore: q.passingScore ?? null,
   passingScoreUnit: q.passingScoreUnit || UNIT_DEFAULT,
   isPublished: q.isPublished ?? false,
@@ -206,6 +230,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
           oneQuestionAtATime: settings.oneQuestionAtATime,
           allowBacktracking: settings.allowBacktracking,
           showCorrectAnswers: settings.showCorrectAnswers,
+          showResponses: settings.showResponses,
+          scoringPolicy: settings.scoringPolicy,
           passingScore: settings.passingScore,
           passingScoreUnit: settings.passingScoreUnit,
           isPublished: overrides?.isPublished ?? settings.isPublished,
@@ -251,7 +277,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
       extra={
         <Space size="middle">
           <Space size={6}>
-            <Switch checked={settings.isPublished} onChange={handlePublishToggle} />
+            <Switch aria-label="Publish quiz" checked={settings.isPublished} onChange={handlePublishToggle} />
             <Text type={settings.isPublished ? undefined : 'secondary'}>
               {settings.isPublished ? 'Published' : 'Draft'}
             </Text>
@@ -264,104 +290,183 @@ const QuizSettingsCard: React.FC<IProps> = ({
       style={{ marginBottom: 16 }}
     >
       <Flex vertical gap={12}>
-        <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-            Title
-          </Text>
-          <Input value={settings.title} onChange={(e) => patch({ title: e.target.value })} maxLength={128} />
-        </div>
-        <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-            Attached assignment
-          </Text>
-          <Select
-            allowClear
-            placeholder="Not attached - Attach to an assignment to control availability"
-            style={{ minWidth: 280 }}
-            value={settings.assignment ?? undefined}
-            onChange={(v) => patch({ assignment: v ?? null })}
-            options={assignmentOptions}
-          />
-        </div>
-        <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-            Availability
-          </Text>
-          {settings.assignment != null ? (
-            <Flex vertical gap={12}>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Opens
-                </Text>
-                <Select
-                  style={{ minWidth: 280 }}
-                  value={settings.assignmentTrigger}
-                  onChange={handleTriggerChange}
-                  options={[
-                    { value: QuizAssignmentTriggerEnum.During, label: 'During the assignment' },
-                    { value: QuizAssignmentTriggerEnum.AfterAssignment, label: 'After the assignment closes' },
-                    { value: QuizAssignmentTriggerEnum.AfterSubmission, label: 'After the student submits' },
-                    { value: QuizAssignmentTriggerEnum.AfterFeedback, label: 'After feedback is released' },
-                    {
-                      value: QuizAssignmentTriggerEnum.AfterStudentFeedback,
-                      label: "After each student's feedback (self-paced)",
-                    },
-                  ]}
-                />
-                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
-                  {TRIGGER_HELP[settings.assignmentTrigger]}
-                </Text>
-              </div>
-              <div>
-                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Closes
-                </Text>
-                <Flex gap={8} wrap align="center">
-                  <Select
-                    style={{ minWidth: 260 }}
-                    value={settings.closeEvent}
-                    onChange={handleCloseEventChange}
-                    options={closeOptionsFor(settings.assignmentTrigger).map((v) => ({
-                      value: v,
-                      label: CLOSE_LABELS[v],
-                    }))}
-                  />
-                  {OFFSET_CLOSE_EVENTS.has(settings.closeEvent) && (
-                    <>
-                      <Text type="secondary">+</Text>
-                      <InputNumber
-                        min={0}
-                        style={{ width: 80 }}
-                        value={offsetValue}
-                        onChange={(v) => setOffsetValue(v ?? 0)}
-                      />
-                      <Select
-                        style={{ width: 110 }}
-                        value={offsetUnit}
-                        onChange={(v) => setOffsetUnit(v as OffsetUnit)}
-                        options={[
-                          { value: 'minutes', label: 'minutes' },
-                          { value: 'hours', label: 'hours' },
-                          { value: 'days', label: 'days' },
-                        ]}
-                      />
-                    </>
-                  )}
-                  {settings.closeEvent === QuizCloseEventEnum.FixedDate && (
-                    <DatePicker
-                      showTime
-                      placeholder="Closes at"
-                      value={settings.availableUntil ? dayjs(settings.availableUntil) : null}
-                      onChange={(d) => patch({ availableUntil: d ? d.toISOString() : null })}
-                    />
-                  )}
-                </Flex>
-                {settings.closeEvent === QuizCloseEventEnum.Submission && (
-                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 6 }}>
-                    Each student&apos;s window starts when they submit the assignment.
+        <Section first title="Basics">
+          <Flex vertical gap={12}>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Title
+              </Text>
+              <Input
+                aria-label="Quiz title"
+                value={settings.title}
+                onChange={(e) => patch({ title: e.target.value })}
+                maxLength={128}
+              />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Description (Markdown)
+              </Text>
+              <MarkdownField
+                value={settings.description}
+                onChange={(v) => patch({ description: v })}
+                courseId={courseId}
+                minRows={3}
+                ariaLabel="Quiz description"
+                placeholder="What this quiz covers — supports Markdown and images…"
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Appears on the quiz page when the student is taking the quiz. Can be used to provide instructions or
+                context for the quiz.
+              </Text>
+            </div>
+          </Flex>
+        </Section>
+        <Section
+          title="Availability"
+          hint="When students can start the quiz. Attach an assignment to open and close the quiz around that assignment's deadline, submissions, or feedback."
+        >
+          <Flex vertical gap={12}>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Attached assignment
+              </Text>
+              <Select
+                allowClear
+                aria-label="Attached assignment"
+                placeholder="Not attached - Attach to an assignment to control availability"
+                style={{ minWidth: 280 }}
+                value={settings.assignment ?? undefined}
+                onChange={(v) => patch({ assignment: v ?? null })}
+                options={assignmentOptions}
+              />
+            </div>
+            {settings.assignment != null ? (
+              <Flex vertical gap={12}>
+                <div>
+                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                    Opens
                   </Text>
-                )}
-                {settings.closeEvent !== QuizCloseEventEnum.None && (
+                  <Select
+                    aria-label="Quiz opens"
+                    style={{ minWidth: 280 }}
+                    value={settings.assignmentTrigger}
+                    onChange={handleTriggerChange}
+                    options={[
+                      { value: QuizAssignmentTriggerEnum.During, label: 'During the assignment' },
+                      { value: QuizAssignmentTriggerEnum.AfterAssignment, label: 'After the assignment closes' },
+                      { value: QuizAssignmentTriggerEnum.AfterSubmission, label: 'After the student submits' },
+                      { value: QuizAssignmentTriggerEnum.AfterFeedback, label: 'After feedback is released' },
+                      {
+                        value: QuizAssignmentTriggerEnum.AfterStudentFeedback,
+                        label: "After each student's feedback (self-paced)",
+                      },
+                    ]}
+                  />
+                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+                    {TRIGGER_HELP[settings.assignmentTrigger]}
+                  </Text>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                    Closes
+                  </Text>
+                  <Flex gap={8} wrap align="center">
+                    <Select
+                      aria-label="Quiz closes"
+                      style={{ minWidth: 260 }}
+                      value={settings.closeEvent}
+                      onChange={handleCloseEventChange}
+                      options={closeOptionsFor(settings.assignmentTrigger).map((v) => ({
+                        value: v,
+                        label: CLOSE_LABELS[v],
+                      }))}
+                    />
+                    {OFFSET_CLOSE_EVENTS.has(settings.closeEvent) && (
+                      <>
+                        <Text type="secondary">+</Text>
+                        <InputNumber
+                          min={0}
+                          aria-label="Close offset amount"
+                          style={{ width: 80 }}
+                          value={offsetValue}
+                          onChange={(v) => setOffsetValue(v ?? 0)}
+                        />
+                        <Select
+                          aria-label="Close offset unit"
+                          style={{ width: 110 }}
+                          value={offsetUnit}
+                          onChange={(v) => setOffsetUnit(v as OffsetUnit)}
+                          options={[
+                            { value: 'minutes', label: 'minutes' },
+                            { value: 'hours', label: 'hours' },
+                            { value: 'days', label: 'days' },
+                          ]}
+                        />
+                      </>
+                    )}
+                    {settings.closeEvent === QuizCloseEventEnum.FixedDate && (
+                      <DatePicker
+                        showTime
+                        aria-label="Closes at"
+                        placeholder="Closes at"
+                        value={settings.availableUntil ? dayjs(settings.availableUntil) : null}
+                        onChange={(d) => patch({ availableUntil: d ? d.toISOString() : null })}
+                      />
+                    )}
+                  </Flex>
+                  {settings.closeEvent === QuizCloseEventEnum.Submission && (
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 6 }}>
+                      Each student&apos;s window starts when they submit the assignment.
+                    </Text>
+                  )}
+                  {settings.closeEvent !== QuizCloseEventEnum.None && (
+                    <Space style={{ marginTop: 8 }}>
+                      <Switch
+                        size="small"
+                        aria-label="End in-progress attempts at the close time"
+                        checked={settings.endAttemptsAtClose}
+                        onChange={(v) => patch({ endAttemptsAtClose: v })}
+                      />
+                      <Text type="secondary">
+                        End in-progress attempts at the close time (students see the time remaining)
+                      </Text>
+                    </Space>
+                  )}
+                </div>
+              </Flex>
+            ) : (
+              <div>
+                <Flex gap={8} wrap>
+                  <DatePicker
+                    showTime
+                    aria-label="Opens at"
+                    placeholder="Opens at"
+                    value={settings.availableFrom ? dayjs(settings.availableFrom) : null}
+                    onChange={(d) => {
+                      const iso = d ? d.toISOString() : null;
+                      // Keep the window valid: drop a close that's no longer after the new open.
+                      if (iso && settings.availableUntil && !dayjs(settings.availableUntil).isAfter(dayjs(iso))) {
+                        patch({ availableFrom: iso, availableUntil: null });
+                      } else {
+                        patch({ availableFrom: iso });
+                      }
+                    }}
+                  />
+                  <DatePicker
+                    showTime
+                    aria-label="Closes at"
+                    placeholder="Closes at"
+                    // Can't close before it opens.
+                    minDate={settings.availableFrom ? dayjs(settings.availableFrom) : undefined}
+                    value={settings.availableUntil ? dayjs(settings.availableUntil) : null}
+                    onChange={(d) => patch({ availableUntil: d ? d.toISOString() : null })}
+                  />
+                </Flex>
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 6 }}>
+                  Leave both empty to keep the quiz available whenever it&apos;s published.
+                </Text>
+                {settings.availableUntil && (
                   <Space style={{ marginTop: 8 }}>
                     <Switch
                       size="small"
@@ -374,158 +479,167 @@ const QuizSettingsCard: React.FC<IProps> = ({
                   </Space>
                 )}
               </div>
-            </Flex>
-          ) : (
-            <div>
-              <Flex gap={8} wrap>
-                <DatePicker
-                  showTime
-                  placeholder="Opens at"
-                  value={settings.availableFrom ? dayjs(settings.availableFrom) : null}
-                  onChange={(d) => {
-                    const iso = d ? d.toISOString() : null;
-                    // Keep the window valid: drop a close that's no longer after the new open.
-                    if (iso && settings.availableUntil && !dayjs(settings.availableUntil).isAfter(dayjs(iso))) {
-                      patch({ availableFrom: iso, availableUntil: null });
-                    } else {
-                      patch({ availableFrom: iso });
-                    }
-                  }}
-                />
-                <DatePicker
-                  showTime
-                  placeholder="Closes at"
-                  // Can't close before it opens.
-                  minDate={settings.availableFrom ? dayjs(settings.availableFrom) : undefined}
-                  value={settings.availableUntil ? dayjs(settings.availableUntil) : null}
-                  onChange={(d) => patch({ availableUntil: d ? d.toISOString() : null })}
-                />
-              </Flex>
-              {settings.availableUntil && (
-                <Space style={{ marginTop: 8 }}>
-                  <Switch
-                    size="small"
-                    checked={settings.endAttemptsAtClose}
-                    onChange={(v) => patch({ endAttemptsAtClose: v })}
-                  />
-                  <Text type="secondary">
-                    End in-progress attempts at the close time (students see the time remaining)
-                  </Text>
-                </Space>
-              )}
-            </div>
-          )}
-        </div>
-        <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-            Description (Markdown)
-          </Text>
-          <MarkdownField
-            value={settings.description}
-            onChange={(v) => patch({ description: v })}
-            courseId={courseId}
-            minRows={3}
-            placeholder="What this quiz covers — supports Markdown and images…"
-          />
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Appears on the quiz page when the student is taking the quiz. Can be used to provide instructions or
-            context for the quiz.
-          </Text>
-        </div>
+            )}
+          </Flex>
+        </Section>
 
-        <Flex gap={16} wrap align="end">
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Time limit (min)
-            </Text>
-            <InputNumber
-              min={1}
-              placeholder="Untimed"
-              style={{ width: 130 }}
-              value={settings.timeLimitMinutes ?? undefined}
-              onChange={(v) => patch({ timeLimitMinutes: v ?? null })}
-            />
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Attempts (0 = ∞)
-            </Text>
-            <InputNumber
-              min={0}
-              style={{ width: 110 }}
-              value={settings.attemptsAllowed}
-              onChange={(v) => patch({ attemptsAllowed: v ?? 1 })}
-            />
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Show correct answers
-            </Text>
-            <Select
-              style={{ width: 180 }}
-              value={settings.showCorrectAnswers}
-              onChange={(v) => patch({ showCorrectAnswers: v })}
-              options={[
-                { value: QuizShowAnswersEnum.Never, label: 'Never' },
-                { value: QuizShowAnswersEnum.AfterSubmit, label: 'After submitting' },
-                { value: QuizShowAnswersEnum.AfterClose, label: 'After the quiz closes' },
-              ]}
-            />
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-              Passing score
-            </Text>
-            <Space.Compact>
+        <Section title="Attempts & grading">
+          <Flex gap={16} wrap align="start">
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Time limit (min)
+              </Text>
+              <InputNumber
+                min={1}
+                aria-label="Time limit in minutes"
+                placeholder="Untimed"
+                style={{ width: 130 }}
+                value={settings.timeLimitMinutes ?? undefined}
+                onChange={(v) => patch({ timeLimitMinutes: v ?? null })}
+              />
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Attempts allowed
+              </Text>
               <InputNumber
                 min={0}
-                max={settings.passingScoreUnit === QuizPassingScoreUnitEnum.Percent ? 100 : undefined}
-                placeholder="None"
+                aria-label="Attempts allowed (0 for unlimited)"
                 style={{ width: 110 }}
-                value={settings.passingScore ?? undefined}
-                onChange={(v) => patch({ passingScore: v ?? null })}
+                value={settings.attemptsAllowed}
+                onChange={(v) => patch({ attemptsAllowed: v ?? 1 })}
               />
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
+                0 = unlimited
+              </Text>
+            </div>
+            {settings.attemptsAllowed !== 1 && (
+              <div>
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  Score to keep
+                </Text>
+                <Select
+                  aria-label="Score to keep across attempts"
+                  style={{ width: 180 }}
+                  value={settings.scoringPolicy}
+                  onChange={(v) => patch({ scoringPolicy: v })}
+                  options={[
+                    { value: QuizScoringPolicyEnum.Highest, label: 'Highest attempt' },
+                    { value: QuizScoringPolicyEnum.Latest, label: 'Latest attempt' },
+                    { value: QuizScoringPolicyEnum.Average, label: 'Average of attempts' },
+                  ]}
+                />
+              </div>
+            )}
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Passing score
+              </Text>
+              <Space.Compact>
+                <InputNumber
+                  min={0}
+                  max={settings.passingScoreUnit === QuizPassingScoreUnitEnum.Percent ? 100 : undefined}
+                  aria-label="Passing score"
+                  placeholder="None"
+                  style={{ width: 110 }}
+                  value={settings.passingScore ?? undefined}
+                  onChange={(v) => patch({ passingScore: v ?? null })}
+                />
+                <Select
+                  aria-label="Passing score unit"
+                  style={{ width: 100 }}
+                  value={settings.passingScoreUnit}
+                  onChange={(u) => {
+                    // Avoid a guaranteed 400: percent can't exceed 100.
+                    if (
+                      u === QuizPassingScoreUnitEnum.Percent &&
+                      settings.passingScore != null &&
+                      settings.passingScore > 100
+                    ) {
+                      patch({ passingScoreUnit: u, passingScore: 100 });
+                    } else {
+                      patch({ passingScoreUnit: u });
+                    }
+                  }}
+                  options={[
+                    { value: QuizPassingScoreUnitEnum.Percent, label: '%' },
+                    { value: QuizPassingScoreUnitEnum.Points, label: 'points' },
+                  ]}
+                />
+              </Space.Compact>
+            </div>
+          </Flex>
+        </Section>
+
+        <Section title="After submission" hint="What students see about their results once they turn in an attempt.">
+          <Flex gap={16} wrap align="start">
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Show correct answers
+              </Text>
               <Select
-                style={{ width: 100 }}
-                value={settings.passingScoreUnit}
-                onChange={(u) => {
-                  // Avoid a guaranteed 400: percent can't exceed 100.
-                  if (
-                    u === QuizPassingScoreUnitEnum.Percent &&
-                    settings.passingScore != null &&
-                    settings.passingScore > 100
-                  ) {
-                    patch({ passingScoreUnit: u, passingScore: 100 });
-                  } else {
-                    patch({ passingScoreUnit: u });
-                  }
-                }}
+                aria-label="Show correct answers"
+                style={{ width: 180 }}
+                value={settings.showCorrectAnswers}
+                onChange={(v) => patch({ showCorrectAnswers: v })}
                 options={[
-                  { value: QuizPassingScoreUnitEnum.Percent, label: '%' },
-                  { value: QuizPassingScoreUnitEnum.Points, label: 'points' },
+                  { value: QuizShowAnswersEnum.Never, label: 'Never' },
+                  { value: QuizShowAnswersEnum.AfterSubmit, label: 'After submitting' },
+                  { value: QuizShowAnswersEnum.AfterClose, label: 'After the quiz closes' },
                 ]}
               />
-            </Space.Compact>
-          </div>
-        </Flex>
+              {settings.showCorrectAnswers === QuizShowAnswersEnum.AfterClose && (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 180 }}>
+                  Scores and results also stay hidden until the quiz closes.
+                </Text>
+              )}
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Results students see
+              </Text>
+              <Select
+                aria-label="Results students see after submitting"
+                style={{ width: 200 }}
+                value={settings.showResponses ? 'full' : 'scores'}
+                onChange={(v) => patch({ showResponses: v === 'full' })}
+                options={[
+                  { value: 'full', label: 'Scores + their answers' },
+                  { value: 'scores', label: 'Scores only' },
+                ]}
+              />
+              {!settings.showResponses && (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 200 }}>
+                  After submitting, students see their score but not the questions or their answers.
+                </Text>
+              )}
+            </div>
+          </Flex>
+        </Section>
 
-        <div>
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
-            Question delivery
-          </Text>
+        <Section title="Question delivery">
           <Flex vertical gap={10}>
             <Space>
-              <Switch checked={settings.shuffleQuestions} onChange={(v) => patch({ shuffleQuestions: v })} />
+              <Switch
+                aria-label="Shuffle question order"
+                checked={settings.shuffleQuestions}
+                onChange={(v) => patch({ shuffleQuestions: v })}
+              />
               <Text>Shuffle question order</Text>
             </Space>
             <Space>
-              <Switch checked={settings.oneQuestionAtATime} onChange={(v) => patch({ oneQuestionAtATime: v })} />
+              <Switch
+                aria-label="One question at a time"
+                checked={settings.oneQuestionAtATime}
+                onChange={(v) => patch({ oneQuestionAtATime: v })}
+              />
               <Text>One question at a time</Text>
             </Space>
             {settings.oneQuestionAtATime && (
               <Space style={{ marginLeft: 36 }}>
                 <Switch
                   size="small"
+                  aria-label="Let students go back to previous questions"
                   checked={settings.allowBacktracking}
                   onChange={(v) => patch({ allowBacktracking: v })}
                 />
@@ -533,13 +647,13 @@ const QuizSettingsCard: React.FC<IProps> = ({
               </Space>
             )}
           </Flex>
-        </div>
+        </Section>
         {hasGeneratedSections && (
-          <div>
-            <Text strong>AI-generated questions</Text>
-            <Flex vertical gap={10} style={{ marginTop: 8 }}>
+          <Section title="AI-generated questions">
+            <Flex vertical gap={10}>
               <Space>
                 <Switch
+                  aria-label="Publish generated questions automatically"
                   checked={settings.autoPublishGenerated}
                   onChange={(v) => patch({ autoPublishGenerated: v })}
                 />
@@ -547,20 +661,23 @@ const QuizSettingsCard: React.FC<IProps> = ({
               </Space>
               <Space>
                 <Switch
+                  aria-label="Graders may review and publish generated questions"
                   checked={settings.gradersCanReviewGenerated}
                   onChange={(v) => patch({ gradersCanReviewGenerated: v })}
                 />
                 <Text>Graders may review and publish generated questions</Text>
               </Space>
               {settings.closeEvent === QuizCloseEventEnum.Submission && !settings.autoPublishGenerated && (
-                <Text type="warning" style={{ fontSize: 13 }}>
+                // Explicit dark amber (#8a5a00 ≈ 5.9:1 on white) — antd's default warning
+                // color (~#faad14) fails WCAG AA for normal text.
+                <Text style={{ color: '#8a5a00', fontSize: 13 }}>
                   This quiz closes relative to each student's submission, but their questions
                   only open once reviewed — a slow review can eat into (or consume) their
                   window. Review promptly, extend the close offset, or enable auto-publish.
                 </Text>
               )}
             </Flex>
-          </div>
+          </Section>
         )}
       </Flex>
     </Card>

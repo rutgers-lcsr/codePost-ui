@@ -45,12 +45,24 @@ interface IProps {
   /** Inline-only editing: bold/italic/code/strike/link, no blocks/images. For the
    *  question stem, which stays a single font. */
   basic?: boolean;
+  /** Accessible name for the editing surface (rich contenteditable + markdown textarea).
+   *  Falls back to the placeholder so the control is never unnamed for screen readers. */
+  ariaLabel?: string;
 }
 
 /** A dual-mode description editor. Instructors can edit visually in **Rich** mode
  *  (TipTap WYSIWYG) or toggle to raw **Markdown** — both share a single Markdown value.
  *  Designed to be used standalone or as the child of an antd Form.Item (value/onChange). */
-const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholder, minRows = 4, basic = false }) => {
+const MarkdownField: React.FC<IProps> = ({
+  value,
+  onChange,
+  courseId,
+  placeholder,
+  minRows = 4,
+  basic = false,
+  ariaLabel,
+}) => {
+  const editorLabel = ariaLabel ?? placeholder ?? 'Rich text editor';
   const [mode, setMode] = React.useState<Mode>('rich');
   const [uploading, setUploading] = React.useState(false);
   const taRef = React.useRef<TextAreaRef>(null);
@@ -60,6 +72,7 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
 
   const editor = useEditor({
     immediatelyRender: false,
+    editorProps: { attributes: { 'aria-label': editorLabel, role: 'textbox' } },
     extensions: basic
       ? [
           // Inline-only: keep bold/italic/code/strike marks, drop all block nodes.
@@ -206,8 +219,17 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
   };
 
   const tool = (title: string, icon: React.ReactNode, onClick: () => void, active?: boolean) => (
+    // aria-label (not just the Tooltip title) so screen readers get the button's name —
+    // antd does not expose a Tooltip's title as its child's accessible name.
     <Tooltip title={title}>
-      <Button size="small" type={active ? 'primary' : 'text'} icon={icon} onClick={onClick} />
+      <Button
+        size="small"
+        type={active ? 'primary' : 'text'}
+        icon={icon}
+        onClick={onClick}
+        aria-label={title}
+        aria-pressed={active}
+      />
     </Tooltip>
   );
 
@@ -235,7 +257,7 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
               }}
             >
               <Tooltip title="Upload image">
-                <Button size="small" type="text" icon={<PictureOutlined />} loading={uploading} />
+                <Button size="small" type="text" icon={<PictureOutlined />} loading={uploading} aria-label="Upload image" />
               </Tooltip>
             </Upload>
           )}
@@ -244,6 +266,7 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
               size="small"
               value={currentLang}
               onChange={setCodeLang}
+              aria-label="Code block language"
               style={{ width: 124, marginLeft: 6 }}
               options={CODE_LANGUAGES.map((l) => ({ value: l, label: l }))}
             />
@@ -253,6 +276,7 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
           size="small"
           value={mode}
           onChange={(v) => setMode(v as Mode)}
+          aria-label="Editor input mode"
           options={[
             { label: 'Rich', value: 'rich' },
             { label: 'Markdown', value: 'markdown' },
@@ -261,12 +285,16 @@ const MarkdownField: React.FC<IProps> = ({ value, onChange, courseId, placeholde
       </Flex>
 
       {rich ? (
+        // Mouse-only convenience: clicking the padding around the editor focuses it. The
+        // contenteditable inside is the real (keyboard-focusable) interactive element.
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <div className="cp-rich-editor" style={{ minHeight: minRows * 24 }} onClick={() => editor?.chain().focus().run()}>
           <EditorContent editor={editor} />
         </div>
       ) : (
         <Input.TextArea
           ref={taRef}
+          aria-label={editorLabel}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           autoSize={{ minRows, maxRows: 18 }}

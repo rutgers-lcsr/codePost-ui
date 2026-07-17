@@ -102,6 +102,7 @@ const AddQuestionsModal: React.FC<IProps> = ({ open, courseId, quizId, existingQ
       <Flex gap={8} style={{ margin: '8px 0 12px' }}>
         <Select
           allowClear
+          aria-label="Filter by bank"
           placeholder="All banks"
           style={{ width: 220 }}
           value={bankFilter}
@@ -109,6 +110,7 @@ const AddQuestionsModal: React.FC<IProps> = ({ open, courseId, quizId, existingQ
           options={banks.map((b) => ({ value: b.id, label: b.name }))}
         />
         <Input.Search
+          aria-label="Search questions"
           placeholder="Search questions"
           allowClear
           value={search}

@@ -13,7 +13,9 @@ export const AutograderInfoModal = () => {
   const [visible, setVisible] = useState(false);
   return (
     <div>
-      <a onClick={() => setVisible((prevState) => !prevState)}>How are these tests created?</a>
+      <Button type="link" style={{ padding: 0 }} onClick={() => setVisible((prevState) => !prevState)}>
+        How are these tests created?
+      </Button>
       <Modal
         open={visible}
         title={
@@ -61,7 +63,9 @@ export const SubmissionInfoModal = () => {
   const [visible, setVisible] = useState(false);
   return (
     <div>
-      <a onClick={() => setVisible((prevState) => !prevState)}>How do students submit code?</a>
+      <Button type="link" style={{ padding: 0 }} onClick={() => setVisible((prevState) => !prevState)}>
+        How do students submit code?
+      </Button>
       <Modal
         open={visible}
         title={

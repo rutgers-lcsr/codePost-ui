@@ -32,7 +32,8 @@ test.describe('staff quiz grading', () => {
     const ipage = await ictx.newPage();
     await ipage.goto(adminQuizzesUrl);
     await ipage.getByRole('tab', { name: 'Quizzes' }).click();
-    await ipage.getByRole('cell', { name: QUIZ_TITLE }).click();
+    // exact: the row's delete button ("Delete quiz: <title>") also contains the title.
+    await ipage.getByRole('cell', { name: QUIZ_TITLE, exact: true }).click();
     // The quiz page's Grading tab shows the needs-grading count in its label.
     await ipage.getByRole('tab', { name: /Grading \(\d+\)/ }).click();
 

@@ -22,6 +22,8 @@ All URIs are relative to *http://localhost*
 | [**create**](CoursesApi.md#create)                                                       | **POST** /courses/                            |             |
 | [**deleteRubricCategoryPartialUpdate**](CoursesApi.md#deleterubriccategorypartialupdate) | **PATCH** /courses/{id}/deleteRubricCategory/ |             |
 | [**destroy**](CoursesApi.md#destroy)                                                     | **DELETE** /courses/{id}/                     |             |
+| [**gradebookExportRetrieve**](CoursesApi.md#gradebookexportretrieve)                     | **GET** /courses/{id}/gradebookExport/        |             |
+| [**gradebookRetrieve**](CoursesApi.md#gradebookretrieve)                                 | **GET** /courses/{id}/gradebook/              |             |
 | [**list**](CoursesApi.md#list)                                                           | **GET** /courses/                             |             |
 | [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                      |             |
 | [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/          |             |
@@ -1420,6 +1422,157 @@ example().catch(console.error);
 | Status code | Description      | Response headers |
 | ----------- | ---------------- | ---------------- |
 | **204**     | No response body | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## gradebookExportRetrieve
+
+> string gradebookExportRetrieve(id, assignments, quizzes, section)
+
+Export the course gradebook as CSV (course admins only). Same data as the gradebook endpoint: one row per active student, blank cells for pending/missing. Totals are computed over the included columns only.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { GradebookExportRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // string | Comma-separated assignment ids to include; omit for all. (optional)
+    assignments: assignments_example,
+    // string | Comma-separated quiz ids to include; omit for all. (optional)
+    quizzes: quizzes_example,
+    // string | Restrict rows to students in this section. (optional)
+    section: section_example,
+  } satisfies GradebookExportRetrieveRequest;
+
+  try {
+    const data = await api.gradebookExportRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name            | Type     | Description                                              | Notes                                |
+| --------------- | -------- | -------------------------------------------------------- | ------------------------------------ |
+| **id**          | `number` | A unique integer value identifying this course.          | [Defaults to `undefined`]            |
+| **assignments** | `string` | Comma-separated assignment ids to include; omit for all. | [Optional] [Defaults to `undefined`] |
+| **quizzes**     | `string` | Comma-separated quiz ids to include; omit for all.       | [Optional] [Defaults to `undefined`] |
+| **section**     | `string` | Restrict rows to students in this section.               | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**string**
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `text/csv`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## gradebookRetrieve
+
+> GradebookResponse gradebookRetrieve(id)
+
+The course gradebook: every active student × every assignment and quiz, with totals over graded work (course admins only).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { GradebookRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies GradebookRetrieveRequest;
+
+  try {
+    const data = await api.gradebookRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**GradebookResponse**](GradebookResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

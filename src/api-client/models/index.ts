@@ -1887,6 +1887,12 @@ export interface BackfillPreviewResponse {
    * @memberof BackfillPreviewResponse
    */
   missing: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BackfillPreviewResponse
+   */
+  needsSubmission: boolean;
 }
 /**
  *
@@ -5041,6 +5047,192 @@ export interface GradeQuizResponseRequest {
    * @memberof GradeQuizResponseRequest
    */
   graderFeedback?: string;
+}
+/**
+ *
+ * @export
+ * @interface GradebookAssignmentCell
+ */
+export interface GradebookAssignmentCell {
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookAssignmentCell
+   */
+  assignment: number;
+  /**
+   * The finalized grade; null until finalized.
+   * @type {number}
+   * @memberof GradebookAssignmentCell
+   */
+  grade: number | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GradebookAssignmentCell
+   */
+  hasSubmission: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GradebookAssignmentCell
+   */
+  isFinalized: boolean;
+}
+/**
+ *
+ * @export
+ * @interface GradebookAssignmentColumn
+ */
+export interface GradebookAssignmentColumn {
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookAssignmentColumn
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GradebookAssignmentColumn
+   */
+  name: string;
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookAssignmentColumn
+   */
+  points: number;
+}
+/**
+ *
+ * @export
+ * @interface GradebookQuizCell
+ */
+export interface GradebookQuizCell {
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookQuizCell
+   */
+  quiz: number;
+  /**
+   * Official score per scoringPolicy; null until fully graded.
+   * @type {number}
+   * @memberof GradebookQuizCell
+   */
+  score: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookQuizCell
+   */
+  maxScore: number | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GradebookQuizCell
+   */
+  needsGrading: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GradebookQuizCell
+   */
+  hasAttempts: boolean;
+}
+/**
+ *
+ * @export
+ * @interface GradebookQuizColumn
+ */
+export interface GradebookQuizColumn {
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookQuizColumn
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof GradebookQuizColumn
+   */
+  title: string;
+}
+/**
+ *
+ * @export
+ * @interface GradebookResponse
+ */
+export interface GradebookResponse {
+  /**
+   *
+   * @type {Array<GradebookAssignmentColumn>}
+   * @memberof GradebookResponse
+   */
+  assignments: Array<GradebookAssignmentColumn>;
+  /**
+   *
+   * @type {Array<GradebookQuizColumn>}
+   * @memberof GradebookResponse
+   */
+  quizzes: Array<GradebookQuizColumn>;
+  /**
+   *
+   * @type {Array<GradebookRow>}
+   * @memberof GradebookResponse
+   */
+  rows: Array<GradebookRow>;
+}
+/**
+ *
+ * @export
+ * @interface GradebookRow
+ */
+export interface GradebookRow {
+  /**
+   *
+   * @type {string}
+   * @memberof GradebookRow
+   */
+  student: string;
+  /**
+   * The student's section name(s); null when unsectioned.
+   * @type {string}
+   * @memberof GradebookRow
+   */
+  section: string | null;
+  /**
+   *
+   * @type {Array<GradebookAssignmentCell>}
+   * @memberof GradebookRow
+   */
+  assignmentCells: Array<GradebookAssignmentCell>;
+  /**
+   *
+   * @type {Array<GradebookQuizCell>}
+   * @memberof GradebookRow
+   */
+  quizCells: Array<GradebookQuizCell>;
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookRow
+   */
+  totalEarned: number;
+  /**
+   *
+   * @type {number}
+   * @memberof GradebookRow
+   */
+  totalPossible: number;
+  /**
+   * Earned/possible over graded work only; null when nothing is graded.
+   * @type {number}
+   * @memberof GradebookRow
+   */
+  percent: number | null;
 }
 /**
  * * `hourly` - hourly
@@ -8246,6 +8438,12 @@ export interface PatchedQuiz {
    */
   showCorrectAnswers?: QuizShowAnswersEnum;
   /**
+   * Whether students may review their questions and answers after submitting. When false, students only see scores (per the reveal policy) — the question content is never shown again after submission.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  showResponses?: boolean;
+  /**
    * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
    * @type {number}
    * @memberof PatchedQuiz
@@ -10530,6 +10728,12 @@ export interface Quiz {
    */
   showCorrectAnswers?: QuizShowAnswersEnum;
   /**
+   * Whether students may review their questions and answers after submitting. When false, students only see scores (per the reveal policy) — the question content is never shown again after submission.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  showResponses?: boolean;
+  /**
    * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
    * @type {number}
    * @memberof Quiz
@@ -11453,6 +11657,19 @@ export interface SetCredentialsResponse {
   isValid: boolean;
 }
 /**
+ *
+ * @export
+ * @interface SetOfficialAttemptRequest
+ */
+export interface SetOfficialAttemptRequest {
+  /**
+   *
+   * @type {boolean}
+   * @memberof SetOfficialAttemptRequest
+   */
+  official?: boolean;
+}
+/**
  * * `info` - info
  * * `warning` - warning
  * * `critical` - critical
@@ -11616,6 +11833,12 @@ export interface StaffQuizAttempt {
    */
   passed?: boolean | null;
   /**
+   * Staff-pinned: this attempt is the student's official score, overriding the quiz's scoringPolicy. At most one per (quiz, student).
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly isOfficialOverride: boolean;
+  /**
    *
    * @type {boolean}
    * @memberof StaffQuizAttempt
@@ -11627,6 +11850,12 @@ export interface StaffQuizAttempt {
    * @memberof StaffQuizAttempt
    */
   readonly allowBacktracking: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly showResponses: boolean;
   /**
    *
    * @type {string}
@@ -12001,6 +12230,12 @@ export interface StudentQuizAttempt {
    */
   passed?: boolean | null;
   /**
+   * Staff-pinned: this attempt is the student's official score, overriding the quiz's scoringPolicy. At most one per (quiz, student).
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly isOfficialOverride: boolean;
+  /**
    *
    * @type {boolean}
    * @memberof StudentQuizAttempt
@@ -12012,6 +12247,12 @@ export interface StudentQuizAttempt {
    * @memberof StudentQuizAttempt
    */
   readonly allowBacktracking: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly showResponses: boolean;
   /**
    *
    * @type {string}

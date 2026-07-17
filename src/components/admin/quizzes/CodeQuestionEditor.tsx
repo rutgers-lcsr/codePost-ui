@@ -4,6 +4,7 @@ import Editor from '@monaco-editor/react';
 import { useTreeSitter } from '../../../hooks/useTreeSitter';
 import { useSymbolExtraction } from '../../../hooks/useSymbolExtraction';
 import { monacoLang } from '../../core/questionMeta';
+import CodeEditorTabHint from '../../core/CodeEditorTabHint';
 
 interface IProps {
   value: string;
@@ -71,16 +72,20 @@ const CodeQuestionEditor: React.FC<IProps> = ({ value, onChange, language, heigh
   };
 
   return (
-    <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
-      <Editor
-        height={`${height}px`}
-        language={monaco}
-        value={value}
-        onChange={(v) => onChange?.(v ?? '')}
-        onMount={handleMount}
-        theme="vs-dark"
-        options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 8 }, readOnly }}
-      />
+    <div>
+      <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}>
+        <Editor
+          height={`${height}px`}
+          language={monaco}
+          value={value}
+          onChange={(v) => onChange?.(v ?? '')}
+          onMount={handleMount}
+          theme="vs-dark"
+          options={{ minimap: { enabled: false }, fontSize: 13, padding: { top: 8 }, readOnly }}
+        />
+      </div>
+      {/* WCAG 2.1.2 advisory — Tab is trapped inside Monaco; tell users the way out. */}
+      <CodeEditorTabHint />
     </div>
   );
 };

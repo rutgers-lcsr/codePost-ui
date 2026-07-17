@@ -11,8 +11,6 @@ import { quizKeys } from '../../../lib/queryKeys';
 import { useCourseQuizzes } from './queries';
 import MarkdownField from './MarkdownField';
 
-const { Text } = Typography;
-
 interface IProps {
   courseId: number;
   selectedQuizId?: number;
@@ -84,8 +82,18 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
       key: 'title',
       render: (title: string, record: Quiz) => (
         <Space>
-          <FileDoneOutlined style={{ color: '#198665' }} />
-          <Text strong={record.id === selectedQuizId}>{title}</Text>
+          <FileDoneOutlined aria-hidden style={{ color: '#198665' }} />
+          {/* Focusable control gives keyboard/SR users a path to select the quiz; the
+              row-wide onClick below stays as a mouse convenience. */}
+          <Button
+            type="text"
+            size="small"
+            onClick={() => onSelect(record)}
+            aria-current={record.id === selectedQuizId ? 'true' : undefined}
+            style={{ padding: 0, height: 'auto', fontWeight: record.id === selectedQuizId ? 600 : 400 }}
+          >
+            {title}
+          </Button>
           {record.assignment != null && <Tag color="green">Attached</Tag>}
         </Space>
       ),
@@ -94,7 +102,14 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
       title: 'Qs',
       key: 'count',
       width: 60,
-      render: (_: unknown, record: Quiz) => <Tag>{record.quizQuestions?.length ?? 0}</Tag>,
+      // Fixed questions plus how many each random draw picks and each AI section generates.
+      render: (_: unknown, record: Quiz) => {
+        const count =
+          (record.quizQuestions?.length ?? 0) +
+          (record.questionGroups ?? []).reduce((sum, g) => sum + (g.pickCount ?? 1), 0) +
+          (record.generatedSections ?? []).reduce((sum, s) => sum + (s.numQuestions ?? 3), 0);
+        return <Tag>{count}</Tag>;
+      },
     },
     {
       title: '',
@@ -105,6 +120,8 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
           size="small"
           danger
           icon={<DeleteOutlined />}
+          aria-label={`Delete quiz: ${record.title}`}
+          title="Delete quiz"
           onClick={(e) => {
             e.stopPropagation();
             handleDelete(record);

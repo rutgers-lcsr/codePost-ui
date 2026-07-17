@@ -823,8 +823,8 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         </span>,
         <Referral key="referral" user={user} theme="light" />,
         <RoleMenu key="roles" user={user} thisApp={USER_TYPE.STUDENT} theme="light" />,
-        <Link className="internal-link" key="settings" to="/settings">
-          <SettingOutlined />
+        <Link className="internal-link" key="settings" to="/settings" aria-label="Settings">
+          <SettingOutlined aria-hidden />
         </Link>,
         <Button key="logout" onClick={handleLogout}>
           Log Out

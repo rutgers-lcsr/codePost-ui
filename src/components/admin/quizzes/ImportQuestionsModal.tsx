@@ -189,7 +189,12 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
           </Upload.Dragger>
 
           <div>
-            <Radio.Group value={targetMode} onChange={(e) => setTargetMode(e.target.value)} style={{ marginBottom: 8 }}>
+            <Radio.Group
+              aria-label="Import target"
+              value={targetMode}
+              onChange={(e) => setTargetMode(e.target.value)}
+              style={{ marginBottom: 8 }}
+            >
               <Radio value="new">New bank</Radio>
               <Radio value="existing" disabled={banks.length === 0}>
                 Existing bank
@@ -197,6 +202,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
             </Radio.Group>
             {targetMode === 'new' ? (
               <Input
+                aria-label="New bank name"
                 placeholder="New bank name"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
@@ -204,6 +210,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
               />
             ) : (
               <Select
+                aria-label="Choose a bank"
                 placeholder="Choose a bank"
                 style={{ width: '100%' }}
                 value={targetBankId}
@@ -221,7 +228,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
           </Checkbox>
 
           {phase === 'working' && (
-            <Flex align="center" gap={8}>
+            <Flex align="center" gap={8} role="status">
               <Spin size="small" />
               <Text type="secondary">Uploading and parsing…</Text>
             </Flex>

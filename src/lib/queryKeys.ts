@@ -4,6 +4,7 @@ export const courseKeys = {
   all: ['courses'] as const,
   roster: (courseId: number) => ['courses', courseId, 'roster'] as const,
   sections: (courseId: number) => ['courses', courseId, 'sections'] as const,
+  gradebook: (courseId: number) => ['courses', courseId, 'gradebook'] as const,
 };
 
 export const assignmentKeys = {
@@ -41,6 +42,7 @@ export const quizKeys = {
   backfillPreview: (quizId: number) => ['quizzes', 'backfillPreview', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,
   aiGenerationEnabled: (courseId: number) => ['quizzes', 'aiGenerationEnabled', courseId] as const,
+  staffSections: (courseId: number) => ['quizzes', 'staffSections', courseId] as const,
 };
 
 export const studentKeys = {

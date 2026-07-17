@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**reopenResponseCreate**](QuizAttemptsApi.md#reopenresponsecreate)       | **POST** /quizAttempts/{id}/reopenResponse/ |             |
 | [**retrieve**](QuizAttemptsApi.md#retrieve)                               | **GET** /quizAttempts/{id}/                 |             |
 | [**saveAnswerPartialUpdate**](QuizAttemptsApi.md#saveanswerpartialupdate) | **PATCH** /quizAttempts/{id}/saveAnswer/    |             |
+| [**setOfficialCreate**](QuizAttemptsApi.md#setofficialcreate)             | **POST** /quizAttempts/{id}/setOfficial/    |             |
 | [**submitCreate**](QuizAttemptsApi.md#submitcreate)                       | **POST** /quizAttempts/{id}/submit/         |             |
 
 ## availableQuizzesList
@@ -513,6 +514,83 @@ example().catch(console.error);
 ### Return type
 
 [**StudentQuizResponse**](StudentQuizResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## setOfficialCreate
+
+> StaffQuizAttempt setOfficialCreate(id, setOfficialAttemptRequest)
+
+Pin this submitted attempt as the student\&#39;s official score, overriding the quiz\&#39;s scoringPolicy — or unpin with official&#x3D;false to return to the policy. Quiz graders and course admins only; at most one pin per student.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizAttemptsApi,
+} from '';
+import type { SetOfficialCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizAttemptsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz attempt.
+    id: 56,
+    // SetOfficialAttemptRequest (optional)
+    setOfficialAttemptRequest: ...,
+  } satisfies SetOfficialCreateRequest;
+
+  try {
+    const data = await api.setOfficialCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                          | Type                                                      | Description                                           | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                        | `number`                                                  | A unique integer value identifying this quiz attempt. | [Defaults to `undefined`] |
+| **setOfficialAttemptRequest** | [SetOfficialAttemptRequest](SetOfficialAttemptRequest.md) |                                                       | [Optional]                |
+
+### Return type
+
+[**StaffQuizAttempt**](StaffQuizAttempt.md)
 
 ### Authorization
 

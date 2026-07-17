@@ -22,6 +22,7 @@ import { Course } from '../../api-client';
 import { AssignmentType } from '../../types/models';
 
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
+import { clickableProps } from '../core/clickable';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { usePermissionsStore } from '../../stores/usePermissionsStore';
 
@@ -109,7 +110,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
     const breadcrumbs = [
       {
         title: (
-          <span style={{ cursor: 'pointer' }} onClick={back}>
+          <span style={{ cursor: 'pointer' }} {...clickableProps(back)}>
             {props.title}
           </span>
         ),

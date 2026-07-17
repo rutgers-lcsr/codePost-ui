@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Button, Tag, Tooltip } from 'antd';
+import { Button, Tag } from 'antd';
 import { EyeOutlined, LockOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import { StudentQuiz } from '../../../api-client';
@@ -50,12 +50,13 @@ const QuizActions: React.FC<IProps> = ({ quiz, onTake, onReview, testIdPrefix, c
         )
       )}
       {action === 'locked' ? (
+        // The Tag's own text IS the lock reason (quizActionLabel → "Opens after you
+        // submit", "Closed", …). No Tooltip: it duplicated less-specific text and was
+        // unreachable by keyboard (WCAG 2.1.1 / 1.4.13).
         compact ? (
-          <Tooltip title="This quiz isn't open yet">
-            <Tag icon={<LockOutlined />} style={{ margin: 0 }} data-testid={`${testIdPrefix}-locked`}>
-              {quizActionLabel(quiz)}
-            </Tag>
-          </Tooltip>
+          <Tag icon={<LockOutlined aria-hidden />} style={{ margin: 0 }} data-testid={`${testIdPrefix}-locked`}>
+            {quizActionLabel(quiz)}
+          </Tag>
         ) : (
           <Tag data-testid={`${testIdPrefix}-locked`}>{quizActionLabel(quiz)}</Tag>
         )

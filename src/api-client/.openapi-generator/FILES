@@ -181,6 +181,12 @@ docs/GeneratedQuestionSetsApi.md
 docs/GeneratedQuizQuestion.md
 docs/GeneratedQuizQuestionsApi.md
 docs/GradeQuizResponseRequest.md
+docs/GradebookAssignmentCell.md
+docs/GradebookAssignmentColumn.md
+docs/GradebookQuizCell.md
+docs/GradebookQuizColumn.md
+docs/GradebookResponse.md
+docs/GradebookRow.md
 docs/GranularityEnum.md
 docs/HandleValidationResponse.md
 docs/HealthCheck.md
@@ -330,6 +336,7 @@ docs/Section.md
 docs/SectionsApi.md
 docs/SetCredentialsRequest.md
 docs/SetCredentialsResponse.md
+docs/SetOfficialAttemptRequest.md
 docs/SeverityEnum.md
 docs/ShellMetricsResponse.md
 docs/ShellMetricsSession.md

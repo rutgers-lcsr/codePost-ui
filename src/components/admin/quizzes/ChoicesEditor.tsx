@@ -45,18 +45,35 @@ const ChoicesEditor: React.FC<IProps> = ({ questionType, value, onChange }) => {
           {value.map((choice, index) => (
             <Flex key={index} align="center" gap={8}>
               {single ? (
-                <Radio value={index} onChange={() => setCorrectSingle(index)} />
+                <Radio
+                  value={index}
+                  onChange={() => setCorrectSingle(index)}
+                  aria-label={`Mark choice ${index + 1} as correct`}
+                />
               ) : accepted ? null : (
-                <Checkbox checked={choice.isCorrect} onChange={(e) => toggleCorrect(index, e.target.checked)} />
+                <Checkbox
+                  checked={choice.isCorrect}
+                  onChange={(e) => toggleCorrect(index, e.target.checked)}
+                  aria-label={`Mark choice ${index + 1} as correct`}
+                />
               )}
               <Input
                 value={choice.text}
                 placeholder={accepted ? 'An accepted answer' : `Choice ${index + 1}`}
+                aria-label={accepted ? `Accepted answer ${index + 1}` : `Choice ${index + 1}`}
                 onChange={(e) => setText(index, e.target.value)}
                 disabled={fixed}
               />
               {!fixed && value.length > minRows && (
-                <Button type="text" size="small" danger icon={<DeleteOutlined />} onClick={() => removeChoice(index)} />
+                <Button
+                  type="text"
+                  size="small"
+                  danger
+                  icon={<DeleteOutlined />}
+                  aria-label={`Remove choice ${index + 1}`}
+                  title="Remove choice"
+                  onClick={() => removeChoice(index)}
+                />
               )}
             </Flex>
           ))}

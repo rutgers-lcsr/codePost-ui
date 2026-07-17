@@ -92,6 +92,7 @@ const RegenerateQuestionModal: React.FC<IProps> = ({ open, courseId, bankId, que
           </div>
 
           <Input.TextArea
+            aria-label="Regeneration guidance"
             placeholder="Optional guidance, e.g. “make it harder” or “update for this year”"
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
@@ -106,7 +107,7 @@ const RegenerateQuestionModal: React.FC<IProps> = ({ open, courseId, bankId, que
           <Divider style={{ margin: '12px 0' }} />
 
           {generating ? (
-            <Flex align="center" gap={8} style={{ padding: 16 }}>
+            <Flex align="center" gap={8} style={{ padding: 16 }} role="status">
               <Spin />
               <Text type="secondary">Generating an updated version…</Text>
             </Flex>

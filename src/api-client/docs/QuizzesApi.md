@@ -99,7 +99,7 @@ example().catch(console.error);
 
 > BackfillPreviewResponse backfillPreviewRetrieve(id)
 
-How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: submitters minus approved sets, i.e. the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: submitters without any set).
+How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (&#x60;&#x60;needsSubmission&#x60;&#x60; says which applies).
 
 ### Example
 

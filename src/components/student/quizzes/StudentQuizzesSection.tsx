@@ -33,22 +33,23 @@ const QuizCard: React.FC<{
     <Card size="small" data-testid="student-quiz-card">
       <Flex justify="space-between" align="center" gap={16} wrap>
         <div style={{ minWidth: 0 }}>
-          <Title level={5} style={{ margin: 0 }}>
+          {/* h4 under the section's h3 — keeps the outline h2 → h3 → h4 with no skips. */}
+          <Title level={4} style={{ margin: 0, fontSize: 16 }}>
             {quiz.title}
           </Title>
           <Flex gap={12} wrap style={{ marginTop: 4 }}>
             {assignmentName && <Text type="secondary">Assignment: {assignmentName}</Text>}
             <Text type="secondary">
-              <FileTextOutlined /> {quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}
+              <FileTextOutlined aria-hidden /> {quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}
             </Text>
             {quiz.timeLimitMinutes ? (
               <Text type="secondary">
-                <ClockCircleOutlined /> {quiz.timeLimitMinutes} min
+                <ClockCircleOutlined aria-hidden /> {quiz.timeLimitMinutes} min
               </Text>
             ) : null}
             {quiz.closeAt ? (
               <Text type="secondary">
-                <CalendarOutlined /> Due <CodePostDate datetime={quiz.closeAt} />
+                <CalendarOutlined aria-hidden /> Due <CodePostDate datetime={quiz.closeAt} />
               </Text>
             ) : null}
             {(quiz.attemptsAllowed ?? 1) !== 1 && (
@@ -92,7 +93,8 @@ const StudentQuizzesSection: React.FC<IProps> = ({ courseId, onTake, onReview, a
     <>
       {standalone.length > 0 && (
         <section style={{ marginBottom: 24 }}>
-          <Title level={4}>Quizzes</Title>
+          {/* h3 under the course header's h2 (Student.tsx) — no skipped level. */}
+          <Title level={3} style={{ fontSize: 20 }}>Quizzes</Title>
           <Flex vertical gap={12}>
             {standalone.map((q) => (
               <QuizCard key={q.id} quiz={q} onTake={() => onTake(q)} onReview={onReview && (() => onReview(q))} />
@@ -102,7 +104,7 @@ const StudentQuizzesSection: React.FC<IProps> = ({ courseId, onTake, onReview, a
       )}
       {attached.length > 0 && (
         <section style={{ marginBottom: 24 }} data-testid="assignment-quizzes-section">
-          <Title level={4}>Assignment Quizzes</Title>
+          <Title level={3} style={{ fontSize: 20 }}>Assignment Quizzes</Title>
           <Flex vertical gap={12}>
             {attached.map((q) => (
               <QuizCard

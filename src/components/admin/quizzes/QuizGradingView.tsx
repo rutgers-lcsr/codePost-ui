@@ -9,8 +9,8 @@
 // `active` gates the queries so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Space, Spin, Switch, Table,
-  Tabs, Tag, Typography, message,
+  Alert, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Select, Space, Spin, Switch,
+  Table, Tabs, Tag, Typography, message,
 } from 'antd';
 import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,7 +19,7 @@ import { quizAttemptsApi } from '../../../api-client/clients';
 import { Quiz, QuizResultRow, StaffQuizAttempt, StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useApiAction } from '../../../hooks/useApiAction';
-import { useQuizAttempts, useQuizResults } from './queries';
+import { useQuizAttempts, useQuizResults, useStaffSections } from './queries';
 import { isManuallyGraded } from './choiceUtils';
 import { GradingStatusTag, PassedTag } from './quizTags';
 import { bySortKey, formatScore } from '../../core/questionMeta';
@@ -87,6 +87,7 @@ const GradeControls: React.FC<{
           min={0}
           max={Number(response.points ?? 0)}
           step={0.5}
+          aria-label="Points awarded"
           value={points ?? undefined}
           onChange={(v) => setPoints(v ?? null)}
           data-testid="grade-points"
@@ -107,6 +108,7 @@ const GradeControls: React.FC<{
         )}
       </Space>
       <Input.TextArea
+        aria-label="Feedback for the student"
         placeholder="Feedback for the student (optional)…"
         autoSize={{ minRows: 2 }}
         value={feedback}
@@ -130,12 +132,58 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   // (e.g. a Results row's "View attempt"), not always to Attempts.
   const [innerTab, setInnerTab] = React.useState('attempts');
 
+  // Focus management for the inline attempt-detail view swap: when a *different* attempt
+  // opens (or the Next attempt loads) move focus into the detail heading; when the detail
+  // closes move focus back to the list — so keyboard/SR users aren't stranded on an
+  // unmounted control. Keyed on attempt id so re-saving a grade (which replaces `current`
+  // with the same id) does not yank focus off the Save button.
+  const detailHeadingRef = React.useRef<HTMLSpanElement>(null);
+  const listFocusRef = React.useRef<HTMLDivElement>(null);
+  const prevId = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    const id = current?.id ?? null;
+    if (id !== prevId.current) {
+      if (id != null) detailHeadingRef.current?.focus();
+      else listFocusRef.current?.focus();
+    }
+    prevId.current = id;
+  }, [current]);
+
   const { data: attempts = [], isLoading, error } = useQuizAttempts(quiz.id, {
     needsGrading: needsGradingOnly,
     enabled: active,
   });
 
   const { data: results = [], isLoading: resultsLoading } = useQuizResults(quiz.id, active);
+
+  // Section filter: a grader picks their section and sees only those students' attempts
+  // and results. Filtered client-side from the section rosters (attempt rows carry the
+  // student email); admins see every section, graders the ones they can read.
+  const [sectionId, setSectionId] = React.useState<number | null>(null);
+  const { data: sections = [] } = useStaffSections(quiz.course, active);
+  const sectionEmails = React.useMemo(() => {
+    if (sectionId == null) return null;
+    const section = sections.find((s) => s.id === sectionId);
+    return section ? new Set((section.students ?? []).map(String)) : null;
+  }, [sectionId, sections]);
+  const visibleAttempts = sectionEmails ? attempts.filter((a) => sectionEmails.has(a.student)) : attempts;
+  const visibleResults = sectionEmails ? results.filter((r) => sectionEmails.has(r.student)) : results;
+
+  const sectionFilter = sections.length > 0 ? (
+    <Select
+      size="small"
+      aria-label="Filter by section"
+      style={{ minWidth: 160 }}
+      value={sectionId ?? 'all'}
+      onChange={(v) => setSectionId(v === 'all' ? null : Number(v))}
+      options={[
+        { value: 'all' as const, label: 'All sections' },
+        ...sections.map((s) => ({ value: s.id, label: s.name })),
+      ]}
+      popupMatchSelectWidth={false}
+      data-testid="grading-section-filter"
+    />
+  ) : null;
 
   // Every submitted attempt (unfiltered) feeds the per-question item analysis. Shares the
   // needsGrading=false variant of the attempts key, so grading invalidates it too.
@@ -151,6 +199,26 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const handleGraded = (updated: StaffQuizAttempt) => {
     setCurrent(updated);
     refresh();
+  };
+
+  // Pin/unpin the viewed attempt as the student's official score (overrides scoringPolicy).
+  const { acting: pinning, run: runPin } = useApiAction();
+  const setOfficial = (official: boolean) => {
+    if (!current) return;
+    void runPin(
+      async () => {
+        const updated = await quizAttemptsApi.setOfficialCreate({
+          id: current.id,
+          setOfficialAttemptRequest: { official },
+        });
+        setCurrent(updated);
+        refresh();
+      },
+      official
+        ? "Pinned — this attempt now counts as the student's official grade."
+        : 'Unpinned — the scoring policy decides the official grade again.',
+      'Failed to update the official attempt.',
+    );
   };
 
   // Item analysis: aggregate every submitted response per question. Fixed and random-draw
@@ -241,8 +309,8 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   }, [allAttempts]);
   type QuestionStat = (typeof questionStats)[number];
 
-  // Grade-and-next: walk the attempts that still need grading.
-  const pending = attempts.filter((a) => a.needsManualGrading);
+  // Grade-and-next: walk the attempts that still need grading (within the section filter).
+  const pending = visibleAttempts.filter((a) => a.needsManualGrading);
   const nextPending = current ? pending.find((a) => a.id !== current.id) : undefined;
   const pendingPosition = current ? pending.findIndex((a) => a.id === current.id) : -1;
 
@@ -278,9 +346,13 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     {
       title: 'Status',
       key: 'state',
-      width: 140,
-      render: (_: unknown, a: StaffQuizAttempt) =>
-        <GradingStatusTag needsGrading={!!a.needsManualGrading} />,
+      width: 170,
+      render: (_: unknown, a: StaffQuizAttempt) => (
+        <Space size={4}>
+          <GradingStatusTag needsGrading={!!a.needsManualGrading} />
+          {a.isOfficialOverride && <Tag color="blue" style={{ margin: 0 }}>Official</Tag>}
+        </Space>
+      ),
     },
     {
       title: '',
@@ -344,7 +416,7 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
 
   const exportCsv = () => {
     const header = ['student', 'attempts', 'score', 'maxScore', 'passed', 'needsGrading', 'lastSubmittedAt'];
-    const rows = results.map((r) => [
+    const rows = visibleResults.map((r) => [
       r.student,
       String(r.attemptsUsed),
       r.score != null ? String(Number(r.score)) : '',
@@ -365,16 +437,27 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const attemptsTab = (
     <>
       <Flex justify="flex-end" align="center" gap={8} style={{ marginBottom: 12 }}>
+        {sectionFilter}
         <Text type="secondary">Needs grading only</Text>
-        <Switch checked={needsGradingOnly} onChange={setNeedsGradingOnly} />
+        <Switch
+          aria-label="Show only attempts needing grading"
+          checked={needsGradingOnly}
+          onChange={setNeedsGradingOnly}
+        />
       </Flex>
-      {attempts.length === 0 ? (
+      {visibleAttempts.length === 0 ? (
         <Empty
-          description={needsGradingOnly ? 'Nothing waiting to be graded.' : 'No submitted attempts yet.'}
+          description={
+            sectionEmails
+              ? 'No matching attempts in this section.'
+              : needsGradingOnly
+              ? 'Nothing waiting to be graded.'
+              : 'No submitted attempts yet.'
+          }
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (
-        <Table dataSource={attempts} columns={columns} rowKey="id" size="small" pagination={false} />
+        <Table dataSource={visibleAttempts} columns={columns} rowKey="id" size="small" pagination={false} />
       )}
     </>
   );
@@ -385,16 +468,20 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     </Flex>
   ) : (
     <>
-      <Flex justify="flex-end" style={{ marginBottom: 12 }}>
-        <CPButton cpType="default" icon={<DownloadOutlined />} onClick={exportCsv} disabled={results.length === 0} data-testid="results-export">
+      <Flex justify="flex-end" align="center" gap={8} style={{ marginBottom: 12 }}>
+        {sectionFilter}
+        <CPButton cpType="default" icon={<DownloadOutlined />} onClick={exportCsv} disabled={visibleResults.length === 0} data-testid="results-export">
           Export CSV
         </CPButton>
       </Flex>
-      {results.length === 0 ? (
-        <Empty description="No submitted attempts yet." image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      {visibleResults.length === 0 ? (
+        <Empty
+          description={sectionEmails ? 'No results in this section.' : 'No submitted attempts yet.'}
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       ) : (
         <Table
-          dataSource={results}
+          dataSource={visibleResults}
           columns={resultColumns}
           rowKey="student"
           size="small"
@@ -549,6 +636,14 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
 
   const responses = current ? [...current.responses].sort(bySortKey) : [];
 
+  // Every submitted attempt by the student being viewed (newest first) — feeds the
+  // attempt switcher in the detail header, from the already-fetched unfiltered list.
+  const studentAttempts = current
+    ? allAttempts
+        .filter((a) => a.student === current.student)
+        .sort((a, b) => (b.attemptNumber ?? 0) - (a.attemptNumber ?? 0))
+    : [];
+
   if (error != null) {
     return (
       <Alert
@@ -573,12 +668,35 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
       <div style={{ maxWidth: 812 }}>
         <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
           <Flex align="center" gap={8}>
-            <CPButton cpType="link" small onClick={() => setCurrent(null)}>
-              <LeftOutlined /> All attempts
+            <CPButton cpType="link" small icon={<LeftOutlined />} onClick={() => setCurrent(null)}>
+              All attempts
             </CPButton>
-            <Text strong>
-              {current.student} — attempt #{current.attemptNumber}
+            <Text strong ref={detailHeadingRef} tabIndex={-1} style={{ outline: 'none' }}>
+              {current.student}
             </Text>
+            {studentAttempts.length > 1 ? (
+              <Select
+                size="small"
+                aria-label="Attempt to view"
+                value={current.id}
+                onChange={(id) => {
+                  const a = studentAttempts.find((x) => x.id === id);
+                  if (a) setCurrent(a);
+                }}
+                options={studentAttempts.map((a) => ({
+                  value: a.id,
+                  label: `Attempt #${a.attemptNumber} · ${
+                    a.score != null ? formatScore(a.score, a.maxScore) : '—'
+                  }${a.needsManualGrading ? ' · needs grading' : ''}${
+                    a.isOfficialOverride ? ' · official' : ''
+                  }`,
+                }))}
+                popupMatchSelectWidth={false}
+                data-testid="grading-attempt-switcher"
+              />
+            ) : (
+              <Text strong>— attempt #{current.attemptNumber}</Text>
+            )}
           </Flex>
           <Space>
             {pendingPosition >= 0 && (
@@ -593,15 +711,33 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
             )}
           </Space>
         </Flex>
-        <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
-          <Text strong data-testid="grading-attempt-score">
-            Score: {current.score ?? '—'} / {current.maxScore ?? '—'}
-          </Text>
-          {current.needsManualGrading ? (
-            <Tag color="gold">Awaiting manual grades</Tag>
-          ) : (
-            <PassedTag passed={current.passed} />
-          )}
+        <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
+          <Space>
+            <Text strong data-testid="grading-attempt-score">
+              Score: {current.score ?? '—'} / {current.maxScore ?? '—'}
+            </Text>
+            {current.isOfficialOverride && (
+              <Tag color="blue" data-testid="official-pin-tag">
+                Official grade (pinned)
+              </Tag>
+            )}
+          </Space>
+          <Space>
+            {current.needsManualGrading ? (
+              <Tag color="gold">Awaiting manual grades</Tag>
+            ) : (
+              <PassedTag passed={current.passed} />
+            )}
+            {current.isOfficialOverride ? (
+              <CPButton small loading={pinning} onClick={() => setOfficial(false)} data-testid="grading-unpin-official">
+                Unpin official grade
+              </CPButton>
+            ) : (
+              <CPButton small loading={pinning} onClick={() => setOfficial(true)} data-testid="grading-pin-official">
+                Use as official grade
+              </CPButton>
+            )}
+          </Space>
         </Flex>
         {responses.map((r, i) => (
           <div key={r.id}>
@@ -622,15 +758,17 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     );
   }
   return (
-    <Tabs
-      activeKey={innerTab}
-      onChange={setInnerTab}
-      items={[
-        { key: 'attempts', label: 'Attempts', children: attemptsTab },
-        { key: 'results', label: 'Results', children: resultsTab },
-        { key: 'questions', label: 'Item analysis', children: questionsTab },
-      ]}
-    />
+    <div ref={listFocusRef} tabIndex={-1} style={{ outline: 'none' }}>
+      <Tabs
+        activeKey={innerTab}
+        onChange={setInnerTab}
+        items={[
+          { key: 'attempts', label: 'Attempts', children: attemptsTab },
+          { key: 'results', label: 'Results', children: resultsTab },
+          { key: 'questions', label: 'Item analysis', children: questionsTab },
+        ]}
+      />
+    </div>
   );
 };
 

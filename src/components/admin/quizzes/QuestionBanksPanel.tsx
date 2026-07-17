@@ -12,7 +12,6 @@ import { useQuestionBanks } from './queries';
 import MarkdownField from './MarkdownField';
 import ImportQuestionsModal from './ImportQuestionsModal';
 
-const { Text } = Typography;
 
 interface IProps {
   courseId: number;
@@ -124,8 +123,18 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
       key: 'name',
       render: (name: string, record: QuestionBank) => (
         <Space>
-          <FolderOpenOutlined style={{ color: '#198665' }} />
-          <Text strong={record.id === selectedBankId}>{name}</Text>
+          <FolderOpenOutlined aria-hidden style={{ color: '#198665' }} />
+          {/* Focusable control gives keyboard/SR users a path to select the bank; the
+              row-wide onClick below stays as a mouse convenience. */}
+          <Button
+            type="text"
+            size="small"
+            onClick={() => onSelect(record)}
+            aria-current={record.id === selectedBankId ? 'true' : undefined}
+            style={{ padding: 0, height: 'auto', fontWeight: record.id === selectedBankId ? 600 : 400 }}
+          >
+            {name}
+          </Button>
         </Space>
       ),
     },
@@ -145,6 +154,8 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
           <Button
             size="small"
             icon={<EditOutlined />}
+            aria-label={`Edit bank: ${record.name}`}
+            title="Edit bank"
             onClick={(e) => {
               e.stopPropagation();
               openEdit(record);
@@ -154,6 +165,8 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
             size="small"
             danger
             icon={<DeleteOutlined />}
+            aria-label={`Delete bank: ${record.name}`}
+            title="Delete bank"
             onClick={(e) => {
               e.stopPropagation();
               handleDelete(record);

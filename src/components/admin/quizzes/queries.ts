@@ -2,14 +2,47 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   assignmentsApi, coursesApi, generatedQuestionSetsApi, questionsApi, questionBanksApi, quizzesApi,
+  sectionsApi,
 } from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
 import { getCourseAISettings } from '../../../utils/aiService';
 import {
   BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
-  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, StaffQuizAttempt,
+  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, Section, StaffQuizAttempt,
   SuggestedQuizQuestion,
 } from '../../../api-client';
+
+/** The course's sections, for staff viewers — feeds the section filters in quiz grading
+ *  and generated-question review. Admins page through the bulk endpoint; graders can't
+ *  call it, so they fall back to per-id fetches of the course's section ids (only the
+ *  sections they may read resolve — typically the ones they lead), mirroring the grader
+ *  console's section loading. */
+export const useStaffSections = (courseId: number | undefined, enabled: boolean) =>
+  useQuery({
+    queryKey: quizKeys.staffSections(courseId ?? -1),
+    queryFn: async (): Promise<Section[]> => {
+      try {
+        const pageSize = 200;
+        let page = 1;
+        let all: Section[] = [];
+        for (;;) {
+          const response = await coursesApi.sectionsList({ id: courseId!, page, pageSize });
+          all = all.concat(response.results ?? []);
+          if (!response.next) return all;
+          page += 1;
+        }
+      } catch {
+        const course = await coursesApi.retrieve({ id: courseId! });
+        const ids = Array.isArray(course.sections) ? course.sections : [];
+        const settled = await Promise.allSettled(ids.map((id) => sectionsApi.retrieve({ id })));
+        return settled
+          .filter((r): r is PromiseFulfilledResult<Section> => r.status === 'fulfilled')
+          .map((r) => r.value);
+      }
+    },
+    enabled: !!courseId && enabled,
+    staleTime: 5 * 60_000,
+  });
 
 /** A course's question banks. List endpoints are blocked, so we fetch via the
  *  course parent action (`courses/{id}/questionBanks/`). */

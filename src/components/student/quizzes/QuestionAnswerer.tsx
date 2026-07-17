@@ -5,6 +5,7 @@ import { CheckCircleTwoTone, CloseCircleTwoTone, CommentOutlined } from '@ant-de
 import Editor from '@monaco-editor/react';
 import { StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
 import Markdown from '../../core/Markdown';
+import CodeEditorTabHint from '../../core/CodeEditorTabHint';
 import { typeMeta, monacoLang } from '../../core/questionMeta';
 
 const { Text } = Typography;
@@ -42,10 +43,19 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
   const setText = (answerText: string) => onChange({ ...value, answerText });
   const setChoices = (selectedChoices: number[]) => onChange({ ...value, selectedChoices });
 
+  // Associate every answer control with the question text so screen readers announce
+  // which question the control belongs to. Falls back to the question index when the
+  // question has no text body.
+  const labelId = React.useId();
+  const groupLabel = question.text
+    ? { 'aria-labelledby': labelId }
+    : { 'aria-label': `Question ${index + 1}` };
+
   const renderInput = () => {
     if (type === QuestionTypeEnum.MultipleChoice || type === QuestionTypeEnum.TrueFalse) {
       return (
         <Radio.Group
+          {...groupLabel}
           disabled={disabled}
           value={value.selectedChoices[0]}
           onChange={(e) => setChoices([e.target.value as number])}
@@ -62,43 +72,53 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
     }
     if (type === QuestionTypeEnum.MultipleAnswers) {
       return (
-        <Checkbox.Group disabled={disabled} value={value.selectedChoices} onChange={(v) => setChoices(v as number[])}>
-          <Space direction="vertical">
-            {choices.map((c) => (
-              <Checkbox key={c.id} value={c.id}>
-                <ChoiceLabel text={c.text} reveal={reveal} isCorrect={c.isCorrect} feedback={c.feedback} />
-              </Checkbox>
-            ))}
-          </Space>
-        </Checkbox.Group>
+        // role="group" + label: Checkbox.Group renders a plain div, so wrap it to expose
+        // the choices as a named group to screen readers.
+        <div role="group" {...groupLabel}>
+          <Checkbox.Group disabled={disabled} value={value.selectedChoices} onChange={(v) => setChoices(v as number[])}>
+            <Space direction="vertical">
+              {choices.map((c) => (
+                <Checkbox key={c.id} value={c.id}>
+                  <ChoiceLabel text={c.text} reveal={reveal} isCorrect={c.isCorrect} feedback={c.feedback} />
+                </Checkbox>
+              ))}
+            </Space>
+          </Checkbox.Group>
+        </div>
       );
     }
     if (type === QuestionTypeEnum.Code) {
       return (
-        <div
-          style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}
-          data-testid="quiz-answer-code"
-        >
-          <Editor
-            height="260px"
-            language={monacoLang(question.language)}
-            value={value.answerText}
-            onChange={(v) => setText(v ?? '')}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: false },
-              fontSize: 13,
-              padding: { top: 8 },
-              readOnly: disabled,
-              scrollBeyondLastLine: false,
-            }}
-          />
+        <div>
+          <div
+            style={{ border: '1px solid #d9d9d9', borderRadius: 6, overflow: 'hidden' }}
+            data-testid="quiz-answer-code"
+          >
+            <Editor
+              height="260px"
+              language={monacoLang(question.language)}
+              value={value.answerText}
+              onChange={(v) => setText(v ?? '')}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 13,
+                padding: { top: 8 },
+                readOnly: disabled,
+                scrollBeyondLastLine: false,
+                ariaLabel: `Code answer for question ${index + 1}`,
+              }}
+            />
+          </div>
+          {/* WCAG 2.1.2 advisory — Tab is trapped inside Monaco; tell users the way out. */}
+          <CodeEditorTabHint />
         </div>
       );
     }
     if (type === QuestionTypeEnum.Essay) {
       return (
         <Input.TextArea
+          {...groupLabel}
           disabled={disabled}
           autoSize={{ minRows: 4 }}
           value={value.answerText}
@@ -113,6 +133,7 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
     return (
       <div>
         <Input
+          {...groupLabel}
           disabled={disabled}
           value={value.answerText}
           onChange={(e) => setText(e.target.value)}
@@ -137,6 +158,10 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
       style={{ marginBottom: 12 }}
       data-testid="quiz-question"
       data-question-type={type}
+      // Named group so SR users can jump between questions in one-page mode
+      // (the one-at-a-time wrapper in QuizQuestions adds the "of Y" position).
+      role="group"
+      aria-label={`Question ${index + 1}`}
       title={
         <Flex align="center" gap={8} wrap>
           <Text strong>Question {index + 1}</Text>
@@ -154,14 +179,18 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
         </Space>
       }
     >
-      {question.text && <Markdown>{question.text}</Markdown>}
+      {question.text && (
+        <div id={labelId}>
+          <Markdown>{question.text}</Markdown>
+        </div>
+      )}
       {question.description && <Markdown>{question.description}</Markdown>}
       <div style={{ marginTop: 12 }}>{renderInput()}</div>
       {/* Server-gated: present once the attempt is submitted, regardless of answer reveal. */}
       {response.graderFeedback && (
         <div style={{ marginTop: 12 }} data-testid="quiz-grader-feedback">
           <Text type="secondary">
-            <CommentOutlined /> Grader:{' '}
+            <CommentOutlined aria-hidden /> Grader:{' '}
           </Text>
           <Text style={{ whiteSpace: 'pre-wrap' }}>{response.graderFeedback}</Text>
         </div>
@@ -186,7 +215,9 @@ const ChoiceLabel: React.FC<{ text: string; reveal: boolean; isCorrect?: boolean
   // don't forward data-* attributes; clicking it toggles the control.
   <span data-testid="quiz-choice">
     {text}
-    {reveal && isCorrect === true && <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 6 }} />}
+    {reveal && isCorrect === true && (
+      <CheckCircleTwoTone twoToneColor="#52c41a" role="img" aria-label="Correct answer" style={{ marginLeft: 6 }} />
+    )}
     {reveal && feedback && (
       <Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>
         — {feedback}
@@ -205,14 +236,22 @@ const ResultTag: React.FC<{ response: StudentQuizResponse }> = ({ response }) =>
   }
   if (response.isCorrect === true) {
     return (
-      <Tag color="success" icon={<CheckCircleTwoTone twoToneColor="#52c41a" />} data-testid="quiz-question-result">
+      <Tag
+        color="success"
+        icon={<CheckCircleTwoTone aria-hidden twoToneColor="#52c41a" />}
+        data-testid="quiz-question-result"
+      >
         {response.pointsEarned ?? 0} pts
       </Tag>
     );
   }
   if (response.isCorrect === false) {
     return (
-      <Tag color="error" icon={<CloseCircleTwoTone twoToneColor="#ff4d4f" />} data-testid="quiz-question-result">
+      <Tag
+        color="error"
+        icon={<CloseCircleTwoTone aria-hidden twoToneColor="#ff4d4f" />}
+        data-testid="quiz-question-result"
+      >
         0 pts
       </Tag>
     );

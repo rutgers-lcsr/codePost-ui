@@ -73,7 +73,7 @@ const AssignmentSection: React.FC<AssignmentSectionProps> = ({
             <span style={{ color: iconColor }} aria-hidden="true">
               {icon}
             </span>
-            <Typography.Title level={5} style={{ margin: 0 }}>
+            <Typography.Title level={3} style={{ margin: 0, fontSize: 16 }}>
               {title}
             </Typography.Title>
             <Badge count={count} size="small" color={iconColor} overflowCount={999} />

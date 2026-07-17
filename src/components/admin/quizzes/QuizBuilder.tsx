@@ -291,8 +291,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
       width: 48,
       render: (_: unknown, row: ContentRow) => {
         if (row.kind === 'question') return row.position + 1;
-        if (row.kind === 'aiSection') return <RobotOutlined style={{ color: '#722ed1' }} />;
-        return <RetweetOutlined style={{ color: '#198665' }} />;
+        // Decorative — the adjacent "Type" column carries this as text.
+        if (row.kind === 'aiSection') return <RobotOutlined aria-hidden style={{ color: '#722ed1' }} />;
+        return <RetweetOutlined aria-hidden style={{ color: '#198665' }} />;
       },
     },
     {
@@ -321,10 +322,12 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         }
         if (row.kind === 'aiSection') {
           const s = row.section;
+          const fromSubmission = /\{submission_/.test(s.systemPrompt ?? '');
           return (
             <Text>
               {s.name ? `${s.name} — ` : ''}
-              Generate <b>{s.numQuestions ?? 3}</b> per student from their submission
+              Generate <b>{s.numQuestions ?? 3}</b> per student
+              {fromSubmission ? ' from their submission' : ' from your prompt'}
             </Text>
           );
         }
@@ -510,10 +513,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                     ? [{
                         key: 'ai',
                         icon: <RobotOutlined />,
-                        label: draftAssignment == null
-                          ? 'AI-generated questions (attach an assignment first)'
-                          : 'AI-generated questions…',
-                        disabled: draftAssignment == null,
+                        // Standalone quizzes can generate too, as long as the prompt
+                        // doesn't reference assignment/submission data (validated on save).
+                        label: 'AI-generated questions…',
                       }]
                     : []),
                 ],
@@ -594,7 +596,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                 label: (
                   <Space size={6}>
                     Review
-                    <Badge count={readyCount} style={{ backgroundColor: '#faad14' }} />
+                    {/* Darker amber (#996800 ≈ 4.9:1 with the Badge's white count) — antd
+                        gold #faad14 gives only ~1.8:1. */}
+                    <Badge count={readyCount} style={{ backgroundColor: '#996800' }} />
                   </Space>
                 ),
                 children: (
@@ -635,6 +639,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         open={sectionOpen}
         courseId={course.id!}
         quizId={quiz.id!}
+        attached={draftAssignment != null}
         section={editingSection}
         nextSortKey={orderedSections.length ? Math.max(...orderedSections.map((s) => s.sortKey ?? 0)) + 1 : 0}
         onClose={() => setSectionOpen(false)}

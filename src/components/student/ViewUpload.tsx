@@ -16,9 +16,9 @@ import type { AssignmentStudentType } from '../../types/models';
 import { File, getFileContent } from '../../utils/file';
 import type { FileType } from '../../utils/file';
 
-import ReactMarkdown from 'react-markdown';
-
 import { Document, Page } from 'react-pdf';
+// Required for the PDF text layer to align to the canvas (enables selectable / SR-readable text).
+import 'react-pdf/dist/Page/TextLayer.css';
 
 import { pdfjs } from 'react-pdf';
 import { FileOutlined } from '@ant-design/icons';
@@ -103,13 +103,22 @@ function ViewUpload(props: IProps) {
   let fileContent: React.ReactNode;
 
   if (activeFileType === 'image') {
-    fileContent = <ReactMarkdown>{'![](' + getFileContent(activeFile) + ')'}</ReactMarkdown>;
+    // A real <img> with alt so screen readers can identify the submitted image
+    // (an empty-alt Markdown image is invisible to AT).
+    fileContent = (
+      <img
+        src={getFileContent(activeFile)}
+        alt={`Submitted file ${activeFile.name}`}
+        style={{ maxWidth: '100%', height: 'auto' }}
+      />
+    );
   } else if (activeFileType === 'pdf') {
     fileContent = (
       <div style={{ padding: '24px', textAlign: 'center' }}>
         <Document file={getFileContent(activeFile)} onLoadSuccess={onDocumentLoadSuccess}>
           {Array.from({ length: numPages ?? 0 }, (_, index) => (
-            <Page key={`page_${index + 1}`} pageNumber={index + 1} renderTextLayer={false} />
+            // renderTextLayer (default) keeps the PDF's text selectable and readable by AT.
+            <Page key={`page_${index + 1}`} pageNumber={index + 1} />
           ))}
         </Document>
       </div>
@@ -223,7 +232,14 @@ function ViewUpload(props: IProps) {
     <Layout style={layoutStyle} hasSider>
       <Sider width={260} style={siderStyle} theme="light">
         <div style={headerStyle}>Submitted Files</div>
-        <Menu mode="inline" selectedKeys={[selectedKey]} onClick={changeIndex} items={menuItems} style={menuStyle} />
+        <Menu
+          mode="inline"
+          aria-label="Submitted files"
+          selectedKeys={[selectedKey]}
+          onClick={changeIndex}
+          items={menuItems}
+          style={menuStyle}
+        />
       </Sider>
       <Content style={contentStyle}>{fileContent}</Content>
     </Layout>

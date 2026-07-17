@@ -15,8 +15,10 @@
 | `maxScore`           | number                                                     |
 | `needsManualGrading` | boolean                                                    |
 | `passed`             | boolean                                                    |
+| `isOfficialOverride` | boolean                                                    |
 | `oneQuestionAtATime` | boolean                                                    |
 | `allowBacktracking`  | boolean                                                    |
+| `showResponses`      | boolean                                                    |
 | `serverNow`          | string                                                     |
 | `responses`          | [Array&lt;StudentQuizResponse&gt;](StudentQuizResponse.md) |
 

@@ -159,8 +159,21 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
             title="Suggest an AI update for this question"
             onClick={() => setRegenQuestion(record)}
           />
-          <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
-          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)} />
+          <Button
+            size="small"
+            icon={<EditOutlined />}
+            aria-label="Edit question"
+            title="Edit question"
+            onClick={() => openEdit(record)}
+          />
+          <Button
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
+            aria-label="Delete question"
+            title="Delete question"
+            onClick={() => handleDelete(record)}
+          />
         </Space.Compact>
       ),
     },
@@ -217,7 +230,7 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
             gap={8}
             style={{ padding: '8px 16px', background: '#f6ffed', borderBottom: '1px solid #f5f5f5' }}
           >
-            <Text style={{ fontSize: 13 }}>{selectedIds.length} selected</Text>
+            <Text style={{ fontSize: 13 }} role="status">{selectedIds.length} selected</Text>
             <Dropdown menu={bankMenu('move')} disabled={allBanks.length < 2} trigger={['click']}>
               <Button size="small" icon={<SwapOutlined />}>
                 Move to bank
