@@ -1,10 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message, Modal, Space, Switch, Table, Upload } from 'antd';
+import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined, ScissorOutlined } from '@ant-design/icons';
+import { Button, Form, Input, InputNumber, message, Modal, Space, Switch, Table, Tag, Typography, Upload } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import * as React from 'react';
 import { assignmentDataSetsApi } from '../../../../api-client/clients';
 import { getAuthToken } from '../../../../utils/auth';
+import { apiErrorMessage } from '../../../../lib/apiError';
 import { AssignmentDataSetType } from '../../../../types/models';
 import { useAssignmentCapabilities } from '../../../../stores/usePermissionsStore';
 
@@ -22,6 +23,10 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   const [fileList, setFileList] = React.useState<UploadFile[]>([]);
   const [editingDataset, setEditingDataset] = React.useState<AssignmentDataSetType | null>(null);
   const [form] = Form.useForm();
+  const isStudentVariant = Form.useWatch('is_student_variant', form);
+  const [splittingDataset, setSplittingDataset] = React.useState<AssignmentDataSetType | null>(null);
+  const [splitForm] = Form.useForm();
+  const [splitting, setSplitting] = React.useState(false);
 
   const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
     const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
@@ -36,6 +41,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         description: dataset.description,
         mount_path: dataset.mountPath,
         is_active: dataset.isActive,
+        is_student_variant: dataset.isStudentVariant,
+        autogradeAllVariants: dataset.autogradeAllVariants,
       });
     } else {
       form.resetFields();
@@ -56,6 +63,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
     description?: string;
     mount_path?: string;
     is_active?: boolean;
+    is_student_variant?: boolean;
+    autogradeAllVariants?: boolean;
   }) => {
     setUploading(true);
     try {
@@ -67,6 +76,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           description: values.description,
           mountPath: values.mount_path,
           isActive: values.is_active,
+          isStudentVariant: values.is_student_variant,
+          autogradeAllVariants: values.autogradeAllVariants,
         });
         message.success('Dataset updated successfully');
       } else {
@@ -94,6 +105,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           formData.append('mount_path', values.mount_path);
         }
         formData.append('is_active', values.is_active !== false ? 'true' : 'false');
+        formData.append('is_student_variant', values.is_student_variant ? 'true' : 'false');
+        formData.append('autogradeAllVariants', values.autogradeAllVariants ? 'true' : 'false');
         formData.append('file', file);
 
         const token = getAuthToken();
@@ -161,6 +174,33 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
     }
   };
 
+  const openSplitModal = (dataset: AssignmentDataSetType) => {
+    setSplittingDataset(dataset);
+    splitForm.resetFields();
+    splitForm.setFieldsValue({ rowsPerChunk: 50, hasHeader: true });
+  };
+
+  const handleSplit = async (values: { rowsPerChunk: number; hasHeader: boolean }) => {
+    if (!splittingDataset) return;
+    setSplitting(true);
+    try {
+      const created = await assignmentDataSetsApi.splitIntoVariantsCreate({
+        id: splittingDataset.id,
+        assignmentDataSetsSplitIntoVariantsCreateRequest: {
+          rowsPerChunk: values.rowsPerChunk,
+          hasHeader: values.hasHeader,
+        },
+      });
+      message.success(`Created ${created.length} per-student variants from "${splittingDataset.name}".`);
+      setSplittingDataset(null);
+      onDatasetsChange();
+    } catch (error: unknown) {
+      message.error(apiErrorMessage(error) ?? 'Failed to split the dataset.');
+    } finally {
+      setSplitting(false);
+    }
+  };
+
   const formatFileSize = (bytes: number | undefined): string => {
     if (!bytes) return 'N/A';
     const mb = bytes / (1024 * 1024);
@@ -178,7 +218,14 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       key: 'name',
       render: (text: string, record: AssignmentDataSetType) => (
         <div>
-          <div style={{ fontWeight: 500 }}>{text}</div>
+          <div style={{ fontWeight: 500 }}>
+            {text}
+            {record.isStudentVariant && (
+              <Tag color="purple" style={{ marginLeft: 8 }}>
+                Variant{record.autogradeAllVariants ? ' · autograde all' : ''}
+              </Tag>
+            )}
+          </div>
           {record.description && (
             <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>{record.description}</div>
           )}
@@ -240,6 +287,17 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(record)}>
             Download
           </Button>
+          {!record.isStudentVariant && (
+            <Button
+              type="link"
+              size="small"
+              icon={<ScissorOutlined />}
+              onClick={() => openSplitModal(record)}
+              disabled={!canManageDatasets}
+            >
+              Split into variants
+            </Button>
+          )}
           <Button
             type="link"
             size="small"
@@ -345,6 +403,26 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             <Switch checkedChildren="Yes" unCheckedChildren="No" />
           </Form.Item>
 
+          <Form.Item
+            name="is_student_variant"
+            label="Per-student variant"
+            valuePropName="checked"
+            extra="This dataset is one of several interchangeable variants — each student is assigned exactly one from the pool (auto-balanced, overridable) instead of everyone sharing this file. Add the other variants with the same mount path."
+          >
+            <Switch checkedChildren="Yes" unCheckedChildren="No" />
+          </Form.Item>
+
+          {isStudentVariant && (
+            <Form.Item
+              name="autogradeAllVariants"
+              label="Autograder checks every variant"
+              valuePropName="checked"
+              extra="When a submission is finalized, rerun it against every OTHER variant in the pool too (not just the student's own) — an anti-hardcoding check. Runs the autograder once per extra variant, so keep the pool small. Set the same on every variant in the pool."
+            >
+              <Switch checkedChildren="Yes" unCheckedChildren="No" />
+            </Form.Item>
+          )}
+
           {!editingDataset && (
             <Form.Item label="File" extra="Maximum file size: 1 GB">
               <Upload
@@ -404,6 +482,41 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
               <li>Students can access via relative path in their code</li>
             </ul>
           </div>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Split into per-student variants"
+        open={!!splittingDataset}
+        onCancel={() => setSplittingDataset(null)}
+        onOk={() => splitForm.submit()}
+        confirmLoading={splitting}
+        width={480}
+      >
+        <Typography.Paragraph type="secondary" style={{ fontSize: 13 }}>
+          Splits <code>{splittingDataset?.name}</code> into disjoint row-chunks — one variant
+          per chunk, each student assigned exactly one (auto-balanced, overridable in the
+          &quot;Student assignments&quot; tab once created). The chunk count is driven by rows per
+          chunk, not current enrollment, so it stays stable as students add/drop the course.
+          The original file is kept but deactivated — it won&apos;t be handed out itself.
+        </Typography.Paragraph>
+        <Form form={splitForm} layout="vertical" onFinish={handleSplit}>
+          <Form.Item
+            name="rowsPerChunk"
+            label="Rows per chunk"
+            rules={[{ required: true, type: 'number', min: 1, message: 'Enter at least 1 row per chunk.' }]}
+            extra="Pick enough rows that each student's slice is still a meaningful sample for their analysis."
+          >
+            <InputNumber min={1} step={1} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
+            name="hasHeader"
+            label="First row is a header"
+            valuePropName="checked"
+            extra="The header row is repeated at the top of every generated variant."
+          >
+            <Switch checkedChildren="Yes" unCheckedChildren="No" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

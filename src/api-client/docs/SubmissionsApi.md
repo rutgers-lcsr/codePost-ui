@@ -29,6 +29,7 @@ All URIs are relative to *http://localhost*
 | [**update**](SubmissionsApi.md#update)                                                             | **PUT** /submissions/{id}/                              |             |
 | [**validatePartnerLinkAndReturnRetrieve**](SubmissionsApi.md#validatepartnerlinkandreturnretrieve) | **GET** /submissions/{id}/validatePartnerLinkAndReturn/ |             |
 | [**validatePartnerLinkRetrieve**](SubmissionsApi.md#validatepartnerlinkretrieve)                   | **GET** /submissions/{id}/validatePartnerLink/          |             |
+| [**variantRunsList**](SubmissionsApi.md#variantrunslist)                                           | **GET** /submissions/{id}/variantRuns/                  |             |
 
 ## checkPermissionRetrieve
 
@@ -1843,6 +1844,77 @@ example().catch(console.error);
 ### Return type
 
 **string**
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## variantRunsList
+
+> Array&lt;SubmissionVariantRun&gt; variantRunsList(id)
+
+Variant-robustness reruns (see AssignmentDataSet.autogradeAllVariants) — staff-only, never shown to students.
+
+### Example
+
+```ts
+import { Configuration, SubmissionsApi } from '';
+import type { VariantRunsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new SubmissionsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this submission.
+    id: 56,
+  } satisfies VariantRunsListRequest;
+
+  try {
+    const data = await api.variantRunsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                         | Notes                     |
+| ------ | -------- | --------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this submission. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;SubmissionVariantRun&gt;**](SubmissionVariantRun.md)
 
 ### Authorization
 

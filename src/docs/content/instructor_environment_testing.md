@@ -86,6 +86,21 @@ Data Sets are large or static files (CSVs, model weights, reference data) that n
 
 Datasets attached to a Test Category as a resource are treated as test fixtures — they are forced `hidden=true` and only mounted during autograder runs, never in a student's own execution. Manage them from the **Resources** tab inside a test category.
 
+### Per-student dataset variants
+
+Sometimes you want **each student to work with different data** — so their results are unique and copied solutions are easy to spot. codePost supports this with a **variant pool**: a set of datasets that all mount at the **same path**, one assigned to each student.
+
+- Mark a dataset **Per-student variant** to add it to the pool. Every variant in an assignment shares one mount path automatically, so student code reads the data by a fixed path regardless of which variant they got.
+- Each student is **assigned exactly one** variant the first time they access the assignment, balanced evenly across the pool. Group submissions share a single variant.
+- Manage assignments on the **Student assignments** tab (next to Data Sets) — see who has which variant, and override any student.
+
+> [!TIP]
+> **Split one file into variants.** Instead of uploading many files, upload one master CSV and use **Split into variants** on it. codePost divides it into non-overlapping row-chunks (you choose **rows per chunk**), one variant each. The chunk count is driven by rows-per-chunk, **not** current enrollment, so the pool stays stable as students add or drop the course.
+
+### Variant robustness (autograder)
+
+On a variant pool, turn on **Autograder checks every variant** to have the autograder rerun each finalized submission against *every other* variant — not just the student's own. If code is hardcoded to one dataset's numbers, it shows up as a failure. Results appear in the **Variant Check** panel on the grading screen. This is opt-in because it runs the autograder once per extra variant.
+
 ## Custom Docker environment
 
 When the built-in language base images don't fit your assignment (specific compiler versions, system packages, third-party C libraries), you can extend the base image with your own Dockerfile snippet.

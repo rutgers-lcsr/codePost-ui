@@ -2,20 +2,21 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                                    | HTTP request                               | Description |
-| ------------------------------------------------------------------------- | ------------------------------------------ | ----------- |
-| [**byAssignmentRetrieve**](AssignmentDataSetsApi.md#byassignmentretrieve) | **GET** /assignmentDataSets/by_assignment/ |             |
-| [**create**](AssignmentDataSetsApi.md#create)                             | **POST** /assignmentDataSets/              |             |
-| [**destroy**](AssignmentDataSetsApi.md#destroy)                           | **DELETE** /assignmentDataSets/{id}/       |             |
-| [**downloadRetrieve**](AssignmentDataSetsApi.md#downloadretrieve)         | **GET** /assignmentDataSets/{id}/download/ |             |
-| [**list**](AssignmentDataSetsApi.md#list)                                 | **GET** /assignmentDataSets/               |             |
-| [**partialUpdate**](AssignmentDataSetsApi.md#partialupdate)               | **PATCH** /assignmentDataSets/{id}/        |             |
-| [**retrieve**](AssignmentDataSetsApi.md#retrieve)                         | **GET** /assignmentDataSets/{id}/          |             |
-| [**update**](AssignmentDataSetsApi.md#update)                             | **PUT** /assignmentDataSets/{id}/          |             |
+| Method                                                                          | HTTP request                                         | Description |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------- |
+| [**byAssignmentList**](AssignmentDataSetsApi.md#byassignmentlist)               | **GET** /assignmentDataSets/by_assignment/           |             |
+| [**create**](AssignmentDataSetsApi.md#create)                                   | **POST** /assignmentDataSets/                        |             |
+| [**destroy**](AssignmentDataSetsApi.md#destroy)                                 | **DELETE** /assignmentDataSets/{id}/                 |             |
+| [**downloadRetrieve**](AssignmentDataSetsApi.md#downloadretrieve)               | **GET** /assignmentDataSets/{id}/download/           |             |
+| [**list**](AssignmentDataSetsApi.md#list)                                       | **GET** /assignmentDataSets/                         |             |
+| [**partialUpdate**](AssignmentDataSetsApi.md#partialupdate)                     | **PATCH** /assignmentDataSets/{id}/                  |             |
+| [**retrieve**](AssignmentDataSetsApi.md#retrieve)                               | **GET** /assignmentDataSets/{id}/                    |             |
+| [**splitIntoVariantsCreate**](AssignmentDataSetsApi.md#splitintovariantscreate) | **POST** /assignmentDataSets/{id}/splitIntoVariants/ |             |
+| [**update**](AssignmentDataSetsApi.md#update)                                   | **PUT** /assignmentDataSets/{id}/                    |             |
 
-## byAssignmentRetrieve
+## byAssignmentList
 
-> AssignmentDataSet byAssignmentRetrieve()
+> Array&lt;AssignmentDataSet&gt; byAssignmentList(assignmentId)
 
 List datasets for a specific assignment GET /assignments/datasets/by_assignment/?assignment_id&#x3D;123
 
@@ -23,7 +24,7 @@ List datasets for a specific assignment GET /assignments/datasets/by_assignment/
 
 ```ts
 import { Configuration, AssignmentDataSetsApi } from '';
-import type { ByAssignmentRetrieveRequest } from '';
+import type { ByAssignmentListRequest } from '';
 
 async function example() {
   console.log('🚀 Testing  SDK...');
@@ -40,8 +41,13 @@ async function example() {
   });
   const api = new AssignmentDataSetsApi(config);
 
+  const body = {
+    // number | The assignment whose datasets to list.
+    assignmentId: 56,
+  } satisfies ByAssignmentListRequest;
+
   try {
-    const data = await api.byAssignmentRetrieve();
+    const data = await api.byAssignmentList(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -54,11 +60,13 @@ example().catch(console.error);
 
 ### Parameters
 
-This endpoint does not need any parameter.
+| Name             | Type     | Description                            | Notes                     |
+| ---------------- | -------- | -------------------------------------- | ------------------------- |
+| **assignmentId** | `number` | The assignment whose datasets to list. | [Defaults to `undefined`] |
 
 ### Return type
 
-[**AssignmentDataSet**](AssignmentDataSet.md)
+[**Array&lt;AssignmentDataSet&gt;**](AssignmentDataSet.md)
 
 ### Authorization
 
@@ -79,7 +87,7 @@ This endpoint does not need any parameter.
 
 ## create
 
-> AssignmentDataSetCreate create(assignment, name, file, description, mountPath, isActive, hidden, isTestResource)
+> AssignmentDataSetCreate create(assignment, name, file, description, mountPath, isActive, hidden, isTestResource, isStudentVariant, autogradeAllVariants)
 
 Create a new dataset
 
@@ -121,6 +129,10 @@ async function example() {
     hidden: true,
     // boolean (optional)
     isTestResource: true,
+    // boolean (optional)
+    isStudentVariant: true,
+    // boolean | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\'s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. (optional)
+    autogradeAllVariants: true,
   } satisfies CreateRequest;
 
   try {
@@ -137,16 +149,18 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name               | Type      | Description                                         | Notes                                |
-| ------------------ | --------- | --------------------------------------------------- | ------------------------------------ |
-| **assignment**     | `number`  | The related assignment_id.                          | [Defaults to `undefined`]            |
-| **name**           | `string`  | The name of the data set.                           | [Defaults to `undefined`]            |
-| **file**           | `string`  | The data set file                                   | [Defaults to `undefined`]            |
-| **description**    | `string`  | Optional description of the data set.               | [Optional] [Defaults to `undefined`] |
-| **mountPath**      | `string`  |                                                     | [Optional] [Defaults to `undefined`] |
-| **isActive**       | `boolean` |                                                     | [Optional] [Defaults to `undefined`] |
-| **hidden**         | `boolean` | If True, this dataset will be hidden from students. | [Optional] [Defaults to `undefined`] |
-| **isTestResource** | `boolean` |                                                     | [Optional] [Defaults to `undefined`] |
+| Name                     | Type      | Description                                                                                                                                                                                                                                                                                                  | Notes                                |
+| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| **assignment**           | `number`  | The related assignment_id.                                                                                                                                                                                                                                                                                   | [Defaults to `undefined`]            |
+| **name**                 | `string`  | The name of the data set.                                                                                                                                                                                                                                                                                    | [Defaults to `undefined`]            |
+| **file**                 | `string`  | The data set file                                                                                                                                                                                                                                                                                            | [Defaults to `undefined`]            |
+| **description**          | `string`  | Optional description of the data set.                                                                                                                                                                                                                                                                        | [Optional] [Defaults to `undefined`] |
+| **mountPath**            | `string`  |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isActive**             | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **hidden**               | `boolean` | If True, this dataset will be hidden from students.                                                                                                                                                                                                                                                          | [Optional] [Defaults to `undefined`] |
+| **isTestResource**       | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isStudentVariant**     | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **autogradeAllVariants** | `boolean` | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\&#39;s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -377,7 +391,7 @@ This endpoint does not need any parameter.
 
 ## partialUpdate
 
-> AssignmentDataSetUpdate partialUpdate(id, name, description, mountPath, isActive, isTestResource)
+> AssignmentDataSetUpdate partialUpdate(id, name, description, mountPath, isActive, isTestResource, isStudentVariant, autogradeAllVariants)
 
 ViewSet for managing assignment datasets Datasets are files (compressed or raw) that are mounted into the execution environment when students submit code or when code is executed via the API. Typical use case: Large training datasets for ML assignments
 
@@ -415,6 +429,10 @@ async function example() {
     isActive: true,
     // boolean (optional)
     isTestResource: true,
+    // boolean (optional)
+    isStudentVariant: true,
+    // boolean | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\'s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. (optional)
+    autogradeAllVariants: true,
   } satisfies PartialUpdateRequest;
 
   try {
@@ -431,14 +449,16 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name               | Type      | Description                                                  | Notes                                |
-| ------------------ | --------- | ------------------------------------------------------------ | ------------------------------------ |
-| **id**             | `number`  | A unique integer value identifying this assignment data set. | [Defaults to `undefined`]            |
-| **name**           | `string`  | The name of the data set.                                    | [Optional] [Defaults to `undefined`] |
-| **description**    | `string`  | Optional description of the data set.                        | [Optional] [Defaults to `undefined`] |
-| **mountPath**      | `string`  |                                                              | [Optional] [Defaults to `undefined`] |
-| **isActive**       | `boolean` |                                                              | [Optional] [Defaults to `undefined`] |
-| **isTestResource** | `boolean` |                                                              | [Optional] [Defaults to `undefined`] |
+| Name                     | Type      | Description                                                                                                                                                                                                                                                                                                  | Notes                                |
+| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| **id**                   | `number`  | A unique integer value identifying this assignment data set.                                                                                                                                                                                                                                                 | [Defaults to `undefined`]            |
+| **name**                 | `string`  | The name of the data set.                                                                                                                                                                                                                                                                                    | [Optional] [Defaults to `undefined`] |
+| **description**          | `string`  | Optional description of the data set.                                                                                                                                                                                                                                                                        | [Optional] [Defaults to `undefined`] |
+| **mountPath**            | `string`  |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isActive**             | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isTestResource**       | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isStudentVariant**     | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **autogradeAllVariants** | `boolean` | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\&#39;s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -532,9 +552,86 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## splitIntoVariantsCreate
+
+> Array&lt;AssignmentDataSet&gt; splitIntoVariantsCreate(id, assignmentDataSetsSplitIntoVariantsCreateRequest)
+
+Split this dataset\&#39;s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop. POST /assignmentDataSets/{id}/splitIntoVariants/
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AssignmentDataSetsApi,
+} from '';
+import type { SplitIntoVariantsCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new AssignmentDataSetsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this assignment data set.
+    id: 56,
+    // AssignmentDataSetsSplitIntoVariantsCreateRequest (optional)
+    assignmentDataSetsSplitIntoVariantsCreateRequest: ...,
+  } satisfies SplitIntoVariantsCreateRequest;
+
+  try {
+    const data = await api.splitIntoVariantsCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                                                 | Type                                                                                                    | Description                                                  | Notes                     |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------- |
+| **id**                                               | `number`                                                                                                | A unique integer value identifying this assignment data set. | [Defaults to `undefined`] |
+| **assignmentDataSetsSplitIntoVariantsCreateRequest** | [AssignmentDataSetsSplitIntoVariantsCreateRequest](AssignmentDataSetsSplitIntoVariantsCreateRequest.md) |                                                              | [Optional]                |
+
+### Return type
+
+[**Array&lt;AssignmentDataSet&gt;**](AssignmentDataSet.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## update
 
-> AssignmentDataSetUpdate update(id, name, description, mountPath, isActive, isTestResource)
+> AssignmentDataSetUpdate update(id, name, description, mountPath, isActive, isTestResource, isStudentVariant, autogradeAllVariants)
 
 Update a dataset (metadata only, not file)
 
@@ -572,6 +669,10 @@ async function example() {
     isActive: true,
     // boolean (optional)
     isTestResource: true,
+    // boolean (optional)
+    isStudentVariant: true,
+    // boolean | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\'s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. (optional)
+    autogradeAllVariants: true,
   } satisfies UpdateRequest;
 
   try {
@@ -588,14 +689,16 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name               | Type      | Description                                                  | Notes                                |
-| ------------------ | --------- | ------------------------------------------------------------ | ------------------------------------ |
-| **id**             | `number`  | A unique integer value identifying this assignment data set. | [Defaults to `undefined`]            |
-| **name**           | `string`  | The name of the data set.                                    | [Defaults to `undefined`]            |
-| **description**    | `string`  | Optional description of the data set.                        | [Optional] [Defaults to `undefined`] |
-| **mountPath**      | `string`  |                                                              | [Optional] [Defaults to `undefined`] |
-| **isActive**       | `boolean` |                                                              | [Optional] [Defaults to `undefined`] |
-| **isTestResource** | `boolean` |                                                              | [Optional] [Defaults to `undefined`] |
+| Name                     | Type      | Description                                                                                                                                                                                                                                                                                                  | Notes                                |
+| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| **id**                   | `number`  | A unique integer value identifying this assignment data set.                                                                                                                                                                                                                                                 | [Defaults to `undefined`]            |
+| **name**                 | `string`  | The name of the data set.                                                                                                                                                                                                                                                                                    | [Defaults to `undefined`]            |
+| **description**          | `string`  | Optional description of the data set.                                                                                                                                                                                                                                                                        | [Optional] [Defaults to `undefined`] |
+| **mountPath**            | `string`  |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isActive**             | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isTestResource**       | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **isStudentVariant**     | `boolean` |                                                                                                                                                                                                                                                                                                              | [Optional] [Defaults to `undefined`] |
+| **autogradeAllVariants** | `boolean` | Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student\\\&#39;s own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool. | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

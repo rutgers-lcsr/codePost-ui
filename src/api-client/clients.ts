@@ -43,6 +43,7 @@ import {
   RubricCategoriesApi,
   RubricCommentsApi,
   SectionsApi,
+  StudentDataSetAssignmentsApi,
   SubmissionFilesApi,
   SubmissionsApi,
   SubmissionTestsApi,
@@ -140,6 +141,7 @@ export const registrationApi = new RegistrationApi(apiClientConfig);
 export const rubricCategoriesApi = new RubricCategoriesApi(apiClientConfig);
 export const rubricCommentsApi = new RubricCommentsApi(apiClientConfig);
 export const sectionsApi = new SectionsApi(apiClientConfig);
+export const studentDataSetAssignmentsApi = new StudentDataSetAssignmentsApi(apiClientConfig);
 export const submissionFilesApi = new SubmissionFilesApi(apiClientConfig);
 export const submissionsApi = new SubmissionsApi(apiClientConfig);
 export const submissionTestsApi = new SubmissionTestsApi(apiClientConfig);

@@ -37,6 +37,7 @@ apis/RegistrationApi.ts
 apis/RubricCategoriesApi.ts
 apis/RubricCommentsApi.ts
 apis/SectionsApi.ts
+apis/StudentDataSetAssignmentsApi.ts
 apis/SubmissionFilesApi.ts
 apis/SubmissionTestsApi.ts
 apis/SubmissionsApi.ts
@@ -91,6 +92,7 @@ docs/AssignmentDataSet.md
 docs/AssignmentDataSetCreate.md
 docs/AssignmentDataSetUpdate.md
 docs/AssignmentDataSetsApi.md
+docs/AssignmentDataSetsSplitIntoVariantsCreateRequest.md
 docs/AssignmentDeadline.md
 docs/AssignmentDownloadResponse.md
 docs/AssignmentFile.md
@@ -263,6 +265,7 @@ docs/PatchedRubricCategory.md
 docs/PatchedRubricComment.md
 docs/PatchedSaveQuizAnswerRequest.md
 docs/PatchedSection.md
+docs/PatchedStudentDataSetAssignment.md
 docs/PatchedSubmission.md
 docs/PatchedSubmissionFile.md
 docs/PatchedSubmissionFileEditSave.md
@@ -332,6 +335,7 @@ docs/RubricCategoriesApi.md
 docs/RubricCategory.md
 docs/RubricComment.md
 docs/RubricCommentsApi.md
+docs/RunQuizResponseCodeRequest.md
 docs/Section.md
 docs/SectionsApi.md
 docs/SetCredentialsRequest.md
@@ -345,6 +349,8 @@ docs/StaffQuizResponse.md
 docs/StartQuizAttemptRequest.md
 docs/Status4a6Enum.md
 docs/StatusDfeEnum.md
+docs/StudentDataSetAssignment.md
+docs/StudentDataSetAssignmentsApi.md
 docs/StudentQuestion.md
 docs/StudentQuestionChoice.md
 docs/StudentQuiz.md
@@ -365,6 +371,7 @@ docs/SubmissionSummary.md
 docs/SubmissionTest.md
 docs/SubmissionTestResultsResponse.md
 docs/SubmissionTestsApi.md
+docs/SubmissionVariantRun.md
 docs/SubmissionWithTests.md
 docs/SubmissionsApi.md
 docs/SubscribeApi.md

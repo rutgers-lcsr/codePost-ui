@@ -14,7 +14,16 @@
  */
 
 import * as runtime from '../runtime';
-import type { AssignmentDataSet, AssignmentDataSetCreate, AssignmentDataSetUpdate } from '../models/index';
+import type {
+  AssignmentDataSet,
+  AssignmentDataSetCreate,
+  AssignmentDataSetUpdate,
+  AssignmentDataSetsSplitIntoVariantsCreateRequest,
+} from '../models/index';
+
+export interface ByAssignmentListRequest {
+  assignmentId: number;
+}
 
 export interface CreateRequest {
   assignment: number;
@@ -25,6 +34,8 @@ export interface CreateRequest {
   isActive?: boolean;
   hidden?: boolean;
   isTestResource?: boolean;
+  isStudentVariant?: boolean;
+  autogradeAllVariants?: boolean;
 }
 
 export interface DestroyRequest {
@@ -42,10 +53,17 @@ export interface PartialUpdateRequest {
   mountPath?: string;
   isActive?: boolean;
   isTestResource?: boolean;
+  isStudentVariant?: boolean;
+  autogradeAllVariants?: boolean;
 }
 
 export interface RetrieveRequest {
   id: number;
+}
+
+export interface SplitIntoVariantsCreateRequest {
+  id: number;
+  assignmentDataSetsSplitIntoVariantsCreateRequest?: AssignmentDataSetsSplitIntoVariantsCreateRequest;
 }
 
 export interface UpdateRequest {
@@ -55,6 +73,8 @@ export interface UpdateRequest {
   mountPath?: string;
   isActive?: boolean;
   isTestResource?: boolean;
+  isStudentVariant?: boolean;
+  autogradeAllVariants?: boolean;
 }
 
 /**
@@ -64,10 +84,22 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
   /**
    * List datasets for a specific assignment  GET /assignments/datasets/by_assignment/?assignment_id=123
    */
-  async byAssignmentRetrieveRaw(
+  async byAssignmentListRaw(
+    requestParameters: ByAssignmentListRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<AssignmentDataSet>> {
+  ): Promise<runtime.ApiResponse<Array<AssignmentDataSet>>> {
+    if (requestParameters['assignmentId'] == null) {
+      throw new runtime.RequiredError(
+        'assignmentId',
+        'Required parameter "assignmentId" was null or undefined when calling byAssignmentList().',
+      );
+    }
+
     const queryParameters: any = {};
+
+    if (requestParameters['assignmentId'] != null) {
+      queryParameters['assignment_id'] = requestParameters['assignmentId'];
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -104,8 +136,11 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
   /**
    * List datasets for a specific assignment  GET /assignments/datasets/by_assignment/?assignment_id=123
    */
-  async byAssignmentRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AssignmentDataSet> {
-    const response = await this.byAssignmentRetrieveRaw(initOverrides);
+  async byAssignmentList(
+    requestParameters: ByAssignmentListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<AssignmentDataSet>> {
+    const response = await this.byAssignmentListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -196,6 +231,14 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
 
     if (requestParameters['isTestResource'] != null) {
       formParams.append('isTestResource', requestParameters['isTestResource'] as any);
+    }
+
+    if (requestParameters['isStudentVariant'] != null) {
+      formParams.append('isStudentVariant', requestParameters['isStudentVariant'] as any);
+    }
+
+    if (requestParameters['autogradeAllVariants'] != null) {
+      formParams.append('autogradeAllVariants', requestParameters['autogradeAllVariants'] as any);
     }
 
     let urlPath = `/assignmentDataSets/`;
@@ -458,6 +501,14 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
       formParams.append('isTestResource', requestParameters['isTestResource'] as any);
     }
 
+    if (requestParameters['isStudentVariant'] != null) {
+      formParams.append('isStudentVariant', requestParameters['isStudentVariant'] as any);
+    }
+
+    if (requestParameters['autogradeAllVariants'] != null) {
+      formParams.append('autogradeAllVariants', requestParameters['autogradeAllVariants'] as any);
+    }
+
     let urlPath = `/assignmentDataSets/{id}/`;
     urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
 
@@ -544,6 +595,69 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
   }
 
   /**
+   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  POST /assignmentDataSets/{id}/splitIntoVariants/
+   */
+  async splitIntoVariantsCreateRaw(
+    requestParameters: SplitIntoVariantsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<AssignmentDataSet>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling splitIntoVariantsCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/assignmentDataSets/{id}/splitIntoVariants/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['assignmentDataSetsSplitIntoVariantsCreateRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  POST /assignmentDataSets/{id}/splitIntoVariants/
+   */
+  async splitIntoVariantsCreate(
+    requestParameters: SplitIntoVariantsCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<AssignmentDataSet>> {
+    const response = await this.splitIntoVariantsCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
    * Update a dataset (metadata only, not file)
    */
   async updateRaw(
@@ -611,6 +725,14 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
 
     if (requestParameters['isTestResource'] != null) {
       formParams.append('isTestResource', requestParameters['isTestResource'] as any);
+    }
+
+    if (requestParameters['isStudentVariant'] != null) {
+      formParams.append('isStudentVariant', requestParameters['isStudentVariant'] as any);
+    }
+
+    if (requestParameters['autogradeAllVariants'] != null) {
+      formParams.append('autogradeAllVariants', requestParameters['autogradeAllVariants'] as any);
     }
 
     let urlPath = `/assignmentDataSets/{id}/`;

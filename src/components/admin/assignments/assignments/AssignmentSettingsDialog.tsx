@@ -36,6 +36,7 @@ import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import ReactMarkdown from 'react-markdown';
 import AssignmentDataSetsForm from './AssignmentDataSetsForm';
+import StudentDataSetAssignmentsPanel from './StudentDataSetAssignmentsPanel';
 import AssignmentFilesForm from './AssignmentFilesForm';
 import { EnvironmentShellWidget } from './EnvironmentShellWidget';
 import { assignmentFilesApi, assignmentsApi, promptTypesApi } from '../../../../api-client/clients';
@@ -647,6 +648,20 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                           />
                         ),
                       },
+                      ...(datasets.some((d) => d.isStudentVariant)
+                        ? [
+                            {
+                              label: 'Student assignments',
+                              key: 'datasetAssignments',
+                              children: (
+                                <StudentDataSetAssignmentsPanel
+                                  assignmentId={assignment.id}
+                                  datasets={datasets}
+                                />
+                              ),
+                            },
+                          ]
+                        : []),
                     ]}
                   />
                 </div>

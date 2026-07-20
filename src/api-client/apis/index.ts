@@ -40,6 +40,7 @@ export { RegistrationApi } from './RegistrationApi';
 export { RubricCategoriesApi } from './RubricCategoriesApi';
 export { RubricCommentsApi } from './RubricCommentsApi';
 export { SectionsApi } from './SectionsApi';
+export { StudentDataSetAssignmentsApi } from './StudentDataSetAssignmentsApi';
 export { SubmissionFilesApi } from './SubmissionFilesApi';
 export { SubmissionTestsApi } from './SubmissionTestsApi';
 export { SubmissionsApi } from './SubmissionsApi';

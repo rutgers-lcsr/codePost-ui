@@ -613,7 +613,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Return all datasets for this assignment  GET /api/assignments/{id}/datasets/
+   * Return the datasets for this assignment. Staff see everything; students see shared (non-hidden) datasets plus only the variant assigned to them from a per-student pool (auto-assigned here on first access).  GET /api/assignments/{id}/datasets/
    */
   async datasetsListRaw(
     requestParameters: DatasetsListRequest,
@@ -662,7 +662,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Return all datasets for this assignment  GET /api/assignments/{id}/datasets/
+   * Return the datasets for this assignment. Staff see everything; students see shared (non-hidden) datasets plus only the variant assigned to them from a per-student pool (auto-assigned here on first access).  GET /api/assignments/{id}/datasets/
    */
   async datasetsList(
     requestParameters: DatasetsListRequest,

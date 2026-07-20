@@ -18,6 +18,7 @@ import type {
   GradeQuizResponseRequest,
   PatchedSaveQuizAnswerRequest,
   ReopenQuizResponseRequest,
+  RunQuizResponseCodeRequest,
   SetOfficialAttemptRequest,
   StaffQuizAttempt,
   StartQuizAttemptRequest,
@@ -50,6 +51,11 @@ export interface ReopenResponseCreateRequest {
 
 export interface RetrieveRequest {
   id: number;
+}
+
+export interface RunCodeCreateRequest {
+  id: number;
+  runQuizResponseCodeRequest: RunQuizResponseCodeRequest;
 }
 
 export interface SaveAnswerPartialUpdateRequest {
@@ -452,6 +458,76 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<StaffQuizAttempt> {
     const response = await this.retrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Run a student\'s code answer in the sandbox (quiz graders and course admins only). Dispatches an async execution; poll the attempt to see the result land in the response\'s codeExecution field.
+   */
+  async runCodeCreateRaw(
+    requestParameters: RunCodeCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<StaffQuizAttempt>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling runCodeCreate().',
+      );
+    }
+
+    if (requestParameters['runQuizResponseCodeRequest'] == null) {
+      throw new runtime.RequiredError(
+        'runQuizResponseCodeRequest',
+        'Required parameter "runQuizResponseCodeRequest" was null or undefined when calling runCodeCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/{id}/runCode/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['runQuizResponseCodeRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Run a student\'s code answer in the sandbox (quiz graders and course admins only). Dispatches an async execution; poll the attempt to see the result land in the response\'s codeExecution field.
+   */
+  async runCodeCreate(
+    requestParameters: RunCodeCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<StaffQuizAttempt> {
+    const response = await this.runCodeCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

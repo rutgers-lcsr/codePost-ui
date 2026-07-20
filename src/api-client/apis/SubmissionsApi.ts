@@ -29,6 +29,7 @@ import type {
   SubmissionSummary,
   SubmissionTest,
   SubmissionTestResultsResponse,
+  SubmissionVariantRun,
   SuggestedComment,
 } from '../models/index';
 
@@ -225,6 +226,10 @@ export interface ValidatePartnerLinkAndReturnRetrieveRequest {
 export interface ValidatePartnerLinkRetrieveRequest {
   id: number;
   token: string;
+}
+
+export interface VariantRunsListRequest {
+  id: number;
 }
 
 /**
@@ -1797,6 +1802,66 @@ export class SubmissionsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<string> {
     const response = await this.validatePartnerLinkRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Variant-robustness reruns (see AssignmentDataSet.autogradeAllVariants) — staff-only, never shown to students.
+   */
+  async variantRunsListRaw(
+    requestParameters: VariantRunsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<SubmissionVariantRun>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling variantRunsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/submissions/{id}/variantRuns/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Variant-robustness reruns (see AssignmentDataSet.autogradeAllVariants) — staff-only, never shown to students.
+   */
+  async variantRunsList(
+    requestParameters: VariantRunsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<SubmissionVariantRun>> {
+    const response = await this.variantRunsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 }

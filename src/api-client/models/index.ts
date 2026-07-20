@@ -1318,6 +1318,18 @@ export interface AssignmentDataSet {
    * @memberof AssignmentDataSet
    */
   isTestResource?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDataSet
+   */
+  isStudentVariant?: boolean;
+  /**
+   * Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student's own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool.
+   * @type {boolean}
+   * @memberof AssignmentDataSet
+   */
+  autogradeAllVariants?: boolean;
 }
 /**
  * Serializer for creating AssignmentDataSet
@@ -1373,6 +1385,18 @@ export interface AssignmentDataSetCreate {
    * @memberof AssignmentDataSetCreate
    */
   isTestResource?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDataSetCreate
+   */
+  isStudentVariant?: boolean;
+  /**
+   * Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student's own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool.
+   * @type {boolean}
+   * @memberof AssignmentDataSetCreate
+   */
+  autogradeAllVariants?: boolean;
 }
 /**
  * Serializer for updating AssignmentDataSet (without file upload)
@@ -1410,6 +1434,37 @@ export interface AssignmentDataSetUpdate {
    * @memberof AssignmentDataSetUpdate
    */
   isTestResource?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDataSetUpdate
+   */
+  isStudentVariant?: boolean;
+  /**
+   * Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student's own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool.
+   * @type {boolean}
+   * @memberof AssignmentDataSetUpdate
+   */
+  autogradeAllVariants?: boolean;
+}
+/**
+ *
+ * @export
+ * @interface AssignmentDataSetsSplitIntoVariantsCreateRequest
+ */
+export interface AssignmentDataSetsSplitIntoVariantsCreateRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof AssignmentDataSetsSplitIntoVariantsCreateRequest
+   */
+  rowsPerChunk: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDataSetsSplitIntoVariantsCreateRequest
+   */
+  hasHeader?: boolean;
 }
 /**
  * Serializer for assignment deadline data used by the deploy calendar.
@@ -6707,6 +6762,18 @@ export interface PatchedAssignmentDataSetUpdate {
    * @memberof PatchedAssignmentDataSetUpdate
    */
   isTestResource?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedAssignmentDataSetUpdate
+   */
+  isStudentVariant?: boolean;
+  /**
+   * Only meaningful when is_student_variant is True. If True, the autograder reruns a finalized submission against every OTHER variant in the pool (in addition to the student's own), recording one SubmissionVariantRun per variant — an anti-hardcoding check. Must be set consistently across a pool.
+   * @type {boolean}
+   * @memberof PatchedAssignmentDataSetUpdate
+   */
+  autogradeAllVariants?: boolean;
 }
 /**
  * Serializer for AssignmentFile objects.
@@ -8973,6 +9040,75 @@ export interface PatchedSection {
    * @memberof PatchedSection
    */
   students?: Array<string | null>;
+}
+/**
+ * Staff-facing view of one student's dataset-variant assignment. `dataset` is the
+ * only writable field (staff overriding the auto-assignment) — `assignedBy` is set
+ * server-side to the requesting staff member.
+ * @export
+ * @interface PatchedStudentDataSetAssignment
+ */
+export interface PatchedStudentDataSetAssignment {
+  /**
+   *
+   * @type {number}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly id?: number;
+  /**
+   * The related assignment_id.
+   * @type {number}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly assignment?: number;
+  /**
+   * The assigned student.
+   * @type {number}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly student?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly studentEmail?: string;
+  /**
+   * The variant this student was assigned.
+   * @type {number}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  dataset?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly datasetName?: string;
+  /**
+   * The staff member who manually assigned this override. Null means it was assigned automatically.
+   * @type {number}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly assignedBy?: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly assignedByEmail?: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly created?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedStudentDataSetAssignment
+   */
+  readonly modified?: string;
 }
 /**
  *
@@ -11614,6 +11750,19 @@ export interface RubricComment {
 /**
  *
  * @export
+ * @interface RunQuizResponseCodeRequest
+ */
+export interface RunQuizResponseCodeRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof RunQuizResponseCodeRequest
+   */
+  response: number;
+}
+/**
+ *
+ * @export
  * @interface Section
  */
 export interface Section {
@@ -11908,9 +12057,10 @@ export interface StaffQuizAttempt {
 }
 
 /**
- * A response as staff (grading/review) sees it: adds the grader-only answer key.
- * NEVER used for student-facing payloads — referenceSolution is not in the student's
- * Meta.fields, so StudentQuizResponseSerializer is structurally incapable of exposing it.
+ * A response as staff (grading/review) sees it: adds the grader-only answer key and the
+ * sandbox code-execution result. NEVER used for student-facing payloads — neither field is
+ * in the student's Meta.fields, so StudentQuizResponseSerializer is structurally incapable
+ * of exposing them.
  * @export
  * @interface StaffQuizResponse
  */
@@ -11981,6 +12131,12 @@ export interface StaffQuizResponse {
    * @memberof StaffQuizResponse
    */
   readonly referenceSolution: string | null;
+  /**
+   *
+   * @type {any}
+   * @memberof StaffQuizResponse
+   */
+  readonly codeExecution: any | null;
 }
 /**
  *
@@ -12023,6 +12179,75 @@ export enum StatusDfeEnum {
   Error = 'error',
 }
 
+/**
+ * Staff-facing view of one student's dataset-variant assignment. `dataset` is the
+ * only writable field (staff overriding the auto-assignment) — `assignedBy` is set
+ * server-side to the requesting staff member.
+ * @export
+ * @interface StudentDataSetAssignment
+ */
+export interface StudentDataSetAssignment {
+  /**
+   *
+   * @type {number}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly id: number;
+  /**
+   * The related assignment_id.
+   * @type {number}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly assignment: number;
+  /**
+   * The assigned student.
+   * @type {number}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly student: number;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly studentEmail: string;
+  /**
+   * The variant this student was assigned.
+   * @type {number}
+   * @memberof StudentDataSetAssignment
+   */
+  dataset: number;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly datasetName: string;
+  /**
+   * The staff member who manually assigned this override. Null means it was assigned automatically.
+   * @type {number}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly assignedBy: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly assignedByEmail: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentDataSetAssignment
+   */
+  readonly modified: string;
+}
 /**
  * Shape of a rendered snapshot question for a student (documents the client contract).
  * @export
@@ -13273,6 +13498,55 @@ export interface SubmissionTestResultsResponse {
    * @memberof SubmissionTestResultsResponse
    */
   learningObjectives?: Array<LearningObjectiveSummary>;
+}
+/**
+ * One variant-robustness rerun. Staff-only — never exposed to students.
+ * @export
+ * @interface SubmissionVariantRun
+ */
+export interface SubmissionVariantRun {
+  /**
+   *
+   * @type {number}
+   * @memberof SubmissionVariantRun
+   */
+  readonly id: number;
+  /**
+   * The related submission_id.
+   * @type {number}
+   * @memberof SubmissionVariantRun
+   */
+  readonly submission: number;
+  /**
+   * The variant this rerun used.
+   * @type {number}
+   * @memberof SubmissionVariantRun
+   */
+  readonly dataset: number;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionVariantRun
+   */
+  readonly datasetName: string;
+  /**
+   * {status: running|success|error, stdout, stderr, images, error, executionTime}. Staff-internal — never shown to students.
+   * @type {any}
+   * @memberof SubmissionVariantRun
+   */
+  readonly result: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionVariantRun
+   */
+  readonly created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SubmissionVariantRun
+   */
+  readonly modified: string;
 }
 /**
  *

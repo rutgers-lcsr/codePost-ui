@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | [**myAttemptsList**](QuizAttemptsApi.md#myattemptslist)                   | **GET** /quizAttempts/myAttempts/           |             |
 | [**reopenResponseCreate**](QuizAttemptsApi.md#reopenresponsecreate)       | **POST** /quizAttempts/{id}/reopenResponse/ |             |
 | [**retrieve**](QuizAttemptsApi.md#retrieve)                               | **GET** /quizAttempts/{id}/                 |             |
+| [**runCodeCreate**](QuizAttemptsApi.md#runcodecreate)                     | **POST** /quizAttempts/{id}/runCode/        |             |
 | [**saveAnswerPartialUpdate**](QuizAttemptsApi.md#saveanswerpartialupdate) | **PATCH** /quizAttempts/{id}/saveAnswer/    |             |
 | [**setOfficialCreate**](QuizAttemptsApi.md#setofficialcreate)             | **POST** /quizAttempts/{id}/setOfficial/    |             |
 | [**submitCreate**](QuizAttemptsApi.md#submitcreate)                       | **POST** /quizAttempts/{id}/submit/         |             |
@@ -445,6 +446,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## runCodeCreate
+
+> StaffQuizAttempt runCodeCreate(id, runQuizResponseCodeRequest)
+
+Run a student\&#39;s code answer in the sandbox (quiz graders and course admins only). Dispatches an async execution; poll the attempt to see the result land in the response\&#39;s codeExecution field.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizAttemptsApi,
+} from '';
+import type { RunCodeCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizAttemptsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz attempt.
+    id: 56,
+    // RunQuizResponseCodeRequest
+    runQuizResponseCodeRequest: ...,
+  } satisfies RunCodeCreateRequest;
+
+  try {
+    const data = await api.runCodeCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                           | Type                                                        | Description                                           | Notes                     |
+| ------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                         | `number`                                                    | A unique integer value identifying this quiz attempt. | [Defaults to `undefined`] |
+| **runQuizResponseCodeRequest** | [RunQuizResponseCodeRequest](RunQuizResponseCodeRequest.md) |                                                       |                           |
+
+### Return type
+
+[**StaffQuizAttempt**](StaffQuizAttempt.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

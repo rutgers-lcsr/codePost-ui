@@ -135,16 +135,34 @@ Assemble the quiz content in one unified table:
 ## Per-student AI-generated questions
 
 An AI section generates a **different set of questions for each student**, grounded in that
-student's own work.
+student's own work. A common use is a **post-submission "understanding check"**: after a student
+submits, generate questions from *their* code to confirm they understand what they turned in.
 
 - You write a **prompt** using template variables such as `{submission_files}` and
   `{submission_test_results}`. The generator sees **only** the material your variables reference.
+- **Start from a template.** When you add a section, a **"Start from a template"** picker offers
+  ready-made starter prompts you can then edit:
+  - **Retasking** — quote the student's own code and ask them to rewrite it for different inputs or
+    parameters (proves they understand it, not just that it runs).
+  - **Manual evaluation** — give a small sample of data and ask them to hand-compute what their own
+    code would return. A **Sample size** control sets how many rows to include.
+  - **Understanding check** — a mix of retasking and manual-evaluation questions.
+  - **Explain your code** — quote a block of their code and ask them to explain what it does and why.
+- **Reference files in your prompt.** Variables like `{assignment_file:spec.pdf}` and
+  `{course_file:rubric.pdf}` insert file contents into the prompt. **PDFs are converted to text and
+  notebooks (`.ipynb`) to readable cells automatically** — you never have to paste raw content. If
+  the assignment uses [per-student dataset variants](/docs/instructor-environment-testing),
+  `{student_dataset}` inserts the specific data assigned to that student, so questions can reference
+  their actual numbers.
 - Questions generate automatically when a student submits. If you add a section **after** students
   have already submitted, use **Generate missing** to backfill them (the count of affected students
   is shown first, since generation costs AI tokens).
 - On the **Review** tab, review each student's set: edit questions inline, **regenerate**, or
   **approve**. A student's quiz only opens for them once their set is approved — until then they see
   a neutral **"Your quiz is being prepared."**
+- **Answer keys.** Each generated question carries a grader-only **answer key** (the correct
+  answer/working code, plus worked steps for hand-computation questions). It's shown — and is
+  editable — on the Review tab and again while grading. **Students never see it.**
 - **Auto-publish generated sets** skips the manual review gate. **Graders can review generated**
   lets your quiz graders (not just admins) review these sets.
 
@@ -168,6 +186,13 @@ student submits. **Essay** and **Code** questions need a human — grade them on
 2. For each essay/code response, assign points and optionally leave **feedback**.
 3. Use **Grade and next** to jump straight to the next response that needs grading.
 4. **Reopen** undoes a saved grade and sends it back to the queue (feedback is kept as a draft).
+
+> [!TIP]
+> **Run a student's code.** On a **Code** response, use **Run code** to execute the student's answer
+> in the course's sandbox and see its output (stdout, errors, and any plots) right in the grading
+> view. The run uses the attached assignment's environment and stages the student's submission files
+> and datasets — including their assigned dataset variant — so answers that reference "their" data
+> work. This is grader-only and never shown to the student.
 
 > [!NOTE]
 > **Quiz graders.** By default an assignment grader **cannot** grade quizzes. Grant the **Quiz
