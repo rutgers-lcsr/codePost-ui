@@ -9,6 +9,9 @@ import { quizKeys } from '../../../lib/queryKeys';
 import TemplateTextArea from '../../core/TemplateTextArea';
 import { useBackfillPreview, usePromptVariables } from './queries';
 import { TYPE_META } from '../../core/questionMeta';
+import { SAMPLE_ROWS_TOKEN, SECTION_PROMPT_PRESETS } from './sectionPromptPresets';
+
+const DEFAULT_SAMPLE_ROWS = 5;
 
 const { Text } = Typography;
 
@@ -51,6 +54,24 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
   const { data: variables = [] } = usePromptVariables(open ? quizId : undefined);
   const [form] = Form.useForm<ISectionForm>();
   const [saving, setSaving] = React.useState(false);
+  // "Start from a template" (create only): which starter preset is active, and — for
+  // presets that call for a small hand-computable example — how many rows/values to ask
+  // for. Re-applying a preset (or changing sampleRows) overwrites the prompt field; once the
+  // instructor edits it directly they've moved past the template, so further sampleRows
+  // changes are harmless no-ops (nothing re-applies without picking a preset again).
+  const [presetKey, setPresetKey] = React.useState<string | null>(null);
+  const [sampleRows, setSampleRows] = React.useState<number>(DEFAULT_SAMPLE_ROWS);
+  const selectedPreset = SECTION_PROMPT_PRESETS.find((p) => p.key === presetKey) ?? null;
+  const showSampleRows = !!selectedPreset?.prompt.includes(SAMPLE_ROWS_TOKEN);
+
+  const applyPreset = (key: string, rows: number) => {
+    const preset = SECTION_PROMPT_PRESETS.find((p) => p.key === key);
+    if (!preset) return;
+    form.setFieldsValue({
+      systemPrompt: preset.prompt.split(SAMPLE_ROWS_TOKEN).join(String(rows)),
+      ...(preset.questionTypes ? { questionTypes: preset.questionTypes } : {}),
+    });
+  };
 
   // Saving a NEW section backfills students who already submitted — make that visible
   // (and its AI cost) before the instructor commits.
@@ -73,6 +94,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
         numQuestions: 3, pointsPerQuestion: 1, questionTypes: [],
         systemPrompt: attached ? DEFAULT_SECTION_PROMPT : DEFAULT_STANDALONE_PROMPT,
       });
+      setPresetKey(null);
+      setSampleRows(DEFAULT_SAMPLE_ROWS);
     }
   }, [open, section, form, attached]);
 
@@ -170,9 +193,59 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
         />
       )}
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-        <Form.Item name="name" label="Label (optional)">
+        <Form.Item name="name" label="Label (optional)" extra="Shown to students on each generated question.">
           <Input placeholder="e.g., About your solution" maxLength={128} />
         </Form.Item>
+        {!section && attached && (
+          <Form.Item label="Start from a template (optional)">
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Select
+                allowClear
+                placeholder="Choose a starter prompt…"
+                style={{ minWidth: 280, flex: '1 1 280px' }}
+                value={presetKey ?? undefined}
+                onChange={(key: string | undefined) => {
+                  setPresetKey(key ?? null);
+                  if (key) applyPreset(key, sampleRows);
+                }}
+                options={SECTION_PROMPT_PRESETS.map((p) => ({
+                  value: p.key,
+                  label: p.label,
+                }))}
+                optionRender={(option) => {
+                  const preset = SECTION_PROMPT_PRESETS.find((p) => p.key === option.value);
+                  return (
+                    <div>
+                      <div>{option.label}</div>
+                      {preset && (
+                        <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'normal' }}>
+                          {preset.description}
+                        </Text>
+                      )}
+                    </div>
+                  );
+                }}
+                data-testid="section-prompt-preset"
+              />
+              {showSampleRows && (
+                <InputNumber
+                  min={3}
+                  max={10}
+                  step={1}
+                  value={sampleRows}
+                  aria-label="Sample size (rows/values)"
+                  addonBefore="Sample size"
+                  onChange={(v) => {
+                    const rows = v ?? DEFAULT_SAMPLE_ROWS;
+                    setSampleRows(rows);
+                    if (presetKey) applyPreset(presetKey, rows);
+                  }}
+                  data-testid="section-prompt-sample-rows"
+                />
+              )}
+            </div>
+          </Form.Item>
+        )}
         <Form.Item
           name="systemPrompt"
           label={

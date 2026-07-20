@@ -166,6 +166,13 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
         <Flex align="center" gap={8} wrap>
           <Text strong>Question {index + 1}</Text>
           <Tag color={meta.color}>{meta.label}</Tag>
+          {/* The question's random-draw group / AI-section label (null for fixed questions).
+              A muted caption, kept visually distinct from the colored question-type tag. */}
+          {question.label && (
+            <Text type="secondary" style={{ fontSize: 12, fontWeight: 'normal' }} data-testid="quiz-question-label">
+              {question.label}
+            </Text>
+          )}
         </Flex>
       }
       extra={

@@ -9,7 +9,7 @@
 // `active` gates the queries so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Select, Space, Spin, Switch,
+  Alert, Collapse, Empty, Flex, Input, InputNumber, Popconfirm, Progress, Select, Space, Spin, Switch,
   Table, Tabs, Tag, Typography, message,
 } from 'antd';
 import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -749,6 +749,23 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
               reveal
               onChange={() => undefined}
             />
+            {r.referenceSolution && (
+              <Collapse
+                size="small"
+                style={{ marginLeft: 8, marginBottom: 16 }}
+                items={[
+                  {
+                    key: 'answer-key',
+                    label: 'Answer key (graders only)',
+                    children: (
+                      <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>
+                        {r.referenceSolution}
+                      </Typography.Paragraph>
+                    ),
+                  },
+                ]}
+              />
+            )}
             {isManuallyGraded(r.question.questionType) && (
               <GradeControls attemptId={current.id} response={r} onGraded={handleGraded} />
             )}

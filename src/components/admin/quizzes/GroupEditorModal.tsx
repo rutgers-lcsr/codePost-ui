@@ -105,8 +105,8 @@ const GroupEditorModal: React.FC<IProps> = ({ open, courseId, quizId, group, nex
             options={banks.map((b) => ({ value: b.id, label: `${b.name} (${b.questionCount ?? 0})` }))}
           />
         </Form.Item>
-        <Form.Item name="name" label="Label (optional)">
-          <Input placeholder="e.g., Chapter 3 — pick 3" maxLength={128} />
+        <Form.Item name="name" label="Label (optional)" extra="Shown to students on each drawn question.">
+          <Input placeholder="e.g., Chapter 3" maxLength={128} />
         </Form.Item>
         <Form.Item
           name="pickCount"

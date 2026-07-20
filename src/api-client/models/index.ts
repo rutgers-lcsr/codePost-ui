@@ -5027,6 +5027,12 @@ export interface GeneratedQuizQuestion {
    * @memberof GeneratedQuizQuestion
    */
   starterCode?: string | null;
+  /**
+   * Grader-facing answer key generated alongside the question: the correct answer/code and, for hand-computation questions, the worked steps. NEVER shown to students and never snapshotted into questionSnapshot.
+   * @type {string}
+   * @memberof GeneratedQuizQuestion
+   */
+  referenceSolution?: string | null;
 }
 
 /**
@@ -7694,6 +7700,12 @@ export interface PatchedGeneratedQuizQuestion {
    * @memberof PatchedGeneratedQuizQuestion
    */
   starterCode?: string | null;
+  /**
+   * Grader-facing answer key generated alongside the question: the correct answer/code and, for hand-computation questions, the worked steps. NEVER shown to students and never snapshotted into questionSnapshot.
+   * @type {string}
+   * @memberof PatchedGeneratedQuizQuestion
+   */
+  referenceSolution?: string | null;
 }
 
 /**
@@ -11776,7 +11788,8 @@ export interface ShellMetricsSession {
 }
 /**
  * A quiz attempt as staff (grading) sees it: the student's identity plus every response
- * with answers and grading state. Callers set reveal/revealScore context to True.
+ * with answers, grading state, and the grader-only answer key. Callers set
+ * reveal/revealScore context to True.
  * @export
  * @interface StaffQuizAttempt
  */
@@ -11882,10 +11895,10 @@ export interface StaffQuizAttempt {
   readonly serverNow: string;
   /**
    *
-   * @type {Array<StudentQuizResponse>}
+   * @type {Array<StaffQuizResponse>}
    * @memberof StaffQuizAttempt
    */
-  readonly responses: Array<StudentQuizResponse>;
+  readonly responses: Array<StaffQuizResponse>;
   /**
    *
    * @type {string}
@@ -11894,6 +11907,81 @@ export interface StaffQuizAttempt {
   readonly student: string;
 }
 
+/**
+ * A response as staff (grading/review) sees it: adds the grader-only answer key.
+ * NEVER used for student-facing payloads — referenceSolution is not in the student's
+ * Meta.fields, so StudentQuizResponseSerializer is structurally incapable of exposing it.
+ * @export
+ * @interface StaffQuizResponse
+ */
+export interface StaffQuizResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof StaffQuizResponse
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {StudentQuestion}
+   * @memberof StaffQuizResponse
+   */
+  readonly question: StudentQuestion;
+  /**
+   * Presentation order within the attempt (randomized when shuffleQuestions).
+   * @type {number}
+   * @memberof StaffQuizResponse
+   */
+  sortKey?: number;
+  /**
+   * Points this question is worth in this attempt (snapshot of override/base).
+   * @type {number}
+   * @memberof StaffQuizResponse
+   */
+  points?: number;
+  /**
+   * Typed answer for short-answer/numerical/essay/code questions.
+   * @type {string}
+   * @memberof StaffQuizResponse
+   */
+  answerText?: string;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof StaffQuizResponse
+   */
+  readonly selectedChoices: Array<number>;
+  /**
+   * Points awarded after grading. Null until graded.
+   * @type {number}
+   * @memberof StaffQuizResponse
+   */
+  pointsEarned?: number | null;
+  /**
+   * Whether the auto-graded answer was correct. Null for manual/ungraded.
+   * @type {boolean}
+   * @memberof StaffQuizResponse
+   */
+  isCorrect?: boolean | null;
+  /**
+   * True for essay/code responses awaiting manual grading.
+   * @type {boolean}
+   * @memberof StaffQuizResponse
+   */
+  needsManualGrading?: boolean;
+  /**
+   * Optional feedback from the grader on a manually graded response.
+   * @type {string}
+   * @memberof StaffQuizResponse
+   */
+  graderFeedback?: string;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizResponse
+   */
+  readonly referenceSolution: string | null;
+}
 /**
  *
  * @export
@@ -11977,6 +12065,12 @@ export interface StudentQuestion {
    * @memberof StudentQuestion
    */
   language: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentQuestion
+   */
+  label?: string | null;
   /**
    *
    * @type {Array<StudentQuestionChoice>}

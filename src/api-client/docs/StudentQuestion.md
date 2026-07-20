@@ -12,6 +12,7 @@ Shape of a rendered snapshot question for a student (documents the client contra
 | `description`     | string                                                         |
 | `starterCode`     | string                                                         |
 | `language`        | string                                                         |
+| `label`           | string                                                         |
 | `choices`         | [Array&lt;StudentQuestionChoice&gt;](StudentQuestionChoice.md) |
 | `generalFeedback` | string                                                         |
 

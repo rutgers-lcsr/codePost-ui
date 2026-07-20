@@ -341,6 +341,7 @@ docs/SeverityEnum.md
 docs/ShellMetricsResponse.md
 docs/ShellMetricsSession.md
 docs/StaffQuizAttempt.md
+docs/StaffQuizResponse.md
 docs/StartQuizAttemptRequest.md
 docs/Status4a6Enum.md
 docs/StatusDfeEnum.md

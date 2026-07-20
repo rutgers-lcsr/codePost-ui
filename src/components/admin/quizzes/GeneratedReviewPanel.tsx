@@ -89,6 +89,7 @@ const GeneratedQuestionCard: React.FC<{
   const [text, setText] = React.useState(question.text);
   const [description, setDescription] = React.useState(question.description ?? '');
   const [starterCode, setStarterCode] = React.useState(question.starterCode ?? '');
+  const [referenceSolution, setReferenceSolution] = React.useState(question.referenceSolution ?? '');
   const [points, setPoints] = React.useState<number>(Number(question.points ?? 1));
   const [choices, setChoices] = React.useState<LocalChoice[]>(
     ((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
@@ -103,6 +104,7 @@ const GeneratedQuestionCard: React.FC<{
     text !== question.text ||
     description !== (question.description ?? '') ||
     starterCode !== (question.starterCode ?? '') ||
+    referenceSolution !== (question.referenceSolution ?? '') ||
     points !== Number(question.points ?? 1) ||
     JSON.stringify(choices) !==
       JSON.stringify(
@@ -127,6 +129,7 @@ const GeneratedQuestionCard: React.FC<{
           description,
           points,
           starterCode: questionType === QuestionTypeEnum.Code ? starterCode : question.starterCode,
+          referenceSolution,
           choicesData: hasChoiceEditor(questionType) ? choices : [],
         },
       });
@@ -224,6 +227,17 @@ const GeneratedQuestionCard: React.FC<{
           />
         </div>
       )}
+      <div>
+        {fieldLabel('Answer key — graders only, never shown to students')}
+        <Input.TextArea
+          aria-label="Answer key (graders only)"
+          value={referenceSolution}
+          onChange={(e) => setReferenceSolution(e.target.value)}
+          autoSize={{ minRows: 2 }}
+          disabled={!editable}
+          placeholder="What a correct answer looks like — working code, the computed result, or the key points a grader should check for…"
+        />
+      </div>
       {editable && (
         <>
           <Divider style={{ margin: 0 }} />
