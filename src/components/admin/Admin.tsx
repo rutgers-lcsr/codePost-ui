@@ -41,7 +41,7 @@ import {
 } from '../../types/common';
 
 /* API library */
-import { Course, CourseFile, Section } from '../../api-client';
+import { Course, Section } from '../../api-client';
 import type {
   CreateRequest as AssignmentCreateRequest,
   PartialUpdateRequest as AssignmentPartialUpdateRequest,
@@ -53,7 +53,6 @@ import type {
 import type { CreateRequest as SubmissionFileCreateRequest } from '../../api-client/apis/SubmissionFilesApi';
 import type { PartialUpdateRequest as SectionPartialUpdateRequest } from '../../api-client/apis/SectionsApi';
 import {
-  courseFilesApi,
   coursesApi,
   sectionsApi,
   assignmentsApi,
@@ -61,7 +60,6 @@ import {
   submissionFilesApi,
 } from '../../api-client/clients';
 import { Assignment, SubmissionInfoType, UploadFile } from '../../types/common';
-import { withQueryParams } from '../../utils/apiClient';
 
 import {
   useAssignmentsQuery,
@@ -322,6 +320,8 @@ const Admin: React.FC<IComponentProps> = (props) => {
         return;
       }
 
+      // Course files are cloned server-side by the cloneFrom handler (CourseSerializer),
+      // alongside assignments, banks, and quizzes — so no client-side copy is needed.
       const assignmentClonePromises = copiedCourse.assignments.map((assignmentID: number) =>
         assignmentsApi.cloneCreate({
           id: assignmentID,
@@ -331,30 +331,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         }),
       );
 
-      const copyCourseFiles = withQueryParams(courseFilesApi, { course: copiedCourse.id })
-        .listRaw()
-        .then((response: { raw: Response }) => response.raw.json())
-        .then((courseFiles: CourseFile[]) => {
-          if (!courseFiles || courseFiles.length === 0) return Promise.resolve([]);
-          return Promise.all(
-            courseFiles.map((file) =>
-              courseFilesApi.create({
-                courseFile: {
-                  course: course.id,
-                  name: file.name,
-                  extension: file.extension,
-                  data: file.data,
-                },
-              }),
-            ),
-          );
-        })
-        .catch((error: unknown) => {
-          console.error('Error copying course files:', error);
-          return Promise.resolve([]);
-        });
-
-      return Promise.all([...assignmentClonePromises, copyCourseFiles]).then(() => {
+      return Promise.all(assignmentClonePromises).then(() => {
         props.addCourse(course);
         navigate(`${formatCourseURL(course)}/assignments/overview`);
       });
@@ -435,13 +412,13 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /* Section handling methods
   /***********************************************************************/
 
-  const createSection = (newSection: string) => {
+  const createSection = (newSection: string, students: string[] = []) => {
     if (!props.currentCourse) return Promise.reject();
     const payload = {
       name: newSection,
       course: props.currentCourse.id,
       leaders: [],
-      students: [],
+      students,
     };
 
     return sectionsApi.create({ section: payload }).then((section: Section) => {

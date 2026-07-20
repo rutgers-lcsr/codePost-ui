@@ -14,18 +14,18 @@
  */
 
 import * as runtime from '../runtime';
-import type { PromptTypesList200ResponseInner } from '../models/index';
+import type { PromptType } from '../models/index';
 
 /**
  *
  */
 export class PromptTypesApi extends runtime.BaseAPI {
   /**
-   * List all registered AI prompt types.
+   * List all registered AI prompt types with their insertable {placeholders}.
    */
   async listRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<Array<PromptTypesList200ResponseInner>>> {
+  ): Promise<runtime.ApiResponse<Array<PromptType>>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -61,11 +61,9 @@ export class PromptTypesApi extends runtime.BaseAPI {
   }
 
   /**
-   * List all registered AI prompt types.
+   * List all registered AI prompt types with their insertable {placeholders}.
    */
-  async list(
-    initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<Array<PromptTypesList200ResponseInner>> {
+  async list(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PromptType>> {
     const response = await this.listRaw(initOverrides);
     return await response.value();
   }

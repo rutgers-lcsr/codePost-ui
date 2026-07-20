@@ -283,8 +283,8 @@ docs/PromptExperimentStatusEnum.md
 docs/PromptExperimentsApi.md
 docs/PromptFeedback.md
 docs/PromptFeedbackApi.md
+docs/PromptType.md
 docs/PromptTypesApi.md
-docs/PromptTypesList200ResponseInner.md
 docs/PromptVariable.md
 docs/PromptVariantsApi.md
 docs/PublishAllGeneratedResponse.md

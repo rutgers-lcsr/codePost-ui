@@ -5,6 +5,7 @@ import {
   AuditOutlined,
   ApiOutlined,
   FileTextOutlined,
+  FolderOpenOutlined,
   FormOutlined,
   HistoryOutlined,
   InboxOutlined,
@@ -84,6 +85,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
       return 'course-settings/webhooks';
     if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings/general';
 
+    if (/\/course-files(?:\/|$)/.test(pathname)) return 'course-files';
+
     if (/\/quizzes(?:\/|$)/.test(pathname)) return 'quizzes';
 
     if (/\/gradebook(?:\/|$)/.test(pathname)) return 'gradebook';
@@ -140,6 +143,15 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           icon: <FormOutlined />,
           label: <Link to={`${courseBaseURL}/quizzes`}>Quizzes</Link>,
         },
+        ...(canEditSettings
+          ? [
+              {
+                key: 'course-files',
+                icon: <FolderOpenOutlined />,
+                label: <Link to={`${courseBaseURL}/course-files`}>Course Files</Link>,
+              },
+            ]
+          : []),
         ...(canViewGradebook
           ? [
               {

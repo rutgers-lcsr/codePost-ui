@@ -59,9 +59,9 @@ import {
   type VariantStats,
   type VariantStatus,
 } from '../../services/promptLab';
+import TemplateTextArea from '../core/TemplateTextArea';
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1180,12 +1180,14 @@ const PromptLab: React.FC = () => {
                   {editingVariant.text?.length ?? 0} characters
                 </Text>
               </div>
-              <TextArea
+              <TemplateTextArea
                 value={editingVariant.text}
-                onChange={(e) => setEditingVariant((prev) => ({ ...prev!, text: e.target.value }))}
+                onChange={(text) => setEditingVariant((prev) => ({ ...prev!, text }))}
+                variables={
+                  promptTypesRaw?.find((t) => t.key === editingVariant.promptType)?.placeholders ?? []
+                }
                 rows={16}
-                style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", fontSize: 12 }}
-                placeholder="Enter the system prompt text…"
+                placeholder="Enter the system prompt text… type { to insert a variable"
               />
             </div>
           </Space>

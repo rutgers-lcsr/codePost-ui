@@ -29,15 +29,16 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-import { Section } from '../../../../api-client';
+import { PromptVariable, Section } from '../../../../api-client';
 import { Assignment } from '../../../../types/common';
+import TemplateTextArea from '../../../core/TemplateTextArea';
 import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
 import ReactMarkdown from 'react-markdown';
 import AssignmentDataSetsForm from './AssignmentDataSetsForm';
 import AssignmentFilesForm from './AssignmentFilesForm';
 import { EnvironmentShellWidget } from './EnvironmentShellWidget';
-import { assignmentFilesApi, assignmentsApi } from '../../../../api-client/clients';
+import { assignmentFilesApi, assignmentsApi, promptTypesApi } from '../../../../api-client/clients';
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
 import { getCourseAISettings } from '../../../../utils/aiService';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
@@ -148,6 +149,7 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
       studentsCanSeeGraders: values.studentsCanSeeGraders,
       gradersCanEditSubmissions: values.gradersCanEditSubmissions,
       aiSystemPrompt: values.aiSystemPrompt || '',
+      aiSummaryPrompt: values.aiSummaryPrompt || '',
       aiDescription: values.aiDescription || '',
       aiDescriptionLocked: values.aiDescriptionLocked ?? false,
       runFilesOnSubmit: values.runFilesOnSubmit,
@@ -310,6 +312,7 @@ interface IFormValues {
   hideFrom: number[];
   lateDeductions: number[];
   aiSystemPrompt: string;
+  aiSummaryPrompt: string;
   aiDescription: string;
   aiDescriptionLocked: boolean;
   gradersCanEditSubmissions: boolean;
@@ -340,6 +343,21 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   const [explanation, setExplanation] = React.useState(assignment.explanation);
   const [isGeneratingDescription, setIsGeneratingDescription] = React.useState(false);
   const [aiDescriptionEnabled, setAiDescriptionEnabled] = React.useState(true);
+  // Insertable {variables} for the comment / summary prompt editors, keyed by prompt type.
+  const [commentVars, setCommentVars] = React.useState<PromptVariable[]>([]);
+  const [summaryVars, setSummaryVars] = React.useState<PromptVariable[]>([]);
+  React.useEffect(() => {
+    promptTypesApi
+      .list()
+      .then((types) => {
+        const byKey = Object.fromEntries(types.map((t) => [t.key, t.placeholders]));
+        setCommentVars(byKey['comment_generation'] ?? []);
+        setSummaryVars(byKey['submission_summary'] ?? []);
+      })
+      .catch(() => {
+        /* Leave the dropdowns empty — the editor still works as a plain textarea. */
+      });
+  }, []);
   const hasAssignmentFiles = templates.length > 0;
   const environmentId = assignment.environment ?? null;
 
@@ -428,6 +446,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
         // AI settings
         aiSystemPrompt: assignment.aiSystemPrompt || '',
+        aiSummaryPrompt: assignment.aiSummaryPrompt || '',
         aiDescription: assignment.aiDescription ?? '',
         aiDescriptionLocked: assignment.aiDescriptionLocked ?? false,
       });
@@ -1055,36 +1074,13 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                               extra={
                                 <div>
                                   <p>
-                                    Customize instructions for AI comment generation.{' '}
+                                    Customize instructions for AI comment generation. Type{' '}
+                                    <code>{'{'}</code> to insert a variable.{' '}
                                     <b>
                                       Variables marked (auto) are added to the User Prompt if omitted. Variables marked
                                       (manual) MUST be included in your custom System Prompt to be available to the AI.
                                     </b>
                                   </p>
-                                  <ul style={{ fontSize: '12px', paddingLeft: '20px', margin: '8px 0' }}>
-                                    <li>
-                                      <code>{'{assignment_name}'}</code> - Name of the assignment
-                                    </li>
-                                    <li>
-                                      <code>{'{file_name}'}</code> - Name of the file being reviewed
-                                    </li>
-                                    <li>
-                                      <code>{'{rubric_context}'}</code> - Selected rubric item details (auto)
-                                    </li>
-                                    <li>
-                                      <code>{'{selected_content}'}</code> - The specific code block selected (auto)
-                                    </li>
-                                    <li>
-                                      <code>{'{grader_draft}'}</code> - Current draft text by grader (auto)
-                                    </li>
-                                    <li>
-                                      <code>{'{file_content}'}</code> - Full content of the current opened file{' '}
-                                      <b>(auto)</b>
-                                    </li>
-                                    <li>
-                                      <code>{'{all_files}'}</code> - Content of all files in submission <b>(manual)</b>
-                                    </li>
-                                  </ul>
                                   <p>Leave blank to use the course default.</p>
                                 </div>
                               }
@@ -1092,7 +1088,9 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                               wrapperCol={{ span: 20 }}
                               initialValue={assignment.aiSystemPrompt || ''}
                             >
-                              <Input.TextArea
+                              <TemplateTextArea
+                                variables={commentVars}
+                                rows={20}
                                 placeholder={`You are an AI assistant helping grade student code submissions.
 Your task is to generate clear, constructive feedback for students.
 
@@ -1108,8 +1106,37 @@ Context:
 - File: {file_name}
 - File Content:
   {file_content}`}
+                              />
+                            </Form.Item>
+                          </div>
+                        ),
+                      },
+                      {
+                        label: 'AI Submission Summary',
+                        key: 'ai-submission-summary',
+                        forceRender: true,
+                        children: (
+                          <div style={{ paddingTop: 16 }}>
+                            <Form.Item
+                              name="aiSummaryPrompt"
+                              label="Summary Prompt"
+                              extra={
+                                <div>
+                                  <p>
+                                    Customize the AI submission-summary prompt for this assignment. Type{' '}
+                                    <code>{'{'}</code> to insert a variable.
+                                  </p>
+                                  <p>Leave blank to use the global default summary prompt.</p>
+                                </div>
+                              }
+                              labelCol={{ span: 4 }}
+                              wrapperCol={{ span: 20 }}
+                              initialValue={assignment.aiSummaryPrompt || ''}
+                            >
+                              <TemplateTextArea
+                                variables={summaryVars}
                                 rows={20}
-                                style={{ fontFamily: 'monospace' }}
+                                placeholder="Leave blank to use the global default summary prompt."
                               />
                             </Form.Item>
                           </div>

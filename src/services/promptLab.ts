@@ -1,5 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { apiClientConfig } from '../api-client/clients';
+import { PromptVariable } from '../api-client';
 import { getAuthToken } from '../utils/auth';
 
 /**
@@ -138,6 +139,8 @@ export interface PromptTypeEntry {
   key: string;
   label: string;
   description: string;
+  /** Insertable {variables} for this prompt type — powers the editor dropdown. */
+  placeholders: PromptVariable[];
 }
 
 export interface PromptLabSettingsData {

@@ -8,9 +8,9 @@ All URIs are relative to *http://localhost*
 
 ## list
 
-> Array&lt;PromptTypesList200ResponseInner&gt; list()
+> Array&lt;PromptType&gt; list()
 
-List all registered AI prompt types.
+List all registered AI prompt types with their insertable {placeholders}.
 
 ### Example
 
@@ -51,7 +51,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**Array&lt;PromptTypesList200ResponseInner&gt;**](PromptTypesList200ResponseInner.md)
+[**Array&lt;PromptType&gt;**](PromptType.md)
 
 ### Authorization
 

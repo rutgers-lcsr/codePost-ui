@@ -68,7 +68,7 @@ export interface IManageSectionsProps {
   /* object-level REST operations */
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
-  createSection: (sectionName: string) => Promise<Section>;
+  createSection: (sectionName: string, students?: string[]) => Promise<Section>;
   updateSection: (section: Section) => Promise<void>;
   updateStudentSection: (student: string, section: number) => Promise<void>;
 }
@@ -302,48 +302,55 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
     let sectionsCreated = 0;
     let studentsAssigned = 0;
+    let unknownCount = 0;
     let stepsDone = 0;
 
-    // Build a map of existing section names → ids
-    const existingSections: Record<string, number> = {};
+    // Map existing section names → their current objects.
+    const existingSections: Record<string, Section> = {};
     props.sections.forEach((s) => {
-      existingSections[s.name.toLowerCase()] = s.id;
+      existingSections[s.name.toLowerCase()] = s;
     });
-
-    const BATCH_SIZE = 10;
+    const knownRoster = new Set(props.students);
 
     for (const entry of csvData) {
       if (csvCancelRef.current) break;
 
-      // Create section if it doesn't exist
-      let sectionId = existingSections[entry.section.toLowerCase()];
-      if (!sectionId) {
-        try {
-          const newSection = await props.createSection(entry.section);
-          sectionId = newSection.id;
-          existingSections[entry.section.toLowerCase()] = sectionId;
-          sectionsCreated++;
-        } catch {
-          message.error(`Failed to create section "${entry.section}", skipping its students`);
-          stepsDone += 1 + entry.students.length;
-          setCsvProgress({ done: stepsDone, total: csvData.length + totalStudents });
-          continue;
-        }
-      }
-      stepsDone++;
-      setCsvProgress({ done: stepsDone, total: csvData.length + totalStudents });
+      const key = entry.section.toLowerCase();
+      const existing = existingSections[key];
+      const currentStudents = existing ? existing.students : [];
+      const inSection = new Set(currentStudents);
 
-      // Assign students in batches
-      for (let i = 0; i < entry.students.length; i += BATCH_SIZE) {
-        if (csvCancelRef.current) break;
-        const batch = entry.students.slice(i, i + BATCH_SIZE);
-        const results = await Promise.allSettled(batch.map((email) => props.updateStudentSection(email, sectionId)));
-        results.forEach((r) => {
-          if (r.status === 'fulfilled') studentsAssigned++;
-        });
-        stepsDone += batch.length;
-        setCsvProgress({ done: stepsDone, total: csvData.length + totalStudents });
+      // Only students on the course roster and not already in the section. A
+      // single unknown email would otherwise fail the whole section's request.
+      const uniqueStudents = [...new Set(entry.students)];
+      const toAdd = uniqueStudents.filter((email) => knownRoster.has(email) && !inSection.has(email));
+      unknownCount += uniqueStudents.filter((email) => !knownRoster.has(email)).length;
+
+      try {
+        if (!existing) {
+          // Create the section with its students in a single request — this also
+          // avoids a stale-closure lookup for a section made during this import.
+          const created = await props.createSection(entry.section, toAdd);
+          existingSections[key] = created;
+          sectionsCreated++;
+        } else if (toAdd.length > 0) {
+          // Replace membership once with the full appended list; concurrent
+          // per-student PATCHes would clobber each other (last write wins).
+          const nextStudents = [...currentStudents, ...toAdd];
+          await props.updateSection({ ...existing, students: nextStudents });
+          existingSections[key] = { ...existing, students: nextStudents };
+        }
+        studentsAssigned += toAdd.length;
+      } catch {
+        message.error(`Failed to import section "${entry.section}", skipping it`);
       }
+
+      stepsDone += 1 + entry.students.length;
+      setCsvProgress({ done: stepsDone, total: csvData.length + totalStudents });
+    }
+
+    if (unknownCount > 0) {
+      message.warning(`${unknownCount} email${unknownCount !== 1 ? 's' : ''} not on the course roster were skipped`, 5);
     }
 
     if (csvCancelRef.current) {
@@ -627,44 +634,38 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
     return props.students.filter((s) => !assigned.has(s));
   }, [props.students, props.sections]);
 
-  // ─── Core bulk-add with batching ───────────────────────────
+  // ─── Core bulk-add ─────────────────────────────────────────
+  // A section's membership is replaced wholesale on PATCH, so the complete
+  // student list must be sent in a SINGLE request. Firing per-student PATCHes
+  // concurrently makes them clobber each other (last write wins), which left
+  // only one student in the section.
   const bulkAddStudents = useCallback(
     async (emails: string[]) => {
       if (!openSection || emails.length === 0) return;
-      setAddingStudents(true);
-      cancelRef.current = false;
-      setAddProgress({ done: 0, total: emails.length });
 
-      const BATCH_SIZE = 10;
-      const addedEmails: string[] = [];
-      const failedEmails: string[] = [];
-
-      for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-        if (cancelRef.current) break;
-        const batch = emails.slice(i, i + BATCH_SIZE);
-        const results = await Promise.allSettled(
-          batch.map((email) => props.updateStudentSection(email, openSection.id)),
-        );
-        results.forEach((r, idx) => {
-          if (r.status === 'fulfilled') addedEmails.push(batch[idx]);
-          else failedEmails.push(batch[idx]);
-        });
-        setAddProgress({ done: Math.min(i + BATCH_SIZE, emails.length), total: emails.length });
+      // Drop duplicates and anyone already in the section.
+      const existing = new Set(openSection.students);
+      const toAdd = [...new Set(emails)].filter((email) => !existing.has(email));
+      if (toAdd.length === 0) {
+        message.info('All selected students are already in this section');
+        setStudentsToAdd([]);
+        setPasteText('');
+        return;
       }
 
-      setOpenSection({
-        ...openSection,
-        students: [...openSection.students, ...addedEmails],
-      });
-      setStudentsToAdd([]);
-      setPasteText('');
+      setAddingStudents(true);
+      setAddProgress({ done: 0, total: toAdd.length });
 
-      if (cancelRef.current) {
-        message.info(`Cancelled. Added ${addedEmails.length} of ${emails.length} students.`);
-      } else if (failedEmails.length > 0) {
-        message.warning(`Added ${addedEmails.length} students. ${failedEmails.length} failed.`);
-      } else {
-        message.success(`Added ${addedEmails.length} student${addedEmails.length !== 1 ? 's' : ''}`);
+      try {
+        const nextStudents = [...openSection.students, ...toAdd];
+        await props.updateSection({ ...openSection, students: nextStudents });
+        setOpenSection({ ...openSection, students: nextStudents });
+        setStudentsToAdd([]);
+        setPasteText('');
+        setAddProgress({ done: toAdd.length, total: toAdd.length });
+        message.success(`Added ${toAdd.length} student${toAdd.length !== 1 ? 's' : ''}`);
+      } catch {
+        message.error(`Failed to add ${toAdd.length} student${toAdd.length !== 1 ? 's' : ''}. Please try again.`);
       }
 
       setAddingStudents(false);

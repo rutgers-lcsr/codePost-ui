@@ -9,19 +9,30 @@
 // polling) so an inactive tab doesn't fetch.
 import * as React from 'react';
 import {
-  Alert, AutoComplete, Collapse, Divider, Empty, Flex, Input, InputNumber, Modal, Select, Space,
-  Spin, Table, Tag, Tooltip, Typography, message,
+  Alert,
+  AutoComplete,
+  Collapse,
+  Divider,
+  Empty,
+  Flex,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
 } from 'antd';
 import { InfoCircleOutlined, LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
-import {
-  generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi,
-} from '../../../api-client/clients';
-import {
-  GeneratedQuestionSetList, GeneratedQuizQuestion, Quiz, QuestionTypeEnum,
-} from '../../../api-client';
+import { generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi } from '../../../api-client/clients';
+import { GeneratedQuestionSetList, GeneratedQuizQuestion, Quiz, QuestionTypeEnum } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { useApiAction } from '../../../hooks/useApiAction';
 import { quizKeys } from '../../../lib/queryKeys';
@@ -81,7 +92,8 @@ const GeneratedQuestionCard: React.FC<{
   const [points, setPoints] = React.useState<number>(Number(question.points ?? 1));
   const [choices, setChoices] = React.useState<LocalChoice[]>(
     ((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
-      text: c.text ?? '', isCorrect: !!c.isCorrect,
+      text: c.text ?? '',
+      isCorrect: !!c.isCorrect,
     })),
   );
   const [saving, setSaving] = React.useState(false);
@@ -93,9 +105,12 @@ const GeneratedQuestionCard: React.FC<{
     starterCode !== (question.starterCode ?? '') ||
     points !== Number(question.points ?? 1) ||
     JSON.stringify(choices) !==
-      JSON.stringify(((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
-        text: c.text ?? '', isCorrect: !!c.isCorrect,
-      })));
+      JSON.stringify(
+        ((question.choicesData as LocalChoice[] | null) ?? []).map((c) => ({
+          text: c.text ?? '',
+          isCorrect: !!c.isCorrect,
+        })),
+      );
 
   const save = async () => {
     const choiceError = hasChoiceEditor(questionType) ? validateChoices(questionType, choices) : null;
@@ -151,11 +166,23 @@ const GeneratedQuestionCard: React.FC<{
   return (
     <Flex vertical gap={20} style={{ padding: '16px 20px', border: '1px solid #f0f0f0', borderRadius: 8 }}>
       <Flex justify="space-between" align="center" wrap gap={8}>
-        <Tag color={meta.color} style={{ margin: 0 }}>{meta.label}</Tag>
+        <Tag color={meta.color} style={{ margin: 0 }}>
+          {meta.label}
+        </Tag>
         <Space size={6}>
-          <Text type="secondary" style={{ fontSize: 12 }}>Points</Text>
-          <InputNumber min={0} step={1} value={points} disabled={!editable} aria-label="Points"
-                       onChange={(v) => setPoints(v ?? 0)} size="small" style={{ width: 72 }} />
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Points
+          </Text>
+          <InputNumber
+            min={0}
+            step={1}
+            value={points}
+            disabled={!editable}
+            aria-label="Points"
+            onChange={(v) => setPoints(v ?? 0)}
+            size="small"
+            style={{ width: 72 }}
+          />
         </Space>
       </Flex>
       <div>
@@ -234,9 +261,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
     const section = courseSections.find((s) => s.id === sectionId);
     return section ? new Set((section.students ?? []).map(String)) : null;
   }, [sectionId, courseSections]);
-  const visibleSets = sectionEmails
-    ? sets.filter((s) => s.studentEmail && sectionEmails.has(s.studentEmail))
-    : sets;
+  const visibleSets = sectionEmails ? sets.filter((s) => s.studentEmail && sectionEmails.has(s.studentEmail)) : sets;
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
   // Roster emails feed the generate-for-student picker (admin-only); if the viewer can't
   // read the roster (403) the field simply falls back to free typing.
@@ -259,13 +284,17 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
   }, [current]);
 
   const generateFor = (email: string) =>
-    act(async () => {
-      await quizzesApi.generateForStudentCreate({
-        id: quiz.id!,
-        generateForStudentRequest: { student: email },
-      });
-      setGenEmail('');
-    }, `Generating questions for ${email}…`, 'Failed to start generation.');
+    act(
+      async () => {
+        await quizzesApi.generateForStudentCreate({
+          id: quiz.id!,
+          generateForStudentRequest: { student: email },
+        });
+        setGenEmail('');
+      },
+      `Generating questions for ${email}…`,
+      'Failed to start generation.',
+    );
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: quizKeys.generatedSets(quiz.id!) });
@@ -281,13 +310,17 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
     act(() => generatedQuestionSetsApi.approveCreate({ id }), 'Approved — the quiz is now open for this student.');
 
   const unapprove = (id: number) =>
-    act(() => generatedQuestionSetsApi.unapproveCreate({ id }), 'Set back to review — the quiz is closed for this student.');
+    act(
+      () => generatedQuestionSetsApi.unapproveCreate({ id }),
+      'Set back to review — the quiz is closed for this student.',
+    );
 
   const regenerate = (id: number) => {
     Modal.confirm({
-      title: 'Regenerate this student\'s questions?',
-      content: 'The current questions are discarded and new ones are generated from their '
-        + 'submission. If the set was published, it is un-published until you re-approve it.',
+      title: "Regenerate this student's questions?",
+      content:
+        'The current questions are discarded and new ones are generated from their ' +
+        'submission. If the set was published, it is un-published until you re-approve it.',
       okText: 'Regenerate',
       onOk: () => act(() => generatedQuestionSetsApi.regenerateCreate({ id }), 'Regenerating…'),
     });
@@ -307,8 +340,9 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
     const readyCount = sets.filter((s) => s.status === 'ready').length;
     Modal.confirm({
       title: `Publish all ${readyCount} set(s) awaiting review?`,
-      content: 'Every student whose questions are ready will have their quiz opened without '
-        + 'individual review. You take authorship of all published questions.',
+      content:
+        'Every student whose questions are ready will have their quiz opened without ' +
+        'individual review. You take authorship of all published questions.',
       okText: 'Publish all',
       onOk: () =>
         act(async () => {
@@ -352,8 +386,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               Submission
             </CPButton>
           )}
-          <CPButton size="small" cpType="primary" disabled={s.status === 'pending' || s.status === 'generating'}
-                    onClick={() => setCurrentId(s.id!)}>
+          <CPButton
+            size="small"
+            cpType="primary"
+            disabled={s.status === 'pending' || s.status === 'generating'}
+            onClick={() => setCurrentId(s.id!)}
+          >
             Review
           </CPButton>
         </Space>
@@ -372,16 +410,15 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
 
   // Shared by the Tooltip (sighted hover) and the icon's aria-label (screen readers /
   // keyboard focus) so the explanation isn't hover-only.
-  const genHelp =
-    `Each student gets their own set of ${questionsPerStudent} AI-generated question${
-      questionsPerStudent === 1 ? '' : 's'
-    }, produced ${needsSubmission ? 'from their submission ' : ''}by this quiz's ${
-      sections.length === 1 ? 'AI section' : `${sections.length} AI sections`
-    }. ${
-      quiz.autoPublishGenerated
-        ? 'Auto-publish is on for this quiz, so new sets are published without review — you can still edit, unapprove, or regenerate a set here.'
-        : 'Approving a set publishes its questions and opens the quiz for that student — until then they see "Your quiz is being prepared." Sets marked "Needs review" are waiting on you.'
-    }`;
+  const genHelp = `Each student gets their own set of ${questionsPerStudent} AI-generated question${
+    questionsPerStudent === 1 ? '' : 's'
+  }, produced ${needsSubmission ? 'from their submission ' : ''}by this quiz's ${
+    sections.length === 1 ? 'AI section' : `${sections.length} AI sections`
+  }. ${
+    quiz.autoPublishGenerated
+      ? 'Auto-publish is on for this quiz, so new sets are published without review — you can still edit, unapprove, or regenerate a set here.'
+      : 'Approving a set publishes its questions and opens the quiz for that student — until then they see "Your quiz is being prepared." Sets marked "Needs review" are waiting on you.'
+  }`;
 
   // The resolved per-section prompts recorded at generation time (older sets predate this
   // and fall back to showing the section templates).
@@ -420,72 +457,73 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
       {!current && error == null && (
         <Flex justify="space-between" align="center" wrap gap={8} style={{ marginBottom: 12 }}>
           <Space wrap>
-          <Tooltip styles={{ root: { maxWidth: 380 } }} title={genHelp}>
-            <InfoCircleOutlined
-              role="img"
-              aria-label={genHelp}
-              tabIndex={0}
-              style={{ color: 'rgba(0, 0, 0, 0.45)', cursor: 'help' }}
-            />
-          </Tooltip>
-          {courseSections.length > 0 && (
-            <Select
-              size="small"
-              aria-label="Filter by section"
-              style={{ minWidth: 160 }}
-              value={sectionId ?? 'all'}
-              onChange={(v) => setSectionId(v === 'all' ? null : Number(v))}
-              options={[
-                { value: 'all' as const, label: 'All sections' },
-                ...courseSections.map((s) => ({ value: s.id, label: s.name })),
-              ]}
-              popupMatchSelectWidth={false}
-              data-testid="review-section-filter"
-            />
-          )}
-          {adminActions && (
-            <>
-              <AutoComplete
-                style={{ width: 280 }}
-                aria-label="Generate questions for a student by email"
-                placeholder="Generate for a student (email)…"
-                value={genEmail}
-                onChange={setGenEmail}
-                options={(roster?.students ?? [])
-                  .filter((s): s is string => !!s)
-                  .map((s) => ({ value: s }))}
-                filterOption={(input, option) =>
-                  String(option?.value ?? '').toLowerCase().includes(input.toLowerCase())
-                }
-                data-testid="generate-for-student-email"
+            <Tooltip styles={{ root: { maxWidth: 380 } }} title={genHelp}>
+              <InfoCircleOutlined
+                role="img"
+                aria-label={genHelp}
+                tabIndex={0}
+                style={{ color: 'rgba(0, 0, 0, 0.45)', cursor: 'help' }}
               />
-              <CPButton
-                icon={<RobotOutlined />}
-                loading={acting}
-                disabled={!genEmail.trim()}
-                onClick={() => generateFor(genEmail.trim())}
-                data-testid="generate-for-student"
-              >
-                Generate
-              </CPButton>
-              <Tooltip
-                title={
-                  needsSubmission
-                    ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
-                    : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
-                }
-              >
+            </Tooltip>
+            {courseSections.length > 0 && (
+              <Select
+                size="small"
+                aria-label="Filter by section"
+                style={{ minWidth: 160 }}
+                value={sectionId ?? 'all'}
+                onChange={(v) => setSectionId(v === 'all' ? null : Number(v))}
+                options={[
+                  { value: 'all' as const, label: 'All sections' },
+                  ...courseSections.map((s) => ({ value: s.id, label: s.name })),
+                ]}
+                popupMatchSelectWidth={false}
+                data-testid="review-section-filter"
+              />
+            )}
+            {adminActions && (
+              <>
+                <AutoComplete
+                  style={{ width: 280 }}
+                  aria-label="Generate questions for a student by email"
+                  placeholder="Generate for a student (email)…"
+                  value={genEmail}
+                  onChange={setGenEmail}
+                  options={(roster?.students ?? []).filter((s): s is string => !!s).map((s) => ({ value: s }))}
+                  showSearch={{
+                    filterOption: (input, option) =>
+                      String(option?.value ?? '')
+                        .toLowerCase()
+                        .includes(input.toLowerCase()),
+                  }}
+                  data-testid="generate-for-student-email"
+                />
                 <CPButton
+                  icon={<RobotOutlined />}
                   loading={acting}
-                  disabled={missingCount === 0}
-                  onClick={generateMissing}
-                  data-testid="generate-missing"
+                  disabled={!genEmail.trim()}
+                  onClick={() => generateFor(genEmail.trim())}
+                  data-testid="generate-for-student"
                 >
-                  Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
+                  Generate
                 </CPButton>
-              </Tooltip>
-            </>
-          )}
+                <Tooltip
+                  title={
+                    needsSubmission
+                      ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
+                      : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
+                  }
+                >
+                  <CPButton
+                    loading={acting}
+                    disabled={missingCount === 0}
+                    onClick={generateMissing}
+                    data-testid="generate-missing"
+                  >
+                    Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
+                  </CPButton>
+                </Tooltip>
+              </>
+            )}
           </Space>
           {adminActions && (
             <CPButton cpType="primary" disabled={readyCount === 0} loading={acting} onClick={publishAll}>
@@ -494,8 +532,8 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
           )}
         </Flex>
       )}
-      {!current && (
-        isLoading ? (
+      {!current &&
+        (isLoading ? (
           <Spin />
         ) : visibleSets.length === 0 ? (
           <Empty
@@ -503,8 +541,8 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               sectionEmails
                 ? 'No generated sets for students in this section.'
                 : needsSubmission
-                ? 'No generated sets yet — they appear when students submit the assignment.'
-                : 'No generated sets yet — use Generate missing to create them for enrolled students.'
+                  ? 'No generated sets yet — they appear when students submit the assignment.'
+                  : 'No generated sets yet — use Generate missing to create them for enrolled students.'
             }
           />
         ) : (
@@ -516,8 +554,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
             pagination={false}
             data-testid="generated-sets-table"
           />
-        )
-      )}
+        ))}
       {current && (
         <Flex vertical gap={16}>
           <Flex align="center" gap={8}>
@@ -529,54 +566,60 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
             </Text>
           </Flex>
           {current.status === 'failed' && (
-            <Alert type="error" showIcon title="Generation failed"
-                   description={current.errorMessage || 'Unknown error.'} />
+            <Alert
+              type="error"
+              showIcon
+              title="Generation failed"
+              description={current.errorMessage || 'Unknown error.'}
+            />
           )}
           <Collapse
             size="small"
-            items={[{
-              key: 'prompt',
-              label: 'Prompt used to generate these questions',
-              children: (
-                <Flex vertical gap={12}>
-                  {promptSections ? (
-                    promptSections.map((p, i) => (
-                      <div key={p.sectionId ?? i}>
-                        {promptSections.length > 1 && (
-                          <Text strong style={{ display: 'block', marginBottom: 4 }}>
-                            {p.sectionName || `AI section ${i + 1}`}
-                          </Text>
-                        )}
-                        <pre style={PROMPT_PRE_STYLE}>{p.prompt}</pre>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <Text type="secondary">
-                        The exact prompt wasn&apos;t recorded for this set (it was generated before prompt
-                        capture; regenerating records it). Below is the section&apos;s prompt template — its
-                        variables are filled from this student&apos;s submission at generation time.
-                      </Text>
-                      {sections.map((s, i) => (
-                        <div key={s.id}>
-                          {sections.length > 1 && (
+            items={[
+              {
+                key: 'prompt',
+                label: 'Prompt used to generate these questions',
+                children: (
+                  <Flex vertical gap={12}>
+                    {promptSections ? (
+                      promptSections.map((p, i) => (
+                        <div key={p.sectionId ?? i}>
+                          {promptSections.length > 1 && (
                             <Text strong style={{ display: 'block', marginBottom: 4 }}>
-                              {s.name || `AI section ${i + 1}`}
+                              {p.sectionName || `AI section ${i + 1}`}
                             </Text>
                           )}
-                          <pre style={PROMPT_PRE_STYLE}>{s.systemPrompt}</pre>
+                          <pre style={PROMPT_PRE_STYLE}>{p.prompt}</pre>
                         </div>
-                      ))}
-                    </>
-                  )}
-                  {genMeta?.model && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Generated by {genMeta.provider} · {genMeta.model}
-                    </Text>
-                  )}
-                </Flex>
-              ),
-            }]}
+                      ))
+                    ) : (
+                      <>
+                        <Text type="secondary">
+                          The exact prompt wasn&apos;t recorded for this set (it was generated before prompt capture;
+                          regenerating records it). Below is the section&apos;s prompt template — its variables are
+                          filled from this student&apos;s submission at generation time.
+                        </Text>
+                        {sections.map((s, i) => (
+                          <div key={s.id}>
+                            {sections.length > 1 && (
+                              <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                                {s.name || `AI section ${i + 1}`}
+                              </Text>
+                            )}
+                            <pre style={PROMPT_PRE_STYLE}>{s.systemPrompt}</pre>
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {genMeta?.model && (
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Generated by {genMeta.provider} · {genMeta.model}
+                      </Text>
+                    )}
+                  </Flex>
+                ),
+              },
+            ]}
           />
           {(current.questions ?? []).map((q) => (
             <GeneratedQuestionCard
@@ -589,8 +632,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
           ))}
           <Space>
             {current.status === 'ready' && (
-              <CPButton cpType="primary" loading={acting} onClick={() => approve(current.id!)}
-                        data-testid="approve-set">
+              <CPButton
+                cpType="primary"
+                loading={acting}
+                onClick={() => approve(current.id!)}
+                data-testid="approve-set"
+              >
                 Approve &amp; publish for this student
               </CPButton>
             )}
@@ -605,8 +652,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               </CPButton>
             )}
             {current.submission != null && (
-              <CPButton icon={<ExportOutlined />}
-                        onClick={() => window.open(`/code/${current.submission}`, '_blank')}>
+              <CPButton icon={<ExportOutlined />} onClick={() => window.open(`/code/${current.submission}`, '_blank')}>
                 View submission
               </CPButton>
             )}

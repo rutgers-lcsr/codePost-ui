@@ -5,6 +5,7 @@ export const courseKeys = {
   roster: (courseId: number) => ['courses', courseId, 'roster'] as const,
   sections: (courseId: number) => ['courses', courseId, 'sections'] as const,
   gradebook: (courseId: number) => ['courses', courseId, 'gradebook'] as const,
+  files: (courseId: number) => ['courses', courseId, 'files'] as const,
 };
 
 export const assignmentKeys = {

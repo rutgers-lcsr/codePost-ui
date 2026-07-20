@@ -145,9 +145,9 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
         <Text type="secondary" style={{ fontSize: 13 }}>
           Each student gets their own questions generated from your prompt. This quiz isn't
           attached to an assignment, so the prompt can't reference assignment or submission
-          {' {'}variables{'}'} — questions generate for every enrolled student as soon as you
-          save. You review and approve each student's questions before their quiz opens
-          (unless auto-publish is on).
+          {' {'}variables{'}'} — but it can use course files ({'{'}course_file:name{'}'}).
+          Questions generate for every enrolled student as soon as you save. You review and
+          approve each student's questions before their quiz opens (unless auto-publish is on).
         </Text>
       )}
       {!section && !attached && (

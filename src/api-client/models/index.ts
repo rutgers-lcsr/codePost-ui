@@ -591,6 +591,12 @@ export interface Assignment {
    */
   aiSystemPrompt?: string;
   /**
+   * Per-assignment override of the submission-summary system prompt. Placeholders: {assignment_name}, {assignment_description}, {test_results}, {rubric}, {description_comparison}. Blank uses the global default.
+   * @type {string}
+   * @memberof Assignment
+   */
+  aiSummaryPrompt?: string;
+  /**
    * AI-generated description of the assignment used as context for AI grading features. Editable by course admins, visible to graders. Not shown to students.
    * @type {string}
    * @memberof Assignment
@@ -6623,6 +6629,12 @@ export interface PatchedAssignment {
    */
   aiSystemPrompt?: string;
   /**
+   * Per-assignment override of the submission-summary system prompt. Placeholders: {assignment_name}, {assignment_description}, {test_results}, {rubric}, {description_comparison}. Blank uses the global default.
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  aiSummaryPrompt?: string;
+  /**
    * AI-generated description of the assignment used as context for AI grading features. Editable by course admins, visible to graders. Not shown to students.
    * @type {string}
    * @memberof PatchedAssignment
@@ -10276,27 +10288,33 @@ export interface PromptFeedback {
 /**
  *
  * @export
- * @interface PromptTypesList200ResponseInner
+ * @interface PromptType
  */
-export interface PromptTypesList200ResponseInner {
+export interface PromptType {
   /**
    *
    * @type {string}
-   * @memberof PromptTypesList200ResponseInner
+   * @memberof PromptType
    */
-  key?: string;
+  key: string;
   /**
    *
    * @type {string}
-   * @memberof PromptTypesList200ResponseInner
+   * @memberof PromptType
    */
-  label?: string;
+  label: string;
   /**
    *
    * @type {string}
-   * @memberof PromptTypesList200ResponseInner
+   * @memberof PromptType
    */
-  description?: string;
+  description: string;
+  /**
+   *
+   * @type {Array<PromptVariable>}
+   * @memberof PromptType
+   */
+  placeholders: Array<PromptVariable>;
 }
 /**
  *
