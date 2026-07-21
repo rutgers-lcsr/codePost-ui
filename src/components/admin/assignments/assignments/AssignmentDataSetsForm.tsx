@@ -177,10 +177,10 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   const openSplitModal = (dataset: AssignmentDataSetType) => {
     setSplittingDataset(dataset);
     splitForm.resetFields();
-    splitForm.setFieldsValue({ rowsPerChunk: 50, hasHeader: true });
+    splitForm.setFieldsValue({ rowsPerChunk: 50, hasHeader: true, replace: false });
   };
 
-  const handleSplit = async (values: { rowsPerChunk: number; hasHeader: boolean }) => {
+  const handleSplit = async (values: { rowsPerChunk: number; hasHeader: boolean; replace?: boolean }) => {
     if (!splittingDataset) return;
     setSplitting(true);
     try {
@@ -189,6 +189,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         assignmentDataSetsSplitIntoVariantsCreateRequest: {
           rowsPerChunk: values.rowsPerChunk,
           hasHeader: values.hasHeader,
+          replace: values.replace ?? false,
         },
       });
       message.success(`Created ${created.length} per-student variants from "${splittingDataset.name}".`);
@@ -516,6 +517,14 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             extra="The header row is repeated at the top of every generated variant."
           >
             <Switch checkedChildren="Yes" unCheckedChildren="No" />
+          </Form.Item>
+          <Form.Item
+            name="replace"
+            label="Replace existing variants"
+            valuePropName="checked"
+            extra="Deletes this file's previous variants first so you can regenerate. This resets every student's variant assignment — anyone already assigned will be given a new one on next access."
+          >
+            <Switch checkedChildren="Replace" unCheckedChildren="Keep" />
           </Form.Item>
         </Form>
       </Modal>

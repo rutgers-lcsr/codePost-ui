@@ -39,6 +39,7 @@ export const quizKeys = {
       : (['quizzes', 'attempts', quizId, needsGrading] as const),
   results: (quizId: number) => ['quizzes', 'results', quizId] as const,
   promptVariables: (quizId: number) => ['quizzes', 'promptVariables', quizId] as const,
+  promptTemplates: (quizId: number) => ['quizzes', 'promptTemplates', quizId] as const,
   generatedSets: (quizId: number) => ['quizzes', 'generatedSets', quizId] as const,
   backfillPreview: (quizId: number) => ['quizzes', 'backfillPreview', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,

@@ -4,15 +4,16 @@ A per-student generation config on a quiz: an instructor-authored prompt templat
 
 ## Properties
 
-| Name                | Type   |
-| ------------------- | ------ |
-| `id`                | number |
-| `quiz`              | number |
-| `name`              | string |
-| `systemPrompt`      | string |
-| `numQuestions`      | number |
-| `pointsPerQuestion` | number |
-| `questionTypes`     | any    |
-| `sortKey`           | number |
+| Name                       | Type   |
+| -------------------------- | ------ |
+| `id`                       | number |
+| `quiz`                     | number |
+| `name`                     | string |
+| `systemPrompt`             | string |
+| `numQuestions`             | number |
+| `pointsPerQuestion`        | number |
+| `questionTypes`            | any    |
+| `sortKey`                  | number |
+| `datasetTruncationWarning` | string |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

@@ -8,8 +8,8 @@ import { quizKeys } from '../../../lib/queryKeys';
 import { getCourseAISettings } from '../../../utils/aiService';
 import {
   BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
-  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, Section, StaffQuizAttempt,
-  SuggestedQuizQuestion,
+  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, QuizSectionTemplate, Section,
+  StaffQuizAttempt, SuggestedQuizQuestion,
 } from '../../../api-client';
 
 /** The course's sections, for staff viewers — feeds the section filters in quiz grading
@@ -121,6 +121,15 @@ export const usePromptVariables = (quizId: number | undefined) =>
   useQuery({
     queryKey: quizKeys.promptVariables(quizId ?? -1),
     queryFn: (): Promise<PromptVariable[]> => quizzesApi.promptVariablesList({ id: quizId! }),
+    enabled: !!quizId,
+  });
+
+/** Starter templates for a quiz's AI-generated section prompts
+ *  (`quizzes/{id}/promptTemplates/`) — feeds the "start from a template" picker. */
+export const usePromptTemplates = (quizId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.promptTemplates(quizId ?? -1),
+    queryFn: (): Promise<QuizSectionTemplate[]> => quizzesApi.promptTemplatesList({ id: quizId! }),
     enabled: !!quizId,
   });
 

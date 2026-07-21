@@ -2,9 +2,9 @@
 //
 // Staff manual-grading e2e, driven against the seeded `QT · Essay · manual grading` quiz
 // (unlimited attempts, so this spec never starves the quiz-taking spec). The student
-// submits an essay, the instructor grades / reopens / regrades it in the admin grading
-// drawer, checks the Results tab, and the student sees the official score on their card.
-// Instructor auth comes from the instructor storageState written by global.setup.ts.
+// submits an essay, the instructor grades / reopens / regrades it in the focused grader
+// (Grade tab), checks the Overview → Results / Item analysis, and the student sees the
+// official score on their card. Instructor auth comes from the instructor storageState.
 import { test, expect, type Page } from '@playwright/test';
 import { COURSE_NAME, COURSE_PERIOD } from './constants';
 import { courseUrl, openQuiz, submitQuiz } from './helpers';
@@ -37,7 +37,8 @@ test.describe('staff quiz grading', () => {
     // The quiz page's Grading tab shows the needs-grading count in its label.
     await ipage.getByRole('tab', { name: /Grading \(\d+\)/ }).click();
 
-    // Attempts tab (needs-grading only, on by default) lists the pending attempt.
+    // Grade tab: the queue (needs-grading only, by default) lists the pending attempt; open
+    // it into the focused grader.
     await ipage.getByTestId('grading-open-attempt').first().click();
     await expect(ipage.getByTestId('grading-attempt-score')).toBeVisible();
 
@@ -64,15 +65,16 @@ test.describe('staff quiz grading', () => {
     await ipage.getByTestId('grade-save').click();
     await expect(ipage.getByTestId('grading-attempt-score')).toContainText(/4\.50? \/ 5/);
 
-    // ── Results tab: official score row + CSV export enabled ───────────────
-    await ipage.getByRole('button', { name: 'All attempts' }).click();
+    // ── Overview → Results: official score row + CSV export enabled ────────
+    await ipage.getByTestId('grading-back').click();
+    await ipage.getByRole('tab', { name: 'Overview' }).click();
     await ipage.getByRole('tab', { name: 'Results' }).click();
     const row = ipage.getByTestId('results-table').locator('tr', { hasText: 'student_only@dev.edu' });
     await expect(row.getByTestId('result-score')).toHaveText('4.5 / 5');
     await expect(row.getByText('Passed')).toBeVisible();
     await expect(ipage.getByTestId('results-export')).toBeEnabled();
 
-    // ── Item analysis tab: shows the essay averaging 90% ───────────────────
+    // ── Overview → Item analysis: shows the essay averaging 90% ────────────
     await ipage.getByRole('tab', { name: 'Item analysis' }).click();
     const statRow = ipage
       .getByTestId('question-stats-table')

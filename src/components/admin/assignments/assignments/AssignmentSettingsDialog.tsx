@@ -29,12 +29,13 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-import { PromptVariable, Section } from '../../../../api-client';
+import { PromptTemplate, PromptVariable, Section } from '../../../../api-client';
 import { Assignment } from '../../../../types/common';
 import TemplateTextArea from '../../../core/TemplateTextArea';
+import PromptTemplatePicker from '../../../core/PromptTemplatePicker';
 import InputNumberMultiple from '../../settings/InputNumberMultiple';
 
-import ReactMarkdown from 'react-markdown';
+import MarkdownField from '../../quizzes/MarkdownField';
 import AssignmentDataSetsForm from './AssignmentDataSetsForm';
 import StudentDataSetAssignmentsPanel from './StudentDataSetAssignmentsPanel';
 import AssignmentFilesForm from './AssignmentFilesForm';
@@ -340,20 +341,22 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   } = props;
 
   const [templates, setTemplates] = React.useState<AssignmentFileType[]>(initialAssignmentFiles);
-  const [explanationPreview, setExplanationPreview] = React.useState(false);
-  const [explanation, setExplanation] = React.useState(assignment.explanation);
   const [isGeneratingDescription, setIsGeneratingDescription] = React.useState(false);
   const [aiDescriptionEnabled, setAiDescriptionEnabled] = React.useState(true);
-  // Insertable {variables} for the comment / summary prompt editors, keyed by prompt type.
+  // Insertable {variables} and starter templates for the comment / summary prompt editors.
   const [commentVars, setCommentVars] = React.useState<PromptVariable[]>([]);
   const [summaryVars, setSummaryVars] = React.useState<PromptVariable[]>([]);
+  const [commentTemplates, setCommentTemplates] = React.useState<PromptTemplate[]>([]);
+  const [summaryTemplates, setSummaryTemplates] = React.useState<PromptTemplate[]>([]);
   React.useEffect(() => {
     promptTypesApi
       .list()
       .then((types) => {
-        const byKey = Object.fromEntries(types.map((t) => [t.key, t.placeholders]));
-        setCommentVars(byKey['comment_generation'] ?? []);
-        setSummaryVars(byKey['submission_summary'] ?? []);
+        const byKey = Object.fromEntries(types.map((t) => [t.key, t]));
+        setCommentVars(byKey['comment_generation']?.placeholders ?? []);
+        setSummaryVars(byKey['submission_summary']?.placeholders ?? []);
+        setCommentTemplates(byKey['comment_generation']?.templates ?? []);
+        setSummaryTemplates(byKey['submission_summary']?.templates ?? []);
       })
       .catch(() => {
         /* Leave the dropdowns empty — the editor still works as a plain textarea. */
@@ -404,9 +407,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
   // Sync state when assignment changes or modal opens
   React.useEffect(() => {
     if (open) {
-      setExplanation(assignment.explanation);
-      setExplanationPreview(false);
-
       form.setFieldsValue({
         name: assignment.name,
         points: assignment.points,
@@ -572,28 +572,17 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                   <Form.Item
                     name="explanation"
                     label="Explanation"
-                    extra={
-                      <div>
-                        Description of the assignment, visible to students. Preview:{' '}
-                        <Checkbox
-                          checked={explanationPreview}
-                          onChange={() => setExplanationPreview(!explanationPreview)}
-                        />
-                      </div>
-                    }
+                    extra="Description of the assignment, visible to students."
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 20 }}
-                    initialValue={explanation}
+                    initialValue={assignment.explanation}
                   >
-                    {explanationPreview ? (
-                      <ReactMarkdown>{explanation}</ReactMarkdown>
-                    ) : (
-                      <Input.TextArea
-                        placeholder="Type text or Markdown"
-                        onChange={(e) => setExplanation(e.target.value)}
-                        rows={6}
-                      />
-                    )}
+                    <MarkdownField
+                      courseId={assignment.course}
+                      minRows={6}
+                      ariaLabel="Assignment explanation"
+                      placeholder="Type text or Markdown"
+                    />
                   </Form.Item>
                   {sections.length > 0 ? (
                     <Form.Item
@@ -1083,6 +1072,14 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         forceRender: true,
                         children: (
                           <div style={{ paddingTop: 16 }}>
+                            <div style={{ marginBottom: 16, maxWidth: 480 }}>
+                              <PromptTemplatePicker
+                                label="Start from a template"
+                                templates={commentTemplates}
+                                onSelect={(t) => form.setFieldsValue({ aiSystemPrompt: t.text })}
+                                testId="comment-prompt-template"
+                              />
+                            </div>
                             <Form.Item
                               name="aiSystemPrompt"
                               label="System Prompt"
@@ -1132,6 +1129,14 @@ Context:
                         forceRender: true,
                         children: (
                           <div style={{ paddingTop: 16 }}>
+                            <div style={{ marginBottom: 16, maxWidth: 480 }}>
+                              <PromptTemplatePicker
+                                label="Start from a template"
+                                templates={summaryTemplates}
+                                onSelect={(t) => form.setFieldsValue({ aiSummaryPrompt: t.text })}
+                                testId="summary-prompt-template"
+                              />
+                            </div>
                             <Form.Item
                               name="aiSummaryPrompt"
                               label="Summary Prompt"

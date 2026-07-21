@@ -595,7 +595,7 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  POST /assignmentDataSets/{id}/splitIntoVariants/
+   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  Pass replace=true to regenerate in place: prior auto-generated variants of this master are deleted first (which resets every student\'s variant assignment) instead of erroring on the name collision.  POST /assignmentDataSets/{id}/splitIntoVariants/
    */
   async splitIntoVariantsCreateRaw(
     requestParameters: SplitIntoVariantsCreateRequest,
@@ -647,7 +647,7 @@ export class AssignmentDataSetsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  POST /assignmentDataSets/{id}/splitIntoVariants/
+   * Split this dataset\'s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop.  Pass replace=true to regenerate in place: prior auto-generated variants of this master are deleted first (which resets every student\'s variant assignment) instead of erroring on the name collision.  POST /assignmentDataSets/{id}/splitIntoVariants/
    */
   async splitIntoVariantsCreate(
     requestParameters: SplitIntoVariantsCreateRequest,

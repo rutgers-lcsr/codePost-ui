@@ -20,8 +20,10 @@
 | `shuffleQuestions`          | boolean                                                               |
 | `oneQuestionAtATime`        | boolean                                                               |
 | `allowBacktracking`         | boolean                                                               |
-| `showCorrectAnswers`        | [QuizShowAnswersEnum](QuizShowAnswersEnum.md)                         |
+| `showCorrectAnswers`        | boolean                                                               |
+| `sealResultsUntilClose`     | boolean                                                               |
 | `showResponses`             | boolean                                                               |
+| `allowSubmissionReview`     | boolean                                                               |
 | `passingScore`              | number                                                                |
 | `passingScoreUnit`          | [QuizPassingScoreUnitEnum](QuizPassingScoreUnitEnum.md)               |
 | `scoringPolicy`             | [QuizScoringPolicyEnum](QuizScoringPolicyEnum.md)                     |

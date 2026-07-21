@@ -3,31 +3,20 @@ import * as React from 'react';
 import { Alert, Form, Input, InputNumber, Modal, Select, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import { quizGeneratedSectionsApi } from '../../../api-client/clients';
-import { QuizGeneratedSection } from '../../../api-client';
+import { QuizGeneratedSection, QuizSectionTemplate } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import TemplateTextArea from '../../core/TemplateTextArea';
-import { useBackfillPreview, usePromptVariables } from './queries';
+import PromptTemplatePicker from '../../core/PromptTemplatePicker';
+import { useBackfillPreview, usePromptTemplates, usePromptVariables } from './queries';
 import { TYPE_META } from '../../core/questionMeta';
-import { SAMPLE_ROWS_TOKEN, SECTION_PROMPT_PRESETS } from './sectionPromptPresets';
 
 const DEFAULT_SAMPLE_ROWS = 5;
+// Client-only token in starter templates (see core/prompts/quiz_section_templates.py),
+// substituted with the instructor's chosen sample size before the prompt is applied.
+const SAMPLE_ROWS_TOKEN = '<<SAMPLE_ROWS>>';
 
 const { Text } = Typography;
-
-// Seed for new sections. Only what the prompt references is sent to the model, so the
-// default explicitly attaches the student's submission and test results.
-const DEFAULT_SECTION_PROMPT = `Ask questions that check this student understands the code they submitted — its structure, its behavior, and the decisions they made.
-
-Their submission:
-{submission_files}
-
-Their autograder results:
-{submission_test_results}`;
-
-// Standalone quizzes have no assignment/submission to reference — questions come from
-// the prompt alone and generate for every enrolled student as soon as the section saves.
-const DEFAULT_STANDALONE_PROMPT = `Ask {num_questions} questions that check the student understands the topics this quiz covers. Vary the questions between students.`;
 
 interface IProps {
   open: boolean;
@@ -52,6 +41,7 @@ interface ISectionForm {
 const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attached, section, nextSortKey, onClose }) => {
   const queryClient = useQueryClient();
   const { data: variables = [] } = usePromptVariables(open ? quizId : undefined);
+  const { data: templates = [] } = usePromptTemplates(open ? quizId : undefined);
   const [form] = Form.useForm<ISectionForm>();
   const [saving, setSaving] = React.useState(false);
   // "Start from a template" (create only): which starter preset is active, and — for
@@ -61,15 +51,13 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
   // changes are harmless no-ops (nothing re-applies without picking a preset again).
   const [presetKey, setPresetKey] = React.useState<string | null>(null);
   const [sampleRows, setSampleRows] = React.useState<number>(DEFAULT_SAMPLE_ROWS);
-  const selectedPreset = SECTION_PROMPT_PRESETS.find((p) => p.key === presetKey) ?? null;
-  const showSampleRows = !!selectedPreset?.prompt.includes(SAMPLE_ROWS_TOKEN);
+  const selectedTemplate = templates.find((t) => t.key === presetKey) ?? null;
+  const showSampleRows = !!selectedTemplate?.text.includes(SAMPLE_ROWS_TOKEN);
 
-  const applyPreset = (key: string, rows: number) => {
-    const preset = SECTION_PROMPT_PRESETS.find((p) => p.key === key);
-    if (!preset) return;
+  const applyTemplate = (template: QuizSectionTemplate, rows: number) => {
     form.setFieldsValue({
-      systemPrompt: preset.prompt.split(SAMPLE_ROWS_TOKEN).join(String(rows)),
-      ...(preset.questionTypes ? { questionTypes: preset.questionTypes } : {}),
+      systemPrompt: template.text.split(SAMPLE_ROWS_TOKEN).join(String(rows)),
+      ...(template.questionTypes.length ? { questionTypes: template.questionTypes } : {}),
     });
   };
 
@@ -90,14 +78,20 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({
-        numQuestions: 3, pointsPerQuestion: 1, questionTypes: [],
-        systemPrompt: attached ? DEFAULT_SECTION_PROMPT : DEFAULT_STANDALONE_PROMPT,
-      });
+      form.setFieldsValue({ numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
       setPresetKey(null);
       setSampleRows(DEFAULT_SAMPLE_ROWS);
     }
-  }, [open, section, form, attached]);
+  }, [open, section, form]);
+
+  // Seed a NEW section's prompt with the backend "basic" starter once templates load, without
+  // clobbering anything the instructor has already typed or picked.
+  React.useEffect(() => {
+    if (!open || section) return;
+    if (form.getFieldValue('systemPrompt')) return;
+    const basic = templates.find((t) => t.key === (attached ? 'basic-attached' : 'basic-standalone'));
+    if (basic) form.setFieldsValue({ systemPrompt: basic.text });
+  }, [open, section, attached, templates, form]);
 
   const handleSave = async () => {
     const values = await form.validateFields();
@@ -192,41 +186,34 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
           data-testid="backfill-notice"
         />
       )}
+      {section?.datasetTruncationWarning && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginTop: 12 }}
+          title={section.datasetTruncationWarning}
+          data-testid="dataset-truncation-warning"
+        />
+      )}
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
         <Form.Item name="name" label="Label (optional)" extra="Shown to students on each generated question.">
           <Input placeholder="e.g., About your solution" maxLength={128} />
         </Form.Item>
-        {!section && attached && (
+        {!section && (
           <Form.Item label="Start from a template (optional)">
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Select
-                allowClear
-                placeholder="Choose a starter prompt…"
-                style={{ minWidth: 280, flex: '1 1 280px' }}
-                value={presetKey ?? undefined}
-                onChange={(key: string | undefined) => {
-                  setPresetKey(key ?? null);
-                  if (key) applyPreset(key, sampleRows);
-                }}
-                options={SECTION_PROMPT_PRESETS.map((p) => ({
-                  value: p.key,
-                  label: p.label,
-                }))}
-                optionRender={(option) => {
-                  const preset = SECTION_PROMPT_PRESETS.find((p) => p.key === option.value);
-                  return (
-                    <div>
-                      <div>{option.label}</div>
-                      {preset && (
-                        <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'normal' }}>
-                          {preset.description}
-                        </Text>
-                      )}
-                    </div>
-                  );
-                }}
-                data-testid="section-prompt-preset"
-              />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <div style={{ minWidth: 280, flex: '1 1 280px' }}>
+                <PromptTemplatePicker
+                  templates={templates.filter((t) => attached || !t.attachedOnly)}
+                  value={presetKey}
+                  onSelect={(t) => {
+                    setPresetKey(t.key);
+                    applyTemplate(t, sampleRows);
+                  }}
+                  onClear={() => setPresetKey(null)}
+                  testId="section-prompt-preset"
+                />
+              </div>
               {showSampleRows && (
                 <InputNumber
                   min={3}
@@ -238,7 +225,7 @@ const GeneratedSectionModal: React.FC<IProps> = ({ open, courseId, quizId, attac
                   onChange={(v) => {
                     const rows = v ?? DEFAULT_SAMPLE_ROWS;
                     setSampleRows(rows);
-                    if (presetKey) applyPreset(presetKey, rows);
+                    if (selectedTemplate) applyTemplate(selectedTemplate, rows);
                   }}
                   data-testid="section-prompt-sample-rows"
                 />

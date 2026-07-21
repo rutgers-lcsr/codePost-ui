@@ -60,6 +60,7 @@ import {
   type VariantStatus,
 } from '../../services/promptLab';
 import TemplateTextArea from '../core/TemplateTextArea';
+import PromptTemplatePicker from '../core/PromptTemplatePicker';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -1171,6 +1172,14 @@ const PromptLab: React.FC = () => {
                   { value: 'candidate', label: 'Candidate' },
                   { value: 'retired', label: 'Retired' },
                 ]}
+              />
+            </div>
+            <div>
+              <PromptTemplatePicker
+                label="Start from a template"
+                templates={promptTypesRaw?.find((t) => t.key === editingVariant.promptType)?.templates ?? []}
+                onSelect={(t) => setEditingVariant((prev) => ({ ...prev!, text: t.text }))}
+                testId="prompt-lab-template"
               />
             </div>
             <div>

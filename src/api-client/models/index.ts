@@ -1465,6 +1465,12 @@ export interface AssignmentDataSetsSplitIntoVariantsCreateRequest {
    * @memberof AssignmentDataSetsSplitIntoVariantsCreateRequest
    */
   hasHeader?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AssignmentDataSetsSplitIntoVariantsCreateRequest
+   */
+  replace?: boolean;
 }
 /**
  * Serializer for assignment deadline data used by the deploy calendar.
@@ -8519,21 +8525,29 @@ export interface PatchedQuiz {
    */
   allowBacktracking?: boolean;
   /**
-   * When students may see the correct answers.
-   *
-   * * `never` - Never
-   * * `after_submit` - After submitting
-   * * `after_close` - After the quiz closes
-   * @type {QuizShowAnswersEnum}
+   * Whether the correct-answer key is shown when a student reviews a submitted attempt. Reveal timing follows sealResultsUntilClose.
+   * @type {boolean}
    * @memberof PatchedQuiz
    */
-  showCorrectAnswers?: QuizShowAnswersEnum;
+  showCorrectAnswers?: boolean;
+  /**
+   * Hold scores, per-question points, and the answer key until the quiz closes for the student. When false, results release as soon as an attempt is submitted. Stops students with attempts remaining from mining the key.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  sealResultsUntilClose?: boolean;
   /**
    * Whether students may review their questions and answers after submitting. When false, students only see scores (per the reveal policy) — the question content is never shown again after submission.
    * @type {boolean}
    * @memberof PatchedQuiz
    */
   showResponses?: boolean;
+  /**
+   * Whether students may reopen and review a submitted attempt afterward. When false, submitting shows a confirmation only — the past attempt cannot be reopened (scores may still surface on the quiz card per the reveal policy).
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  allowSubmissionReview?: boolean;
   /**
    * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
    * @type {number}
@@ -8703,6 +8717,14 @@ export interface PatchedQuizGeneratedSection {
    * @memberof PatchedQuizGeneratedSection
    */
   sortKey?: number;
+  /**
+   * Non-blocking authoring hint: if the prompt pulls in {student_dataset} and any active
+   * variant is larger than the prompt cap, the model won't see the whole file. Returns a
+   * message or None. Uses file size (bytes) as a proxy for character length.
+   * @type {string}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  readonly datasetTruncationWarning?: string | null;
 }
 /**
  * Read-only view of a QTI / Common Cartridge import job (for status polling).
@@ -10436,6 +10458,37 @@ export interface PromptFeedback {
 /**
  *
  * @export
+ * @interface PromptTemplate
+ */
+export interface PromptTemplate {
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTemplate
+   */
+  key: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTemplate
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTemplate
+   */
+  description: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PromptTemplate
+   */
+  text: string;
+}
+/**
+ *
+ * @export
  * @interface PromptType
  */
 export interface PromptType {
@@ -10463,6 +10516,12 @@ export interface PromptType {
    * @memberof PromptType
    */
   placeholders: Array<PromptVariable>;
+  /**
+   *
+   * @type {Array<PromptTemplate>}
+   * @memberof PromptType
+   */
+  templates: Array<PromptTemplate>;
 }
 /**
  *
@@ -10884,21 +10943,29 @@ export interface Quiz {
    */
   allowBacktracking?: boolean;
   /**
-   * When students may see the correct answers.
-   *
-   * * `never` - Never
-   * * `after_submit` - After submitting
-   * * `after_close` - After the quiz closes
-   * @type {QuizShowAnswersEnum}
+   * Whether the correct-answer key is shown when a student reviews a submitted attempt. Reveal timing follows sealResultsUntilClose.
+   * @type {boolean}
    * @memberof Quiz
    */
-  showCorrectAnswers?: QuizShowAnswersEnum;
+  showCorrectAnswers?: boolean;
+  /**
+   * Hold scores, per-question points, and the answer key until the quiz closes for the student. When false, results release as soon as an attempt is submitted. Stops students with attempts remaining from mining the key.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  sealResultsUntilClose?: boolean;
   /**
    * Whether students may review their questions and answers after submitting. When false, students only see scores (per the reveal policy) — the question content is never shown again after submission.
    * @type {boolean}
    * @memberof Quiz
    */
   showResponses?: boolean;
+  /**
+   * Whether students may reopen and review a submitted attempt afterward. When false, submitting shows a confirmation only — the past attempt cannot be reopened (scores may still surface on the quiz card per the reveal policy).
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  allowSubmissionReview?: boolean;
   /**
    * Optional pass threshold. Interpreted per passingScoreUnit (a percentage 0–100, or an absolute point value).
    * @type {number}
@@ -11132,6 +11199,14 @@ export interface QuizGeneratedSection {
    * @memberof QuizGeneratedSection
    */
   sortKey?: number;
+  /**
+   * Non-blocking authoring hint: if the prompt pulls in {student_dataset} and any active
+   * variant is larger than the prompt cap, the model won't see the whole file. Returns a
+   * message or None. Uses file size (bytes) as a proxy for character length.
+   * @type {string}
+   * @memberof QuizGeneratedSection
+   */
+  readonly datasetTruncationWarning: string | null;
 }
 /**
  * Read view of an uploaded description image. ``url`` is the public, token-based
@@ -11442,18 +11517,48 @@ export enum QuizScoringPolicyEnum {
 }
 
 /**
- * * `never` - Never
- * * `after_submit` - After submitting
- * * `after_close` - After the quiz closes
+ *
  * @export
- * @enum {string}
+ * @interface QuizSectionTemplate
  */
-export enum QuizShowAnswersEnum {
-  Never = 'never',
-  AfterSubmit = 'after_submit',
-  AfterClose = 'after_close',
+export interface QuizSectionTemplate {
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSectionTemplate
+   */
+  key: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSectionTemplate
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSectionTemplate
+   */
+  description: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizSectionTemplate
+   */
+  attachedOnly: boolean;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof QuizSectionTemplate
+   */
+  questionTypes: Array<string>;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSectionTemplate
+   */
+  text: string;
 }
-
 /**
  * * `manual` - Manually authored
  * * `imported` - Imported
@@ -11956,6 +12061,18 @@ export interface StaffQuizAttempt {
    */
   quiz: number;
   /**
+   *
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  readonly title: string;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizAttempt
+   */
+  readonly description: string;
+  /**
    * 1-based attempt index for this (quiz, student).
    * @type {number}
    * @memberof StaffQuizAttempt
@@ -12036,6 +12153,12 @@ export interface StaffQuizAttempt {
    * @memberof StaffQuizAttempt
    */
   readonly showResponses: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly allowSubmissionReview: boolean;
   /**
    *
    * @type {string}
@@ -12420,15 +12543,17 @@ export interface StudentQuiz {
    */
   passingScoreUnit?: QuizPassingScoreUnitEnum;
   /**
-   * When students may see the correct answers.
-   *
-   * * `never` - Never
-   * * `after_submit` - After submitting
-   * * `after_close` - After the quiz closes
-   * @type {QuizShowAnswersEnum}
+   * Whether the correct-answer key is shown when a student reviews a submitted attempt. Reveal timing follows sealResultsUntilClose.
+   * @type {boolean}
    * @memberof StudentQuiz
    */
-  showCorrectAnswers?: QuizShowAnswersEnum;
+  showCorrectAnswers?: boolean;
+  /**
+   * Whether students may reopen and review a submitted attempt afterward. When false, submitting shows a confirmation only — the past attempt cannot be reopened (scores may still surface on the quiz card per the reveal policy).
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  allowSubmissionReview?: boolean;
   /**
    *
    * @type {number}
@@ -12510,6 +12635,18 @@ export interface StudentQuizAttempt {
    */
   quiz: number;
   /**
+   *
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  readonly title: string;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentQuizAttempt
+   */
+  readonly description: string;
+  /**
    * 1-based attempt index for this (quiz, student).
    * @type {number}
    * @memberof StudentQuizAttempt
@@ -12590,6 +12727,12 @@ export interface StudentQuizAttempt {
    * @memberof StudentQuizAttempt
    */
   readonly showResponses: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly allowSubmissionReview: boolean;
   /**
    *
    * @type {string}

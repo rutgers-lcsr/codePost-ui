@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Card, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
+import { Alert, Card, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -8,12 +8,12 @@ import { quizzesApi } from '../../../api-client/clients';
 import {
   Quiz,
   QuizAssignmentTriggerEnum,
-  QuizShowAnswersEnum,
   QuizPassingScoreUnitEnum,
   QuizCloseEventEnum,
   QuizScoringPolicyEnum,
 } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
+import { quizSettingsWarnings } from './quizSettingsWarnings';
 import { quizKeys } from '../../../lib/queryKeys';
 import MarkdownField from './MarkdownField';
 
@@ -109,7 +109,6 @@ const Section: React.FC<{ title: string; hint?: string; first?: boolean; childre
 );
 
 const TRIGGER_DEFAULT = QuizAssignmentTriggerEnum.During;
-const SHOW_DEFAULT = QuizShowAnswersEnum.AfterSubmit;
 const CLOSE_DEFAULT = QuizCloseEventEnum.None;
 const UNIT_DEFAULT = QuizPassingScoreUnitEnum.Percent;
 
@@ -129,8 +128,10 @@ const settingsOf = (q: Quiz) => ({
   shuffleQuestions: q.shuffleQuestions ?? false,
   oneQuestionAtATime: q.oneQuestionAtATime ?? false,
   allowBacktracking: q.allowBacktracking ?? true,
-  showCorrectAnswers: q.showCorrectAnswers || SHOW_DEFAULT,
+  showCorrectAnswers: q.showCorrectAnswers ?? true,
+  sealResultsUntilClose: q.sealResultsUntilClose ?? false,
   showResponses: q.showResponses ?? true,
+  allowSubmissionReview: q.allowSubmissionReview ?? true,
   scoringPolicy: q.scoringPolicy || QuizScoringPolicyEnum.Highest,
   passingScore: q.passingScore ?? null,
   passingScoreUnit: q.passingScoreUnit || UNIT_DEFAULT,
@@ -183,6 +184,9 @@ const QuizSettingsCard: React.FC<IProps> = ({
   const settings: QuizSettings = { ...saved, ...draft, closeOffsetMinutes: offsetValue * UNIT_FACTOR[offsetUnit] };
   const dirty = (Object.keys(settings) as Array<keyof QuizSettings>).some((k) => settings[k] !== saved[k]);
 
+  // Live configuration warnings/tips (e.g. results held until a close that never happens).
+  const warnings = quizSettingsWarnings(settings);
+
   const patch = onDraftChange;
 
   // A degenerate close (anchor == open moment) needs a positive offset, so seed one.
@@ -230,7 +234,9 @@ const QuizSettingsCard: React.FC<IProps> = ({
           oneQuestionAtATime: settings.oneQuestionAtATime,
           allowBacktracking: settings.allowBacktracking,
           showCorrectAnswers: settings.showCorrectAnswers,
+          sealResultsUntilClose: settings.sealResultsUntilClose,
           showResponses: settings.showResponses,
+          allowSubmissionReview: settings.allowSubmissionReview,
           scoringPolicy: settings.scoringPolicy,
           passingScore: settings.passingScore,
           passingScoreUnit: settings.passingScoreUnit,
@@ -263,6 +269,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
           await handleSave({ isPublished: true });
         },
       });
+      // Wait for the confirm — don't publish the draft immediately (else "Not now" still flips it).
+      return;
     }
     patch({ isPublished: checked });
   };
@@ -290,6 +298,13 @@ const QuizSettingsCard: React.FC<IProps> = ({
       style={{ marginBottom: 16 }}
     >
       <Flex vertical gap={12}>
+        {warnings.length > 0 && (
+          <Flex vertical gap={8} data-testid="quiz-settings-warnings">
+            {warnings.map((w) => (
+              <Alert key={w.key} type={w.level} showIcon message={w.text} data-testid={`quiz-warning-${w.key}`} />
+            ))}
+          </Flex>
+        )}
         <Section first title="Basics">
           <Flex vertical gap={12}>
             <div>
@@ -572,28 +587,44 @@ const QuizSettingsCard: React.FC<IProps> = ({
         </Section>
 
         <Section title="After submission" hint="What students see about their results once they turn in an attempt.">
-          <Flex gap={16} wrap align="start">
-            <div>
-              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                Show correct answers
+          {/* Score-release timing is independent of reopening — it also gates the card score. */}
+          <div style={{ marginBottom: 16 }}>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+              When results are released
+            </Text>
+            <Select
+              aria-label="When results are released"
+              style={{ width: 220 }}
+              value={settings.sealResultsUntilClose ? 'after_close' : 'immediately'}
+              onChange={(v) => patch({ sealResultsUntilClose: v === 'after_close' })}
+              options={[
+                { value: 'immediately', label: 'As soon as they submit' },
+                { value: 'after_close', label: 'After the quiz closes' },
+              ]}
+            />
+            {settings.sealResultsUntilClose && (
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 320 }}>
+                Scores, points, and the answer key stay hidden — on the quiz card and on review —
+                until the quiz closes for the student.
               </Text>
-              <Select
-                aria-label="Show correct answers"
-                style={{ width: 180 }}
-                value={settings.showCorrectAnswers}
-                onChange={(v) => patch({ showCorrectAnswers: v })}
-                options={[
-                  { value: QuizShowAnswersEnum.Never, label: 'Never' },
-                  { value: QuizShowAnswersEnum.AfterSubmit, label: 'After submitting' },
-                  { value: QuizShowAnswersEnum.AfterClose, label: 'After the quiz closes' },
-                ]}
-              />
-              {settings.showCorrectAnswers === QuizShowAnswersEnum.AfterClose && (
-                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 180 }}>
-                  Scores and results also stay hidden until the quiz closes.
-                </Text>
-              )}
-            </div>
+            )}
+          </div>
+
+          <Space style={{ marginBottom: 12 }}>
+            <Switch
+              aria-label="Let students reopen submitted attempts"
+              checked={settings.allowSubmissionReview}
+              onChange={(v) => patch({ allowSubmissionReview: v })}
+            />
+            <Text>Let students reopen submitted attempts</Text>
+          </Space>
+          {!settings.allowSubmissionReview && (
+            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12, maxWidth: 400 }}>
+              Students get a submission confirmation only — they can't reopen a submitted attempt.
+              Their score still appears on the quiz card once results are released.
+            </Text>
+          )}
+          <Flex gap={16} wrap align="start">
             <div>
               <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
                 Results students see
@@ -601,6 +632,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
               <Select
                 aria-label="Results students see after submitting"
                 style={{ width: 200 }}
+                disabled={!settings.allowSubmissionReview}
                 value={settings.showResponses ? 'full' : 'scores'}
                 onChange={(v) => patch({ showResponses: v === 'full' })}
                 options={[
@@ -608,9 +640,32 @@ const QuizSettingsCard: React.FC<IProps> = ({
                   { value: 'scores', label: 'Scores only' },
                 ]}
               />
-              {!settings.showResponses && (
+              {settings.allowSubmissionReview && !settings.showResponses && (
                 <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 200 }}>
-                  After submitting, students see their score but not the questions or their answers.
+                  On review, students see their score but not the questions or their answers.
+                </Text>
+              )}
+            </div>
+            <div>
+              <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                Show correct answers
+              </Text>
+              <Space>
+                <Switch
+                  aria-label="Show the correct-answer key on review"
+                  disabled={!settings.allowSubmissionReview || !settings.showResponses}
+                  checked={settings.showCorrectAnswers}
+                  onChange={(v) => patch({ showCorrectAnswers: v })}
+                />
+                <Text type={!settings.allowSubmissionReview || !settings.showResponses ? 'secondary' : undefined}>
+                  Reveal the answer key on review
+                </Text>
+              </Space>
+              {(!settings.allowSubmissionReview || !settings.showResponses) && (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 220 }}>
+                  {!settings.allowSubmissionReview
+                    ? 'Available when students can reopen submissions.'
+                    : 'Available when students see their answers (not “Scores only”).'}
                 </Text>
               )}
             </div>

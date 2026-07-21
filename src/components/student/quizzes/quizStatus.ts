@@ -12,8 +12,10 @@ export const canStart = (quiz: StudentQuiz): boolean => {
 const startLabel = (quiz: StudentQuiz): string => (quiz.attemptsUsed > 0 ? 'New attempt' : 'Start quiz');
 
 /** Whether the student has past submitted attempts to look back at — independent of
- *  whether they can also start another one. */
-export const canReview = (quiz: StudentQuiz): boolean => quiz.hasSubmittedAttempt;
+ *  whether they can also start another one. Gated by the quiz's allowSubmissionReview
+ *  setting: when the instructor disables review, submitted attempts can't be reopened. */
+export const canReview = (quiz: StudentQuiz): boolean =>
+  quiz.hasSubmittedAttempt && quiz.allowSubmissionReview !== false;
 
 export type QuizAction = 'resume' | 'start' | 'review' | 'locked';
 
@@ -22,7 +24,7 @@ export type QuizAction = 'resume' | 'start' | 'review' | 'locked';
 export const quizAction = (quiz: StudentQuiz): QuizAction => {
   if (quiz.hasOpenAttempt) return 'resume';
   if (canStart(quiz)) return 'start';
-  if (quiz.hasSubmittedAttempt) return 'review';
+  if (canReview(quiz)) return 'review';
   return 'locked';
 };
 
@@ -36,7 +38,8 @@ export const quizActionLabel = (quiz: StudentQuiz): string => {
     case 'review':
       return 'Review results';
     default:
-      return quizLockText(quiz.availability?.reason);
+      // A submitted attempt with review disabled is done, not "locked" — say so.
+      return quiz.hasSubmittedAttempt ? 'Submitted' : quizLockText(quiz.availability?.reason);
   }
 };
 

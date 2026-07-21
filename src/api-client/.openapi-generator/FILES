@@ -286,6 +286,7 @@ docs/PromptExperimentStatusEnum.md
 docs/PromptExperimentsApi.md
 docs/PromptFeedback.md
 docs/PromptFeedbackApi.md
+docs/PromptTemplate.md
 docs/PromptType.md
 docs/PromptTypesApi.md
 docs/PromptVariable.md
@@ -319,7 +320,7 @@ docs/QuizQuestionGroupsApi.md
 docs/QuizQuestionsApi.md
 docs/QuizResultRow.md
 docs/QuizScoringPolicyEnum.md
-docs/QuizShowAnswersEnum.md
+docs/QuizSectionTemplate.md
 docs/QuizSourceEnum.md
 docs/QuizzesApi.md
 docs/RegenerateSuggestionRequest.md

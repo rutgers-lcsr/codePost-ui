@@ -556,7 +556,7 @@ example().catch(console.error);
 
 > Array&lt;AssignmentDataSet&gt; splitIntoVariantsCreate(id, assignmentDataSetsSplitIntoVariantsCreateRequest)
 
-Split this dataset\&#39;s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop. POST /assignmentDataSets/{id}/splitIntoVariants/
+Split this dataset\&#39;s file into disjoint row-chunks, one per generated variant, forming a per-student pool (see core.services.dataset_split). The chunk count is driven by rowsPerChunk, not current enrollment, so the pool stays stable as students enroll or drop. Pass replace&#x3D;true to regenerate in place: prior auto-generated variants of this master are deleted first (which resets every student\&#39;s variant assignment) instead of erroring on the name collision. POST /assignmentDataSets/{id}/splitIntoVariants/
 
 ### Example
 

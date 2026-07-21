@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type { PatchedQuizGeneratedSection, QuizGeneratedSection } from '../models/index';
 
 export interface CreateRequest {
-  quizGeneratedSection: Omit<QuizGeneratedSection, 'id'>;
+  quizGeneratedSection: Omit<QuizGeneratedSection, 'id' | 'datasetTruncationWarning'>;
 }
 
 export interface DestroyRequest {
@@ -26,7 +26,7 @@ export interface DestroyRequest {
 
 export interface PartialUpdateRequest {
   id: number;
-  patchedQuizGeneratedSection?: Omit<PatchedQuizGeneratedSection, 'id'>;
+  patchedQuizGeneratedSection?: Omit<PatchedQuizGeneratedSection, 'id' | 'datasetTruncationWarning'>;
 }
 
 export interface RetrieveRequest {
@@ -35,7 +35,7 @@ export interface RetrieveRequest {
 
 export interface UpdateRequest {
   id: number;
-  quizGeneratedSection: Omit<QuizGeneratedSection, 'id'>;
+  quizGeneratedSection: Omit<QuizGeneratedSection, 'id' | 'datasetTruncationWarning'>;
 }
 
 /**

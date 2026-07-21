@@ -1,9 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Flex, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
+import { Flex, Modal, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
+import Markdown from '../../core/Markdown';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
@@ -177,28 +178,48 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
 
   const handleSubmit = React.useCallback(async () => {
     if (!attempt || submitting || attempt.status === 'submitted') return;
-    setSubmitting(true);
+    const attemptId = attempt.id;
     Object.values(timers.current).forEach(clearTimeout);
+
+    // Finalize against the server-persisted answers. Kept separate so a failed pre-flush can
+    // fall back to it rather than trapping the student in a retry loop.
+    const finalize = async () => {
+      setSubmitting(true);
+      try {
+        const done = await quizAttemptsApi.submitCreate({ id: attemptId });
+        applyAttempt(done);
+        onSubmitted?.();
+        queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
+        // Refreshes the attempt-history strip (QuizResults subscribes via useMyAttempts).
+        queryClient.invalidateQueries({ queryKey: studentKeys.quizAttempts(quizId) });
+      } catch (e) {
+        message.error(apiErrorMessage(e) ?? 'Failed to submit your quiz.');
+      } finally {
+        setSubmitting(false);
+      }
+    };
+
+    setSubmitting(true);
     try {
-      // Flush answers with unsaved local edits, then finalize. A failed save must abort the
-      // submit — grading reads the server-side answers, so submitting anyway would silently
-      // drop whatever didn't save. Only unsaved edits are flushed: re-sending an already
-      // persisted earlier answer would trip the server's no-backtracking guard and wrongly
-      // abort the submit (edits to earlier questions can't exist unless backtracking is on).
+      // Flush answers with unsaved local edits first. Only unsaved edits are flushed: re-sending
+      // an already-persisted earlier answer would trip the server's no-backtracking guard.
       const unsaved = Object.entries(unsavedRef.current);
-      await Promise.all(unsaved.map(([responseId, val]) => saveAnswer(attempt.id, Number(responseId), val)));
+      await Promise.all(unsaved.map(([responseId, val]) => saveAnswer(attemptId, Number(responseId), val)));
       unsavedRef.current = {};
-      const done = await quizAttemptsApi.submitCreate({ id: attempt.id });
-      applyAttempt(done);
-      onSubmitted?.();
-      queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
-      // Refreshes the attempt-history strip (QuizResults subscribes via useMyAttempts).
-      queryClient.invalidateQueries({ queryKey: studentKeys.quizAttempts(quizId) });
-    } catch (e) {
-      message.error(apiErrorMessage(e) ?? 'Failed to submit your quiz.');
-    } finally {
+    } catch {
+      // A save failed — don't trap the student. Let them submit with the answers the server
+      // already has (unsaved edits to the current question may be lost).
       setSubmitting(false);
+      Modal.confirm({
+        title: 'Some answers could not be saved',
+        content: 'Submit with your last saved answers? Unsaved edits to the current question may be lost.',
+        okText: 'Submit anyway',
+        cancelText: 'Keep editing',
+        onOk: finalize,
+      });
+      return;
     }
+    await finalize();
   }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId, onSubmitted]);
 
   // Auto-submit when the timer runs out. The countdown is anchored to the server clock
@@ -289,6 +310,23 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     );
   }
 
+  // Review disabled: the student can't reopen the submission, so land on a confirmation
+  // rather than the results/review screen (the server also blocks reopening it).
+  if (submitted && attempt.allowSubmissionReview === false) {
+    return (
+      <Result
+        status="success"
+        title="Your responses were submitted"
+        subTitle="This quiz doesn't allow reviewing past submissions."
+        extra={
+          <CPButton cpType="primary" onClick={onExit}>
+            Back to course
+          </CPButton>
+        }
+      />
+    );
+  }
+
   if (submitted) {
     return (
       <QuizResults
@@ -317,7 +355,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         <div>
           {/* h1: the quiz route renders as its own full page, outside the app shell. */}
           <Title level={1} style={{ margin: 0, fontSize: 24 }}>
-            {quizTitle ?? 'Quiz'}
+            {attempt.title ?? quizTitle ?? 'Quiz'}
           </Title>
           <Text type="secondary">Attempt #{attempt.attemptNumber}</Text>
         </div>
@@ -339,6 +377,12 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
           )}
         </Flex>
       </Flex>
+
+      {attempt.description && (
+        <div style={{ marginBottom: 16 }}>
+          <Markdown>{attempt.description}</Markdown>
+        </div>
+      )}
 
       <Progress
         percent={Math.round((answeredCount / Math.max(responses.length, 1)) * 100)}

@@ -13,6 +13,7 @@ All URIs are relative to *http://localhost*
 | [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                 | **GET** /quizzes/{id}/generatedSets/        |             |
 | [**list**](QuizzesApi.md#list)                                           | **GET** /quizzes/                           |             |
 | [**partialUpdate**](QuizzesApi.md#partialupdate)                         | **PATCH** /quizzes/{id}/                    |             |
+| [**promptTemplatesList**](QuizzesApi.md#prompttemplateslist)             | **GET** /quizzes/{id}/promptTemplates/      |             |
 | [**promptVariablesList**](QuizzesApi.md#promptvariableslist)             | **GET** /quizzes/{id}/promptVariables/      |             |
 | [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate) | **POST** /quizzes/{id}/publishAllGenerated/ |             |
 | [**questionsList**](QuizzesApi.md#questionslist)                         | **GET** /quizzes/{id}/questions/            |             |
@@ -661,6 +662,77 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## promptTemplatesList
+
+> Array&lt;QuizSectionTemplate&gt; promptTemplatesList(id)
+
+Starter templates for this quiz\&#39;s AI-generated section prompts (powers the prompt editor\&#39;s \&#39;start from a template\&#39; picker).
+
+### Example
+
+```ts
+import { Configuration, QuizzesApi } from '';
+import type { PromptTemplatesListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+  } satisfies PromptTemplatesListRequest;
+
+  try {
+    const data = await api.promptTemplatesList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                   | Notes                     |
+| ------ | -------- | --------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;QuizSectionTemplate&gt;**](QuizSectionTemplate.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

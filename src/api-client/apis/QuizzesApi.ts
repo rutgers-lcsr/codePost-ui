@@ -26,6 +26,7 @@ import type {
   Quiz,
   QuizQuestion,
   QuizResultRow,
+  QuizSectionTemplate,
   ResetQuizAttemptsResponse,
   StaffQuizAttempt,
 } from '../models/index';
@@ -69,6 +70,10 @@ export interface PartialUpdateRequest {
     PatchedQuiz,
     'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
   >;
+}
+
+export interface PromptTemplatesListRequest {
+  id: number;
 }
 
 export interface PromptVariablesListRequest {
@@ -642,6 +647,66 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Quiz> {
     const response = await this.partialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Starter templates for this quiz\'s AI-generated section prompts (powers the prompt editor\'s \'start from a template\' picker).
+   */
+  async promptTemplatesListRaw(
+    requestParameters: PromptTemplatesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<QuizSectionTemplate>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling promptTemplatesList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/promptTemplates/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Starter templates for this quiz\'s AI-generated section prompts (powers the prompt editor\'s \'start from a template\' picker).
+   */
+  async promptTemplatesList(
+    requestParameters: PromptTemplatesListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<QuizSectionTemplate>> {
+    const response = await this.promptTemplatesListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
