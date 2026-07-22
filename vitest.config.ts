@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -18,6 +18,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    // e2e/ belongs to Playwright (playwright.config.ts testDir), but its *.spec.ts files
+    // match vitest's default include glob. Collecting them here throws
+    // "Playwright Test did not expect test.describe() to be called here". Run them with
+    // `npm run test:e2e`.
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     css: true,
     pool: 'threads',
     maxConcurrency: 10,
