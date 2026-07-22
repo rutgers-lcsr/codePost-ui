@@ -1,12 +1,25 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { vi, expect } from 'vitest';
+import { vi, expect, afterEach } from 'vitest';
 import * as matchers from 'vitest-axe/matchers';
 import 'vitest-axe/extend-expect';
+import { cleanup } from '@testing-library/react';
 import React from 'react';
 import { installLocalStorageMock } from './test-utils';
 import { mockOrganization, mockCourse, mockUser } from './test-utils/factories';
 
 expect.extend(matchers);
+
+// Unmount anything React Testing Library rendered after every test.
+//
+// RTL registers its own afterEach(cleanup) at module top level, but this config runs with
+// `isolate: false`, so test files in a worker share one module registry AND one jsdom
+// document. @testing-library/react is therefore imported only once — its auto-cleanup hook
+// binds to whichever file loaded it first, and every later file in that worker gets none.
+// Leftover DOM then accumulates across files and queries fail with "Found multiple
+// elements". Setup files re-run per test file, so registering here covers all of them.
+afterEach(() => {
+  cleanup();
+});
 
 //----------- Configure Enzyme (best-effort only)
 

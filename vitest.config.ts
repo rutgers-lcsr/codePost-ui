@@ -26,7 +26,13 @@ export default defineConfig({
     css: true,
     pool: 'threads',
     maxConcurrency: 10,
-    isolate: false,
+    // Keep vitest's default per-file isolation. With `isolate: false`, test files in a
+    // worker share one module registry and one jsdom document, so `vi.mock` factories and
+    // module-level state (e.g. the Zustand permissions store, the global fetch mock) leak
+    // between files — the suite failed ~40% of runs with 11-12 order-dependent failures.
+    // Isolation costs roughly 8s (~22s -> ~30s), which is well worth a green, deterministic
+    // suite. If you re-disable it for speed, expect to fix that cross-file state sharing.
+    isolate: true,
     maxWorkers: '75%',
     poolMatchGlobs: [['**/hooks/__tests__/useTaskPolling.test.ts', 'forks']],
     coverage: {
