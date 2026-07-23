@@ -18,6 +18,7 @@ import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
 import type { AIModel } from '../../../api-client';
+import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 const { Text } = Typography;
 
@@ -177,6 +178,9 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       setFeatureModelsResolved((r.aiFeatureModelsResolved as Record<string, string>) ?? {});
       setApiKey('');
       setIsDirty(false);
+      // Feature toggles feed capabilities (e.g. generate_ai_quiz_questions), so drop the
+      // cached ones or AI buttons stay visible until the next reload.
+      usePermissionsStore.getState().invalidateCourse(courseId);
       message.success('AI settings saved!');
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Failed to save AI settings');

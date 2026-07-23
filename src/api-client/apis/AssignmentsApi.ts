@@ -909,7 +909,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async generateQuizQuestionsCreateRaw(
     requestParameters: GenerateQuizQuestionsCreateRequest,
@@ -961,7 +961,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async generateQuizQuestionsCreate(
     requestParameters: GenerateQuizQuestionsCreateRequest,

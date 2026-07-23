@@ -834,7 +834,7 @@ example().catch(console.error);
 
 > GenerateQuizQuestionsResponse generateQuizQuestionsCreate(id, generateQuizQuestionsRequest)
 
-Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones.
+Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
 
 ### Example
 

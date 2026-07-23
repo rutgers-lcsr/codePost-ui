@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
+import { Can } from '../../core/Can';
 import { questionsApi, questionBanksApi } from '../../../api-client/clients';
 import { Course, Question, QuestionBank } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
@@ -153,12 +154,14 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
       render: (_: unknown, record: Question) => (
         // Stop propagation so action clicks don't toggle the expandable row.
         <Space.Compact size="small" onClick={(e) => e.stopPropagation()}>
-          <Button
-            size="small"
-            icon={<SyncOutlined />}
-            title="Suggest an AI update for this question"
-            onClick={() => setRegenQuestion(record)}
-          />
+          <Can action="generate_ai_quiz_questions" courseId={courseId}>
+            <Button
+              size="small"
+              icon={<SyncOutlined />}
+              title="Suggest an AI update for this question"
+              onClick={() => setRegenQuestion(record)}
+            />
+          </Can>
           <Button
             size="small"
             icon={<EditOutlined />}
@@ -192,9 +195,11 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
         }
         extra={
           <Space>
-            <CPButton cpType="secondary" icon={<ThunderboltOutlined />} onClick={() => setSuggestOpen(true)}>
-              Suggest questions
-            </CPButton>
+            <Can action="generate_ai_quiz_questions" courseId={courseId}>
+              <CPButton cpType="secondary" icon={<ThunderboltOutlined />} onClick={() => setSuggestOpen(true)}>
+                Suggest questions
+              </CPButton>
+            </Can>
             <CPButton cpType="primary" icon={<PlusOutlined />} onClick={openCreate}>
               New Question
             </CPButton>

@@ -421,7 +421,7 @@ export class QuestionsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion.
+   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async regenerateSuggestionCreateRaw(
     requestParameters: RegenerateSuggestionCreateRequest,
@@ -473,7 +473,7 @@ export class QuestionsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion.
+   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async regenerateSuggestionCreate(
     requestParameters: RegenerateSuggestionCreateRequest,

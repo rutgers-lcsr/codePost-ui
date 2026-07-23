@@ -453,7 +453,7 @@ example().catch(console.error);
 
 > RegenerateSuggestionResponse regenerateSuggestionCreate(id, regenerateSuggestionRequest)
 
-Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion.
+Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
 
 ### Example
 

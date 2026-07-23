@@ -20,6 +20,7 @@ Map of capability keys to boolean values.
 | `changeInviteCode`         | boolean |
 | `manageCourseApiKeys`      | boolean |
 | `gradeQuiz`                | boolean |
+| `generateAiQuizQuestions`  | boolean |
 | `editAssignment`           | boolean |
 | `copyAssignment`           | boolean |
 | `viewAssignment`           | boolean |

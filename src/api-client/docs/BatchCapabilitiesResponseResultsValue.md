@@ -18,6 +18,7 @@
 | `changeInviteCode`         | boolean |
 | `manageCourseApiKeys`      | boolean |
 | `gradeQuiz`                | boolean |
+| `generateAiQuizQuestions`  | boolean |
 | `editAssignment`           | boolean |
 | `copyAssignment`           | boolean |
 | `viewAssignment`           | boolean |
