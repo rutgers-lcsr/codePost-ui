@@ -91,6 +91,7 @@ export interface DestroyRequest {
 
 export interface DownloadRetrieveRequest {
   id: number;
+  includeDatasets?: boolean;
 }
 
 export interface DrawUnassignedListRequest {
@@ -743,6 +744,10 @@ export class AssignmentsApi extends runtime.BaseAPI {
     }
 
     const queryParameters: any = {};
+
+    if (requestParameters['includeDatasets'] != null) {
+      queryParameters['includeDatasets'] = requestParameters['includeDatasets'];
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 

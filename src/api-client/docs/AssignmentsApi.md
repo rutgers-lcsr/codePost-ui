@@ -619,7 +619,7 @@ example().catch(console.error);
 
 ## downloadRetrieve
 
-> AssignmentDownloadResponse downloadRetrieve(id)
+> AssignmentDownloadResponse downloadRetrieve(id, includeDatasets)
 
 download all files for an assignment files as a zip
 
@@ -647,6 +647,8 @@ async function example() {
   const body = {
     // number | A unique integer value identifying this assignment.
     id: 56,
+    // boolean | Bundle the assignment\'s datasets into the zip (default true). Pass false for callers that mount datasets separately — e.g. JupyterHub — to get the assignment files alone; this also skips the per-student variant auto-assignment side effect. (optional)
+    includeDatasets: true,
   } satisfies DownloadRetrieveRequest;
 
   try {
@@ -663,9 +665,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                         | Notes                     |
-| ------ | -------- | --------------------------------------------------- | ------------------------- |
-| **id** | `number` | A unique integer value identifying this assignment. | [Defaults to `undefined`] |
+| Name                | Type      | Description                                                                                                                                                                                                                                          | Notes                                |
+| ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **id**              | `number`  | A unique integer value identifying this assignment.                                                                                                                                                                                                  | [Defaults to `undefined`]            |
+| **includeDatasets** | `boolean` | Bundle the assignment\&#39;s datasets into the zip (default true). Pass false for callers that mount datasets separately — e.g. JupyterHub — to get the assignment files alone; this also skips the per-student variant auto-assignment side effect. | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
