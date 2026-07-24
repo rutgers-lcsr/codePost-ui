@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type { CourseFile, PatchedCourseFile } from '../models/index';
 
 export interface CreateRequest {
-  courseFile: Omit<CourseFile, 'id' | 'created' | 'modified'>;
+  courseFile: Omit<CourseFile, 'id' | 'publicUrl' | 'created' | 'modified'>;
 }
 
 export interface DestroyRequest {
@@ -26,7 +26,7 @@ export interface DestroyRequest {
 
 export interface PartialUpdateRequest {
   id: number;
-  patchedCourseFile?: Omit<PatchedCourseFile, 'id' | 'created' | 'modified'>;
+  patchedCourseFile?: Omit<PatchedCourseFile, 'id' | 'publicUrl' | 'created' | 'modified'>;
 }
 
 export interface RetrieveRequest {
@@ -35,7 +35,7 @@ export interface RetrieveRequest {
 
 export interface UpdateRequest {
   id: number;
-  courseFile: Omit<CourseFile, 'id' | 'created' | 'modified'>;
+  courseFile: Omit<CourseFile, 'id' | 'publicUrl' | 'created' | 'modified'>;
 }
 
 /**

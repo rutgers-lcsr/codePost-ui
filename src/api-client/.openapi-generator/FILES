@@ -246,6 +246,7 @@ docs/PatchedEnvironmentBuildRequest.md
 docs/PatchedEnvironmentRunAllRequest.md
 docs/PatchedEnvironmentRunRequest.md
 docs/PatchedFile.md
+docs/PatchedGenerateQuizAccessCodeRequest.md
 docs/PatchedGeneratedQuizQuestion.md
 docs/PatchedLearningObjective.md
 docs/PatchedMaintenanceBanner.md
@@ -299,6 +300,7 @@ docs/QuestionChoice.md
 docs/QuestionTypeEnum.md
 docs/QuestionsApi.md
 docs/Quiz.md
+docs/QuizAccessCodeResponse.md
 docs/QuizAccommodationRow.md
 docs/QuizAssignmentTriggerEnum.md
 docs/QuizAttemptStatusEnum.md

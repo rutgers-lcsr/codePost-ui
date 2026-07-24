@@ -3706,6 +3706,18 @@ export interface CourseFile {
    */
   path?: string | null;
   /**
+   * If True, the file is downloadable without authentication via its public URL (courseFiles/raw/<id>/).
+   * @type {boolean}
+   * @memberof CourseFile
+   */
+  isPublic?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseFile
+   */
+  readonly publicUrl: string | null;
+  /**
    *
    * @type {string}
    * @memberof CourseFile
@@ -7378,6 +7390,18 @@ export interface PatchedCourseFile {
    */
   path?: string | null;
   /**
+   * If True, the file is downloadable without authentication via its public URL (courseFiles/raw/<id>/).
+   * @type {boolean}
+   * @memberof PatchedCourseFile
+   */
+  isPublic?: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PatchedCourseFile
+   */
+  readonly publicUrl?: string | null;
+  /**
    *
    * @type {string}
    * @memberof PatchedCourseFile
@@ -7703,6 +7727,19 @@ export interface PatchedFile {
    * @memberof PatchedFile
    */
   readonly modified?: string;
+}
+/**
+ *
+ * @export
+ * @interface PatchedGenerateQuizAccessCodeRequest
+ */
+export interface PatchedGenerateQuizAccessCodeRequest {
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedGenerateQuizAccessCodeRequest
+   */
+  clear?: boolean;
 }
 /**
  * One generated question in a student's set. Staff may edit its content (PATCH)
@@ -8506,6 +8543,12 @@ export interface PatchedQuiz {
    * @memberof PatchedQuiz
    */
   endAttemptsAtClose?: boolean;
+  /**
+   * Optional code that lets a late student start this quiz after it has closed. Null/blank = no late access. Staff generate/rotate it via generateAccessCode; a correct code bypasses only the close, nothing else.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  readonly accessCode?: string | null;
   /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
@@ -10925,6 +10968,12 @@ export interface Quiz {
    */
   endAttemptsAtClose?: boolean;
   /**
+   * Optional code that lets a late student start this quiz after it has closed. Null/blank = no late access. Staff generate/rotate it via generateAccessCode; a correct code bypasses only the close, nothing else.
+   * @type {string}
+   * @memberof Quiz
+   */
+  readonly accessCode: string | null;
+  /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
    * @memberof Quiz
@@ -11072,6 +11121,19 @@ export interface Quiz {
   readonly metadata: string;
 }
 
+/**
+ *
+ * @export
+ * @interface QuizAccessCodeResponse
+ */
+export interface QuizAccessCodeResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof QuizAccessCodeResponse
+   */
+  accessCode: string | null;
+}
 /**
  * One per-student quiz extra-time accommodation (course-level multiplier).
  * @export
@@ -12285,6 +12347,12 @@ export interface StartQuizAttemptRequest {
    * @memberof StartQuizAttemptRequest
    */
   quiz: number;
+  /**
+   *
+   * @type {string}
+   * @memberof StartQuizAttemptRequest
+   */
+  accessCode?: string;
 }
 /**
  * * `draft` - Draft
@@ -12602,6 +12670,12 @@ export interface StudentQuiz {
    * @memberof StudentQuiz
    */
   readonly closeAt: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  readonly hasAccessCode: boolean;
   /**
    *
    * @type {number}

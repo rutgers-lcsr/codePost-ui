@@ -140,7 +140,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Start a new attempt, or resume the student\'s in-progress one, for ``quiz``.
+   * Start a new attempt, or resume the student\'s in-progress one, for ``quiz``.  A late student whose quiz has closed may pass ``accessCode`` to start anyway: a match on the quiz\'s access code bypasses the close (only), and the attempt keeps its full time limit.
    */
   async createRaw(
     requestParameters: CreateRequest,
@@ -191,7 +191,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Start a new attempt, or resume the student\'s in-progress one, for ``quiz``.
+   * Start a new attempt, or resume the student\'s in-progress one, for ``quiz``.  A late student whose quiz has closed may pass ``accessCode`` to start anyway: a match on the quiz\'s access code bypasses the close (only), and the attempt keeps its full time limit.
    */
   async create(
     requestParameters: CreateRequest,

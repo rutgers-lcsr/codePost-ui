@@ -8,6 +8,18 @@ export const canStart = (quiz: StudentQuiz): boolean => {
   return allowed === 0 || quiz.attemptsUsed < allowed;
 };
 
+/** Whether a closed quiz can still be started with a late-access code: the instructor set a
+ *  code, the quiz is closed (not "not yet open" / awaiting something), the student has no
+ *  attempt open, and attempts remain. The code itself is validated server-side on start. */
+export const canEnterAccessCode = (quiz: StudentQuiz): boolean => {
+  if (!quiz.hasAccessCode) return false;
+  const reason = quiz.availability?.reason;
+  if (reason !== 'closed' && reason !== 'assignment_closed') return false;
+  if (quiz.hasOpenAttempt) return false;
+  const allowed = quiz.attemptsAllowed ?? 1;
+  return allowed === 0 || quiz.attemptsUsed < allowed;
+};
+
 /** The button label for an open, actionable quiz. */
 const startLabel = (quiz: StudentQuiz): string => (quiz.attemptsUsed > 0 ? 'New attempt' : 'Start quiz');
 

@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Flex, Modal, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import { Alert, Flex, Input, Modal, Popconfirm, Progress, Result, Spin, Tag, Typography, message } from 'antd';
+import { ClockCircleOutlined, LockOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import Markdown from '../../core/Markdown';
@@ -9,6 +9,7 @@ import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { studentKeys } from '../../../lib/queryKeys';
+import { parseAccessCode403 } from './accessCode';
 import { bySortKey } from '../../core/questionMeta';
 import { AnswerValue, initialAnswer } from './QuestionAnswerer';
 import QuizQuestions from './QuizQuestions';
@@ -56,6 +57,12 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   const [nowMs, setNowMs] = React.useState(Date.now());
   // Screen-reader time-warning text (the visible countdown is a silent role="timer").
   const [timeAnnounce, setTimeAnnounce] = React.useState('');
+  // Late-access-code flow: a closed quiz the instructor gated with a code. The start call 403s
+  // with { accessCodeRequired: true } until the right code is supplied.
+  const [codeRequired, setCodeRequired] = React.useState(false);
+  const [accessCode, setAccessCode] = React.useState('');
+  const [codeError, setCodeError] = React.useState<string | null>(null);
+  const [startingWithCode, setStartingWithCode] = React.useState(false);
 
   const startedRef = React.useRef(false);
   const timers = React.useRef<Record<number, ReturnType<typeof setTimeout>>>({});
@@ -101,6 +108,49 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     [quizId, applyAttempt, queryClient],
   );
 
+  // Start (or resume) the attempt, optionally with a late-access code. Clears the code prompt
+  // and refreshes the card on success.
+  const startAttempt = React.useCallback(
+    async (code?: string) => {
+      const trimmed = code?.trim();
+      const a = await quizAttemptsApi.create({
+        startQuizAttemptRequest: trimmed ? { quiz: quizId, accessCode: trimmed } : { quiz: quizId },
+      });
+      applyAttempt(a);
+      setCodeRequired(false);
+      setCodeError(null);
+      // The attempt now exists — refresh the card so it shows Resume, not the code button.
+      queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
+      // Resuming an expired attempt auto-submits it server-side — land on /review.
+      if (a.status === 'submitted') onSubmitted?.();
+    },
+    [quizId, applyAttempt, queryClient, courseId, onSubmitted],
+  );
+
+  // Submit the entered late-access code and start the attempt with it.
+  const handleCodeSubmit = React.useCallback(async () => {
+    const code = accessCode.trim();
+    if (!code) {
+      setCodeError('Enter the access code your instructor gave you.');
+      return;
+    }
+    setStartingWithCode(true);
+    setCodeError(null);
+    try {
+      await startAttempt(code);
+    } catch (e) {
+      const body = await parseAccessCode403(e);
+      if (body?.accessCodeRequired) {
+        setCodeError("That access code isn't valid. Check with your instructor and try again.");
+      } else {
+        // A different refusal (e.g. no attempts remaining) — surface the server's reason.
+        setCodeError(body?.detail ?? apiErrorMessage(e) ?? 'This quiz could not be started.');
+      }
+    } finally {
+      setStartingWithCode(false);
+    }
+  }, [accessCode, startAttempt]);
+
   // Start (or resume) the attempt once on mount — or, in review mode, load past attempts.
   React.useEffect(() => {
     if (startedRef.current) return;
@@ -113,11 +163,14 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
           }
           return;
         }
-        const a = await quizAttemptsApi.create({ startQuizAttemptRequest: { quiz: quizId } });
-        applyAttempt(a);
-        // Resuming an expired attempt auto-submits it server-side — land on /review.
-        if (a.status === 'submitted') onSubmitted?.();
+        await startAttempt();
       } catch (e) {
+        // A closed quiz gated by a late-access code asks for the code instead of erroring.
+        const body = await parseAccessCode403(e);
+        if (body?.accessCodeRequired) {
+          setCodeRequired(true);
+          return;
+        }
         // Can't start (e.g. no attempts remaining) — fall back to reviewing the latest submitted attempt.
         try {
           if (await loadSubmitted(true)) {
@@ -132,7 +185,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         setLoading(false);
       }
     })();
-  }, [quizId, reviewOnly, applyAttempt, loadSubmitted, onSubmitted]);
+  }, [reviewOnly, startAttempt, loadSubmitted, onSubmitted]);
 
   // Tick the clock while taking.
   React.useEffect(() => {
@@ -292,6 +345,52 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       <Flex justify="center" align="center" style={{ minHeight: 320 }}>
         <Spin size="large" />
       </Flex>
+    );
+  }
+
+  // A closed quiz gated by a late-access code: prompt for the code instead of erroring out.
+  if (!attempt && codeRequired) {
+    return (
+      <Result
+        icon={<LockOutlined />}
+        title="This quiz has closed"
+        subTitle="Enter the access code your instructor gave you to start the quiz."
+        extra={
+          <Flex vertical gap={12} align="center" style={{ maxWidth: 320, margin: '0 auto' }}>
+            <Input
+              aria-label="Access code"
+              placeholder="Access code"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+              onPressEnter={handleCodeSubmit}
+              disabled={startingWithCode}
+              data-testid="quiz-access-code-input"
+            />
+            {codeError && (
+              <Alert
+                type="error"
+                showIcon
+                message={codeError}
+                style={{ width: '100%' }}
+                data-testid="quiz-access-code-error"
+              />
+            )}
+            <Flex gap={8}>
+              <CPButton
+                cpType="primary"
+                loading={startingWithCode}
+                onClick={handleCodeSubmit}
+                data-testid="quiz-access-code-submit"
+              >
+                Start quiz
+              </CPButton>
+              <CPButton cpType="secondary" onClick={onExit}>
+                Back to course
+              </CPButton>
+            </Flex>
+          </Flex>
+        }
+      />
     );
   }
 

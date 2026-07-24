@@ -1,10 +1,11 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Button, Tag } from 'antd';
-import { EyeOutlined, LockOutlined } from '@ant-design/icons';
+import { EyeOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import { StudentQuiz } from '../../../api-client';
-import { canReview, quizAction, quizActionLabel } from './quizStatus';
+import { canEnterAccessCode, canReview, quizAction, quizActionLabel } from './quizStatus';
+import AccessCodeModal from './AccessCodeModal';
 
 interface IProps {
   quiz: StudentQuiz;
@@ -23,6 +24,7 @@ interface IProps {
  *  bubble — the assignment row behind these buttons toggles its stats panel on click. */
 const QuizActions: React.FC<IProps> = ({ quiz, onTake, onReview, testIdPrefix, compact }) => {
   const action = quizAction(quiz);
+  const [codeModalOpen, setCodeModalOpen] = React.useState(false);
   const handle = (fn?: () => void) => (e: React.MouseEvent) => {
     e.stopPropagation();
     fn?.();
@@ -50,7 +52,31 @@ const QuizActions: React.FC<IProps> = ({ quiz, onTake, onReview, testIdPrefix, c
         )
       )}
       {action === 'locked' ? (
-        // The Tag's own text IS the lock reason (quizActionLabel → "Opens after you
+        // A closed quiz the instructor gated with a late-access code stays actionable: offer
+        // "Enter access code", which opens a modal to collect + validate the code before the
+        // student enters the quiz.
+        canEnterAccessCode(quiz) ? (
+          compact ? (
+            <Button
+              type="primary"
+              size="small"
+              icon={<UnlockOutlined />}
+              onClick={handle(() => setCodeModalOpen(true))}
+              data-testid={`${testIdPrefix}-access-code`}
+            >
+              Enter access code
+            </Button>
+          ) : (
+            <CPButton
+              cpType="primary"
+              icon={<UnlockOutlined />}
+              onClick={handle(() => setCodeModalOpen(true))}
+              data-testid={`${testIdPrefix}-access-code`}
+            >
+              Enter access code
+            </CPButton>
+          )
+        ) : // The Tag's own text IS the lock reason (quizActionLabel → "Opens after you
         // submit", "Closed", …). No Tooltip: it duplicated less-specific text and was
         // unreachable by keyboard (WCAG 2.1.1 / 1.4.13).
         compact ? (
@@ -78,6 +104,14 @@ const QuizActions: React.FC<IProps> = ({ quiz, onTake, onReview, testIdPrefix, c
         >
           {quizActionLabel(quiz)}
         </CPButton>
+      )}
+      {canEnterAccessCode(quiz) && (
+        <AccessCodeModal
+          quiz={quiz}
+          open={codeModalOpen}
+          onClose={() => setCodeModalOpen(false)}
+          onStarted={onTake}
+        />
       )}
     </>
   );

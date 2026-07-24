@@ -20,10 +20,12 @@ import type {
   GenerateMissingResponse,
   GeneratedQuestionSet,
   GeneratedQuestionSetList,
+  PatchedGenerateQuizAccessCodeRequest,
   PatchedQuiz,
   PromptVariable,
   PublishAllGeneratedResponse,
   Quiz,
+  QuizAccessCodeResponse,
   QuizQuestion,
   QuizResultRow,
   QuizSectionTemplate,
@@ -43,12 +45,17 @@ export interface BackfillPreviewRetrieveRequest {
 export interface CreateRequest {
   quiz: Omit<
     Quiz,
-    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
   >;
 }
 
 export interface DestroyRequest {
   id: number;
+}
+
+export interface GenerateAccessCodePartialUpdateRequest {
+  id: number;
+  patchedGenerateQuizAccessCodeRequest?: PatchedGenerateQuizAccessCodeRequest;
 }
 
 export interface GenerateForStudentCreateRequest {
@@ -68,7 +75,7 @@ export interface PartialUpdateRequest {
   id: number;
   patchedQuiz?: Omit<
     PatchedQuiz,
-    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
   >;
 }
 
@@ -104,7 +111,7 @@ export interface UpdateRequest {
   id: number;
   quiz: Omit<
     Quiz,
-    'id' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
   >;
 }
 
@@ -349,6 +356,69 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<void> {
     await this.destroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   * Generate (or, with {clear: true}, remove) this quiz\'s late-access code — the code an instructor hands to late students so they can start the quiz after it closes. Course admins only. Generating rotates any existing code.
+   */
+  async generateAccessCodePartialUpdateRaw(
+    requestParameters: GenerateAccessCodePartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<QuizAccessCodeResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling generateAccessCodePartialUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/generateAccessCode/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['patchedGenerateQuizAccessCodeRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Generate (or, with {clear: true}, remove) this quiz\'s late-access code — the code an instructor hands to late students so they can start the quiz after it closes. Course admins only. Generating rotates any existing code.
+   */
+  async generateAccessCodePartialUpdate(
+    requestParameters: GenerateAccessCodePartialUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<QuizAccessCodeResponse> {
+    const response = await this.generateAccessCodePartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
   }
 
   /**

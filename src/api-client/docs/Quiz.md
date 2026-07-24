@@ -15,6 +15,7 @@
 | `closeEvent`                | [QuizCloseEventEnum](QuizCloseEventEnum.md)                           |
 | `closeOffsetMinutes`        | number                                                                |
 | `endAttemptsAtClose`        | boolean                                                               |
+| `accessCode`                | string                                                                |
 | `timeLimitMinutes`          | number                                                                |
 | `attemptsAllowed`           | number                                                                |
 | `shuffleQuestions`          | boolean                                                               |

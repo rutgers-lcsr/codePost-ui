@@ -90,7 +90,7 @@ example().catch(console.error);
 
 > StudentQuizAttempt create(startQuizAttemptRequest)
 
-Start a new attempt, or resume the student\&#39;s in-progress one, for &#x60;&#x60;quiz&#x60;&#x60;.
+Start a new attempt, or resume the student\&#39;s in-progress one, for &#x60;&#x60;quiz&#x60;&#x60;. A late student whose quiz has closed may pass &#x60;&#x60;accessCode&#x60;&#x60; to start anyway: a match on the quiz\&#39;s access code bypasses the close (only), and the attempt keeps its full time limit.
 
 ### Example
 

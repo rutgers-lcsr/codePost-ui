@@ -2,25 +2,26 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                                   | HTTP request                                | Description |
-| ------------------------------------------------------------------------ | ------------------------------------------- | ----------- |
-| [**attemptsList**](QuizzesApi.md#attemptslist)                           | **GET** /quizzes/{id}/attempts/             |             |
-| [**backfillPreviewRetrieve**](QuizzesApi.md#backfillpreviewretrieve)     | **GET** /quizzes/{id}/backfillPreview/      |             |
-| [**create**](QuizzesApi.md#create)                                       | **POST** /quizzes/                          |             |
-| [**destroy**](QuizzesApi.md#destroy)                                     | **DELETE** /quizzes/{id}/                   |             |
-| [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)   | **POST** /quizzes/{id}/generateForStudent/  |             |
-| [**generateMissingCreate**](QuizzesApi.md#generatemissingcreate)         | **POST** /quizzes/{id}/generateMissing/     |             |
-| [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                 | **GET** /quizzes/{id}/generatedSets/        |             |
-| [**list**](QuizzesApi.md#list)                                           | **GET** /quizzes/                           |             |
-| [**partialUpdate**](QuizzesApi.md#partialupdate)                         | **PATCH** /quizzes/{id}/                    |             |
-| [**promptTemplatesList**](QuizzesApi.md#prompttemplateslist)             | **GET** /quizzes/{id}/promptTemplates/      |             |
-| [**promptVariablesList**](QuizzesApi.md#promptvariableslist)             | **GET** /quizzes/{id}/promptVariables/      |             |
-| [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate) | **POST** /quizzes/{id}/publishAllGenerated/ |             |
-| [**questionsList**](QuizzesApi.md#questionslist)                         | **GET** /quizzes/{id}/questions/            |             |
-| [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)             | **POST** /quizzes/{id}/resetAttempts/       |             |
-| [**resultsList**](QuizzesApi.md#resultslist)                             | **GET** /quizzes/{id}/results/              |             |
-| [**retrieve**](QuizzesApi.md#retrieve)                                   | **GET** /quizzes/{id}/                      |             |
-| [**update**](QuizzesApi.md#update)                                       | **PUT** /quizzes/{id}/                      |             |
+| Method                                                                               | HTTP request                                | Description |
+| ------------------------------------------------------------------------------------ | ------------------------------------------- | ----------- |
+| [**attemptsList**](QuizzesApi.md#attemptslist)                                       | **GET** /quizzes/{id}/attempts/             |             |
+| [**backfillPreviewRetrieve**](QuizzesApi.md#backfillpreviewretrieve)                 | **GET** /quizzes/{id}/backfillPreview/      |             |
+| [**create**](QuizzesApi.md#create)                                                   | **POST** /quizzes/                          |             |
+| [**destroy**](QuizzesApi.md#destroy)                                                 | **DELETE** /quizzes/{id}/                   |             |
+| [**generateAccessCodePartialUpdate**](QuizzesApi.md#generateaccesscodepartialupdate) | **PATCH** /quizzes/{id}/generateAccessCode/ |             |
+| [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)               | **POST** /quizzes/{id}/generateForStudent/  |             |
+| [**generateMissingCreate**](QuizzesApi.md#generatemissingcreate)                     | **POST** /quizzes/{id}/generateMissing/     |             |
+| [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                             | **GET** /quizzes/{id}/generatedSets/        |             |
+| [**list**](QuizzesApi.md#list)                                                       | **GET** /quizzes/                           |             |
+| [**partialUpdate**](QuizzesApi.md#partialupdate)                                     | **PATCH** /quizzes/{id}/                    |             |
+| [**promptTemplatesList**](QuizzesApi.md#prompttemplateslist)                         | **GET** /quizzes/{id}/promptTemplates/      |             |
+| [**promptVariablesList**](QuizzesApi.md#promptvariableslist)                         | **GET** /quizzes/{id}/promptVariables/      |             |
+| [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate)             | **POST** /quizzes/{id}/publishAllGenerated/ |             |
+| [**questionsList**](QuizzesApi.md#questionslist)                                     | **GET** /quizzes/{id}/questions/            |             |
+| [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)                         | **POST** /quizzes/{id}/resetAttempts/       |             |
+| [**resultsList**](QuizzesApi.md#resultslist)                                         | **GET** /quizzes/{id}/results/              |             |
+| [**retrieve**](QuizzesApi.md#retrieve)                                               | **GET** /quizzes/{id}/                      |             |
+| [**update**](QuizzesApi.md#update)                                                   | **PUT** /quizzes/{id}/                      |             |
 
 ## attemptsList
 
@@ -309,6 +310,83 @@ example().catch(console.error);
 | Status code | Description      | Response headers |
 | ----------- | ---------------- | ---------------- |
 | **204**     | No response body | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## generateAccessCodePartialUpdate
+
+> QuizAccessCodeResponse generateAccessCodePartialUpdate(id, patchedGenerateQuizAccessCodeRequest)
+
+Generate (or, with {clear: true}, remove) this quiz\&#39;s late-access code — the code an instructor hands to late students so they can start the quiz after it closes. Course admins only. Generating rotates any existing code.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizzesApi,
+} from '';
+import type { GenerateAccessCodePartialUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+    // PatchedGenerateQuizAccessCodeRequest (optional)
+    patchedGenerateQuizAccessCodeRequest: ...,
+  } satisfies GenerateAccessCodePartialUpdateRequest;
+
+  try {
+    const data = await api.generateAccessCodePartialUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                                     | Type                                                                            | Description                                   | Notes                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------- |
+| **id**                                   | `number`                                                                        | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| **patchedGenerateQuizAccessCodeRequest** | [PatchedGenerateQuizAccessCodeRequest](PatchedGenerateQuizAccessCodeRequest.md) |                                               | [Optional]                |
+
+### Return type
+
+[**QuizAccessCodeResponse**](QuizAccessCodeResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

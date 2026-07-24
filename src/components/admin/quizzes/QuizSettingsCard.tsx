@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Alert, Card, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
+import { CopyOutlined, DeleteOutlined, KeyOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -169,6 +170,10 @@ const QuizSettingsCard: React.FC<IProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const [saving, setSaving] = React.useState(false);
+  // Late-access code is server-managed (read-only on the quiz), so its own actions handle it —
+  // independent of the settings draft/Save flow.
+  const [rotatingCode, setRotatingCode] = React.useState(false);
+  const [clearingCode, setClearingCode] = React.useState(false);
 
   // The close offset is presentation state (90 min stays "90 minutes", not "1.5 hours"),
   // re-derived only when switching quizzes. Its minute total feeds the draft comparison.
@@ -253,6 +258,61 @@ const QuizSettingsCard: React.FC<IProps> = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  const invalidateQuiz = () => {
+    queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
+    queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
+  };
+
+  const rotateAccessCode = async () => {
+    setRotatingCode(true);
+    try {
+      await quizzesApi.generateAccessCodePartialUpdate({ id: quiz.id! });
+      message.success('Access code generated.');
+      invalidateQuiz();
+    } catch (err) {
+      message.error(apiErrorMessage(err) ?? 'Could not update the access code.');
+    } finally {
+      setRotatingCode(false);
+    }
+  };
+
+  // Generating a new code invalidates the old one, so confirm when replacing an existing code.
+  const handleGenerateCode = () => {
+    if (quiz.accessCode) {
+      Modal.confirm({
+        title: 'Generate a new access code?',
+        content: 'The current code stops working immediately. Students you already shared it with will need the new one.',
+        okText: 'Generate new code',
+        cancelText: 'Cancel',
+        onOk: rotateAccessCode,
+      });
+    } else {
+      rotateAccessCode();
+    }
+  };
+
+  const handleClearCode = async () => {
+    setClearingCode(true);
+    try {
+      await quizzesApi.generateAccessCodePartialUpdate({
+        id: quiz.id!,
+        patchedGenerateQuizAccessCodeRequest: { clear: true },
+      });
+      message.success('Access code removed.');
+      invalidateQuiz();
+    } catch (err) {
+      message.error(apiErrorMessage(err) ?? 'Could not remove the access code.');
+    } finally {
+      setClearingCode(false);
+    }
+  };
+
+  const copyAccessCode = async () => {
+    if (!quiz.accessCode) return;
+    await navigator.clipboard.writeText(quiz.accessCode);
+    message.success('Access code copied.');
   };
 
   // Publishing makes the quiz visible to students, so nudge the author to save any
@@ -496,6 +556,55 @@ const QuizSettingsCard: React.FC<IProps> = ({
               </div>
             )}
           </Flex>
+        </Section>
+
+        <Section
+          title="Late access code"
+          hint="Optional. Share this code with students who missed the deadline — entering it lets them start the quiz after it closes, with the normal time limit. Nothing else about availability changes, and the code is never shown to students."
+        >
+          {quiz.accessCode ? (
+            <Flex gap={8} wrap align="center">
+              <Input
+                readOnly
+                aria-label="Quiz access code"
+                value={quiz.accessCode}
+                style={{ width: 150, fontFamily: 'monospace', letterSpacing: 2, fontWeight: 600 }}
+                data-testid="quiz-access-code"
+              />
+              <CPButton cpType="secondary" icon={<CopyOutlined />} onClick={copyAccessCode} disabled={rotatingCode || clearingCode}>
+                Copy
+              </CPButton>
+              <CPButton
+                cpType="secondary"
+                icon={<RedoOutlined />}
+                onClick={handleGenerateCode}
+                loading={rotatingCode}
+                disabled={clearingCode}
+              >
+                New code
+              </CPButton>
+              <CPButton
+                cpType="danger"
+                icon={<DeleteOutlined />}
+                onClick={handleClearCode}
+                loading={clearingCode}
+                disabled={rotatingCode}
+                data-testid="quiz-remove-access-code"
+              >
+                Remove
+              </CPButton>
+            </Flex>
+          ) : (
+            <CPButton
+              cpType="secondary"
+              icon={<KeyOutlined />}
+              onClick={handleGenerateCode}
+              loading={rotatingCode}
+              data-testid="quiz-generate-access-code"
+            >
+              Generate access code
+            </CPButton>
+          )}
         </Section>
 
         <Section title="Attempts & grading">
