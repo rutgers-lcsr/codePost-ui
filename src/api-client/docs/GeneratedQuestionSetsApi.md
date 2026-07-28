@@ -84,7 +84,7 @@ example().catch(console.error);
 
 > GeneratedQuestionSet regenerateCreate(id)
 
-Discard this set\&#39;s questions and generate new ones from the student\&#39;s submission. An approved set becomes un-published until re-approved.
+Discard this set\&#39;s questions and generate new ones from the student\&#39;s submission. An approved set becomes un-published until re-approved. Blocked once the student has attempted the quiz — their responses reference these questions (the grading answer key).
 
 ### Example
 

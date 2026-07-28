@@ -3706,7 +3706,7 @@ export interface CourseFile {
    */
   path?: string | null;
   /**
-   * If True, the file is downloadable without authentication via its public URL (courseFiles/raw/<id>/).
+   * If True, the file is downloadable without authentication via its public token URL (courseFiles/raw/<token>/).
    * @type {boolean}
    * @memberof CourseFile
    */
@@ -7390,7 +7390,7 @@ export interface PatchedCourseFile {
    */
   path?: string | null;
   /**
-   * If True, the file is downloadable without authentication via its public URL (courseFiles/raw/<id>/).
+   * If True, the file is downloadable without authentication via its public token URL (courseFiles/raw/<token>/).
    * @type {boolean}
    * @memberof PatchedCourseFile
    */
@@ -12251,6 +12251,12 @@ export interface StaffQuizAttempt {
    * @memberof StaffQuizAttempt
    */
   readonly student: string;
+  /**
+   * Started with the quiz access code after the close; its deadline is not capped at the close time.
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly closeBypassed: boolean;
 }
 
 /**

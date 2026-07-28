@@ -97,7 +97,7 @@ export class GeneratedQuestionSetsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Discard this set\'s questions and generate new ones from the student\'s submission. An approved set becomes un-published until re-approved.
+   * Discard this set\'s questions and generate new ones from the student\'s submission. An approved set becomes un-published until re-approved. Blocked once the student has attempted the quiz — their responses reference these questions (the grading answer key).
    */
   async regenerateCreateRaw(
     requestParameters: RegenerateCreateRequest,
@@ -146,7 +146,7 @@ export class GeneratedQuestionSetsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Discard this set\'s questions and generate new ones from the student\'s submission. An approved set becomes un-published until re-approved.
+   * Discard this set\'s questions and generate new ones from the student\'s submission. An approved set becomes un-published until re-approved. Blocked once the student has attempted the quiz — their responses reference these questions (the grading answer key).
    */
   async regenerateCreate(
     requestParameters: RegenerateCreateRequest,
