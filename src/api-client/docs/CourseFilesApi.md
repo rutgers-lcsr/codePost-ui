@@ -160,7 +160,7 @@ example().catch(console.error);
 
 > Array&lt;CourseFile&gt; list()
 
-List course files. Requires ?course&#x3D;&lt;id&gt; query parameter. Returns files for courses where the user is a member.
+List course files. Requires ?course&#x3D;&lt;id&gt; query parameter. Staff see every file; students only see files flipped to studentVisible.
 
 ### Example
 

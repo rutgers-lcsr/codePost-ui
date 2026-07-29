@@ -62,6 +62,7 @@ import { IComponentProps } from '../core/ComponentManager';
 import CourseMenu, { encodedCourseLink } from '../core/CourseMenu';
 
 import AssignmentRow from './AssignmentRow';
+import StudentCourseFiles from './StudentCourseFiles';
 import { SubmissionStatus } from './submissionStatus';
 import { assignmentNeedsAction } from './actionStatus';
 import { getSubmissionStatusFor, groupAssignments, updateHistory } from './useStudentData';
@@ -158,8 +159,14 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   const currentCourseAssignments = assignmentsQuery.data ?? [];
   const isLoadingAssignments = assignmentsQuery.isPending;
 
-  const { courseQuizzes, isLoadingQuizzes, quizzesByAssignment, quizzesNeedingAction, handleTakeQuiz, handleReviewQuiz } =
-    useStudentQuizzes(currentCourse);
+  const {
+    courseQuizzes,
+    isLoadingQuizzes,
+    quizzesByAssignment,
+    quizzesNeedingAction,
+    handleTakeQuiz,
+    handleReviewQuiz,
+  } = useStudentQuizzes(currentCourse);
 
   const submissionsQuery = useStudentSubmissionsQuery(
     currentCourse?.id,
@@ -543,6 +550,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   // Render content
   let studentContent;
   let quizzesContent;
+  let filesContent;
   if (!currentCourse) {
     studentContent = (
       <div className={styles.console}>
@@ -555,6 +563,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       </div>
     );
     quizzesContent = studentContent;
+    filesContent = studentContent;
   } else if (isLoadingAssignments) {
     studentContent = (
       <div className={styles.console}>
@@ -564,6 +573,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       </div>
     );
     quizzesContent = studentContent;
+    filesContent = studentContent;
   } else {
     const lateDayCredits = getLateDayCreditsComponent();
     const assignmentList = currentCourseAssignments;
@@ -799,6 +809,9 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
         )}
       </>,
     );
+
+    /* Course file directory: files the instructor made visible to students. */
+    filesContent = pageChrome(<StudentCourseFiles courseId={currentCourse.id} />);
   }
 
   /* Build header */
@@ -854,6 +867,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
       <Route path="quizzes/:quizId/take" element={<QuizRoute mode="take" courseId={currentCourse?.id} />} />
       <Route path="quizzes/:quizId/review" element={<QuizRoute mode="review" courseId={currentCourse?.id} />} />
       <Route path="quizzes" element={shell(quizzesContent)} />
+      <Route path="files" element={shell(filesContent)} />
       <Route path="*" element={shell(studentContent)} />
     </Routes>
   );

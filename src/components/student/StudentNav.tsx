@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 
-import { FileTextOutlined, FormOutlined } from '@ant-design/icons';
+import { FileTextOutlined, FolderOutlined, FormOutlined } from '@ant-design/icons';
 
 import { Menu } from 'antd';
 
@@ -43,11 +43,16 @@ const navLabel = (text: string, count: number, to: string, selected: boolean) =>
 );
 
 /** In-page page list for the student course view (docs-sidebar style):
- *  Assignments and Quizzes, each with a count of items still needing action. */
+ *  Assignments and Quizzes (each with a count of items still needing action), and the
+ *  course file directory. */
 const StudentNav: React.FC<IProps> = ({ course, assignmentsCount, quizzesCount }) => {
   const location = useLocation();
   // The quiz-take route renders outside this shell, so /quizzes always means the Quizzes page.
-  const selectedKey = /\/quizzes(?:\/|$)/.test(location.pathname) ? 'quizzes' : 'assignments';
+  const selectedKey = /\/quizzes(?:\/|$)/.test(location.pathname)
+    ? 'quizzes'
+    : /\/files(?:\/|$)/.test(location.pathname)
+      ? 'files'
+      : 'assignments';
 
   return (
     <nav aria-label="Course pages" style={{ width: 200, flexShrink: 0, position: 'sticky', top: 24 }}>
@@ -75,6 +80,11 @@ const StudentNav: React.FC<IProps> = ({ course, assignmentsCount, quizzesCount }
               encodedCourseLink('student', course, 'quizzes'),
               selectedKey === 'quizzes',
             ),
+          },
+          {
+            key: 'files',
+            icon: <FolderOutlined />,
+            label: navLabel('Files', 0, encodedCourseLink('student', course, 'files'), selectedKey === 'files'),
           },
         ]}
       />

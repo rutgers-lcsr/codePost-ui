@@ -8,11 +8,33 @@
 // binary as a base64 `data:` URI.
 import * as React from 'react';
 import {
-  Card, Empty, Flex, Form, Input, Modal, Space, Spin, Switch, Table, Tag, Typography, Upload, Button, message,
+  Card,
+  Empty,
+  Flex,
+  Form,
+  Image,
+  Input,
+  Modal,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Tabs,
+  Tag,
+  Typography,
+  Upload,
+  Button,
+  message,
 } from 'antd';
 import type { RcFile, UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
 import {
-  DeleteOutlined, EditOutlined, FileTextOutlined, LinkOutlined, PlusOutlined, UploadOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  FileTextOutlined,
+  LinkOutlined,
+  PlusOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -21,9 +43,41 @@ import { Course, CourseFile } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { courseKeys } from '../../../lib/queryKeys';
 import { ImageExtensions, PDFExtensions, BinaryExtensions } from '../../../utils/file';
+import { dataBytes, dataUriMime, downloadCourseFile, formatBytes } from '../../../utils/courseFiles';
 import { useCourseFiles } from './queries';
 
 const { Text } = Typography;
+
+// Heavy renderers load on demand so this page doesn't pull the monaco/pdf/markdown
+// vendor chunks until a matching file is opened (same pattern as CodeContent.tsx).
+const CourseFileEditorLazy = React.lazy(() => import('./CourseFileEditor'));
+const CourseFilePdfPreviewLazy = React.lazy(() => import('./CourseFilePdfPreview'));
+const MarkdownLazy = React.lazy(() => import('../../core/Markdown'));
+
+const lazyFallback = (
+  <Flex justify="center" style={{ padding: 40 }}>
+    <Spin />
+  </Flex>
+);
+
+// Bridges an antd Form.Item (which injects value/onChange into its child) to the
+// lazy-loaded Monaco editor — Suspense itself can't forward those props.
+const LazyContentsEditor: React.FC<{
+  value?: string;
+  onChange?: (value: string) => void;
+  name: string;
+}> = (props) => (
+  <React.Suspense fallback={lazyFallback}>
+    <CourseFileEditorLazy {...props} />
+  </React.Suspense>
+);
+
+// Text formats that get a rendered Preview tab next to the editor (includes R/Quarto
+// markdown, common as course materials in R courses).
+const MARKDOWN_PREVIEW_EXTS = new Set(['.md', '.markdown', '.rmd', '.qmd']);
+
+const binaryKindLabel = (mime: string): string =>
+  mime.startsWith('image/') ? 'Image' : mime === 'application/pdf' ? 'PDF' : 'Binary file';
 
 // Match the server-side cap (core/constants.py MAX_COURSE_FILE_SIZE): course-file bytes live
 // in the DB as base64 text, so large files are out of scope.
@@ -31,8 +85,12 @@ const MAX_COURSE_FILE_BYTES = 25 * 1024 * 1024;
 
 // application/* MIME types that are really text (kept editable + usable as {course_file:name}).
 const TEXTUAL_MIME = new Set([
-  'application/json', 'application/xml', 'application/javascript',
-  'application/x-yaml', 'application/yaml', 'application/x-sh',
+  'application/json',
+  'application/xml',
+  'application/javascript',
+  'application/x-yaml',
+  'application/yaml',
+  'application/x-sh',
 ]);
 
 interface IProps {
@@ -43,6 +101,8 @@ interface IFileForm {
   name: string;
   data: string;
   isPublic: boolean;
+  studentVisible: boolean;
+  description: string;
 }
 
 const extOf = (name: string): string => {
@@ -57,8 +117,9 @@ const extensionFor = (name: string): string => {
   return dot > 0 ? name.slice(dot) : '.txt';
 };
 
-// Read as a base64 data: URI (rather than text) for images/PDFs/known-binary extensions or any
-// non-text MIME type — otherwise read as UTF-8 text.
+// Fast path: files that claim to be binary via MIME type or a known-binary extension skip
+// the UTF-8 sniff in readFile. Files with unknown types (e.g. .rds, .parquet — the browser
+// reports no MIME) are decided by content instead, so this list never has to be complete.
 const isLikelyBinary = (file: RcFile): boolean => {
   const type = file.type || '';
   const ext = extOf(file.name);
@@ -68,19 +129,14 @@ const isLikelyBinary = (file: RcFile): boolean => {
   return false;
 };
 
-// Decoded byte size of stored content (base64 data: URI or UTF-8 text).
-const dataBytes = (data?: string): number => {
-  if (!data) return 0;
-  if (data.startsWith('data:')) {
-    const comma = data.indexOf(',');
-    const b64 = comma >= 0 ? data.slice(comma + 1) : '';
-    return Math.floor((b64.length * 3) / 4);
+// Chunked so a 25 MB file doesn't blow the argument-spread stack limit.
+const toBase64 = (buf: Uint8Array): string => {
+  let s = '';
+  for (let i = 0; i < buf.length; i += 0x8000) {
+    s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
   }
-  return new Blob([data]).size;
+  return btoa(s);
 };
-
-const formatBytes = (n: number): string =>
-  n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`;
 
 const CourseFilesManager: React.FC<IProps> = ({ course }) => {
   const courseId = course.id!;
@@ -91,7 +147,12 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   // Set when the loaded content is binary (a data: URI) — the text editor is meaningless then.
-  const [binarySummary, setBinarySummary] = React.useState<{ size: number } | null>(null);
+  const [binarySummary, setBinarySummary] = React.useState<{ size: number; mime: string } | null>(null);
+  // Live form values: the filename drives the editor's syntax highlighting, and the
+  // contents feed the markdown Preview tab.
+  const nameValue = (Form.useWatch('name', form) as string | undefined) ?? '';
+  const dataValue = (Form.useWatch('data', form) as string | undefined) ?? '';
+  const isMarkdownFile = !binarySummary && MARKDOWN_PREVIEW_EXTS.has(extOf(nameValue));
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: courseKeys.files(courseId) });
 
@@ -105,13 +166,22 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
   const openEdit = (file: CourseFile) => {
     setEditing(file);
     const data = file.data ?? '';
-    form.setFieldsValue({ name: file.name, data, isPublic: !!file.isPublic });
-    setBinarySummary(data.startsWith('data:') ? { size: dataBytes(data) } : null);
+    form.setFieldsValue({
+      name: file.name,
+      data,
+      isPublic: !!file.isPublic,
+      studentVisible: !!file.studentVisible,
+      description: file.description ?? '',
+    });
+    setBinarySummary(data.startsWith('data:') ? { size: dataBytes(data), mime: dataUriMime(data) } : null);
     setModalOpen(true);
   };
 
   // Read a dropped/selected file and prefill the form (name only if still empty, so an
-  // in-progress rename isn't clobbered). Binary files → base64 data: URI; text files → UTF-8.
+  // in-progress rename isn't clobbered). The text/binary decision is made by CONTENT, not
+  // just the claimed type: anything that isn't valid UTF-8 (or claims a binary type) is
+  // stored as a base64 data: URI, so unknown types like .rds or .parquet survive intact
+  // instead of being corrupted by a lossy text decode. Valid UTF-8 stays editable text.
   const readFile = (options: {
     file: RcFile;
     onSuccess: (body: unknown, file: RcFile) => void;
@@ -124,25 +194,42 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
       onError(err);
       return;
     }
-    const binary = isLikelyBinary(file);
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        form.setFieldsValue({
-          data: reader.result,
-          ...(form.getFieldValue('name') ? {} : { name: file.name }),
-        });
-        setBinarySummary(binary ? { size: file.size } : null);
-        onSuccess(file.name, file);
-      } else {
+      if (!(reader.result instanceof ArrayBuffer)) {
         const err = new Error(`${file.name} could not be read.`);
         message.error(err.message);
         onError(err);
+        return;
       }
+      const buf = new Uint8Array(reader.result);
+      let text: string | null = null;
+      if (!isLikelyBinary(file)) {
+        try {
+          const decoded = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+          if (!decoded.includes('\0')) text = decoded;
+        } catch {
+          // Not valid UTF-8 — fall through to the binary path.
+        }
+      }
+      if (text !== null) {
+        form.setFieldsValue({
+          data: text,
+          ...(form.getFieldValue('name') ? {} : { name: file.name }),
+        });
+        setBinarySummary(null);
+      } else {
+        const mime = file.type || 'application/octet-stream';
+        form.setFieldsValue({
+          data: `data:${mime};base64,${toBase64(buf)}`,
+          ...(form.getFieldValue('name') ? {} : { name: file.name }),
+        });
+        setBinarySummary({ size: file.size, mime });
+      }
+      onSuccess(file.name, file);
     };
     reader.onerror = () => onError(new Error(`Failed to read ${file.name}.`));
-    if (binary) reader.readAsDataURL(file);
-    else reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const onUploadChange = (info: UploadChangeParam<UploadFile>) => {
@@ -159,7 +246,14 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
     setSaving(true);
     try {
       const name = values.name.trim();
-      const payload = { name, data, extension: extensionFor(name), isPublic: !!values.isPublic };
+      const payload = {
+        name,
+        data,
+        extension: extensionFor(name),
+        isPublic: !!values.isPublic,
+        studentVisible: !!values.studentVisible,
+        description: values.description?.trim() ?? '',
+      };
       if (editing) {
         await courseFilesApi.partialUpdate({ id: editing.id, patchedCourseFile: payload });
         message.success('Course file updated.');
@@ -182,6 +276,15 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
       invalidate();
     } catch {
       message.error('Failed to update sharing.');
+    }
+  };
+
+  const toggleStudentVisible = async (file: CourseFile, next: boolean) => {
+    try {
+      await courseFilesApi.partialUpdate({ id: file.id, patchedCourseFile: { studentVisible: next } });
+      invalidate();
+    } catch {
+      message.error('Failed to update student visibility.');
     }
   };
 
@@ -221,12 +324,7 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
       render: (name: string, record: CourseFile) => (
         <Space>
           <FileTextOutlined aria-hidden style={{ color: '#198665' }} />
-          <Button
-            type="text"
-            size="small"
-            onClick={() => openEdit(record)}
-            style={{ padding: 0, height: 'auto' }}
-          >
+          <Button type="text" size="small" onClick={() => openEdit(record)} style={{ padding: 0, height: 'auto' }}>
             {name}
           </Button>
         </Space>
@@ -243,8 +341,19 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
       title: 'Size',
       key: 'size',
       width: 90,
+      render: (_: unknown, record: CourseFile) => <Text type="secondary">{formatBytes(dataBytes(record.data))}</Text>,
+    },
+    {
+      title: 'Students',
+      key: 'studentVisible',
+      width: 90,
       render: (_: unknown, record: CourseFile) => (
-        <Text type="secondary">{formatBytes(dataBytes(record.data))}</Text>
+        <Switch
+          size="small"
+          checked={!!record.studentVisible}
+          onChange={(next) => toggleStudentVisible(record, next)}
+          aria-label={`Show ${record.name} to students`}
+        />
       ),
     },
     {
@@ -290,6 +399,13 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
         <Space.Compact size="small">
           <Button
             size="small"
+            icon={<DownloadOutlined />}
+            aria-label={`Download file: ${record.name}`}
+            title="Download file"
+            onClick={() => downloadCourseFile(record)}
+          />
+          <Button
+            size="small"
             icon={<EditOutlined />}
             aria-label={`Edit file: ${record.name}`}
             title="Edit file"
@@ -314,10 +430,10 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
         Course Files
       </Typography.Title>
       <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-        Upload course materials of any type (syllabi, slides, PDFs, images, datasets, or notes).
-        Flip a file to <Text strong>Public</Text> to share it with a link that needs no login. Text
-        files can also be referenced in an AI-generated question section's prompt as{' '}
-        <Text code>{'{course_file:name}'}</Text>.
+        Upload course materials of any type (syllabi, slides, PDFs, images, datasets, or notes). Flip a file to{' '}
+        <Text strong>Students</Text> to show it in the course file directory on the student course page, or to{' '}
+        <Text strong>Public</Text> to share it with a link that needs no login. Text files can also be referenced in an
+        AI-generated question section's prompt as <Text code>{'{course_file:name}'}</Text>.
       </Typography.Paragraph>
 
       <Card
@@ -341,11 +457,7 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
             <Spin />
           </Flex>
         ) : files.length === 0 ? (
-          <Empty
-            description="No course files yet"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ padding: 32 }}
-          />
+          <Empty description="No course files yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
         ) : (
           <Table dataSource={files} columns={columns} rowKey="id" size="small" pagination={false} />
         )}
@@ -361,7 +473,12 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
         destroyOnHidden
         width={640}
       >
-        <Form form={form} layout="vertical" initialValues={{ isPublic: false }} style={{ marginTop: 16 }}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ isPublic: false, studentVisible: false }}
+          style={{ marginTop: 16 }}
+        >
           <Form.Item label="Upload a file (optional)">
             <Upload
               showUploadList={false}
@@ -380,23 +497,87 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
           </Form.Item>
           {binarySummary ? (
             <Form.Item label="Contents">
-              <Text type="secondary">
-                Binary file — {formatBytes(binarySummary.size)}. Stored as uploaded; not editable here.
+              {binarySummary.mime.startsWith('image/') ? (
+                <Image
+                  src={dataValue}
+                  alt={`Preview of ${nameValue || 'the uploaded image'}`}
+                  style={{ maxHeight: 240, maxWidth: '100%', objectFit: 'contain' }}
+                />
+              ) : null}
+              {binarySummary.mime === 'application/pdf' ? (
+                <div style={{ maxHeight: 400, overflow: 'auto', marginBottom: 8 }}>
+                  <React.Suspense fallback={lazyFallback}>
+                    <CourseFilePdfPreviewLazy dataUri={dataValue} />
+                  </React.Suspense>
+                </div>
+              ) : null}
+              <Text type="secondary" style={{ display: 'block' }}>
+                {binaryKindLabel(binarySummary.mime)} — {formatBytes(binarySummary.size)} ({binarySummary.mime}). Stored
+                as uploaded; upload a new file above to replace it.
               </Text>
             </Form.Item>
+          ) : isMarkdownFile ? (
+            <Tabs
+              size="small"
+              items={[
+                {
+                  key: 'edit',
+                  label: 'Edit contents',
+                  children: (
+                    <Form.Item
+                      name="data"
+                      rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
+                    >
+                      <LazyContentsEditor name={nameValue} />
+                    </Form.Item>
+                  ),
+                },
+                {
+                  key: 'preview',
+                  label: 'Preview',
+                  children: (
+                    <div
+                      style={{
+                        maxHeight: 384,
+                        overflow: 'auto',
+                        border: '1px solid #d9d9d9',
+                        borderRadius: 6,
+                        padding: 12,
+                        marginBottom: 24,
+                      }}
+                    >
+                      <React.Suspense fallback={lazyFallback}>
+                        <MarkdownLazy>{dataValue}</MarkdownLazy>
+                      </React.Suspense>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           ) : (
             <Form.Item
               name="data"
               label="Contents"
               rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
             >
-              <Input.TextArea
-                autoSize={{ minRows: 8, maxRows: 24 }}
-                placeholder="Paste or edit the file's text here…"
-                style={{ fontFamily: 'monospace', fontSize: 13 }}
-              />
+              <LazyContentsEditor name={nameValue} />
             </Form.Item>
           )}
+          <Form.Item name="description" label="Description">
+            <Input.TextArea
+              autoSize={{ minRows: 2, maxRows: 4 }}
+              maxLength={2000}
+              placeholder="Optional description shown to students in the course file directory."
+            />
+          </Form.Item>
+          <Form.Item
+            name="studentVisible"
+            label="Visible to students"
+            valuePropName="checked"
+            extra="Students in this course can see and download the file from their course page."
+          >
+            <Switch />
+          </Form.Item>
           <Form.Item
             name="isPublic"
             label="Public link"

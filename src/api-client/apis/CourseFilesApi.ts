@@ -161,7 +161,7 @@ export class CourseFilesApi extends runtime.BaseAPI {
   }
 
   /**
-   * List course files. Requires ?course=<id> query parameter. Returns files for courses where the user is a member.
+   * List course files. Requires ?course=<id> query parameter. Staff see every file; students only see files flipped to studentVisible.
    */
   async listRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
@@ -201,7 +201,7 @@ export class CourseFilesApi extends runtime.BaseAPI {
   }
 
   /**
-   * List course files. Requires ?course=<id> query parameter. Returns files for courses where the user is a member.
+   * List course files. Requires ?course=<id> query parameter. Staff see every file; students only see files flipped to studentVisible.
    */
   async list(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<CourseFile>> {
     const response = await this.listRaw(initOverrides);

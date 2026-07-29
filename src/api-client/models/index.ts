@@ -3718,6 +3718,18 @@ export interface CourseFile {
    */
   readonly publicUrl: string | null;
   /**
+   * Optional description shown to students.
+   * @type {string}
+   * @memberof CourseFile
+   */
+  description?: string;
+  /**
+   * If True, students in the course can see and download this file in their course file directory. Staff always see all files.
+   * @type {boolean}
+   * @memberof CourseFile
+   */
+  studentVisible?: boolean;
+  /**
    *
    * @type {string}
    * @memberof CourseFile
@@ -7401,6 +7413,18 @@ export interface PatchedCourseFile {
    * @memberof PatchedCourseFile
    */
   readonly publicUrl?: string | null;
+  /**
+   * Optional description shown to students.
+   * @type {string}
+   * @memberof PatchedCourseFile
+   */
+  description?: string;
+  /**
+   * If True, students in the course can see and download this file in their course file directory. Staff always see all files.
+   * @type {boolean}
+   * @memberof PatchedCourseFile
+   */
+  studentVisible?: boolean;
   /**
    *
    * @type {string}
