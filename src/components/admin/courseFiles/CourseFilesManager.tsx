@@ -151,7 +151,10 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
   // Live form values: the filename drives the editor's syntax highlighting, and the
   // contents feed the markdown Preview tab.
   const nameValue = (Form.useWatch('name', form) as string | undefined) ?? '';
-  const dataValue = (Form.useWatch('data', form) as string | undefined) ?? '';
+  // preserve: true — in the binary branch no Form.Item registers 'data' (the value is set
+  // via setFieldsValue only), and a plain useWatch returns undefined for unregistered
+  // fields, which blanked the image/PDF previews.
+  const dataValue = (Form.useWatch('data', { form, preserve: true }) as string | undefined) ?? '';
   const isMarkdownFile = !binarySummary && MARKDOWN_PREVIEW_EXTS.has(extOf(nameValue));
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: courseKeys.files(courseId) });

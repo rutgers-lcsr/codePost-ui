@@ -82,7 +82,9 @@ interface IProps {
 }
 
 const StudentCourseFiles: React.FC<IProps> = ({ courseId }) => {
-  const { data: files = [], isLoading } = useCourseFiles(courseId);
+  const { data: allFiles = [], isLoading } = useCourseFiles(courseId);
+  // The backend already limits real students to studentVisible files, but staff get every
+  const files = React.useMemo(() => allFiles.filter((f) => !!f.studentVisible), [allFiles]);
   const [previewFile, setPreviewFile] = React.useState<CourseFile | null>(null);
 
   if (isLoading) {
