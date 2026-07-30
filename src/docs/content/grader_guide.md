@@ -195,6 +195,12 @@ To grade:
 4. Use **Reopen** to undo a grade you already saved and send it back to the queue (your feedback is
    kept as a draft).
 
+> [!TIP]
+> **Run a student's code.** On a **Code** response, use **Run code** to execute the student's
+> answer in the course's sandbox and see its output (stdout, errors, and any plots) right in the
+> grading view — with their submission files and datasets staged, so answers that reference "their"
+> data work. This is grader-only and never shown to the student.
+
 If the quiz's instructor enabled **Graders can review generated**, you may also review the
 AI-generated per-student question sets; otherwise that stays admin-only.
 

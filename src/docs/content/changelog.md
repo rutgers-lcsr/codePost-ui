@@ -10,7 +10,7 @@ order: 20
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 → 4.0.0 (current)
 
 ---
 
@@ -29,6 +29,59 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 - Allow Assignments to be assigned to graders per problem instead of per submission.
 - Allow PDF only assignments for non-code-based courses.
+
+---
+
+## v4.0.0 — Quizzes
+
+> **Highlight**: A full quiz system — question banks, flexible quiz building, timed attempts with
+> auto-grading, per-student AI-generated questions, Canvas import, and late-access codes.
+> See the new [Quizzes guide](/docs/instructor-quizzes) for the complete workflow.
+
+### New: Question Banks & Quizzes
+
+Build **question banks** of reusable questions — multiple choice, multiple answers, true/false,
+short answer, numerical, essay, and code (with a full code editor and starter code). Assemble
+quizzes from **fixed questions**, **random draws** from a bank, or **per-student AI-generated
+sections**. Quizzes can stand alone or **attach to an assignment** and open/close relative to its
+lifecycle (after submission, after feedback, etc.) — the quiz score always stays separate from the
+assignment grade.
+
+- **Timing & attempts** — time limits, per-student accommodation multipliers, attempt limits, and
+  a scoring policy (highest / latest / average) when multiple attempts are allowed.
+- **Delivery options** — shuffle questions, one-question-at-a-time with optional backtracking.
+- **Results controls** — decide when results are released (at submit or after close), whether
+  students can reopen submitted attempts, and whether they see their answers and the correct ones.
+- **Grading** — auto-graded question types score instantly; essay and code responses queue for
+  manual grading with feedback, "grade and next," reopen, and a sandboxed **Run code** button for
+  executing a student's answer. A dedicated **Quiz Grader** role lets TAs grade quizzes.
+- **Results & item analysis** — per-student official scores with CSV export, plus per-question
+  statistics to spot confusing items.
+
+### New: Per-Student AI-Generated Questions
+
+Add an **AI-generated section** to a quiz and each student gets a fresh set of questions grounded
+in **their own submission** — a post-submission "understanding check." Prompt templates, file and
+dataset variables, and starter presets (retasking, manual evaluation, explain-your-code) are built
+in. You review, edit, and **approve every set before the student sees it** (or opt into
+auto-publish) — and students never see any signal that a question was AI-assisted. AI-suggested
+questions for banks and cross-semester question refresh round out the AI tooling.
+
+### New: Canvas Import
+
+Export quizzes from Canvas (QTI / Common Cartridge) and import them into a question bank —
+optionally recreating the quizzes themselves. Imports are deduplicated and safe to re-run.
+
+### New: Late-Access Codes
+
+Generate a per-quiz **access code** to share with students who missed the deadline — entering it
+starts their attempt after close with the normal time limit. Codes can be rotated or removed at
+any time, and late starts are flagged and recorded in the Activity Log.
+
+### Improved: Course Activity Log
+
+Quiz activity is now recorded end-to-end: attempt starts (including late starts), submissions and
+auto-submissions, grading actions, access-code changes, and generated-set approvals.
 
 ---
 

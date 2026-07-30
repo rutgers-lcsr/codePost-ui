@@ -134,6 +134,13 @@ Quizzes show up in three places:
 If a quiz isn't open yet, it shows a **locked** state with a plain-language reason, such as "Opens
 after you submit," "Opens after the assignment closes," or "Your quiz is being prepared."
 
+### Missed the deadline?
+
+If a quiz has already closed, you normally can't start it. But if your instructor gives you an
+**access code**, use **Enter access code** on the closed quiz's card: a correct code starts your
+attempt right away, with the quiz's normal time limit. If the code isn't accepted, check it with
+your instructor — codes can be changed or removed at any time.
+
 ### Taking a quiz
 
 - **Autosave** — your answers save as you go; you'll see a **"Saving… / Saved"** indicator, and the
@@ -155,6 +162,11 @@ shows each one and marks which attempt **counts toward your grade**.
 > [!NOTE]
 > Some questions (essays and code) are graded by a person, so part of your score may show as
 > **"Awaiting grading"** until a grader gets to it.
+
+Exactly what you see is up to your instructor's settings: results may be **held until the quiz
+closes** (your score appears then, not at submit time), review may show your **answers or scores
+only**, and some quizzes show just a **submission confirmation** with your score appearing on the
+quiz card once results are released.
 
 ## Troubleshooting
 

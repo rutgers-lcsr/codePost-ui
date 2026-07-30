@@ -44,6 +44,21 @@ Filters combine with AND semantics. Clear a filter by clicking its **×**.
 | `late_day_used`        | A submission consumed a late-day allowance.                                  |
 | `comment_feedback`     | A student left thumbs-up/down on a rubric comment.                           |
 
+### Quiz events
+
+| Event type                       | When it fires                                                        |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `quiz_created` / `quiz_updated` / `quiz_deleted` | A staff member created, edited, or deleted a quiz.   |
+| `quiz_published` / `quiz_unpublished` | A quiz was made visible to students, or hidden again.           |
+| `quiz_access_code_changed`       | A late-access code was generated, rotated, or removed.               |
+| `quiz_attempt_started`           | A student started a quiz attempt.                                    |
+| `quiz_attempt_started_late`      | A student started **after the close** using an access code.          |
+| `quiz_attempt_submitted`         | A student submitted their attempt.                                   |
+| `quiz_attempt_autosubmitted`     | An attempt was auto-submitted (timer expiry or a hard close).        |
+| `quiz_attempts_reset`            | An admin deleted all attempts for a quiz.                            |
+| `quiz_response_graded` / `quiz_response_grade_reopened` | A grader saved or reopened a manual grade.    |
+| `quiz_generated_set_approved` / `_unapproved` / `_regenerated`, `quiz_generated_sets_published` | Staff actions on per-student AI-generated question sets. |
+
 > [!NOTE]
 > Sensitive admin actions (impersonation, capability changes, key edits) are recorded as **audit** events in the system log, not in the course Activity Log. Contact your organization admin or codePost staff to access those.
 
@@ -57,6 +72,7 @@ Click **Export CSV** in the top-right to download the currently-filtered view as
 - An assignment looks unusually high-traffic on the autograder — filter to `autograder_triggered` for that assignment.
 - A regrade request seems to have vanished — filter to `regrade_deleted` for the student.
 - Suspicious feedback-view patterns (e.g., many `feedback_view` events on other students) — surface via the per-student filter.
+- A dispute about quiz timing or access — check `quiz_attempt_started` / `quiz_attempt_started_late` / `quiz_attempt_autosubmitted` timestamps for the student, and `quiz_access_code_changed` for when codes were rotated.
 
 ## Related docs
 

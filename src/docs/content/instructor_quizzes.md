@@ -111,16 +111,35 @@ On the **Quizzes** tab, create a quiz, then work through the quiz builder's four
   *when feedback is released*, or a *fixed date* — with an optional **offset** (e.g. "a week after
   feedback"). **End attempts at close** makes the close a hard deadline that auto-submits any
   in-progress attempt; otherwise the close only blocks *new* attempts.
+- **Late access code** — optional. Generate a code and share it with students who missed the
+  deadline: entering it lets them start the quiz **after it closes**, with the normal time limit.
+  Nothing else about availability changes, and the code is never shown to students. You can
+  **copy**, **rotate** ("New code"), or **remove** the code at any time — rotating or removing
+  immediately invalidates the old one. Late starts are flagged on the attempt and recorded in the
+  [Activity Log](/docs/activity-log).
 - **Time limit** (leave blank for untimed).
 - **Attempts allowed** (0 = unlimited).
 - **Shuffle questions** — randomize order per attempt.
 - **Sequential mode** — show **one question at a time**, and optionally **allow backtracking**.
-- **Show correct answers** — *never*, *after submit*, or *after the quiz closes*.
 - **Passing score** — an optional threshold, as a percentage or raw points.
 - **Scoring policy** — when a student has multiple attempts, which one counts: *highest*, *latest*,
   or *average*.
 - **Publish** — an unpublished quiz is a **draft** only you can see. Students only see published
   quizzes.
+
+### What students see after submitting
+
+The **After submission** settings control what students can see about their results:
+
+- **When results are released** — *as soon as they submit*, or *after the quiz closes*. Holding
+  results until close keeps scores, points, and the answer key hidden — on the quiz card and on
+  review — until the quiz closes for that student. (This option requires the quiz to actually
+  close; the builder warns if you seal results on a quiz that never closes.)
+- **Let students reopen submitted attempts** — off means students get a submission confirmation
+  only; their score still appears on the quiz card once results are released.
+- **Results students see** — on review, *scores + their answers* or *scores only* (score without
+  the questions or their answers).
+- **Show correct answers** — *never*, *after submit*, or *after the quiz closes*.
 
 ### Questions
 
@@ -205,6 +224,11 @@ student submits. **Essay** and **Code** questions need a human — grade them on
 - **Item analysis** — per-question statistics (average score, how often each choice was picked, how
   many responses are still pending) to spot confusing questions.
 - **Reset attempts** — deletes **all** attempts for the quiz. **Course admins only.**
+
+Quiz activity is recorded in the course [Activity Log](/docs/activity-log): attempt starts
+(including **late starts** via access code), submissions and auto-submissions, grading actions,
+access-code changes, and generated-set approvals — useful when investigating a dispute about
+timing or access.
 
 ## Related docs
 
