@@ -17,7 +17,8 @@ import { AIUsageService } from '../../../services/aiUsage';
 import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../services/aiUsage';
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
-import type { AIModel, AIProviderTestResult } from '../../../api-client';
+import type { AIModel } from '../../../api-client';
+import AIProviderTestModal from '../../core/AIProviderTestModal';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 const { Text } = Typography;
@@ -29,9 +30,7 @@ interface IAISettingsCardProps {
 const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [testing, setTesting] = React.useState(false);
-  const [testPrompt, setTestPrompt] = React.useState('');
-  const [testResult, setTestResult] = React.useState<AIProviderTestResult | null>(null);
+  const [testOpen, setTestOpen] = React.useState(false);
 
   // Org-level availability
   const [orgAiAvailable, setOrgAiAvailable] = React.useState(false);
@@ -155,7 +154,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    setTestResult(null);
     try {
       const result = await AIUsageService.updateCourseAISettings(courseId, {
         aiUseOwnSettings,
@@ -193,18 +191,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     }
   };
 
-  const handleTest = async () => {
-    setTesting(true);
-    setTestResult(null);
-    try {
-      setTestResult(await AIUsageService.testCourseAI(courseId, testPrompt.trim() || undefined));
-    } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Connection test failed');
-    } finally {
-      setTesting(false);
-    }
-  };
-
   const mark = () => setIsDirty(true);
 
   const showBaseUrl = provider === 'ollama' || provider === 'portkey' || provider === 'custom';
@@ -224,26 +210,14 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       }
       extra={
         <Space>
-          <Input
-            size="small"
-            placeholder="Optional test prompt"
-            value={testPrompt}
-            onChange={(e) => setTestPrompt(e.target.value)}
-            onPressEnter={() => {
-              if (!isDirty && !isLoading && !testing) handleTest();
-            }}
-            maxLength={500}
-            allowClear
-            style={{ width: 200 }}
-          />
           <Tooltip
             title={
               isDirty
                 ? 'Save your changes first — the test runs against saved settings'
-                : 'Send a small test request to your AI provider'
+                : 'Send a test request to your AI provider'
             }
           >
-            <CPButton size="small" onClick={handleTest} loading={testing} disabled={isDirty || isLoading}>
+            <CPButton size="small" onClick={() => setTestOpen(true)} disabled={isDirty || isLoading}>
               Test
             </CPButton>
           </Tooltip>
@@ -264,47 +238,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         <Text type="secondary">Loading AI settings...</Text>
       ) : (
         <Flex vertical gap={16}>
-          {testResult && (
-            <Alert
-              type={testResult.success ? 'success' : 'error'}
-              showIcon
-              closable={{ onClose: () => setTestResult(null) }}
-              title={
-                testResult.success
-                  ? `Connection OK — ${testResult.provider} / ${testResult.model} responded in ${testResult.latencyMs} ms`
-                  : `Connection failed — ${testResult.error}`
-              }
-              description={
-                <Flex vertical gap={2}>
-                  {testResult.requestSystemPrompt && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Sent (system): {testResult.requestSystemPrompt}
-                    </Text>
-                  )}
-                  {testResult.requestUserPrompt && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Sent (user): {testResult.requestUserPrompt}
-                    </Text>
-                  )}
-                  {testResult.success && testResult.reportedModel && testResult.reportedModel !== testResult.model && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Provider reported model: {testResult.reportedModel}
-                    </Text>
-                  )}
-                  {testResult.success && testResult.response && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Generated: {testResult.response}
-                    </Text>
-                  )}
-                  {!testResult.success && testResult.errorDetail && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {testResult.errorDetail}
-                    </Text>
-                  )}
-                </Flex>
-              }
-            />
-          )}
           <Text type="secondary" style={{ marginBottom: 8 }}>
             Enable AI for this course. The global toggle controls all AI features, and each feature can be toggled
             individually below.
@@ -609,6 +542,15 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           )}
         </Flex>
       )}
+      <AIProviderTestModal
+        open={testOpen}
+        onClose={() => setTestOpen(false)}
+        provider={usingOrgSettings ? undefined : provider}
+        savedModel={usingOrgSettings ? undefined : model || undefined}
+        modelOptions={modelOptions}
+        loadingModels={loadingModels}
+        runTest={(prompt, testModel) => AIUsageService.testCourseAI(courseId, prompt, testModel)}
+      />
     </Card>
   );
 };

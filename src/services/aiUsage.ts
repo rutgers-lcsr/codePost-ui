@@ -126,17 +126,23 @@ export class AIUsageService {
 
   // --- Provider connection tests ---
 
-  /** Fire a live connection test against the course's effective AI config, optionally with a custom prompt. */
-  public static testCourseAI = (courseId: number, prompt?: string): Promise<AIProviderTestResult> =>
-    coursesApi.aiTestCreate({
+  /** Fire a live connection test against the course's effective AI config,
+   *  optionally with a custom prompt and/or a one-off model override. */
+  public static testCourseAI = (courseId: number, prompt?: string, model?: string): Promise<AIProviderTestResult> => {
+    const body = { ...(prompt ? { prompt } : {}), ...(model ? { model } : {}) };
+    return coursesApi.aiTestCreate({
       id: courseId,
-      ...(prompt ? { aIProviderTestRequest: { prompt } } : {}),
+      ...(Object.keys(body).length ? { aIProviderTestRequest: body } : {}),
     });
+  };
 
-  /** Fire a live connection test against the org's stored AI config, optionally with a custom prompt. */
-  public static testOrgAI = (orgId: number, prompt?: string): Promise<AIProviderTestResult> =>
-    organizationsApi.aiTestCreate({
+  /** Fire a live connection test against the org's stored AI config,
+   *  optionally with a custom prompt and/or a one-off model override. */
+  public static testOrgAI = (orgId: number, prompt?: string, model?: string): Promise<AIProviderTestResult> => {
+    const body = { ...(prompt ? { prompt } : {}), ...(model ? { model } : {}) };
+    return organizationsApi.aiTestCreate({
       id: orgId,
-      ...(prompt ? { aIProviderTestRequest: { prompt } } : {}),
+      ...(Object.keys(body).length ? { aIProviderTestRequest: body } : {}),
     });
+  };
 }

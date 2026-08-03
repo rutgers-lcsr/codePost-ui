@@ -161,5 +161,23 @@ describe('AIUsageService', () => {
       expect(result).toEqual(testResult);
       expect(organizationsApi.aiTestCreate).toHaveBeenCalledWith({ id: 2 });
     });
+
+    it('testCourseAI passes prompt and model overrides', async () => {
+      vi.mocked(coursesApi.aiTestCreate).mockResolvedValue({ success: true } as never);
+      await AIUsageService.testCourseAI(1, 'What is 2+2?', 'gpt-4o');
+      expect(coursesApi.aiTestCreate).toHaveBeenCalledWith({
+        id: 1,
+        aIProviderTestRequest: { prompt: 'What is 2+2?', model: 'gpt-4o' },
+      });
+    });
+
+    it('testOrgAI passes a model override without a prompt', async () => {
+      vi.mocked(organizationsApi.aiTestCreate).mockResolvedValue({ success: true } as never);
+      await AIUsageService.testOrgAI(2, undefined, 'gemini-3-flash-preview');
+      expect(organizationsApi.aiTestCreate).toHaveBeenCalledWith({
+        id: 2,
+        aIProviderTestRequest: { model: 'gemini-3-flash-preview' },
+      });
+    });
   });
 });

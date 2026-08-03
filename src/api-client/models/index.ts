@@ -82,6 +82,12 @@ export interface AIProviderTestRequest {
    * @memberof AIProviderTestRequest
    */
   prompt?: string;
+  /**
+   * Optional model id to test against, overriding the saved model without saving it
+   * @type {string}
+   * @memberof AIProviderTestRequest
+   */
+  model?: string;
 }
 /**
  * Result of a live AI provider connection test.

@@ -249,7 +249,7 @@ example().catch(console.error);
 
 > AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
 
-POST: Fire a small completion through the org\&#39;s stored AI config and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by Org Staff or superuser.
+POST: Fire a small completion through the org\&#39;s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by Org Staff or superuser.
 
 ### Example
 

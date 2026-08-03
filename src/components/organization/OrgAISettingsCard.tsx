@@ -34,7 +34,8 @@ import type { CustomTokenRates, DefaultTokenRates } from '../core/TokenRateEdito
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../utils/aiService';
 import type { AIProvider } from '../../utils/aiService';
 import { AiCoursePolicyEnum, PatchedOrganizationAISettingsUpdateAiProviderEnum } from '../../api-client';
-import type { AIModel, AIProviderTestResult } from '../../api-client';
+import type { AIModel } from '../../api-client';
+import AIProviderTestModal from '../core/AIProviderTestModal';
 import { AIUsageService } from '../../services/aiUsage';
 import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../services/aiUsage';
 import type { Course } from '../../api-client';
@@ -51,9 +52,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
-  const [testing, setTesting] = React.useState(false);
-  const [testPrompt, setTestPrompt] = React.useState('');
-  const [testResult, setTestResult] = React.useState<AIProviderTestResult | null>(null);
+  const [testOpen, setTestOpen] = React.useState(false);
 
   // Settings state
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
@@ -166,7 +165,6 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
 
   const handleSave = async () => {
     setSaving(true);
-    setTestResult(null);
     try {
       await AIUsageService.updateOrgAISettings(orgId, {
         aiProvider: (provider as PatchedOrganizationAISettingsUpdateAiProviderEnum | undefined) ?? null,
@@ -191,18 +189,6 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
     }
   };
 
-  const handleTest = async () => {
-    setTesting(true);
-    setTestResult(null);
-    try {
-      setTestResult(await AIUsageService.testOrgAI(orgId, testPrompt.trim() || undefined));
-    } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Connection test failed');
-    } finally {
-      setTesting(false);
-    }
-  };
-
   const mark = () => setIsDirty(true);
 
   return (
@@ -220,26 +206,14 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
       }
       extra={
         <Space>
-          <Input
-            size="small"
-            placeholder="Optional test prompt"
-            value={testPrompt}
-            onChange={(e) => setTestPrompt(e.target.value)}
-            onPressEnter={() => {
-              if (!isDirty && !loading && !testing) handleTest();
-            }}
-            maxLength={500}
-            allowClear
-            style={{ width: 200 }}
-          />
           <Tooltip
             title={
               isDirty
                 ? 'Save your changes first — the test runs against saved settings'
-                : 'Send a small test request to your AI provider'
+                : 'Send a test request to your AI provider'
             }
           >
-            <CPButton size="small" onClick={handleTest} loading={testing} disabled={isDirty || loading}>
+            <CPButton size="small" onClick={() => setTestOpen(true)} disabled={isDirty || loading}>
               Test
             </CPButton>
           </Tooltip>
@@ -254,47 +228,6 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         <Text type="secondary">Loading…</Text>
       ) : (
         <Flex vertical gap={20}>
-          {testResult && (
-            <Alert
-              type={testResult.success ? 'success' : 'error'}
-              showIcon
-              closable={{ onClose: () => setTestResult(null) }}
-              title={
-                testResult.success
-                  ? `Connection OK — ${testResult.provider} / ${testResult.model} responded in ${testResult.latencyMs} ms`
-                  : `Connection failed — ${testResult.error}`
-              }
-              description={
-                <Flex vertical gap={2}>
-                  {testResult.requestSystemPrompt && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Sent (system): {testResult.requestSystemPrompt}
-                    </Text>
-                  )}
-                  {testResult.requestUserPrompt && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Sent (user): {testResult.requestUserPrompt}
-                    </Text>
-                  )}
-                  {testResult.success && testResult.reportedModel && testResult.reportedModel !== testResult.model && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Provider reported model: {testResult.reportedModel}
-                    </Text>
-                  )}
-                  {testResult.success && testResult.response && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      Generated: {testResult.response}
-                    </Text>
-                  )}
-                  {!testResult.success && testResult.errorDetail && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {testResult.errorDetail}
-                    </Text>
-                  )}
-                </Flex>
-              }
-            />
-          )}
           <Text type="secondary">
             Configure a shared AI API key for this organization. Courses can use these credentials or provide their own.
             The course policy controls which courses have access to the organization key.
@@ -624,6 +557,15 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
           </Flex>
         </Flex>
       )}
+      <AIProviderTestModal
+        open={testOpen}
+        onClose={() => setTestOpen(false)}
+        provider={provider}
+        savedModel={model || undefined}
+        modelOptions={modelOptions}
+        loadingModels={loadingModels}
+        runTest={(prompt, testModel) => AIUsageService.testOrgAI(orgId, prompt, testModel)}
+      />
     </Card>
   );
 };
