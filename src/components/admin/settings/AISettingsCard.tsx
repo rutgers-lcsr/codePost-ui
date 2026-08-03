@@ -30,6 +30,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
   const [testing, setTesting] = React.useState(false);
+  const [testPrompt, setTestPrompt] = React.useState('');
   const [testResult, setTestResult] = React.useState<AIProviderTestResult | null>(null);
 
   // Org-level availability
@@ -196,7 +197,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     setTesting(true);
     setTestResult(null);
     try {
-      setTestResult(await AIUsageService.testCourseAI(courseId));
+      setTestResult(await AIUsageService.testCourseAI(courseId, testPrompt.trim() || undefined));
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Connection test failed');
     } finally {
@@ -223,11 +224,23 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       }
       extra={
         <Space>
+          <Input
+            size="small"
+            placeholder="Optional test prompt"
+            value={testPrompt}
+            onChange={(e) => setTestPrompt(e.target.value)}
+            onPressEnter={() => {
+              if (!isDirty && !isLoading && !testing) handleTest();
+            }}
+            maxLength={500}
+            allowClear
+            style={{ width: 200 }}
+          />
           <Tooltip
             title={
               isDirty
                 ? 'Save your changes first — the test runs against saved settings'
-                : 'Send a minimal test request to your AI provider'
+                : 'Send a small test request to your AI provider'
             }
           >
             <CPButton size="small" onClick={handleTest} loading={testing} disabled={isDirty || isLoading}>
@@ -262,24 +275,33 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   : `Connection failed — ${testResult.error}`
               }
               description={
-                testResult.success ? (
-                  <Flex vertical gap={2}>
-                    {testResult.reportedModel && testResult.reportedModel !== testResult.model && (
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        Provider reported model: {testResult.reportedModel}
-                      </Text>
-                    )}
-                    {testResult.response && (
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        Response: {testResult.response}
-                      </Text>
-                    )}
-                  </Flex>
-                ) : testResult.errorDetail ? (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {testResult.errorDetail}
-                  </Text>
-                ) : undefined
+                <Flex vertical gap={2}>
+                  {testResult.requestSystemPrompt && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Sent (system): {testResult.requestSystemPrompt}
+                    </Text>
+                  )}
+                  {testResult.requestUserPrompt && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Sent (user): {testResult.requestUserPrompt}
+                    </Text>
+                  )}
+                  {testResult.success && testResult.reportedModel && testResult.reportedModel !== testResult.model && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Provider reported model: {testResult.reportedModel}
+                    </Text>
+                  )}
+                  {testResult.success && testResult.response && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Generated: {testResult.response}
+                    </Text>
+                  )}
+                  {!testResult.success && testResult.errorDetail && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {testResult.errorDetail}
+                    </Text>
+                  )}
+                </Flex>
               }
             />
           )}

@@ -71,6 +71,19 @@ export interface AIProviderModelsList {
   providers: Array<AIProviderModels>;
 }
 /**
+ * Optional request body for the AI provider connection test.
+ * @export
+ * @interface AIProviderTestRequest
+ */
+export interface AIProviderTestRequest {
+  /**
+   * Optional custom prompt to send instead of the default connectivity prompt
+   * @type {string}
+   * @memberof AIProviderTestRequest
+   */
+  prompt?: string;
+}
+/**
  * Result of a live AI provider connection test.
  * @export
  * @interface AIProviderTestResult
@@ -106,6 +119,18 @@ export interface AIProviderTestResult {
    * @memberof AIProviderTestResult
    */
   latencyMs?: number | null;
+  /**
+   * System prompt sent to the provider (null if no request was attempted)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  requestSystemPrompt?: string | null;
+  /**
+   * User prompt sent to the provider (null if no request was attempted)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  requestUserPrompt?: string | null;
   /**
    * The model's reply (up to 2000 characters)
    * @type {string}

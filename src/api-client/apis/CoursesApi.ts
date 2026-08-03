@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   AIProviderModelsList,
+  AIProviderTestRequest,
   AIProviderTestResult,
   AIUsageSummary,
   CapabilitiesResponse,
@@ -76,6 +77,7 @@ export interface AiSettingsRetrieveRequest {
 
 export interface AiTestCreateRequest {
   id: number;
+  aIProviderTestRequest?: AIProviderTestRequest;
 }
 
 export interface AiUsageRetrieveRequest {
@@ -519,7 +521,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a minimal completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Records no usage. Only accessible by course admins.
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by course admins.
    */
   async aiTestCreateRaw(
     requestParameters: AiTestCreateRequest,
@@ -535,6 +537,8 @@ export class CoursesApi extends runtime.BaseAPI {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
 
     if (
       this.configuration &&
@@ -560,6 +564,7 @@ export class CoursesApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
+        body: requestParameters['aIProviderTestRequest'],
       },
       initOverrides,
     );
@@ -568,7 +573,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a minimal completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Records no usage. Only accessible by course admins.
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by course admins.
    */
   async aiTestCreate(
     requestParameters: AiTestCreateRequest,

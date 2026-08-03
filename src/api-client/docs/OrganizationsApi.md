@@ -247,34 +247,39 @@ example().catch(console.error);
 
 ## aiTestCreate
 
-> AIProviderTestResult aiTestCreate(id)
+> AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
 
-POST: Fire a minimal completion through the org\&#39;s stored AI config and report success, latency, and any error. Records no usage. Only accessible by Org Staff or superuser.
+POST: Fire a small completion through the org\&#39;s stored AI config and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by Org Staff or superuser.
 
 ### Example
 
 ```ts
-import { Configuration, OrganizationsApi } from '';
+import {
+  Configuration,
+  OrganizationsApi,
+} from '';
 import type { AiTestCreateRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
+  console.log("🚀 Testing  SDK...");
   const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: courseKeyAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
   });
   const api = new OrganizationsApi(config);
 
   const body = {
     // number | A unique integer value identifying this organization.
     id: 56,
+    // AIProviderTestRequest (optional)
+    aIProviderTestRequest: ...,
   } satisfies AiTestCreateRequest;
 
   try {
@@ -291,9 +296,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                           | Notes                     |
-| ------ | -------- | ----------------------------------------------------- | ------------------------- |
-| **id** | `number` | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| Name                      | Type                                              | Description                                           | Notes                     |
+| ------------------------- | ------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                    | `number`                                          | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| **aIProviderTestRequest** | [AIProviderTestRequest](AIProviderTestRequest.md) |                                                       | [Optional]                |
 
 ### Return type
 
@@ -305,7 +311,7 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

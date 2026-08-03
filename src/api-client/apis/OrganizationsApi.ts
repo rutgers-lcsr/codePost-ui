@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   AIProviderModelsList,
+  AIProviderTestRequest,
   AIProviderTestResult,
   AIUsageSummary,
   Organization,
@@ -39,6 +40,7 @@ export interface AiSettingsRetrieveRequest {
 
 export interface AiTestCreateRequest {
   id: number;
+  aIProviderTestRequest?: AIProviderTestRequest;
 }
 
 export interface AiUsageRetrieveRequest {
@@ -305,7 +307,7 @@ export class OrganizationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a minimal completion through the org\'s stored AI config and report success, latency, and any error. Records no usage. Only accessible by Org Staff or superuser.
+   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by Org Staff or superuser.
    */
   async aiTestCreateRaw(
     requestParameters: AiTestCreateRequest,
@@ -321,6 +323,8 @@ export class OrganizationsApi extends runtime.BaseAPI {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
 
     if (
       this.configuration &&
@@ -346,6 +350,7 @@ export class OrganizationsApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
+        body: requestParameters['aIProviderTestRequest'],
       },
       initOverrides,
     );
@@ -354,7 +359,7 @@ export class OrganizationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a minimal completion through the org\'s stored AI config and report success, latency, and any error. Records no usage. Only accessible by Org Staff or superuser.
+   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by Org Staff or superuser.
    */
   async aiTestCreate(
     requestParameters: AiTestCreateRequest,

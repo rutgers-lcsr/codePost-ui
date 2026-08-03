@@ -126,11 +126,17 @@ export class AIUsageService {
 
   // --- Provider connection tests ---
 
-  /** Fire a live connection test against the course's effective AI config. */
-  public static testCourseAI = (courseId: number): Promise<AIProviderTestResult> =>
-    coursesApi.aiTestCreate({ id: courseId });
+  /** Fire a live connection test against the course's effective AI config, optionally with a custom prompt. */
+  public static testCourseAI = (courseId: number, prompt?: string): Promise<AIProviderTestResult> =>
+    coursesApi.aiTestCreate({
+      id: courseId,
+      ...(prompt ? { aIProviderTestRequest: { prompt } } : {}),
+    });
 
-  /** Fire a live connection test against the org's stored AI config. */
-  public static testOrgAI = (orgId: number): Promise<AIProviderTestResult> =>
-    organizationsApi.aiTestCreate({ id: orgId });
+  /** Fire a live connection test against the org's stored AI config, optionally with a custom prompt. */
+  public static testOrgAI = (orgId: number, prompt?: string): Promise<AIProviderTestResult> =>
+    organizationsApi.aiTestCreate({
+      id: orgId,
+      ...(prompt ? { aIProviderTestRequest: { prompt } } : {}),
+    });
 }

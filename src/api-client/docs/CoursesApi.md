@@ -341,34 +341,39 @@ example().catch(console.error);
 
 ## aiTestCreate
 
-> AIProviderTestResult aiTestCreate(id)
+> AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
 
-POST: Fire a minimal completion through the course\&#39;s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Records no usage. Only accessible by course admins.
+POST: Fire a small completion through the course\&#39;s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt. Records no usage. Only accessible by course admins.
 
 ### Example
 
 ```ts
-import { Configuration, CoursesApi } from '';
+import {
+  Configuration,
+  CoursesApi,
+} from '';
 import type { AiTestCreateRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
+  console.log("🚀 Testing  SDK...");
   const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: courseKeyAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
   });
   const api = new CoursesApi(config);
 
   const body = {
     // number | A unique integer value identifying this course.
     id: 56,
+    // AIProviderTestRequest (optional)
+    aIProviderTestRequest: ...,
   } satisfies AiTestCreateRequest;
 
   try {
@@ -385,9 +390,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                     | Notes                     |
-| ------ | -------- | ----------------------------------------------- | ------------------------- |
-| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| Name                      | Type                                              | Description                                     | Notes                     |
+| ------------------------- | ------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                    | `number`                                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **aIProviderTestRequest** | [AIProviderTestRequest](AIProviderTestRequest.md) |                                                 | [Optional]                |
 
 ### Return type
 
@@ -399,7 +405,7 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details
