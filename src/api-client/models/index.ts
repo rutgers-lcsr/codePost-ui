@@ -4020,6 +4020,56 @@ export interface DashboardStats {
 /**
  * Result of a single health probe.
  * @export
+ * @interface DatabaseCheck
+ */
+export interface DatabaseCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof DatabaseCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof DatabaseCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof DatabaseCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  latencyMs?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsCurrent?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsMaxUsed?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsLimit?: number | null;
+}
+
+/**
+ * Result of a single health probe.
+ * @export
  * @interface DiskCheck
  */
 export interface DiskCheck {
@@ -14154,10 +14204,10 @@ export interface SystemHealthResponse {
   overall: OverallEnum;
   /**
    *
-   * @type {HealthCheck}
+   * @type {DatabaseCheck}
    * @memberof SystemHealthResponse
    */
-  database: HealthCheck;
+  database: DatabaseCheck;
   /**
    *
    * @type {CeleryCheck}
