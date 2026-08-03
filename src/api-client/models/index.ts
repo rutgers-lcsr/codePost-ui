@@ -95,13 +95,19 @@ export interface AIProviderTestResult {
    */
   model: string;
   /**
+   * Model id the provider reported back (may differ from the requested model, e.g. a gateway-routed or versioned model)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  reportedModel?: string | null;
+  /**
    * Round-trip time of the test request in milliseconds
    * @type {number}
    * @memberof AIProviderTestResult
    */
   latencyMs?: number | null;
   /**
-   * First 200 characters of the model's reply
+   * The model's reply (up to 2000 characters)
    * @type {string}
    * @memberof AIProviderTestResult
    */

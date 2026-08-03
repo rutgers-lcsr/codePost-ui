@@ -262,9 +262,22 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   : `Connection failed — ${testResult.error}`
               }
               description={
-                (testResult.success ? testResult.response : testResult.errorDetail) ? (
+                testResult.success ? (
+                  <Flex vertical gap={2}>
+                    {testResult.reportedModel && testResult.reportedModel !== testResult.model && (
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Provider reported model: {testResult.reportedModel}
+                      </Text>
+                    )}
+                    {testResult.response && (
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Response: {testResult.response}
+                      </Text>
+                    )}
+                  </Flex>
+                ) : testResult.errorDetail ? (
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    {testResult.success ? `Response: ${testResult.response}` : testResult.errorDetail}
+                    {testResult.errorDetail}
                   </Text>
                 ) : undefined
               }
