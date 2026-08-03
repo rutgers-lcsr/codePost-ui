@@ -58,6 +58,7 @@ apis/index.ts
 docs/AIModel.md
 docs/AIProviderModels.md
 docs/AIProviderModelsList.md
+docs/AIProviderTestResult.md
 docs/AIUsageBreakdown.md
 docs/AIUsageBucket.md
 docs/AIUsageSummary.md

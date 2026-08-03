@@ -8,7 +8,7 @@
  */
 
 import * as React from 'react';
-import { Alert, AutoComplete, Card, Flex, Input, message, Select, Space, Spin, Switch, Typography } from 'antd';
+import { Alert, AutoComplete, Card, Flex, Input, message, Select, Space, Spin, Switch, Tooltip, Typography } from 'antd';
 import { RobotOutlined, BankOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import TokenRateEditor from '../../core/TokenRateEditor';
@@ -17,7 +17,7 @@ import { AIUsageService } from '../../../services/aiUsage';
 import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../services/aiUsage';
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
-import type { AIModel } from '../../../api-client';
+import type { AIModel, AIProviderTestResult } from '../../../api-client';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 const { Text } = Typography;
@@ -29,6 +29,8 @@ interface IAISettingsCardProps {
 const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [testing, setTesting] = React.useState(false);
+  const [testResult, setTestResult] = React.useState<AIProviderTestResult | null>(null);
 
   // Org-level availability
   const [orgAiAvailable, setOrgAiAvailable] = React.useState(false);
@@ -152,6 +154,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
 
   const handleSave = async () => {
     setIsSaving(true);
+    setTestResult(null);
     try {
       const result = await AIUsageService.updateCourseAISettings(courseId, {
         aiUseOwnSettings,
@@ -189,6 +192,18 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     }
   };
 
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      setTestResult(await AIUsageService.testCourseAI(courseId));
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Connection test failed');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const mark = () => setIsDirty(true);
 
   const showBaseUrl = provider === 'ollama' || provider === 'portkey' || provider === 'custom';
@@ -207,15 +222,28 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         </Space>
       }
       extra={
-        <CPButton
-          cpType="primary"
-          size="small"
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={!isDirty || isLoading}
-        >
-          Save AI Settings
-        </CPButton>
+        <Space>
+          <Tooltip
+            title={
+              isDirty
+                ? 'Save your changes first — the test runs against saved settings'
+                : 'Send a minimal test request to your AI provider'
+            }
+          >
+            <CPButton size="small" onClick={handleTest} loading={testing} disabled={isDirty || isLoading}>
+              Test
+            </CPButton>
+          </Tooltip>
+          <CPButton
+            cpType="primary"
+            size="small"
+            onClick={handleSave}
+            loading={isSaving}
+            disabled={!isDirty || isLoading}
+          >
+            Save AI Settings
+          </CPButton>
+        </Space>
       }
       style={{ marginBottom: 24 }}
     >
@@ -223,6 +251,25 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         <Text type="secondary">Loading AI settings...</Text>
       ) : (
         <Flex vertical gap={16}>
+          {testResult && (
+            <Alert
+              type={testResult.success ? 'success' : 'error'}
+              showIcon
+              closable={{ onClose: () => setTestResult(null) }}
+              title={
+                testResult.success
+                  ? `Connection OK — ${testResult.provider} / ${testResult.model} responded in ${testResult.latencyMs} ms`
+                  : `Connection failed — ${testResult.error}`
+              }
+              description={
+                (testResult.success ? testResult.response : testResult.errorDetail) ? (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {testResult.success ? `Response: ${testResult.response}` : testResult.errorDetail}
+                  </Text>
+                ) : undefined
+              }
+            />
+          )}
           <Text type="secondary" style={{ marginBottom: 8 }}>
             Enable AI for this course. The global toggle controls all AI features, and each feature can be toggled
             individually below.

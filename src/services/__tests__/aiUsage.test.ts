@@ -144,4 +144,22 @@ describe('AIUsageService', () => {
       expect(result).toEqual({ models: [] });
     });
   });
+
+  describe('Provider connection tests', () => {
+    it('testCourseAI calls coursesApi', async () => {
+      const testResult = { success: true, provider: 'openai', model: 'gpt-4o-mini', latencyMs: 123.4 };
+      vi.mocked(coursesApi.aiTestCreate).mockResolvedValue(testResult as never);
+      const result = await AIUsageService.testCourseAI(1);
+      expect(result).toEqual(testResult);
+      expect(coursesApi.aiTestCreate).toHaveBeenCalledWith({ id: 1 });
+    });
+
+    it('testOrgAI calls organizationsApi', async () => {
+      const testResult = { success: false, provider: 'portkey', model: 'default', error: 'Connection failed' };
+      vi.mocked(organizationsApi.aiTestCreate).mockResolvedValue(testResult as never);
+      const result = await AIUsageService.testOrgAI(2);
+      expect(result).toEqual(testResult);
+      expect(organizationsApi.aiTestCreate).toHaveBeenCalledWith({ id: 2 });
+    });
+  });
 });

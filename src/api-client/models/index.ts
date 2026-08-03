@@ -71,6 +71,55 @@ export interface AIProviderModelsList {
   providers: Array<AIProviderModels>;
 }
 /**
+ * Result of a live AI provider connection test.
+ * @export
+ * @interface AIProviderTestResult
+ */
+export interface AIProviderTestResult {
+  /**
+   * Whether the provider answered the test prompt
+   * @type {boolean}
+   * @memberof AIProviderTestResult
+   */
+  success: boolean;
+  /**
+   * Provider identifier the test ran against
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  provider: string;
+  /**
+   * Model the test ran against
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  model: string;
+  /**
+   * Round-trip time of the test request in milliseconds
+   * @type {number}
+   * @memberof AIProviderTestResult
+   */
+  latencyMs?: number | null;
+  /**
+   * First 200 characters of the model's reply
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  response?: string | null;
+  /**
+   * Friendly error message
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  error?: string | null;
+  /**
+   * Raw exception detail for debugging
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  errorDetail?: string | null;
+}
+/**
  * Usage breakdown by a dimension (course, assignment, provider, model).
  * @export
  * @interface AIUsageBreakdown

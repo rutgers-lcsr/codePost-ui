@@ -11,7 +11,22 @@
  */
 
 import React from 'react';
-import { Alert, AutoComplete, Card, Flex, Input, message, Select, Space, Spin, Switch, Tag, Transfer, Typography } from 'antd';
+import {
+  Alert,
+  AutoComplete,
+  Card,
+  Flex,
+  Input,
+  message,
+  Select,
+  Space,
+  Spin,
+  Switch,
+  Tag,
+  Tooltip,
+  Transfer,
+  Typography,
+} from 'antd';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
 import CPButton from '../core/CPButton';
 import TokenRateEditor from '../core/TokenRateEditor';
@@ -19,7 +34,7 @@ import type { CustomTokenRates, DefaultTokenRates } from '../core/TokenRateEdito
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../utils/aiService';
 import type { AIProvider } from '../../utils/aiService';
 import { AiCoursePolicyEnum, PatchedOrganizationAISettingsUpdateAiProviderEnum } from '../../api-client';
-import type { AIModel } from '../../api-client';
+import type { AIModel, AIProviderTestResult } from '../../api-client';
 import { AIUsageService } from '../../services/aiUsage';
 import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../services/aiUsage';
 import type { Course } from '../../api-client';
@@ -36,6 +51,8 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [isDirty, setIsDirty] = React.useState(false);
+  const [testing, setTesting] = React.useState(false);
+  const [testResult, setTestResult] = React.useState<AIProviderTestResult | null>(null);
 
   // Settings state
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
@@ -148,6 +165,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
 
   const handleSave = async () => {
     setSaving(true);
+    setTestResult(null);
     try {
       await AIUsageService.updateOrgAISettings(orgId, {
         aiProvider: (provider as PatchedOrganizationAISettingsUpdateAiProviderEnum | undefined) ?? null,
@@ -172,6 +190,18 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
     }
   };
 
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      setTestResult(await AIUsageService.testOrgAI(orgId));
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Connection test failed');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const mark = () => setIsDirty(true);
 
   return (
@@ -188,9 +218,22 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         </Space>
       }
       extra={
-        <CPButton cpType="primary" size="small" onClick={handleSave} loading={saving} disabled={!isDirty || loading}>
-          Save
-        </CPButton>
+        <Space>
+          <Tooltip
+            title={
+              isDirty
+                ? 'Save your changes first — the test runs against saved settings'
+                : 'Send a minimal test request to your AI provider'
+            }
+          >
+            <CPButton size="small" onClick={handleTest} loading={testing} disabled={isDirty || loading}>
+              Test
+            </CPButton>
+          </Tooltip>
+          <CPButton cpType="primary" size="small" onClick={handleSave} loading={saving} disabled={!isDirty || loading}>
+            Save
+          </CPButton>
+        </Space>
       }
       style={{ marginBottom: 24, maxWidth: 860 }}
     >
@@ -198,6 +241,25 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
         <Text type="secondary">Loading…</Text>
       ) : (
         <Flex vertical gap={20}>
+          {testResult && (
+            <Alert
+              type={testResult.success ? 'success' : 'error'}
+              showIcon
+              closable={{ onClose: () => setTestResult(null) }}
+              title={
+                testResult.success
+                  ? `Connection OK — ${testResult.provider} / ${testResult.model} responded in ${testResult.latencyMs} ms`
+                  : `Connection failed — ${testResult.error}`
+              }
+              description={
+                (testResult.success ? testResult.response : testResult.errorDetail) ? (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {testResult.success ? `Response: ${testResult.response}` : testResult.errorDetail}
+                  </Text>
+                ) : undefined
+              }
+            />
+          )}
           <Text type="secondary">
             Configure a shared AI API key for this organization. Courses can use these credentials or provide their own.
             The course policy controls which courses have access to the organization key.

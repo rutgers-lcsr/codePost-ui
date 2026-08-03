@@ -3,6 +3,7 @@ import { organizationsApi, coursesApi, systemApi, apiClientConfig } from '../api
 import type {
   AIUsageSummary,
   AIProviderModelsList,
+  AIProviderTestResult,
   OrganizationAISettings,
   PatchedOrganizationAISettingsUpdate,
   CourseAISettings,
@@ -122,4 +123,14 @@ export class AIUsageService {
   /** Get models for the course's effective provider, including live-queried models. */
   public static getCourseModels = (courseId: number): Promise<AIProviderModelsList> =>
     coursesApi.aiModelsRetrieve({ id: courseId });
+
+  // --- Provider connection tests ---
+
+  /** Fire a live connection test against the course's effective AI config. */
+  public static testCourseAI = (courseId: number): Promise<AIProviderTestResult> =>
+    coursesApi.aiTestCreate({ id: courseId });
+
+  /** Fire a live connection test against the org's stored AI config. */
+  public static testOrgAI = (orgId: number): Promise<AIProviderTestResult> =>
+    organizationsApi.aiTestCreate({ id: orgId });
 }
