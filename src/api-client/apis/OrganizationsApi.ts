@@ -307,7 +307,7 @@ export class OrganizationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by Org Staff or superuser.
+   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by Org Staff or superuser.
    */
   async aiTestCreateRaw(
     requestParameters: AiTestCreateRequest,
@@ -359,7 +359,7 @@ export class OrganizationsApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by Org Staff or superuser.
+   * POST: Fire a small completion through the org\'s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by Org Staff or superuser.
    */
   async aiTestCreate(
     requestParameters: AiTestCreateRequest,

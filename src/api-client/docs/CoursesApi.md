@@ -343,7 +343,7 @@ example().catch(console.error);
 
 > AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
 
-POST: Fire a small completion through the course\&#39;s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by course admins.
+POST: Fire a small completion through the course\&#39;s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \&#39;provider_test\&#39;. Only accessible by course admins.
 
 ### Example
 

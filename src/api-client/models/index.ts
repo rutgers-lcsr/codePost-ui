@@ -303,6 +303,12 @@ export interface AIUsageSummary {
    */
   modelBreakdown?: Array<AIUsageBreakdown>;
   /**
+   * Usage breakdown by AI feature (request type)
+   * @type {Array<AIUsageBreakdown>}
+   * @memberof AIUsageSummary
+   */
+  featureBreakdown?: Array<AIUsageBreakdown>;
+  /**
    *
    * @type {GranularityEnum}
    * @memberof AIUsageSummary

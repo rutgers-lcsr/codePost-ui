@@ -521,7 +521,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by course admins.
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by course admins.
    */
   async aiTestCreateRaw(
     requestParameters: AiTestCreateRequest,
@@ -573,7 +573,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Records no usage. Only accessible by course admins.
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by course admins.
    */
   async aiTestCreate(
     requestParameters: AiTestCreateRequest,
