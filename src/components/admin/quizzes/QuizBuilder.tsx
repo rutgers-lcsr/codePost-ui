@@ -37,9 +37,10 @@ import { Course, Quiz, QuizGeneratedSection, QuizQuestion, QuizQuestionGroup } f
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
 import {
-  useAIQuizGenerationEnabled, useCourseQuestions, useGeneratedSets, useQuizAttempts, useQuizMembership,
+  useCourseQuestions, useGeneratedSets, useQuizAttempts, useQuizMembership,
   useQuizDetail, useQuestionBanks,
 } from './queries';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 import { typeMeta } from '../../core/questionMeta';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
@@ -245,10 +246,12 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   // Quiz graders / admins only — a 403 for plain staff simply hides the count.
   const { data: pendingAttempts = [] } = useQuizAttempts(quiz.id, { needsGrading: true });
   const needsGradingCount = pendingAttempts.length;
-  // The authoring surface only shows when the course's AI feature is on; existing
-  // sections stay manageable (with a warning) so they can be cleaned up after a
-  // course turns it off.
-  const { data: aiQuizEnabled = false } = useAIQuizGenerationEnabled(course.id);
+  // The authoring surface only shows when the course's AI feature is on (the
+  // generate_personalized_quiz_questions capability); existing sections stay
+  // manageable (with a warning) so they can be cleaned up after a course turns
+  // it off.
+  const courseCaps = useCourseCapabilities(course.id);
+  const aiQuizEnabled = courseCaps.generate_personalized_quiz_questions === true;
 
   const openCreateSection = () => {
     setEditingSection(null);

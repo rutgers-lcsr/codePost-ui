@@ -43,7 +43,6 @@ export const quizKeys = {
   generatedSets: (quizId: number) => ['quizzes', 'generatedSets', quizId] as const,
   backfillPreview: (quizId: number) => ['quizzes', 'backfillPreview', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,
-  aiGenerationEnabled: (courseId: number) => ['quizzes', 'aiGenerationEnabled', courseId] as const,
   staffSections: (courseId: number) => ['quizzes', 'staffSections', courseId] as const,
 };
 

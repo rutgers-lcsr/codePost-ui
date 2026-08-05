@@ -2223,6 +2223,12 @@ export interface BatchCapabilitiesResponseResultsValue {
    * @type {boolean}
    * @memberof BatchCapabilitiesResponseResultsValue
    */
+  generatePersonalizedQuizQuestions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
   editAssignment?: boolean;
   /**
    *
@@ -2699,6 +2705,12 @@ export interface CapabilitiesResponseCapabilitiesMap {
    * @memberof CapabilitiesResponseCapabilitiesMap
    */
   generateAiQuizQuestions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  generatePersonalizedQuizQuestions?: boolean;
   /**
    *
    * @type {boolean}

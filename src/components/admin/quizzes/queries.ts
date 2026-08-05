@@ -5,7 +5,6 @@ import {
   sectionsApi,
 } from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
-import { getCourseAISettings } from '../../../utils/aiService';
 import {
   BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
   QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, QuizSectionTemplate, Section,
@@ -188,18 +187,4 @@ export const useGeneratedSetDetail = (setId: number | undefined) =>
     queryFn: (): Promise<GeneratedQuestionSet> =>
       generatedQuestionSetsApi.retrieve({ id: setId! }),
     enabled: !!setId,
-  });
-
-/** Whether the AI-Generated Quiz Questions feature is enabled for this course (AI
- *  configured + the personalized_quiz_generation feature resolved on) — gates the
- *  authoring surface in the builder. Resolution mirrors AISettingsCard. */
-export const useAIQuizGenerationEnabled = (courseId: number | undefined) =>
-  useQuery({
-    queryKey: quizKeys.aiGenerationEnabled(courseId ?? -1),
-    queryFn: async (): Promise<boolean> => {
-      const settings = await getCourseAISettings(courseId!);
-      const featureStatus = (settings as unknown as { aiFeatures?: Record<string, boolean> }).aiFeatures;
-      return Boolean(settings.aiEnabled) && featureStatus?.personalized_quiz_generation === true;
-    },
-    enabled: !!courseId,
   });
