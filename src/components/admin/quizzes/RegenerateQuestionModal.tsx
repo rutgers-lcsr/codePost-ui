@@ -45,16 +45,21 @@ const RegenerateQuestionModal: React.FC<IProps> = ({ open, courseId, bankId, que
         id: question.id,
         regenerateSuggestionRequest: { instructions: instructions || undefined },
       });
+      // The provider call alone may take up to 60s server-side (slow gateway
+      // routes), plus task queue latency — poll well past that before giving up.
       let list = await questionsApi.regenerationSuggestionsList({ id: question.id });
       let tries = 0;
-      while (list.length === 0 && tries < 20) {
-        await sleep(1500);
+      while (list.length === 0 && tries < 60) {
+        await sleep(2500);
         list = await questionsApi.regenerationSuggestionsList({ id: question.id });
         tries += 1;
       }
       queryClient.invalidateQueries({ queryKey: quizKeys.regeneration(question.id) });
       if (list.length === 0) {
-        message.info('No suggestion was generated — AI quiz suggestions may be disabled or unconfigured.');
+        message.info(
+          'No suggestion arrived — generation may still be running (reopen this dialog to check), '
+          + 'or AI quiz suggestions may be disabled, unconfigured, or failing. The course AI settings '
+          + 'Test button and AI usage page show provider errors.');
       }
     } catch {
       message.error('Failed to start generation.');

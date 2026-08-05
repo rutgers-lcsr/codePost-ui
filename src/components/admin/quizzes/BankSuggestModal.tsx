@@ -66,16 +66,21 @@ const BankSuggestModal: React.FC<IProps> = ({ open, course, bankId, bankAssignme
           questionTypes: questionTypes.length ? questionTypes : undefined,
         },
       });
+      // The provider call alone may take up to 60s server-side (slow gateway
+      // routes), plus task queue latency — poll well past that before giving up.
       let list = await assignmentsApi.suggestedQuizQuestionsList({ id: assignmentId });
       let tries = 0;
-      while (list.length === 0 && tries < 20) {
-        await sleep(1500);
+      while (list.length === 0 && tries < 60) {
+        await sleep(2500);
         list = await assignmentsApi.suggestedQuizQuestionsList({ id: assignmentId });
         tries += 1;
       }
       queryClient.invalidateQueries({ queryKey: quizKeys.suggestions(assignmentId) });
       if (list.length === 0) {
-        message.info('No suggestions were generated — AI quiz suggestions may be disabled or unconfigured.');
+        message.info(
+          'No suggestions arrived — generation may still be running (reopen this dialog to check), '
+          + 'or AI quiz suggestions may be disabled, unconfigured, or failing. The course AI settings '
+          + 'Test button and AI usage page show provider errors.');
       }
     } catch {
       message.error('Failed to start generation.');
