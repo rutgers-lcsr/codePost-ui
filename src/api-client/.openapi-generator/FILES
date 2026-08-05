@@ -32,6 +32,7 @@ apis/QuizImagesApi.ts
 apis/QuizImportJobsApi.ts
 apis/QuizQuestionGroupsApi.ts
 apis/QuizQuestionsApi.ts
+apis/QuizSuggestionJobsApi.ts
 apis/QuizzesApi.ts
 apis/RegistrationApi.ts
 apis/RubricCategoriesApi.ts
@@ -178,7 +179,6 @@ docs/GenerateMissingResponse.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GenerateQuizQuestionsRequest.md
-docs/GenerateQuizQuestionsResponse.md
 docs/GeneratedQuestionSet.md
 docs/GeneratedQuestionSetList.md
 docs/GeneratedQuestionSetStatusEnum.md
@@ -327,9 +327,11 @@ docs/QuizResultRow.md
 docs/QuizScoringPolicyEnum.md
 docs/QuizSectionTemplate.md
 docs/QuizSourceEnum.md
+docs/QuizSuggestionJob.md
+docs/QuizSuggestionJobStatusEnum.md
+docs/QuizSuggestionJobsApi.md
 docs/QuizzesApi.md
 docs/RegenerateSuggestionRequest.md
-docs/RegenerateSuggestionResponse.md
 docs/RegisterAndSetPasswordRequest.md
 docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md

@@ -835,9 +835,9 @@ example().catch(console.error);
 
 ## generateQuizQuestionsCreate
 
-> GenerateQuizQuestionsResponse generateQuizQuestionsCreate(id, generateQuizQuestionsRequest)
+> QuizSuggestionJob generateQuizQuestionsCreate(id, generateQuizQuestionsRequest)
 
-Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
+Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
 
 ### Example
 
@@ -891,7 +891,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**GenerateQuizQuestionsResponse**](GenerateQuizQuestionsResponse.md)
+[**QuizSuggestionJob**](QuizSuggestionJob.md)
 
 ### Authorization
 

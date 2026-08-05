@@ -4983,25 +4983,6 @@ export interface GenerateQuizQuestionsRequest {
   instructions?: string;
 }
 /**
- *
- * @export
- * @interface GenerateQuizQuestionsResponse
- */
-export interface GenerateQuizQuestionsResponse {
-  /**
-   *
-   * @type {string}
-   * @memberof GenerateQuizQuestionsResponse
-   */
-  taskId: string;
-  /**
-   *
-   * @type {string}
-   * @memberof GenerateQuizQuestionsResponse
-   */
-  status: string;
-}
-/**
  * A student's generated question set with its questions — the review payload.
  * Staff-only (never exposed to students).
  * @export
@@ -11825,6 +11806,88 @@ export enum QuizSourceEnum {
 }
 
 /**
+ * Read-only view of an AI quiz-suggestion generation run (for status polling).
+ * @export
+ * @interface QuizSuggestionJob
+ */
+export interface QuizSuggestionJob {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly course: number;
+  /**
+   * The assignment suggestions were generated for (fresh generation).
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly assignment: number | null;
+  /**
+   * The existing question a refresh suggestion was generated from.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly sourceQuestion: number | null;
+  /**
+   * Current status of the generation run.
+   *
+   * * `pending` - Queued
+   * * `running` - Generating
+   * * `completed` - Completed
+   * * `failed` - Failed
+   * @type {QuizSuggestionJobStatusEnum}
+   * @memberof QuizSuggestionJob
+   */
+  readonly status: QuizSuggestionJobStatusEnum;
+  /**
+   * Celery task id, for debugging.
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly taskId: string;
+  /**
+   * Number of suggestions the run produced.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly createdCount: number;
+  /**
+   * Friendly error detail if the run failed.
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly errorMessage: string;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly created: string;
+}
+
+/**
+ * * `pending` - Queued
+ * * `running` - Generating
+ * * `completed` - Completed
+ * * `failed` - Failed
+ * @export
+ * @enum {string}
+ */
+export enum QuizSuggestionJobStatusEnum {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+}
+
+/**
  *
  * @export
  * @interface RegenerateSuggestionRequest
@@ -11854,25 +11917,6 @@ export interface RegenerateSuggestionRequest {
    * @memberof RegenerateSuggestionRequest
    */
   instructions?: string;
-}
-/**
- *
- * @export
- * @interface RegenerateSuggestionResponse
- */
-export interface RegenerateSuggestionResponse {
-  /**
-   *
-   * @type {string}
-   * @memberof RegenerateSuggestionResponse
-   */
-  taskId: string;
-  /**
-   *
-   * @type {string}
-   * @memberof RegenerateSuggestionResponse
-   */
-  status: string;
 }
 /**
  *

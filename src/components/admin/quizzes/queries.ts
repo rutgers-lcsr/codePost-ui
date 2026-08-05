@@ -2,14 +2,34 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   assignmentsApi, coursesApi, generatedQuestionSetsApi, questionsApi, questionBanksApi, quizzesApi,
-  sectionsApi,
+  quizSuggestionJobsApi, sectionsApi,
 } from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
 import {
   BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
-  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, QuizSectionTemplate, Section,
+  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, QuizSectionTemplate,
+  QuizSuggestionJob, QuizSuggestionJobStatusEnum, Section,
   StaffQuizAttempt, SuggestedQuizQuestion,
 } from '../../../api-client';
+
+/** Poll an AI suggestion-generation job until it reaches a terminal state. The provider
+ *  call alone may take up to 60s server-side, plus task queue latency — the ~2.5 minute
+ *  budget covers that. Returns the last-seen job; still non-terminal on timeout. */
+export const pollSuggestionJob = async (jobId: number): Promise<QuizSuggestionJob> => {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  let job = await quizSuggestionJobsApi.retrieve({ id: jobId });
+  let tries = 0;
+  while (
+    job.status !== QuizSuggestionJobStatusEnum.Completed
+    && job.status !== QuizSuggestionJobStatusEnum.Failed
+    && tries < 75
+  ) {
+    await sleep(2000);
+    job = await quizSuggestionJobsApi.retrieve({ id: jobId });
+    tries += 1;
+  }
+  return job;
+};
 
 /** The course's sections, for staff viewers — feeds the section filters in quiz grading
  *  and generated-question review. Admins page through the bulk endpoint; graders can't

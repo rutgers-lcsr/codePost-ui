@@ -38,6 +38,7 @@ import {
   QuizImportJobsApi,
   QuizQuestionGroupsApi,
   QuizQuestionsApi,
+  QuizSuggestionJobsApi,
   QuizzesApi,
   RegistrationApi,
   RubricCategoriesApi,
@@ -136,6 +137,7 @@ export const quizImagesApi = new QuizImagesApi(apiClientConfig);
 export const quizImportJobsApi = new QuizImportJobsApi(apiClientConfig);
 export const quizQuestionGroupsApi = new QuizQuestionGroupsApi(apiClientConfig);
 export const quizQuestionsApi = new QuizQuestionsApi(apiClientConfig);
+export const quizSuggestionJobsApi = new QuizSuggestionJobsApi(apiClientConfig);
 export const quizzesApi = new QuizzesApi(apiClientConfig);
 export const registrationApi = new RegistrationApi(apiClientConfig);
 export const rubricCategoriesApi = new RubricCategoriesApi(apiClientConfig);

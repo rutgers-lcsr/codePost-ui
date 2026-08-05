@@ -19,8 +19,8 @@ import type {
   BankQuestionsRequest,
   PatchedQuestion,
   Question,
+  QuizSuggestionJob,
   RegenerateSuggestionRequest,
-  RegenerateSuggestionResponse,
   SuggestedQuizQuestion,
 } from '../models/index';
 
@@ -421,12 +421,12 @@ export class QuestionsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
+   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async regenerateSuggestionCreateRaw(
     requestParameters: RegenerateSuggestionCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<RegenerateSuggestionResponse>> {
+  ): Promise<runtime.ApiResponse<QuizSuggestionJob>> {
     if (requestParameters['id'] == null) {
       throw new runtime.RequiredError(
         'id',
@@ -473,12 +473,12 @@ export class QuestionsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
+   * Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async regenerateSuggestionCreate(
     requestParameters: RegenerateSuggestionCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<RegenerateSuggestionResponse> {
+  ): Promise<QuizSuggestionJob> {
     const response = await this.regenerateSuggestionCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }

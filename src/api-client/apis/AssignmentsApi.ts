@@ -31,13 +31,13 @@ import type {
   Comment,
   GenerateDescriptionResponse,
   GenerateQuizQuestionsRequest,
-  GenerateQuizQuestionsResponse,
   LearningObjective,
   PaginatedSubmissionHistoryList,
   PaginatedSubmissionList,
   PaginatedSubmissionWithTestsList,
   PatchedAssignment,
   Quiz,
+  QuizSuggestionJob,
   StudentSubmission,
   Submission,
   SuggestedQuizQuestion,
@@ -914,12 +914,12 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async generateQuizQuestionsCreateRaw(
     requestParameters: GenerateQuizQuestionsCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<GenerateQuizQuestionsResponse>> {
+  ): Promise<runtime.ApiResponse<QuizSuggestionJob>> {
     if (requestParameters['id'] == null) {
       throw new runtime.RequiredError(
         'id',
@@ -966,12 +966,12 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns 403 when the course has the quiz_generation AI feature turned off.
+   * Enqueue AI generation of suggested quiz questions for this assignment. Instructors review the suggestions and accept the good ones. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
    */
   async generateQuizQuestionsCreate(
     requestParameters: GenerateQuizQuestionsCreateRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<GenerateQuizQuestionsResponse> {
+  ): Promise<QuizSuggestionJob> {
     const response = await this.generateQuizQuestionsCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
