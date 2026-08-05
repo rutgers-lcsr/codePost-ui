@@ -11,6 +11,7 @@ An AI quiz-question suggestion. Staff-only. A pending suggestion\'s content may 
 | `sourceQuestion`    | number                                                      |
 | `questionType`      | [QuestionTypeEnum](QuestionTypeEnum.md)                     |
 | `text`              | string                                                      |
+| `description`       | string                                                      |
 | `choicesData`       | any                                                         |
 | `points`            | number                                                      |
 | `language`          | string                                                      |

@@ -139,6 +139,8 @@ const settingsOf = (q: Quiz) => ({
   isPublished: q.isPublished ?? false,
   gradersCanReviewGenerated: q.gradersCanReviewGenerated ?? false,
   autoPublishGenerated: q.autoPublishGenerated ?? false,
+  manualGeneration: q.manualGeneration ?? true,
+  generationDate: q.generationDate ?? null,
 });
 
 export type QuizSettings = ReturnType<typeof settingsOf>;
@@ -248,6 +250,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
           isPublished: overrides?.isPublished ?? settings.isPublished,
           gradersCanReviewGenerated: settings.gradersCanReviewGenerated,
           autoPublishGenerated: settings.autoPublishGenerated,
+          manualGeneration: settings.manualGeneration,
+          generationDate: settings.generationDate,
         },
       });
       message.success('Quiz settings saved.');
@@ -831,6 +835,40 @@ const QuizSettingsCard: React.FC<IProps> = ({
                 />
                 <Text>Graders may review and publish generated questions</Text>
               </Space>
+              <Space>
+                <Switch
+                  aria-label="Generate question sets manually"
+                  checked={settings.manualGeneration}
+                  // The backend rejects a generation time without manual mode, so turning
+                  // the toggle off must clear the date in the same save.
+                  onChange={(v) =>
+                    patch(v ? { manualGeneration: true } : { manualGeneration: false, generationDate: null })
+                  }
+                />
+                <Text>Generate question sets manually (turn off automatic generation)</Text>
+              </Space>
+              {settings.manualGeneration && (
+                <div style={{ marginLeft: 36 }}>
+                  <DatePicker
+                    showTime
+                    aria-label="Scheduled generation time"
+                    placeholder="Generate missing at… (optional)"
+                    value={settings.generationDate ? dayjs(settings.generationDate) : null}
+                    onChange={(d) => patch({ generationDate: d ? d.toISOString() : null })}
+                  />
+                  <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 440 }}>
+                    Optional one-time run: at this time, question sets are generated for students
+                    who have a submission but no set yet. Students who submit afterwards show up
+                    under Generate missing in the Review tab. Moving the time later re-runs it for
+                    newly missing students.
+                  </Text>
+                  {quiz.scheduledGenerationRanAt && (
+                    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2 }}>
+                      Last scheduled run: {dayjs(quiz.scheduledGenerationRanAt).format('MMM D, YYYY h:mm A')}
+                    </Text>
+                  )}
+                </div>
+              )}
               {settings.closeEvent === QuizCloseEventEnum.Submission && !settings.autoPublishGenerated && (
                 // Explicit dark amber (#8a5a00 ≈ 5.9:1 on white) — antd's default warning
                 // color (~#faad14) fails WCAG AA for normal text.

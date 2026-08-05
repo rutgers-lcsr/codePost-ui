@@ -8815,6 +8815,24 @@ export interface PatchedQuiz {
    */
   autoPublishGenerated?: boolean;
   /**
+   * If true (the default), per-student question sets never generate automatically (no per-submission trigger, no backfill on publish or section creation) — staff generate via generateForStudent/generateMissing, or the one-time generationDate run.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  manualGeneration?: boolean;
+  /**
+   * Manual mode only: one-time scheduled run that generates question sets for students who have a submission but no set yet, at/after this time.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  generationDate?: string | null;
+  /**
+   * When the scheduled generationDate run last fired (one-shot stamp). Moving generationDate past this re-arms the run.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  readonly scheduledGenerationRanAt?: string | null;
+  /**
    *
    * @type {Array<QuizGeneratedSection>}
    * @memberof PatchedQuiz
@@ -9824,6 +9842,12 @@ export interface PatchedSuggestedQuizQuestion {
    */
   text?: string;
   /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  description?: string;
+  /**
    *
    * @type {any}
    * @memberof PatchedSuggestedQuizQuestion
@@ -10396,6 +10420,63 @@ export interface PendingAdminActionResponse {
    */
   status: string;
 }
+/**
+ *
+ * @export
+ * @interface PreviewDemoFile
+ */
+export interface PreviewDemoFile {
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewDemoFile
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewDemoFile
+   */
+  content: string;
+}
+/**
+ *
+ * @export
+ * @interface PreviewGeneratedSectionRequest
+ */
+export interface PreviewGeneratedSectionRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  systemPrompt: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  numQuestions?: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  questionTypes?: Array<string>;
+  /**
+   *
+   * @type {SeedEnum}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  seed?: SeedEnum;
+  /**
+   *
+   * @type {Array<PreviewDemoFile>}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  demoFiles?: Array<PreviewDemoFile>;
+}
+
 /**
  *
  * @export
@@ -11239,6 +11320,24 @@ export interface Quiz {
    */
   autoPublishGenerated?: boolean;
   /**
+   * If true (the default), per-student question sets never generate automatically (no per-submission trigger, no backfill on publish or section creation) — staff generate via generateForStudent/generateMissing, or the one-time generationDate run.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  manualGeneration?: boolean;
+  /**
+   * Manual mode only: one-time scheduled run that generates question sets for students who have a submission but no set yet, at/after this time.
+   * @type {string}
+   * @memberof Quiz
+   */
+  generationDate?: string | null;
+  /**
+   * When the scheduled generationDate run last fired (one-shot stamp). Moving generationDate past this re-arms the run.
+   * @type {string}
+   * @memberof Quiz
+   */
+  readonly scheduledGenerationRanAt: string | null;
+  /**
    *
    * @type {Array<QuizGeneratedSection>}
    * @memberof Quiz
@@ -11836,6 +11935,12 @@ export interface QuizSuggestionJob {
    */
   readonly sourceQuestion: number | null;
   /**
+   * The quiz a section-prompt test preview was run for (preview runs only).
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly quiz: number | null;
+  /**
    * Current status of the generation run.
    *
    * * `pending` - Queued
@@ -11864,6 +11969,12 @@ export interface QuizSuggestionJob {
    * @memberof QuizSuggestionJob
    */
   readonly errorMessage: string;
+  /**
+   *
+   * @type {any}
+   * @memberof QuizSuggestionJob
+   */
+  readonly resultData: any | null;
   /**
    *
    * @type {string}
@@ -12198,6 +12309,17 @@ export interface Section {
    */
   students: Array<string | null>;
 }
+/**
+ * * `random` - random
+ * * `demo` - demo
+ * @export
+ * @enum {string}
+ */
+export enum SeedEnum {
+  Random = 'random',
+  Demo = 'demo',
+}
+
 /**
  *
  * @export
@@ -14235,6 +14357,12 @@ export interface SuggestedQuizQuestion {
    * @memberof SuggestedQuizQuestion
    */
   text: string;
+  /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  description?: string;
   /**
    *
    * @type {any}

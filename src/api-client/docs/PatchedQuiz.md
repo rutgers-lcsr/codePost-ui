@@ -32,6 +32,9 @@
 | `isPublished`               | boolean                                                               |
 | `gradersCanReviewGenerated` | boolean                                                               |
 | `autoPublishGenerated`      | boolean                                                               |
+| `manualGeneration`          | boolean                                                               |
+| `generationDate`            | string                                                                |
+| `scheduledGenerationRanAt`  | string                                                                |
 | `generatedSections`         | [Array&lt;QuizGeneratedSection&gt;](QuizGeneratedSection.md)          |
 | `quizQuestions`             | [Array&lt;QuizQuestion&gt;](QuizQuestion.md)                          |
 | `questionGroups`            | [Array&lt;QuizQuestionGroup&gt;](QuizQuestionGroup.md)                |

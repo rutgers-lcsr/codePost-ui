@@ -14,6 +14,8 @@ const base = (): QuizWarningInput => ({
   showResponses: true,
   allowSubmissionReview: true,
   isPublished: true,
+  manualGeneration: false,
+  generationDate: null,
 });
 
 const keys = (input: QuizWarningInput) => quizSettingsWarnings(input).map((w) => w.key);
@@ -78,6 +80,23 @@ describe('quizSettingsWarnings', () => {
       expect(keys({ ...base(), attemptsAllowed: 0, showCorrectAnswers: false })).not.toContain('answer-key-leak');
       expect(keys({ ...base(), attemptsAllowed: 0, allowSubmissionReview: false })).not.toContain('answer-key-leak');
       expect(keys({ ...base(), attemptsAllowed: 0, showResponses: false })).not.toContain('answer-key-leak');
+    });
+  });
+
+  describe('scheduled-generation-draft', () => {
+    const scheduled = { manualGeneration: true, generationDate: '2026-09-01T00:00:00Z' };
+
+    it('adds an info tip when a scheduled generation time is set on a draft', () => {
+      const out = quizSettingsWarnings({ ...base(), ...scheduled, isPublished: false });
+      expect(out.map((w) => w.key)).toContain('scheduled-generation-draft');
+      expect(out.find((w) => w.key === 'scheduled-generation-draft')?.level).toBe('info');
+    });
+
+    it('stays silent when the quiz is published, or no date is set', () => {
+      expect(keys({ ...base(), ...scheduled })).not.toContain('scheduled-generation-draft');
+      expect(
+        keys({ ...base(), manualGeneration: true, generationDate: null, isPublished: false }),
+      ).not.toContain('scheduled-generation-draft');
     });
   });
 

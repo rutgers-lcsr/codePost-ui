@@ -643,6 +643,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         courseId={course.id!}
         quizId={quiz.id!}
         attached={draftAssignment != null}
+        manualGeneration={settingsDraft.manualGeneration ?? current.manualGeneration ?? true}
         section={editingSection}
         nextSortKey={orderedSections.length ? Math.max(...orderedSections.map((s) => s.sortKey ?? 0)) + 1 : 0}
         onClose={() => setSectionOpen(false)}

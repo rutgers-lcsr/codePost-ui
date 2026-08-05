@@ -554,9 +554,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
             description={
               sectionEmails
                 ? 'No generated sets for students in this section.'
-                : needsSubmission
-                  ? 'No generated sets yet — they appear when students submit the assignment.'
-                  : 'No generated sets yet — use Generate missing to create them for enrolled students.'
+                : quiz.manualGeneration
+                  ? 'No generated sets yet — automatic generation is off for this quiz. Generate for ' +
+                    'a student below, use Generate missing, or set a scheduled generation time in Settings.'
+                  : needsSubmission
+                    ? 'No generated sets yet — they appear when students submit the assignment.'
+                    : 'No generated sets yet — use Generate missing to create them for enrolled students.'
             }
           />
         ) : (

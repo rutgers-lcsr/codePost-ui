@@ -284,6 +284,8 @@ docs/PatchedUser.md
 docs/PatchedWebhook.md
 docs/PendingAdminActionRequest.md
 docs/PendingAdminActionResponse.md
+docs/PreviewDemoFile.md
+docs/PreviewGeneratedSectionRequest.md
 docs/PromptExperiment.md
 docs/PromptExperimentResults.md
 docs/PromptExperimentStatusEnum.md
@@ -346,6 +348,7 @@ docs/RubricCommentsApi.md
 docs/RunQuizResponseCodeRequest.md
 docs/Section.md
 docs/SectionsApi.md
+docs/SeedEnum.md
 docs/SetCredentialsRequest.md
 docs/SetCredentialsResponse.md
 docs/SetOfficialAttemptRequest.md

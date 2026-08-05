@@ -10,10 +10,12 @@ Read-only view of an AI quiz-suggestion generation run (for status polling).
 | `course`         | number                                                        |
 | `assignment`     | number                                                        |
 | `sourceQuestion` | number                                                        |
+| `quiz`           | number                                                        |
 | `status`         | [QuizSuggestionJobStatusEnum](QuizSuggestionJobStatusEnum.md) |
 | `taskId`         | string                                                        |
 | `createdCount`   | number                                                        |
 | `errorMessage`   | string                                                        |
+| `resultData`     | any                                                           |
 | `created`        | string                                                        |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
