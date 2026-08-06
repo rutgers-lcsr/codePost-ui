@@ -23,6 +23,8 @@ export interface QuizWarningInput {
   isPublished: boolean;
   manualGeneration: boolean;
   generationDate: string | null;
+  requireSebBrowser: boolean;
+  sebConfigKey: string | null;
 }
 
 /** Whether the quiz has no close that the settings can determine up front. Event-based
@@ -39,6 +41,18 @@ function neverCloses(s: QuizWarningInput): boolean {
 /** Configuration warnings/tips for the current quiz settings, most important first. */
 export function quizSettingsWarnings(s: QuizWarningInput): QuizWarning[] {
   const out: QuizWarning[] = [];
+
+  // SEB required without a pasted key: fine (students use the built-in launch), but say so.
+  if (s.requireSebBrowser && !s.sebConfigKey?.trim()) {
+    out.push({
+      key: 'seb-no-config-key',
+      level: 'info',
+      text:
+        'Safe Exam Browser is required with no Config Key pasted — students will use the ' +
+        '“Launch in Safe Exam Browser” button. Paste a Config Key only if you distribute ' +
+        'your own SEB configuration file.',
+    });
+  }
 
   // Results are held until close, but nothing ever closes the quiz → students never see them.
   if (s.sealResultsUntilClose && neverCloses(s)) {

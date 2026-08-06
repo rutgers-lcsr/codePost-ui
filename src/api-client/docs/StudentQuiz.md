@@ -18,6 +18,7 @@ Summary of a quiz for a student: settings, availability, and the caller\'s attem
 | `passingScoreUnit`      | [QuizPassingScoreUnitEnum](QuizPassingScoreUnitEnum.md) |
 | `showCorrectAnswers`    | boolean                                                 |
 | `allowSubmissionReview` | boolean                                                 |
+| `requireSebBrowser`     | boolean                                                 |
 | `questionCount`         | number                                                  |
 | `availability`          | [QuizAvailability](QuizAvailability.md)                 |
 | `attemptsUsed`          | number                                                  |

@@ -16,6 +16,8 @@
 | `closeOffsetMinutes`        | number                                                                |
 | `endAttemptsAtClose`        | boolean                                                               |
 | `accessCode`                | string                                                                |
+| `requireSebBrowser`         | boolean                                                               |
+| `sebConfigKey`              | string                                                                |
 | `timeLimitMinutes`          | number                                                                |
 | `attemptsAllowed`           | number                                                                |
 | `shuffleQuestions`          | boolean                                                               |

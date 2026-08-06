@@ -2,12 +2,26 @@
 //
 // Shared helpers for the quiz e2e specs. The retry loops harden against a click landing
 // mid-re-render (the debounced autosave of a previous answer) and getting swallowed.
+import { createHash } from 'crypto';
 import { expect, type Page } from '@playwright/test';
-import { COURSE_NAME, COURSE_PERIOD } from './constants';
+import { API_URL, COURSE_NAME, COURSE_PERIOD } from './constants';
 
 export const courseUrl = `/student/${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}`;
 
 export type Scope = Page | ReturnType<Page['locator']>;
+
+/** Simulate Safe Exam Browser: stamp every API request with the per-URL
+ *  X-SafeExamBrowser-ConfigKeyHash header (SHA256 of URL + Config Key), exactly as the
+ *  real SEB client does at its network layer. */
+export async function simulateSeb(page: Page, configKey: string) {
+  await page.route(`${API_URL}/**`, async (route) => {
+    const request = route.request();
+    const hash = createHash('sha256').update(request.url() + configKey).digest('hex');
+    await route.continue({
+      headers: { ...request.headers(), 'X-SafeExamBrowser-ConfigKeyHash': hash },
+    });
+  });
+}
 
 /** Open a standalone quiz from the course view's Quizzes page by (partial) title. */
 export async function openQuiz(page: Page, titleFragment: string) {

@@ -15,12 +15,18 @@
 
 import * as runtime from '../runtime';
 import type {
+  ExchangeOTTRequest,
+  ExchangeOTTResponse,
   GenerateOTTRequest,
   GenerateOTTResponse,
   JwtOttResponse,
   User,
   ValidateOTTRequest,
 } from '../models/index';
+
+export interface ExchangeCreateRequest {
+  exchangeOTTRequest: ExchangeOTTRequest;
+}
 
 export interface GenerateCreateRequest {
   generateOTTRequest: GenerateOTTRequest;
@@ -34,6 +40,68 @@ export interface ValidateCreateRequest {
  *
  */
 export class OttApi extends runtime.BaseAPI {
+  /**
+   * Consume a one-time token and issue a normal interactive access + refresh pair.  Used by the Safe Exam Browser launch flow: SEB opens a fresh browser session with no stored auth, so the launch URL carries an OTT that this endpoint exchanges for the same short-lived, rotating session a login would issue. Deliberately NOT /ott/validate/, which issues a 365-day standalone token for long-lived Jupyter servers — the wrong risk profile for a student quiz session.
+   */
+  async exchangeCreateRaw(
+    requestParameters: ExchangeCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<ExchangeOTTResponse>> {
+    if (requestParameters['exchangeOTTRequest'] == null) {
+      throw new runtime.RequiredError(
+        'exchangeOTTRequest',
+        'Required parameter "exchangeOTTRequest" was null or undefined when calling exchangeCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/ott/exchange/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['exchangeOTTRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Consume a one-time token and issue a normal interactive access + refresh pair.  Used by the Safe Exam Browser launch flow: SEB opens a fresh browser session with no stored auth, so the launch URL carries an OTT that this endpoint exchanges for the same short-lived, rotating session a login would issue. Deliberately NOT /ott/validate/, which issues a 365-day standalone token for long-lived Jupyter servers — the wrong risk profile for a student quiz session.
+   */
+  async exchangeCreate(
+    requestParameters: ExchangeCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<ExchangeOTTResponse> {
+    const response = await this.exchangeCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
   /**
    * Generate a one-time token for the authenticated course instructor.  Used to create one time tokens for jupyter servers.
    */

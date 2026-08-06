@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Card, Flex, Space, Spin, Tag, Typography } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ClockCircleOutlined, FileTextOutlined, LockOutlined } from '@ant-design/icons';
 import { StudentQuiz } from '../../../api-client';
 import { CodePostDate } from '../../utils/CodepostDate';
 import { useAvailableQuizzes } from './queries';
@@ -56,6 +56,11 @@ const QuizCard: React.FC<{
               <Text type="secondary">
                 Attempts: {quiz.attemptsUsed} / {allowedLabel}
               </Text>
+            )}
+            {quiz.requireSebBrowser && (
+              <Tag icon={<LockOutlined aria-hidden />} data-testid="student-quiz-seb-tag">
+                Safe Exam Browser required
+              </Tag>
             )}
             <QuizScoreTags quiz={quiz} />
             {/* For locked quizzes the action slot already explains why; skip the redundant tag.

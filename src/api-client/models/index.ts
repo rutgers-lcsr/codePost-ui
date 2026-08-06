@@ -4812,6 +4812,38 @@ export interface EnvironmentStatusResponse {
   historyCount?: number;
 }
 /**
+ *
+ * @export
+ * @interface ExchangeOTTRequest
+ */
+export interface ExchangeOTTRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof ExchangeOTTRequest
+   */
+  token: string;
+}
+/**
+ *
+ * @export
+ * @interface ExchangeOTTResponse
+ */
+export interface ExchangeOTTResponse {
+  /**
+   * Short-lived access token.
+   * @type {string}
+   * @memberof ExchangeOTTResponse
+   */
+  token: string;
+  /**
+   * Rotating refresh token.
+   * @type {string}
+   * @memberof ExchangeOTTResponse
+   */
+  refresh: string;
+}
+/**
  * Request serializer for file execution endpoints
  * @export
  * @interface FileExecutionRequest
@@ -8709,6 +8741,18 @@ export interface PatchedQuiz {
    */
   readonly accessCode?: string | null;
   /**
+   * If true, taking this quiz (starting, answering, submitting, and reading an in-progress attempt) requires Safe Exam Browser: requests must carry a valid X-SafeExamBrowser-ConfigKeyHash header matching sebConfigKey.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  requireSebBrowser?: boolean;
+  /**
+   * SEB Config Key (64 hex chars) pasted by the instructor from the SEB Config Tool. Requests verify as SHA256(request URL + this key). Null/blank with requireSebBrowser on blocks students until a key is set.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  sebConfigKey?: string | null;
+  /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
    * @memberof PatchedQuiz
@@ -8875,7 +8919,7 @@ export interface PatchedQuiz {
 }
 
 /**
- * One per-student quiz extra-time accommodation (course-level multiplier).
+ * One per-student quiz accommodation: extra-time multiplier + SEB exemption.
  * @export
  * @interface PatchedQuizAccommodationRow
  */
@@ -8892,6 +8936,12 @@ export interface PatchedQuizAccommodationRow {
    * @memberof PatchedQuizAccommodationRow
    */
   timeMultiplier?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedQuizAccommodationRow
+   */
+  sebExempt?: boolean;
 }
 /**
  * A per-student generation config on a quiz: an instructor-authored prompt template,
@@ -11214,6 +11264,18 @@ export interface Quiz {
    */
   readonly accessCode: string | null;
   /**
+   * If true, taking this quiz (starting, answering, submitting, and reading an in-progress attempt) requires Safe Exam Browser: requests must carry a valid X-SafeExamBrowser-ConfigKeyHash header matching sebConfigKey.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  requireSebBrowser?: boolean;
+  /**
+   * SEB Config Key (64 hex chars) pasted by the instructor from the SEB Config Tool. Requests verify as SHA256(request URL + this key). Null/blank with requireSebBrowser on blocks students until a key is set.
+   * @type {string}
+   * @memberof Quiz
+   */
+  sebConfigKey?: string | null;
+  /**
    * Time limit in minutes. Null = untimed.
    * @type {number}
    * @memberof Quiz
@@ -11393,7 +11455,7 @@ export interface QuizAccessCodeResponse {
   accessCode: string | null;
 }
 /**
- * One per-student quiz extra-time accommodation (course-level multiplier).
+ * One per-student quiz accommodation: extra-time multiplier + SEB exemption.
  * @export
  * @interface QuizAccommodationRow
  */
@@ -11410,6 +11472,12 @@ export interface QuizAccommodationRow {
    * @memberof QuizAccommodationRow
    */
   timeMultiplier: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizAccommodationRow
+   */
+  sebExempt?: boolean;
 }
 /**
  * * `during` - During the assignment
@@ -12275,6 +12343,44 @@ export interface RunQuizResponseCodeRequest {
 /**
  *
  * @export
+ * @interface SebLaunchRequest
+ */
+export interface SebLaunchRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof SebLaunchRequest
+   */
+  quiz: number;
+}
+/**
+ *
+ * @export
+ * @interface SebLaunchResponse
+ */
+export interface SebLaunchResponse {
+  /**
+   *
+   * @type {string}
+   * @memberof SebLaunchResponse
+   */
+  sebUrl: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SebLaunchResponse
+   */
+  configUrl: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SebLaunchResponse
+   */
+  expiresAt: string;
+}
+/**
+ *
+ * @export
  * @interface Section
  */
 export interface Section {
@@ -12579,6 +12685,12 @@ export interface StaffQuizAttempt {
   readonly allowSubmissionReview: boolean;
   /**
    *
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly requireSebBrowser: boolean;
+  /**
+   *
    * @type {string}
    * @memberof StaffQuizAttempt
    */
@@ -12601,6 +12713,12 @@ export interface StaffQuizAttempt {
    * @memberof StaffQuizAttempt
    */
   readonly closeBypassed: boolean;
+  /**
+   * Started with a verified Safe Exam Browser signature. False on attempts started before requireSebBrowser was enabled (or by exempt students).
+   * @type {boolean}
+   * @memberof StaffQuizAttempt
+   */
+  readonly lockdownVerified: boolean;
 }
 
 /**
@@ -12985,6 +13103,12 @@ export interface StudentQuiz {
    */
   allowSubmissionReview?: boolean;
   /**
+   * If true, taking this quiz (starting, answering, submitting, and reading an in-progress attempt) requires Safe Exam Browser: requests must carry a valid X-SafeExamBrowser-ConfigKeyHash header matching sebConfigKey.
+   * @type {boolean}
+   * @memberof StudentQuiz
+   */
+  requireSebBrowser?: boolean;
+  /**
    *
    * @type {number}
    * @memberof StudentQuiz
@@ -13169,6 +13293,12 @@ export interface StudentQuizAttempt {
    * @memberof StudentQuizAttempt
    */
   readonly allowSubmissionReview: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof StudentQuizAttempt
+   */
+  readonly requireSebBrowser: boolean;
   /**
    *
    * @type {string}

@@ -4,11 +4,86 @@ All URIs are relative to *http://localhost*
 
 | Method                                             | HTTP request            | Description |
 | -------------------------------------------------- | ----------------------- | ----------- |
+| [**exchangeCreate**](OttApi.md#exchangecreate)     | **POST** /ott/exchange/ |             |
 | [**generateCreate**](OttApi.md#generatecreate)     | **POST** /ott/generate/ |             |
 | [**generateRetrieve**](OttApi.md#generateretrieve) | **GET** /ott/generate/  |             |
 | [**retrieve**](OttApi.md#retrieve)                 | **GET** /ott/           |             |
 | [**validateCreate**](OttApi.md#validatecreate)     | **POST** /ott/validate/ |             |
 | [**validateRetrieve**](OttApi.md#validateretrieve) | **GET** /ott/validate/  |             |
+
+## exchangeCreate
+
+> ExchangeOTTResponse exchangeCreate(exchangeOTTRequest)
+
+Consume a one-time token and issue a normal interactive access + refresh pair. Used by the Safe Exam Browser launch flow: SEB opens a fresh browser session with no stored auth, so the launch URL carries an OTT that this endpoint exchanges for the same short-lived, rotating session a login would issue. Deliberately NOT /ott/validate/, which issues a 365-day standalone token for long-lived Jupyter servers — the wrong risk profile for a student quiz session.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OttApi,
+} from '';
+import type { ExchangeCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new OttApi(config);
+
+  const body = {
+    // ExchangeOTTRequest
+    exchangeOTTRequest: ...,
+  } satisfies ExchangeCreateRequest;
+
+  try {
+    const data = await api.exchangeCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                   | Type                                        | Description | Notes |
+| ---------------------- | ------------------------------------------- | ----------- | ----- |
+| **exchangeOTTRequest** | [ExchangeOTTRequest](ExchangeOTTRequest.md) |             |       |
+
+### Return type
+
+[**ExchangeOTTResponse**](ExchangeOTTResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 ## generateCreate
 

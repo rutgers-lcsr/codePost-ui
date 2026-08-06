@@ -12,6 +12,7 @@ All URIs are relative to *http://localhost*
 | [**retrieve**](QuizAttemptsApi.md#retrieve)                               | **GET** /quizAttempts/{id}/                 |             |
 | [**runCodeCreate**](QuizAttemptsApi.md#runcodecreate)                     | **POST** /quizAttempts/{id}/runCode/        |             |
 | [**saveAnswerPartialUpdate**](QuizAttemptsApi.md#saveanswerpartialupdate) | **PATCH** /quizAttempts/{id}/saveAnswer/    |             |
+| [**sebLaunchCreate**](QuizAttemptsApi.md#seblaunchcreate)                 | **POST** /quizAttempts/sebLaunch/           |             |
 | [**setOfficialCreate**](QuizAttemptsApi.md#setofficialcreate)             | **POST** /quizAttempts/{id}/setOfficial/    |             |
 | [**submitCreate**](QuizAttemptsApi.md#submitcreate)                       | **POST** /quizAttempts/{id}/submit/         |             |
 
@@ -592,6 +593,80 @@ example().catch(console.error);
 ### Return type
 
 [**StudentQuizResponse**](StudentQuizResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## sebLaunchCreate
+
+> SebLaunchResponse sebLaunchCreate(sebLaunchRequest)
+
+Create a one-click Safe Exam Browser launch for &#x60;&#x60;quiz&#x60;&#x60;. Called from the student\&#39;s NORMAL browser (the gate screen): generates a .seb config whose startURL carries a one-time token, so SEB\&#39;s fresh session can authenticate and land on the take route. Returns the seb(s):// URL that opens SEB directly plus the plain config URL as a download fallback.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizAttemptsApi,
+} from '';
+import type { SebLaunchCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizAttemptsApi(config);
+
+  const body = {
+    // SebLaunchRequest
+    sebLaunchRequest: ...,
+  } satisfies SebLaunchCreateRequest;
+
+  try {
+    const data = await api.sebLaunchCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                 | Type                                    | Description | Notes |
+| -------------------- | --------------------------------------- | ----------- | ----- |
+| **sebLaunchRequest** | [SebLaunchRequest](SebLaunchRequest.md) |             |       |
+
+### Return type
+
+[**SebLaunchResponse**](SebLaunchResponse.md)
 
 ### Authorization
 

@@ -19,6 +19,8 @@ import type {
   PatchedSaveQuizAnswerRequest,
   ReopenQuizResponseRequest,
   RunQuizResponseCodeRequest,
+  SebLaunchRequest,
+  SebLaunchResponse,
   SetOfficialAttemptRequest,
   StaffQuizAttempt,
   StartQuizAttemptRequest,
@@ -61,6 +63,10 @@ export interface RunCodeCreateRequest {
 export interface SaveAnswerPartialUpdateRequest {
   id: number;
   patchedSaveQuizAnswerRequest?: PatchedSaveQuizAnswerRequest;
+}
+
+export interface SebLaunchCreateRequest {
+  sebLaunchRequest: SebLaunchRequest;
 }
 
 export interface SetOfficialCreateRequest {
@@ -591,6 +597,68 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<StudentQuizResponse> {
     const response = await this.saveAnswerPartialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Create a one-click Safe Exam Browser launch for ``quiz``.  Called from the student\'s NORMAL browser (the gate screen): generates a .seb config whose startURL carries a one-time token, so SEB\'s fresh session can authenticate and land on the take route. Returns the seb(s):// URL that opens SEB directly plus the plain config URL as a download fallback.
+   */
+  async sebLaunchCreateRaw(
+    requestParameters: SebLaunchCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SebLaunchResponse>> {
+    if (requestParameters['sebLaunchRequest'] == null) {
+      throw new runtime.RequiredError(
+        'sebLaunchRequest',
+        'Required parameter "sebLaunchRequest" was null or undefined when calling sebLaunchCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/sebLaunch/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['sebLaunchRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Create a one-click Safe Exam Browser launch for ``quiz``.  Called from the student\'s NORMAL browser (the gate screen): generates a .seb config whose startURL carries a one-time token, so SEB\'s fresh session can authenticate and land on the take route. Returns the seb(s):// URL that opens SEB directly plus the plain config URL as a download fallback.
+   */
+  async sebLaunchCreate(
+    requestParameters: SebLaunchCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SebLaunchResponse> {
+    const response = await this.sebLaunchCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

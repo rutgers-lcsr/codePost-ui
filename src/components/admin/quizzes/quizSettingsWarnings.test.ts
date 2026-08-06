@@ -16,11 +16,27 @@ const base = (): QuizWarningInput => ({
   isPublished: true,
   manualGeneration: false,
   generationDate: null,
+  requireSebBrowser: false,
+  sebConfigKey: null,
 });
 
 const keys = (input: QuizWarningInput) => quizSettingsWarnings(input).map((w) => w.key);
 
 describe('quizSettingsWarnings', () => {
+  describe('seb-no-config-key', () => {
+    it('warns when SEB is required without a Config Key', () => {
+      expect(keys({ ...base(), requireSebBrowser: true, sebConfigKey: null })).toContain('seb-no-config-key');
+      expect(keys({ ...base(), requireSebBrowser: true, sebConfigKey: '  ' })).toContain('seb-no-config-key');
+    });
+
+    it('stays quiet when a key is set or SEB is off', () => {
+      expect(keys({ ...base(), requireSebBrowser: true, sebConfigKey: 'a'.repeat(64) })).not.toContain(
+        'seb-no-config-key',
+      );
+      expect(keys({ ...base(), requireSebBrowser: false, sebConfigKey: null })).not.toContain('seb-no-config-key');
+    });
+  });
+
   it('returns nothing for a clean configuration', () => {
     expect(keys(base())).toEqual([]);
   });

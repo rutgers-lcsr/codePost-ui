@@ -57,6 +57,7 @@ const AsyncAdmin = lazy(() => import('./components/admin/AdminManager'));
 const AsyncOrg = lazy(() => import('./components/organization/OrgDashboard'));
 const AsyncGrade = lazy(() => import('./features/code-review/CodeConsole'));
 const AsyncDemoLanding = lazy(() => import('./features/code-review/DemoLanding'));
+const AsyncSebLaunch = lazy(() => import('./components/student/quizzes/SebLaunch'));
 const AsyncDemoAdmin = lazy(() => import('./features/code-review/DemoAdmin'));
 const AsyncDemoGrader = lazy(() => import('./features/code-review/DemoGrader'));
 const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
@@ -885,4 +886,17 @@ Firefox:
   );
 };
 
-export default App;
+/** Safe Exam Browser handoff pages: SEB opens /seb/launch in a FRESH session (no stored
+ *  auth), so they render instead of the app — before any login/auth branching. The check
+ *  is boot-time only: the launch page exits via a full-page redirect, never client-side
+ *  routing, and /seb/quit is terminal. */
+const AppOrSebGate: React.FC = () =>
+  window.location.pathname.startsWith('/seb/') ? (
+    <Suspense fallback={<RouterLoading />}>
+      <AsyncSebLaunch />
+    </Suspense>
+  ) : (
+    <App />
+  );
+
+export default AppOrSebGate;

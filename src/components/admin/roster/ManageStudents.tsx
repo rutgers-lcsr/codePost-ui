@@ -10,7 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Empty, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
+import { Breadcrumb, Button, Checkbox, Empty, Flex, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -94,6 +94,11 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
     for (const row of quizAccommodations ?? []) map.set(row.student, Number(row.timeMultiplier));
     return map;
   }, [quizAccommodations]);
+  const sebExemptByStudent = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const row of quizAccommodations ?? []) map.set(row.student, !!row.sebExempt);
+    return map;
+  }, [quizAccommodations]);
 
   const setTimeMultiplier = useCallback(
     async (student: string, multiplier: number) => {
@@ -114,6 +119,32 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.currentCourse?.id, queryClient],
+  );
+
+  const setSebExempt = useCallback(
+    async (student: string, exempt: boolean) => {
+      try {
+        await coursesApi.setQuizAccommodationPartialUpdate({
+          id: props.currentCourse.id!,
+          patchedQuizAccommodationRow: {
+            student,
+            // The endpoint requires the multiplier; resend the student's current one.
+            timeMultiplier: multiplierByStudent.get(student) ?? 1,
+            sebExempt: exempt,
+          },
+        });
+        message.success(
+          exempt
+            ? `${student} is exempt from Safe Exam Browser requirements.`
+            : `${student} must use Safe Exam Browser on SEB-required quizzes again.`,
+        );
+        queryClient.invalidateQueries({ queryKey: accommodationsKey });
+      } catch {
+        message.error('Failed to update the Safe Exam Browser exemption.');
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [props.currentCourse?.id, queryClient, multiplierByStudent],
   );
 
   const sendActivationEmail = useCallback(
@@ -263,8 +294,8 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         ? [
             {
               title: (
-                <Tooltip title="Extra time on timed quizzes (e.g. 1.5× turns 40 minutes into 60).">
-                  <span>Quiz time</span>
+                <Tooltip title="Extra time on timed quizzes (e.g. 1.5× turns 40 minutes into 60), and exemption from Safe Exam Browser requirements (for students on platforms SEB doesn't support, like Linux or ChromeOS).">
+                  <span>Quiz accommodations</span>
                 </Tooltip>
               ),
               dataIndex: 'quizTime',
@@ -292,14 +323,23 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         student: studentEmail,
         section: props.sectionsByStudent[studentEmail]?.name ?? 'No section',
         quizTime: (
-          <Select
-            size="small"
-            style={{ width: 90 }}
-            value={multiplierByStudent.get(studentEmail) ?? 1}
-            options={TIME_MULTIPLIER_OPTIONS}
-            onChange={(m) => setTimeMultiplier(studentEmail, m)}
-            data-testid="quiz-time-multiplier"
-          />
+          <Flex vertical gap={4} align="center">
+            <Select
+              size="small"
+              style={{ width: 90 }}
+              value={multiplierByStudent.get(studentEmail) ?? 1}
+              options={TIME_MULTIPLIER_OPTIONS}
+              onChange={(m) => setTimeMultiplier(studentEmail, m)}
+              data-testid="quiz-time-multiplier"
+            />
+            <Checkbox
+              checked={sebExemptByStudent.get(studentEmail) ?? false}
+              onChange={(e) => setSebExempt(studentEmail, e.target.checked)}
+              data-testid="quiz-seb-exempt"
+            >
+              <span style={{ fontSize: 12 }}>SEB exempt</span>
+            </Checkbox>
+          </Flex>
         ),
         actions: (
           <Space>
@@ -331,6 +371,8 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
     removeStudent,
     multiplierByStudent,
     setTimeMultiplier,
+    sebExemptByStudent,
+    setSebExempt,
   ]);
   const actions = useMemo(() => {
     if (props.students.length === 0) return [];

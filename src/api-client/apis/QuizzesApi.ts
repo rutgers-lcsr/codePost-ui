@@ -130,6 +130,11 @@ export interface RetrieveRequest {
   id: number;
 }
 
+export interface SebConfigRetrieveRequest {
+  id: number;
+  launch: string;
+}
+
 export interface UpdateRequest {
   id: number;
   quiz: Omit<
@@ -1235,6 +1240,77 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Quiz> {
     const response = await this.retrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Download the generated .seb config for a one-click Safe Exam Browser launch. Unauthenticated by design: SEB fetches this URL (via the seb:// protocol handler) before any session exists — the unguessable launch token is the credential. The token is checked but not consumed here; it is spent at /ott/exchange/ inside SEB.
+   */
+  async sebConfigRetrieveRaw(
+    requestParameters: SebConfigRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Blob>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling sebConfigRetrieve().',
+      );
+    }
+
+    if (requestParameters['launch'] == null) {
+      throw new runtime.RequiredError(
+        'launch',
+        'Required parameter "launch" was null or undefined when calling sebConfigRetrieve().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters['launch'] != null) {
+      queryParameters['launch'] = requestParameters['launch'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/sebConfig/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.BlobApiResponse(response);
+  }
+
+  /**
+   * Download the generated .seb config for a one-click Safe Exam Browser launch. Unauthenticated by design: SEB fetches this URL (via the seb:// protocol handler) before any session exists — the unguessable launch token is the credential. The token is checked but not consumed here; it is spent at /ott/exchange/ inside SEB.
+   */
+  async sebConfigRetrieve(
+    requestParameters: SebConfigRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Blob> {
+    const response = await this.sebConfigRetrieveRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

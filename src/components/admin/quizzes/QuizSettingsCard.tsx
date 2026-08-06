@@ -142,6 +142,8 @@ const settingsOf = (q: Quiz) => ({
   autoPublishGenerated: q.autoPublishGenerated ?? false,
   manualGeneration: q.manualGeneration ?? true,
   generationDate: q.generationDate ?? null,
+  requireSebBrowser: q.requireSebBrowser ?? false,
+  sebConfigKey: q.sebConfigKey ?? '',
 });
 
 export type QuizSettings = ReturnType<typeof settingsOf>;
@@ -253,6 +255,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
           autoPublishGenerated: settings.autoPublishGenerated,
           manualGeneration: settings.manualGeneration,
           generationDate: settings.generationDate,
+          requireSebBrowser: settings.requireSebBrowser,
+          sebConfigKey: settings.sebConfigKey.trim() || null,
         },
       });
       message.success('Quiz settings saved.');
@@ -610,6 +614,41 @@ const QuizSettingsCard: React.FC<IProps> = ({
               Generate access code
             </CPButton>
           )}
+        </Section>
+
+        <Section
+          title="Exam security"
+          hint="Require students to take this quiz in Safe Exam Browser, a free locked-down browser (Windows, macOS, iPad). Students get a “Launch in Safe Exam Browser” button that opens the quiz in SEB directly — no setup needed. The server rejects any quiz request that doesn't carry a valid SEB signature; per-student exemptions (e.g. Linux/ChromeOS users) are set on the roster."
+        >
+          <Flex vertical gap={10}>
+            <Space>
+              <Switch
+                aria-label="Require Safe Exam Browser"
+                checked={settings.requireSebBrowser}
+                onChange={(v) => patch({ requireSebBrowser: v })}
+                data-testid="quiz-require-seb"
+              />
+              <Text>Require Safe Exam Browser</Text>
+            </Space>
+            {settings.requireSebBrowser && (
+              <div style={{ marginLeft: 36 }}>
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  Optional: Config Key of your own SEB configuration (64 hex characters, shown in the
+                  SEB Config Tool) — only needed if you distribute a custom .seb file instead of the
+                  built-in launch
+                </Text>
+                <Input
+                  aria-label="SEB Config Key"
+                  placeholder="e.g. 81aad4ab9dfd447cc479e6a4a7c9a544…"
+                  style={{ width: 420, maxWidth: '100%', fontFamily: 'monospace' }}
+                  maxLength={64}
+                  value={settings.sebConfigKey}
+                  onChange={(e) => patch({ sebConfigKey: e.target.value })}
+                  data-testid="quiz-seb-config-key"
+                />
+              </div>
+            )}
+          </Flex>
         </Section>
 
         <Section title="Attempts & grading">

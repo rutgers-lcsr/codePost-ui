@@ -1,9 +1,13 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { ResponseError } from '../../../api-client';
 
-/** The JSON body the start endpoint returns on a 403 for a closed, code-gated quiz. */
+/** The JSON body the quiz-attempt endpoints return on a structured 403: a closed,
+ *  code-gated quiz ({ accessCodeRequired }) or a Safe Exam Browser–required quiz
+ *  accessed outside SEB ({ lockdownRequired, lockdownReason }). */
 export interface AccessCode403 {
   accessCodeRequired?: boolean;
+  lockdownRequired?: boolean;
+  lockdownReason?: 'missing_header' | 'invalid_key' | 'not_configured';
   detail?: string;
 }
 

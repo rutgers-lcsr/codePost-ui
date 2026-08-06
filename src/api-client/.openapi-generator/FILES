@@ -169,6 +169,8 @@ docs/EnvironmentRollbackResponse.md
 docs/EnvironmentRunAllResponse.md
 docs/EnvironmentRunResponse.md
 docs/EnvironmentStatusResponse.md
+docs/ExchangeOTTRequest.md
+docs/ExchangeOTTResponse.md
 docs/FileExecutionRequest.md
 docs/FilesApi.md
 docs/GenerateAIAssistanceResponse.md
@@ -346,6 +348,8 @@ docs/RubricCategory.md
 docs/RubricComment.md
 docs/RubricCommentsApi.md
 docs/RunQuizResponseCodeRequest.md
+docs/SebLaunchRequest.md
+docs/SebLaunchResponse.md
 docs/Section.md
 docs/SectionsApi.md
 docs/SeedEnum.md

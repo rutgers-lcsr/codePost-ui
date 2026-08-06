@@ -22,6 +22,7 @@
 | `allowBacktracking`     | boolean                                                    |
 | `showResponses`         | boolean                                                    |
 | `allowSubmissionReview` | boolean                                                    |
+| `requireSebBrowser`     | boolean                                                    |
 | `serverNow`             | string                                                     |
 | `responses`             | [Array&lt;StudentQuizResponse&gt;](StudentQuizResponse.md) |
 
