@@ -1,0 +1,74 @@
+/* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software. */
+
+.cp-tta-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.cp-tta-insert {
+  min-width: 170px;
+}
+
+.cp-tta-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* The editor surface: the highlight overlay paints behind the (transparent-background)
+   Mentions textarea, so variable tints show through under the real glyphs. z-index: 0
+   isolates a stacking context so the overlay's -1 stays inside this wrapper. */
+.cp-tta-surface {
+  position: relative;
+  z-index: 0;
+}
+
+.cp-tta-surface .ant-mentions,
+.cp-tta-surface .ant-mentions > textarea {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+}
+
+.cp-tta-highlight .ant-mentions,
+.cp-tta-highlight .ant-mentions > textarea {
+  background: transparent;
+}
+
+.cp-tta-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  color: transparent;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  /* Baseline match with the textarea; the computed-style copy refines padding/border. */
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+}
+
+/* Tints only — the visible glyphs are the textarea's own, painted above. */
+.cp-tta-var {
+  color: transparent;
+  background: rgba(25, 134, 101, 0.14); /* theme colorPrimary #198665 */
+  border-radius: 2px;
+}
+
+.cp-tta-var-unknown {
+  background: rgba(250, 173, 20, 0.35); /* antd gold-6 — likely a typo'd variable */
+}
+
+.cp-tta-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+}

@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, Card, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
+import { Alert, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
 import { CopyOutlined, DeleteOutlined, KeyOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { apiErrorMessage } from '../../../lib/apiError';
 import { quizSettingsWarnings } from './quizSettingsWarnings';
 import { quizKeys } from '../../../lib/queryKeys';
 import MarkdownField from './MarkdownField';
+import PanelCard from './PanelCard';
 
 const { Text } = Typography;
 
@@ -340,7 +341,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
   };
 
   return (
-    <Card
+    <PanelCard
       title={
         <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
           Quiz Settings
@@ -882,7 +883,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
           </Section>
         )}
       </Flex>
-    </Card>
+    </PanelCard>
   );
 };
 

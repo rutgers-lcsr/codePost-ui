@@ -345,6 +345,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({
             >
               <TemplateTextArea
                 variables={variables}
+                label="Prompt"
+                testId="section-prompt"
                 placeholder={
                   attached
                     ? "e.g., Ask questions about the student's code in {submission_files}. " +

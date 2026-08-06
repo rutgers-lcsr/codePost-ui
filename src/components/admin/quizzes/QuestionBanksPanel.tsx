@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Card, Empty, Flex, Form, Input, Modal, Spin, Table, Tag, Typography, Button, Space, message } from 'antd';
+import { Empty, Flex, Form, Input, Modal, Spin, Table, Tag, Typography, Button, Space, message } from 'antd';
 import { DeleteOutlined, EditOutlined, FolderOpenOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -11,6 +11,7 @@ import { quizKeys } from '../../../lib/queryKeys';
 import { useQuestionBanks } from './queries';
 import MarkdownField from './MarkdownField';
 import ImportQuestionsModal from './ImportQuestionsModal';
+import PanelCard from './PanelCard';
 
 
 interface IProps {
@@ -131,7 +132,16 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
             size="small"
             onClick={() => onSelect(record)}
             aria-current={record.id === selectedBankId ? 'true' : undefined}
-            style={{ padding: 0, height: 'auto', fontWeight: record.id === selectedBankId ? 600 : 400 }}
+            // Buttons are nowrap by default, which lets a long bank name push the table
+            // wider than its column and spill over the questions pane.
+            style={{
+              padding: 0,
+              height: 'auto',
+              textAlign: 'left',
+              whiteSpace: 'normal',
+              overflowWrap: 'anywhere',
+              fontWeight: record.id === selectedBankId ? 600 : 400,
+            }}
           >
             {name}
           </Button>
@@ -179,9 +189,9 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
 
   return (
     <>
-      <Card
+      <PanelCard
         title={
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={8} style={{ minWidth: 0 }}>
             <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
               Question Banks
             </Typography.Title>
@@ -224,7 +234,7 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
             })}
           />
         )}
-      </Card>
+      </PanelCard>
 
       <Modal
         title={editing ? 'Edit Question Bank' : 'New Question Bank'}

@@ -4,7 +4,6 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
   Dropdown,
   Empty,
   Flex,
@@ -49,6 +48,7 @@ import GeneratedReviewPanel from './GeneratedReviewPanel';
 import QuizPreviewDrawer, { PreviewItem } from './QuizPreviewDrawer';
 import QuizGradingView from './QuizGradingView';
 import QuizSettingsCard, { QuizSettingsDraft } from './QuizSettingsCard';
+import PanelCard from './PanelCard';
 
 const { Text } = Typography;
 
@@ -473,9 +473,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
 
   // Quiz contents: fixed questions + random draws, unified.
   const questionsCard = (
-    <Card
+    <PanelCard
         title={
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={8} wrap style={{ minWidth: 0, rowGap: 4 }}>
             <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
               Questions
             </Typography.Title>
@@ -562,7 +562,7 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
         ) : (
           <Table dataSource={rows} columns={columns} rowKey="key" size="small" pagination={false} />
         )}
-      </Card>
+      </PanelCard>
   );
 
   return (

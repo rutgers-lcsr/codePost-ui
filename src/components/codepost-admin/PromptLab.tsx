@@ -1183,12 +1183,9 @@ const PromptLab: React.FC = () => {
               />
             </div>
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <Text strong>Prompt Text</Text>
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                  {editingVariant.text?.length ?? 0} characters
-                </Text>
-              </div>
+              <Text strong style={{ display: 'block', marginBottom: 4 }}>
+                Prompt Text
+              </Text>
               <TemplateTextArea
                 value={editingVariant.text}
                 onChange={(text) => setEditingVariant((prev) => ({ ...prev!, text }))}
@@ -1196,6 +1193,7 @@ const PromptLab: React.FC = () => {
                   promptTypesRaw?.find((t) => t.key === editingVariant.promptType)?.placeholders ?? []
                 }
                 rows={16}
+                label="Prompt Text"
                 placeholder="Enter the system prompt text… type { to insert a variable"
               />
             </div>
