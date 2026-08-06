@@ -7,8 +7,9 @@
 # Release flow:
 #   1. Run "Create Release Branch" workflow to cut release/<version> from main
 #   2. Test on the release branch (CI runs automatically)
-#   3. Run THIS workflow with the release/<version> branch selected
-#   4. Tests run against the selected branch, then deploys to production,
+#   3. Run THIS workflow and enter release/<version> in the "branch" input
+#      (defaults to the ref it was dispatched from)
+#   4. Tests run against that branch's head, then it deploys to production,
 #      creates a git tag v<version>, and creates a GitHub Release.
 #      The version is derived from the branch name (release/3.4.0 -> 3.4.0).
 #
@@ -16,7 +17,7 @@
 #   1. Fix the bug on main first
 #   2. Cherry-pick the fix onto the active release branch (incrementing the
 #      patch version in the branch name as needed)
-#   3. Re-run THIS workflow with that release branch selected
+#   3. Re-run THIS workflow with that release branch in the "branch" input
 #
 # Note: Deploy the API first, then the UI. The API deploy_production workflow
 # triggers update-api-client.yml to regenerate the TypeScript client if the
@@ -28,17 +29,48 @@ name: Deploy Production with Docker
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: "release/<version> branch to deploy (defaults to the ref this workflow is dispatched from)"
+        required: false
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    runs-on: testing-codepost
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      branch: ${{ steps.meta.outputs.branch }}
+    steps:
+      - name: Validate branch and derive version
+        id: meta
+        run: |
+          branch="${{ inputs.branch }}"
+          branch="${branch:-$GITHUB_REF_NAME}"
+          if [[ "$branch" != release/* ]]; then
+            echo "::error::Production deploys must target a release/<version> branch. Got: ${branch}"
+            exit 1
+          fi
+          if ! git ls-remote --exit-code "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "refs/heads/${branch}" > /dev/null; then
+            echo "::error::Branch ${branch} does not exist on origin."
+            exit 1
+          fi
+          version="${branch#release/}"
+          echo "branch=${branch}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Deploying ${branch} as v${version}"
+
   tests:
+    needs: [prepare]
     uses: ./.github/workflows/test_codepost_ui.yml
+    with:
+      ref: ${{ needs.prepare.outputs.branch }}
 
   deploy:
-    needs: [tests]
+    needs: [prepare, tests]
     environment: production
     runs-on: production-ui
     env:
@@ -46,6 +78,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.branch }}
 
       - name: Set up Certs
         run: |
@@ -74,7 +108,7 @@ jobs:
         run: echo "Deployment to production UI server successful!"
 
   tag:
-    needs: [deploy]
+    needs: [prepare, deploy]
     runs-on: testing-codepost
     permissions:
       contents: write
@@ -82,22 +116,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          ref: ${{ needs.prepare.outputs.branch }}
           fetch-depth: 0
-
-      - name: Determine version
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#release/}" >> "$GITHUB_OUTPUT"
 
       - name: Create and push version tag
         run: |
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
+          git tag "v${{ needs.prepare.outputs.version }}"
+          git push origin "v${{ needs.prepare.outputs.version }}"
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ steps.version.outputs.version }}" \
-            --target "${{ github.ref_name }}" \
-            --title "v${{ steps.version.outputs.version }}" \
+          gh release create "v${{ needs.prepare.outputs.version }}" \
+            --target "${{ needs.prepare.outputs.branch }}" \
+            --title "v${{ needs.prepare.outputs.version }}" \
             --generate-notes
