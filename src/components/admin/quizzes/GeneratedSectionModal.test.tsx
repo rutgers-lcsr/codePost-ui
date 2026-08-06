@@ -82,7 +82,10 @@ const renderModal = () => {
   );
 };
 
-describe('GeneratedSectionModal — Test prompt', () => {
+// The prompt editor (TemplateTextArea) re-measures its autoSize textarea and highlight
+// overlay on each render, which makes these form-heavy tests slow enough to blow the 5s
+// default under a fully loaded parallel run.
+describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(quizzesApi.promptVariablesList).mockResolvedValue([] as any);
