@@ -335,9 +335,16 @@ export const HelperFileSelector: React.FC<IProps> = ({
                   style={{ marginTop: 8 }}
                 />
               </div>
-              <Checkbox checked={uploadDatasetHidden} onChange={(e) => setUploadDatasetHidden(e.target.checked)}>
-                Mark as Hidden
-              </Checkbox>
+              <div>
+                <Checkbox checked={uploadDatasetHidden} onChange={(e) => setUploadDatasetHidden(e.target.checked)}>
+                  Mark as Hidden
+                </Checkbox>
+                <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+                  Hidden datasets are never shown to students — not listed on the assignment, and not included in their
+                  assignment download. Use for answer keys or grading fixtures. Datasets attached to a test category as
+                  a resource are always forced hidden, and only mount during that category&apos;s test runs.
+                </div>
+              </div>
             </>
           )}
         </div>

@@ -27,7 +27,7 @@ For each course, you will see a table of assignments. The table includes:
 
 - **Assignment**: The name of the assignment.
 - **Status**: Whether your submission is open, submitted, or graded (see details below).
-- **Download**: A button to download assignment materials or starter code (if provided by the instructor).
+- **Download**: A button to download assignment materials or starter code (if provided by the instructor). If the assignment has datasets, they are included in the zip in a `data/` folder.
 
 ### Statuses
 

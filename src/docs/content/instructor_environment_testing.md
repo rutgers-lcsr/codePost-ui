@@ -60,18 +60,31 @@ Tick **Run pre-script** before starting a shell session. The shell will run the 
 
 ## Data Sets
 
-Data Sets are large or static files (CSVs, model weights, reference data) that need to be present when student code or autograder tests run, but aren't part of the student's submission.
+Data Sets are large or static files (CSVs, model weights, reference data) that need to be present when student code or autograder tests run. Unless hidden, they are also **delivered to students** — bundled into the assignment download zip (see [What students receive](#what-students-receive) below).
 
 ### Adding a dataset
 
-1. Open the assignment's **Settings > General > Data Sets** panel.
-2. Click **Add Data Set**.
+1. Open the assignment's **Settings > Resources > Datasets** panel.
+2. Click **Upload Dataset**.
 3. Provide:
    - **Name** — unique within the assignment (e.g. `mnist`, `housing.csv`).
-   - **File** — the data to upload.
+   - **File** — the data to upload (up to 1 GB).
    - **Mount path** _(optional)_ — where the file appears in the execution environment.
-   - **Active** — whether to mount during code execution. Toggle off to retire a dataset without deleting it.
-   - **Hidden** — if on, the dataset is **not exposed to students** during student-triggered runs. Use this for solution keys or test fixtures.
+   - **Active** — whether to mount during code execution. Toggle off to retire a dataset without deleting it. Active controls **execution mounting only** — a non-hidden dataset is included in the student download either way.
+
+### What students receive
+
+The student's **Download** button on an assignment returns a zip containing the assignment's starter files plus every non-hidden dataset, placed in a `data/` folder inside the zip.
+
+- For a **per-student variant pool**, each student's zip contains **only their own variant** — assigned automatically the first time they download the assignment or list its datasets.
+- Staff downloads include the shared datasets but no variants; download a specific variant from the Datasets panel instead.
+- External environments that mount datasets themselves (e.g. JupyterHub) can call the download API with `?includeDatasets=false` to get starter files only; this also skips the variant auto-assignment side effect.
+
+### Hidden datasets
+
+A **hidden** dataset is never shown to students: it doesn't appear in their dataset listing and is not included in their assignment download. While **Active**, it is still mounted during code execution — use this for data student code needs at runtime but shouldn't take home.
+
+Hidden is set at upload time and can't be toggled afterwards. The Datasets panel always uploads student-visible datasets; the **Upload Dataset** modal on the Environment & Tests page has a **Mark as Hidden** checkbox (on by default). Hidden datasets appear in the Datasets panel with a **Hidden** tag.
 
 ### Mount paths
 
@@ -84,7 +97,9 @@ Data Sets are large or static files (CSVs, model weights, reference data) that n
 
 ### Test resources
 
-Datasets attached to a Test Category as a resource are treated as test fixtures — they are forced `hidden=true` and only mounted during autograder runs, never in a student's own execution. Manage them from the **Resources** tab inside a test category.
+Datasets attached to a Test Category as a resource are grading fixtures — they are forced `hidden=true`, never included in the student's download, and never mounted in a student's own runs. They mount **only** during that test category's runs, at the resource's **target path**.
+
+When a category has resources, its test runs mount *only* those resources — the assignment's normal datasets (including the student's variant) are not mounted. To grade against different data than the student received (e.g. a full or held-out dataset), give the resource a target path equal to the student dataset's mount path: student code reads the same path but sees your fixture. Manage resources from the **Test Resources** panel inside a test category on the Environment & Tests page.
 
 ### Per-student dataset variants
 

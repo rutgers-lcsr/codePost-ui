@@ -1,6 +1,20 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { DeleteOutlined, DownloadOutlined, UploadOutlined, EditOutlined, ScissorOutlined } from '@ant-design/icons';
-import { Button, Form, Input, InputNumber, message, Modal, Space, Switch, Table, Tag, Typography, Upload } from 'antd';
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Space,
+  Switch,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  Upload,
+} from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
 import * as React from 'react';
 import { assignmentDataSetsApi } from '../../../../api-client/clients';
@@ -28,9 +42,9 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   const [splitForm] = Form.useForm();
   const [splitting, setSplitting] = React.useState(false);
 
-  const isStudentVisibleDataset = (dataset: AssignmentDataSetType): boolean => {
+  const isTestResource = (dataset: AssignmentDataSetType): boolean => {
     const normalized = dataset as AssignmentDataSetType & { is_test_resource?: boolean };
-    return !(dataset.hidden || dataset.isTestResource || normalized.is_test_resource);
+    return Boolean(dataset.isTestResource || normalized.is_test_resource);
   };
 
   const showModal = (dataset?: AssignmentDataSetType) => {
@@ -226,6 +240,21 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
                 Variant{record.autogradeAllVariants ? ' · autograde all' : ''}
               </Tag>
             )}
+            {isTestResource(record) ? (
+              <Tooltip title="A grading fixture attached to a test category. Never shown to students, never included in their assignment download, and only mounted during that test category's runs.">
+                <Tag color="gold" style={{ marginLeft: 8 }}>
+                  Hidden · Test resource
+                </Tag>
+              </Tooltip>
+            ) : (
+              record.hidden && (
+                <Tooltip title="Never shown to students and never included in their assignment download. Still mounted during code execution while Active.">
+                  <Tag color="orange" style={{ marginLeft: 8 }}>
+                    Hidden
+                  </Tag>
+                </Tooltip>
+              )
+            )}
           </div>
           {record.description && (
             <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>{record.description}</div>
@@ -276,19 +305,23 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       key: 'actions',
       render: (_: unknown, record: AssignmentDataSetType) => (
         <Space>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-            disabled={!canManageDatasets}
+          <Tooltip
+            title={isTestResource(record) ? 'Managed from the Environment & Tests page (test category resources).' : ''}
           >
-            Edit
-          </Button>
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => showModal(record)}
+              disabled={!canManageDatasets || isTestResource(record)}
+            >
+              Edit
+            </Button>
+          </Tooltip>
           <Button type="link" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(record)}>
             Download
           </Button>
-          {!record.isStudentVariant && (
+          {!record.isStudentVariant && !isTestResource(record) && (
             <Button
               type="link"
               size="small"
@@ -299,16 +332,20 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
               Split into variants
             </Button>
           )}
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-            disabled={!canManageDatasets}
+          <Tooltip
+            title={isTestResource(record) ? 'Managed from the Environment & Tests page (test category resources).' : ''}
           >
-            Delete
-          </Button>
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record.id)}
+              disabled={!canManageDatasets || isTestResource(record)}
+            >
+              Delete
+            </Button>
+          </Tooltip>
         </Space>
       ),
     },
@@ -320,8 +357,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         <div>
           <h3 style={{ margin: 0 }}>Assignment Datasets</h3>
           <div style={{ fontSize: '12px', color: '#888', marginTop: 4 }}>
-            Large files (e.g., training data, binary files) that will be automatically mounted when executing student
-            code.
+            Large files (e.g., training data, binary files) that are automatically mounted when executing student code
+            and included in the student&apos;s assignment download (unless hidden).
           </div>
         </div>
         <Button type="primary" icon={<UploadOutlined />} onClick={() => showModal()} disabled={!canManageDatasets}>
@@ -330,13 +367,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       </div>
 
       {datasets.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={datasets.filter((d: AssignmentDataSetType) => isStudentVisibleDataset(d))}
-          rowKey="id"
-          pagination={false}
-          size="small"
-        />
+        <Table columns={columns} dataSource={datasets} rowKey="id" pagination={false} size="small" />
       ) : (
         <div
           style={{
@@ -348,9 +379,9 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           }}
         >
           <p style={{ color: '#888', margin: 0 }}>
-            No datasets uploaded yet. Upload a dataset to make it available during code execution. Will be mounted at
-            ~/shared/&lt;dataset_name&gt; by default.
-            <br /> Maximum file size is 10GB.
+            No datasets uploaded yet. Upload a dataset to make it available during code execution and in the
+            student&apos;s assignment download. Will be mounted at ~/shared/&lt;dataset_name&gt; by default.
+            <br /> Maximum file size is 1 GB.
           </p>
         </div>
       )}
@@ -475,12 +506,21 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           >
             <div style={{ fontWeight: 500, marginBottom: 8 }}>💡 How datasets work:</div>
             <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px' }}>
-              <li>Datasets are automatically mounted when students' code is executed</li>
+              <li>Datasets are automatically mounted when students&apos; code is executed</li>
               <li>
                 Files are accessible at the specified mount path (e.g., <code>shared/mnist/file.csv</code>)
               </li>
               <li>Same path works in both development and execution environments</li>
               <li>Students can access via relative path in their code</li>
+              <li>
+                Datasets are also bundled into the student&apos;s assignment download zip, in a <code>data/</code>{' '}
+                folder. For a per-student variant pool, each student receives only their own variant — assigned the
+                first time they download or access the assignment&apos;s datasets.
+              </li>
+              <li>
+                Hidden datasets (including test-category resources) are never listed to students or included in their
+                download.
+              </li>
             </ul>
           </div>
         </Form>
@@ -495,11 +535,10 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
         width={480}
       >
         <Typography.Paragraph type="secondary" style={{ fontSize: 13 }}>
-          Splits <code>{splittingDataset?.name}</code> into disjoint row-chunks — one variant
-          per chunk, each student assigned exactly one (auto-balanced, overridable in the
-          &quot;Student assignments&quot; tab once created). The chunk count is driven by rows per
-          chunk, not current enrollment, so it stays stable as students add/drop the course.
-          The original file is kept but deactivated — it won&apos;t be handed out itself.
+          Splits <code>{splittingDataset?.name}</code> into disjoint row-chunks — one variant per chunk, each student
+          assigned exactly one (auto-balanced, overridable in the &quot;Student assignments&quot; tab once created). The
+          chunk count is driven by rows per chunk, not current enrollment, so it stays stable as students add/drop the
+          course. The original file is kept but deactivated — it won&apos;t be handed out itself.
         </Typography.Paragraph>
         <Form form={splitForm} layout="vertical" onFinish={handleSplit}>
           <Form.Item

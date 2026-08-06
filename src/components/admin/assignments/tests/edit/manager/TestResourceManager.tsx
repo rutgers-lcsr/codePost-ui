@@ -368,7 +368,10 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
           <div>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               Resources are files that are used by the tests. Can be used to override files in the submission or provide
-              additional files for the tests.
+              additional files for the tests. When a category has resources, its test runs mount <em>only</em> these
+              resources — the assignment&apos;s normal datasets (including per-student variants) are not mounted. To
+              override the dataset students received, add a resource whose target path matches that dataset&apos;s mount
+              path.
             </Typography.Text>
           </div>
         )}
