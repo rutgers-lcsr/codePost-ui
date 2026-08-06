@@ -154,13 +154,8 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
     },
   ];
 
-  const modelBreakdownColumns = [
-    {
-      title: 'Model',
-      dataIndex: 'name',
-      key: 'name',
-      render: (name: string) => <Text strong>{name}</Text>,
-    },
+  // Metric columns shared by the model and feature breakdown tables.
+  const sharedBreakdownColumns = [
     {
       title: 'Requests',
       dataIndex: 'requestCount',
@@ -214,6 +209,26 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       },
       sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
+  ];
+
+  const modelBreakdownColumns = [
+    {
+      title: 'Model',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
+    ...sharedBreakdownColumns,
+  ];
+
+  const featureBreakdownColumns = [
+    {
+      title: 'Feature',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
+    ...sharedBreakdownColumns,
   ];
 
   return (
@@ -382,6 +397,27 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
               <Table
                 dataSource={data.modelBreakdown.map((item, idx) => ({ ...item, key: item.name ?? idx }))}
                 columns={modelBreakdownColumns}
+                pagination={false}
+                size="small"
+                scroll={{ x: 600 }}
+              />
+            </Card>
+          )}
+
+          {/* Feature Breakdown Table */}
+          {data.featureBreakdown && data.featureBreakdown.length > 0 && (
+            <Card
+              title={
+                <Space>
+                  <ApiOutlined />
+                  <span>Usage by Feature</span>
+                </Space>
+              }
+              style={{ marginTop: 24 }}
+            >
+              <Table
+                dataSource={data.featureBreakdown.map((item, idx) => ({ ...item, key: item.name ?? idx }))}
+                columns={featureBreakdownColumns}
                 pagination={false}
                 size="small"
                 scroll={{ x: 600 }}

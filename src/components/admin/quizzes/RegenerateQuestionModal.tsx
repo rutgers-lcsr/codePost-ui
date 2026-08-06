@@ -5,16 +5,14 @@ import { ThunderboltOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { questionsApi } from '../../../api-client/clients';
-import { Question, QuestionTypeEnum } from '../../../api-client';
+import { Question, QuestionTypeEnum, QuizSuggestionJobStatusEnum } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
-import { useRegenerationSuggestions } from './queries';
+import { pollSuggestionJob, useRegenerationSuggestions } from './queries';
 import { typeMeta } from '../../core/questionMeta';
 import AnswerPreview from './AnswerPreview';
 import SuggestionCard from './SuggestionCard';
 
 const { Text } = Typography;
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface IProps {
   open: boolean;
@@ -41,20 +39,16 @@ const RegenerateQuestionModal: React.FC<IProps> = ({ open, courseId, bankId, que
     if (!question?.id) return;
     setGenerating(true);
     try {
-      await questionsApi.regenerateSuggestionCreate({
+      const created = await questionsApi.regenerateSuggestionCreate({
         id: question.id,
         regenerateSuggestionRequest: { instructions: instructions || undefined },
       });
-      let list = await questionsApi.regenerationSuggestionsList({ id: question.id });
-      let tries = 0;
-      while (list.length === 0 && tries < 20) {
-        await sleep(1500);
-        list = await questionsApi.regenerationSuggestionsList({ id: question.id });
-        tries += 1;
-      }
+      const job = await pollSuggestionJob(created.id);
       queryClient.invalidateQueries({ queryKey: quizKeys.regeneration(question.id) });
-      if (list.length === 0) {
-        message.info('No suggestion was generated — AI quiz suggestions may be disabled or unconfigured.');
+      if (job.status === QuizSuggestionJobStatusEnum.Failed) {
+        message.error(job.errorMessage || 'Suggestion generation failed.');
+      } else if (job.status !== QuizSuggestionJobStatusEnum.Completed) {
+        message.info('Generation is taking longer than expected — reopen this dialog shortly to check for results.');
       }
     } catch {
       message.error('Failed to start generation.');

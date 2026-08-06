@@ -8,6 +8,7 @@ All URIs are relative to *http://localhost*
 | [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve)                                   | **GET** /courses/{id}/aiModels/               |             |
 | [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/           |             |
 | [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/             |             |
+| [**aiTestCreate**](CoursesApi.md#aitestcreate)                                           | **POST** /courses/{id}/aiTest/                |             |
 | [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                |             |
 | [**apiKeysCreate**](CoursesApi.md#apikeyscreate)                                         | **POST** /courses/{id}/apiKeys/               |             |
 | [**apiKeysDestroy**](CoursesApi.md#apikeysdestroy)                                       | **DELETE** /courses/{id}/apiKeys/{keyId}/     |             |
@@ -328,6 +329,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiTestCreate
+
+> AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
+
+POST: Fire a small completion through the course\&#39;s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \&#39;provider_test\&#39;. Only accessible by course admins.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  CoursesApi,
+} from '';
+import type { AiTestCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+    // AIProviderTestRequest (optional)
+    aIProviderTestRequest: ...,
+  } satisfies AiTestCreateRequest;
+
+  try {
+    const data = await api.aiTestCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                      | Type                                              | Description                                     | Notes                     |
+| ------------------------- | ------------------------------------------------- | ----------------------------------------------- | ------------------------- |
+| **id**                    | `number`                                          | A unique integer value identifying this course. | [Defaults to `undefined`] |
+| **aIProviderTestRequest** | [AIProviderTestRequest](AIProviderTestRequest.md) |                                                 | [Optional]                |
+
+### Return type
+
+[**AIProviderTestResult**](AIProviderTestResult.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

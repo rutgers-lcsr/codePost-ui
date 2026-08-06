@@ -71,7 +71,7 @@ export const AI_PROVIDERS: { value: AIProvider; label: string }[] = [
 ];
 
 export const DEFAULT_MODELS: Record<AIProvider, string> = {
-  [PatchedCourseAISettingsAiProviderEnum.Gemini]: 'gemini-2.5-flash',
+  [PatchedCourseAISettingsAiProviderEnum.Gemini]: 'gemini-3-flash-preview',
   [PatchedCourseAISettingsAiProviderEnum.Openai]: 'gpt-4o-mini',
   [PatchedCourseAISettingsAiProviderEnum.Ollama]: 'llama3.2',
   [PatchedCourseAISettingsAiProviderEnum.Portkey]: 'default',

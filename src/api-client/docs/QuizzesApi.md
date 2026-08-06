@@ -2,26 +2,27 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                                               | HTTP request                                | Description |
-| ------------------------------------------------------------------------------------ | ------------------------------------------- | ----------- |
-| [**attemptsList**](QuizzesApi.md#attemptslist)                                       | **GET** /quizzes/{id}/attempts/             |             |
-| [**backfillPreviewRetrieve**](QuizzesApi.md#backfillpreviewretrieve)                 | **GET** /quizzes/{id}/backfillPreview/      |             |
-| [**create**](QuizzesApi.md#create)                                                   | **POST** /quizzes/                          |             |
-| [**destroy**](QuizzesApi.md#destroy)                                                 | **DELETE** /quizzes/{id}/                   |             |
-| [**generateAccessCodePartialUpdate**](QuizzesApi.md#generateaccesscodepartialupdate) | **PATCH** /quizzes/{id}/generateAccessCode/ |             |
-| [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)               | **POST** /quizzes/{id}/generateForStudent/  |             |
-| [**generateMissingCreate**](QuizzesApi.md#generatemissingcreate)                     | **POST** /quizzes/{id}/generateMissing/     |             |
-| [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                             | **GET** /quizzes/{id}/generatedSets/        |             |
-| [**list**](QuizzesApi.md#list)                                                       | **GET** /quizzes/                           |             |
-| [**partialUpdate**](QuizzesApi.md#partialupdate)                                     | **PATCH** /quizzes/{id}/                    |             |
-| [**promptTemplatesList**](QuizzesApi.md#prompttemplateslist)                         | **GET** /quizzes/{id}/promptTemplates/      |             |
-| [**promptVariablesList**](QuizzesApi.md#promptvariableslist)                         | **GET** /quizzes/{id}/promptVariables/      |             |
-| [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate)             | **POST** /quizzes/{id}/publishAllGenerated/ |             |
-| [**questionsList**](QuizzesApi.md#questionslist)                                     | **GET** /quizzes/{id}/questions/            |             |
-| [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)                         | **POST** /quizzes/{id}/resetAttempts/       |             |
-| [**resultsList**](QuizzesApi.md#resultslist)                                         | **GET** /quizzes/{id}/results/              |             |
-| [**retrieve**](QuizzesApi.md#retrieve)                                               | **GET** /quizzes/{id}/                      |             |
-| [**update**](QuizzesApi.md#update)                                                   | **PUT** /quizzes/{id}/                      |             |
+| Method                                                                               | HTTP request                                    | Description |
+| ------------------------------------------------------------------------------------ | ----------------------------------------------- | ----------- |
+| [**attemptsList**](QuizzesApi.md#attemptslist)                                       | **GET** /quizzes/{id}/attempts/                 |             |
+| [**backfillPreviewRetrieve**](QuizzesApi.md#backfillpreviewretrieve)                 | **GET** /quizzes/{id}/backfillPreview/          |             |
+| [**create**](QuizzesApi.md#create)                                                   | **POST** /quizzes/                              |             |
+| [**destroy**](QuizzesApi.md#destroy)                                                 | **DELETE** /quizzes/{id}/                       |             |
+| [**generateAccessCodePartialUpdate**](QuizzesApi.md#generateaccesscodepartialupdate) | **PATCH** /quizzes/{id}/generateAccessCode/     |             |
+| [**generateForStudentCreate**](QuizzesApi.md#generateforstudentcreate)               | **POST** /quizzes/{id}/generateForStudent/      |             |
+| [**generateMissingCreate**](QuizzesApi.md#generatemissingcreate)                     | **POST** /quizzes/{id}/generateMissing/         |             |
+| [**generatedSetsList**](QuizzesApi.md#generatedsetslist)                             | **GET** /quizzes/{id}/generatedSets/            |             |
+| [**list**](QuizzesApi.md#list)                                                       | **GET** /quizzes/                               |             |
+| [**partialUpdate**](QuizzesApi.md#partialupdate)                                     | **PATCH** /quizzes/{id}/                        |             |
+| [**previewGeneratedSectionCreate**](QuizzesApi.md#previewgeneratedsectioncreate)     | **POST** /quizzes/{id}/previewGeneratedSection/ |             |
+| [**promptTemplatesList**](QuizzesApi.md#prompttemplateslist)                         | **GET** /quizzes/{id}/promptTemplates/          |             |
+| [**promptVariablesList**](QuizzesApi.md#promptvariableslist)                         | **GET** /quizzes/{id}/promptVariables/          |             |
+| [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate)             | **POST** /quizzes/{id}/publishAllGenerated/     |             |
+| [**questionsList**](QuizzesApi.md#questionslist)                                     | **GET** /quizzes/{id}/questions/                |             |
+| [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)                         | **POST** /quizzes/{id}/resetAttempts/           |             |
+| [**resultsList**](QuizzesApi.md#resultslist)                                         | **GET** /quizzes/{id}/results/                  |             |
+| [**retrieve**](QuizzesApi.md#retrieve)                                               | **GET** /quizzes/{id}/                          |             |
+| [**update**](QuizzesApi.md#update)                                                   | **PUT** /quizzes/{id}/                          |             |
 
 ## attemptsList
 
@@ -732,6 +733,83 @@ example().catch(console.error);
 ### Return type
 
 [**Quiz**](Quiz.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## previewGeneratedSectionCreate
+
+> QuizSuggestionJob previewGeneratedSectionCreate(id, previewGeneratedSectionRequest)
+
+Test-generate example questions from an (unsaved) AI-section prompt without persisting anything to the quiz — the quiz builder\&#39;s Test button. Returns a generation job to poll via quizSuggestionJobs/{id}/; the completed job\&#39;s resultData holds the example questions. seed picks how per-student {variables} resolve: a random submitter\&#39;s latest submission, or instructor-uploaded demoFiles.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizzesApi,
+} from '';
+import type { PreviewGeneratedSectionCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+    // PreviewGeneratedSectionRequest
+    previewGeneratedSectionRequest: ...,
+  } satisfies PreviewGeneratedSectionCreateRequest;
+
+  try {
+    const data = await api.previewGeneratedSectionCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                               | Type                                                                | Description                                   | Notes                     |
+| ---------------------------------- | ------------------------------------------------------------------- | --------------------------------------------- | ------------------------- |
+| **id**                             | `number`                                                            | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| **previewGeneratedSectionRequest** | [PreviewGeneratedSectionRequest](PreviewGeneratedSectionRequest.md) |                                               |                           |
+
+### Return type
+
+[**QuizSuggestionJob**](QuizSuggestionJob.md)
 
 ### Authorization
 

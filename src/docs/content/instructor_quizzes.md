@@ -173,9 +173,16 @@ submits, generate questions from *their* code to confirm they understand what th
   the assignment uses [per-student dataset variants](/docs/instructor-environment-testing),
   `{student_dataset}` inserts the specific data assigned to that student, so questions can reference
   their actual numbers.
-- Questions generate automatically when a student submits. If you add a section **after** students
-  have already submitted, use **Generate missing** to backfill them (the count of affected students
-  is shown first, since generation costs AI tokens).
+- **Generation is manual by default** (Settings → AI-generated questions → **Generate question
+  sets manually**): you create sets from the Review tab — **Generate missing** (the count of
+  affected students is shown first, since generation costs AI tokens) or per student. You can also
+  set a **scheduled generation time**: a one-time run that generates sets for every student who has
+  a submission but no set yet — for example, right after the assignment deadline, so each set
+  reflects the student's final submission. Students who submit after the run appear in the
+  **Generate missing** count, and moving the time later re-runs it for newly missing students.
+- Turning the manual toggle **off** makes questions generate automatically whenever a student
+  submits — convenient for self-paced quizzes, but note that every resubmission regenerates the
+  student's set (until it's approved), spending AI tokens each time.
 - On the **Review** tab, review each student's set: edit questions inline, **regenerate**, or
   **approve**. A student's quiz only opens for them once their set is approved — until then they see
   a neutral **"Your quiz is being prepared."**

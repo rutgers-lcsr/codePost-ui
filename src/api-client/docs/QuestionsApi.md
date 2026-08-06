@@ -451,9 +451,9 @@ example().catch(console.error);
 
 ## regenerateSuggestionCreate
 
-> RegenerateSuggestionResponse regenerateSuggestionCreate(id, regenerateSuggestionRequest)
+> QuizSuggestionJob regenerateSuggestionCreate(id, regenerateSuggestionRequest)
 
-Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns 403 when the course has the quiz_generation AI feature turned off.
+Generate a refreshed AI suggestion seeded from this existing question (cross-semester update). The instructor reviews and accepts the suggestion. Returns the generation job to poll via quizSuggestionJobs/{id}/ for status and errors. Returns 403 when the course has the quiz_generation AI feature turned off.
 
 ### Example
 
@@ -507,7 +507,7 @@ example().catch(console.error);
 
 ### Return type
 
-[**RegenerateSuggestionResponse**](RegenerateSuggestionResponse.md)
+[**QuizSuggestionJob**](QuizSuggestionJob.md)
 
 ### Authorization
 

@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**aiModelsRetrieve**](OrganizationsApi.md#aimodelsretrieve)               | **GET** /organizations/{id}/aiModels/             |             |
 | [**aiSettingsPartialUpdate**](OrganizationsApi.md#aisettingspartialupdate) | **PATCH** /organizations/{id}/aiSettings/         |             |
 | [**aiSettingsRetrieve**](OrganizationsApi.md#aisettingsretrieve)           | **GET** /organizations/{id}/aiSettings/           |             |
+| [**aiTestCreate**](OrganizationsApi.md#aitestcreate)                       | **POST** /organizations/{id}/aiTest/              |             |
 | [**aiUsageRetrieve**](OrganizationsApi.md#aiusageretrieve)                 | **GET** /organizations/{id}/aiUsage/              |             |
 | [**analyticsRetrieve**](OrganizationsApi.md#analyticsretrieve)             | **GET** /organizations/{id}/analytics/            |             |
 | [**approveAdminCreate**](OrganizationsApi.md#approveadmincreate)           | **POST** /organizations/{id}/approve_admin/       |             |
@@ -234,6 +235,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## aiTestCreate
+
+> AIProviderTestResult aiTestCreate(id, aIProviderTestRequest)
+
+POST: Fire a small completion through the org\&#39;s stored AI config and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \&#39;provider_test\&#39;. Only accessible by Org Staff or superuser.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OrganizationsApi,
+} from '';
+import type { AiTestCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new OrganizationsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this organization.
+    id: 56,
+    // AIProviderTestRequest (optional)
+    aIProviderTestRequest: ...,
+  } satisfies AiTestCreateRequest;
+
+  try {
+    const data = await api.aiTestCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                      | Type                                              | Description                                           | Notes                     |
+| ------------------------- | ------------------------------------------------- | ----------------------------------------------------- | ------------------------- |
+| **id**                    | `number`                                          | A unique integer value identifying this organization. | [Defaults to `undefined`] |
+| **aIProviderTestRequest** | [AIProviderTestRequest](AIProviderTestRequest.md) |                                                       | [Optional]                |
+
+### Return type
+
+[**AIProviderTestResult**](AIProviderTestResult.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

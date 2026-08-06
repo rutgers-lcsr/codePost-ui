@@ -26,7 +26,7 @@ interface IProps {
   onChanged?: () => void;
 }
 
-const parseChoices = (raw: unknown): { text: string; isCorrect: boolean }[] => {
+export const parseChoices = (raw: unknown): { text: string; isCorrect: boolean }[] => {
   let arr: RawChoice[] = [];
   if (Array.isArray(raw)) arr = raw as RawChoice[];
   else if (typeof raw === 'string') {
@@ -104,6 +104,12 @@ const SuggestionCard: React.FC<IProps> = ({ suggestion, courseId, targetBankId, 
       <div style={{ marginTop: 8, fontSize: 14 }}>
         <Markdown>{suggestion.text}</Markdown>
       </div>
+
+      {suggestion.description && (
+        <div style={{ marginTop: 8, fontSize: 13, color: 'rgba(0,0,0,0.65)' }}>
+          <Markdown>{suggestion.description}</Markdown>
+        </div>
+      )}
 
       <Divider style={{ margin: '8px 0' }} />
 

@@ -16,6 +16,8 @@
 import * as runtime from '../runtime';
 import type {
   AIProviderModelsList,
+  AIProviderTestRequest,
+  AIProviderTestResult,
   AIUsageSummary,
   CapabilitiesResponse,
   Course,
@@ -71,6 +73,11 @@ export interface AiSettingsPartialUpdateRequest {
 
 export interface AiSettingsRetrieveRequest {
   id: number;
+}
+
+export interface AiTestCreateRequest {
+  id: number;
+  aIProviderTestRequest?: AIProviderTestRequest;
 }
 
 export interface AiUsageRetrieveRequest {
@@ -510,6 +517,69 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CourseAISettings> {
     const response = await this.aiSettingsRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by course admins.
+   */
+  async aiTestCreateRaw(
+    requestParameters: AiTestCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AIProviderTestResult>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling aiTestCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/aiTest/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['aIProviderTestRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * POST: Fire a small completion through the course\'s effective AI config (own settings or inherited org settings) and report success, latency, and any error. Accepts an optional custom prompt and a one-off model override. Recorded in AI usage as \'provider_test\'. Only accessible by course admins.
+   */
+  async aiTestCreate(
+    requestParameters: AiTestCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AIProviderTestResult> {
+    const response = await this.aiTestCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

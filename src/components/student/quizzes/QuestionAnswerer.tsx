@@ -191,7 +191,11 @@ const QuestionAnswerer: React.FC<IProps> = ({ response, index, value, disabled, 
           <Markdown>{question.text}</Markdown>
         </div>
       )}
-      {question.description && <Markdown>{question.description}</Markdown>}
+      {question.description && (
+        <div style={{ marginTop: 8, color: 'rgba(0,0,0,0.65)' }}>
+          <Markdown>{question.description}</Markdown>
+        </div>
+      )}
       <div style={{ marginTop: 12 }}>{renderInput()}</div>
       {/* Server-gated: present once the attempt is submitted, regardless of answer reveal. */}
       {response.graderFeedback && (

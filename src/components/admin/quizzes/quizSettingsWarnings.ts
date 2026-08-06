@@ -21,6 +21,8 @@ export interface QuizWarningInput {
   showResponses: boolean;
   allowSubmissionReview: boolean;
   isPublished: boolean;
+  manualGeneration: boolean;
+  generationDate: string | null;
 }
 
 /** Whether the quiz has no close that the settings can determine up front. Event-based
@@ -66,6 +68,17 @@ export function quizSettingsWarnings(s: QuizWarningInput): QuizWarning[] {
         'The correct-answer key is shown right after submitting, and students have attempts ' +
         'remaining — they could copy it into a later attempt. Consider releasing results after ' +
         'the quiz closes.',
+    });
+  }
+
+  // A scheduled generation run only fires for published quizzes — remind the author.
+  if (s.manualGeneration && s.generationDate && !s.isPublished) {
+    out.push({
+      key: 'scheduled-generation-draft',
+      level: 'info',
+      text:
+        'A scheduled generation time is set, but this quiz is a draft — the scheduled run ' +
+        'only fires once the quiz is published.',
     });
   }
 

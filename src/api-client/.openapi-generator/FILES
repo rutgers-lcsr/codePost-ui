@@ -32,6 +32,7 @@ apis/QuizImagesApi.ts
 apis/QuizImportJobsApi.ts
 apis/QuizQuestionGroupsApi.ts
 apis/QuizQuestionsApi.ts
+apis/QuizSuggestionJobsApi.ts
 apis/QuizzesApi.ts
 apis/RegistrationApi.ts
 apis/RubricCategoriesApi.ts
@@ -58,6 +59,8 @@ apis/index.ts
 docs/AIModel.md
 docs/AIProviderModels.md
 docs/AIProviderModelsList.md
+docs/AIProviderTestRequest.md
+docs/AIProviderTestResult.md
 docs/AIUsageBreakdown.md
 docs/AIUsageBucket.md
 docs/AIUsageSummary.md
@@ -145,6 +148,7 @@ docs/CourseStudentCaptions.md
 docs/CoursesApi.md
 docs/DashboardApi.md
 docs/DashboardStats.md
+docs/DatabaseCheck.md
 docs/DiskCheck.md
 docs/EmailPasswordResetRequest.md
 docs/EmailPasswordResetResponse.md
@@ -175,7 +179,6 @@ docs/GenerateMissingResponse.md
 docs/GenerateOTTRequest.md
 docs/GenerateOTTResponse.md
 docs/GenerateQuizQuestionsRequest.md
-docs/GenerateQuizQuestionsResponse.md
 docs/GeneratedQuestionSet.md
 docs/GeneratedQuestionSetList.md
 docs/GeneratedQuestionSetStatusEnum.md
@@ -281,6 +284,8 @@ docs/PatchedUser.md
 docs/PatchedWebhook.md
 docs/PendingAdminActionRequest.md
 docs/PendingAdminActionResponse.md
+docs/PreviewDemoFile.md
+docs/PreviewGeneratedSectionRequest.md
 docs/PromptExperiment.md
 docs/PromptExperimentResults.md
 docs/PromptExperimentStatusEnum.md
@@ -324,9 +329,11 @@ docs/QuizResultRow.md
 docs/QuizScoringPolicyEnum.md
 docs/QuizSectionTemplate.md
 docs/QuizSourceEnum.md
+docs/QuizSuggestionJob.md
+docs/QuizSuggestionJobStatusEnum.md
+docs/QuizSuggestionJobsApi.md
 docs/QuizzesApi.md
 docs/RegenerateSuggestionRequest.md
-docs/RegenerateSuggestionResponse.md
 docs/RegisterAndSetPasswordRequest.md
 docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
@@ -341,6 +348,7 @@ docs/RubricCommentsApi.md
 docs/RunQuizResponseCodeRequest.md
 docs/Section.md
 docs/SectionsApi.md
+docs/SeedEnum.md
 docs/SetCredentialsRequest.md
 docs/SetCredentialsResponse.md
 docs/SetOfficialAttemptRequest.md

@@ -22,6 +22,7 @@ import type {
   GeneratedQuestionSetList,
   PatchedGenerateQuizAccessCodeRequest,
   PatchedQuiz,
+  PreviewGeneratedSectionRequest,
   PromptVariable,
   PublishAllGeneratedResponse,
   Quiz,
@@ -29,6 +30,7 @@ import type {
   QuizQuestion,
   QuizResultRow,
   QuizSectionTemplate,
+  QuizSuggestionJob,
   ResetQuizAttemptsResponse,
   StaffQuizAttempt,
 } from '../models/index';
@@ -45,7 +47,15 @@ export interface BackfillPreviewRetrieveRequest {
 export interface CreateRequest {
   quiz: Omit<
     Quiz,
-    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    | 'id'
+    | 'accessCode'
+    | 'scheduledGenerationRanAt'
+    | 'generatedSections'
+    | 'quizQuestions'
+    | 'questionGroups'
+    | 'source'
+    | 'createdBy'
+    | 'metadata'
   >;
 }
 
@@ -75,8 +85,21 @@ export interface PartialUpdateRequest {
   id: number;
   patchedQuiz?: Omit<
     PatchedQuiz,
-    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    | 'id'
+    | 'accessCode'
+    | 'scheduledGenerationRanAt'
+    | 'generatedSections'
+    | 'quizQuestions'
+    | 'questionGroups'
+    | 'source'
+    | 'createdBy'
+    | 'metadata'
   >;
+}
+
+export interface PreviewGeneratedSectionCreateRequest {
+  id: number;
+  previewGeneratedSectionRequest: PreviewGeneratedSectionRequest;
 }
 
 export interface PromptTemplatesListRequest {
@@ -111,7 +134,15 @@ export interface UpdateRequest {
   id: number;
   quiz: Omit<
     Quiz,
-    'id' | 'accessCode' | 'generatedSections' | 'quizQuestions' | 'questionGroups' | 'source' | 'createdBy' | 'metadata'
+    | 'id'
+    | 'accessCode'
+    | 'scheduledGenerationRanAt'
+    | 'generatedSections'
+    | 'quizQuestions'
+    | 'questionGroups'
+    | 'source'
+    | 'createdBy'
+    | 'metadata'
   >;
 }
 
@@ -717,6 +748,76 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Quiz> {
     const response = await this.partialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Test-generate example questions from an (unsaved) AI-section prompt without persisting anything to the quiz — the quiz builder\'s Test button. Returns a generation job to poll via quizSuggestionJobs/{id}/; the completed job\'s resultData holds the example questions. seed picks how per-student {variables} resolve: a random submitter\'s latest submission, or instructor-uploaded demoFiles.
+   */
+  async previewGeneratedSectionCreateRaw(
+    requestParameters: PreviewGeneratedSectionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<QuizSuggestionJob>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling previewGeneratedSectionCreate().',
+      );
+    }
+
+    if (requestParameters['previewGeneratedSectionRequest'] == null) {
+      throw new runtime.RequiredError(
+        'previewGeneratedSectionRequest',
+        'Required parameter "previewGeneratedSectionRequest" was null or undefined when calling previewGeneratedSectionCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/previewGeneratedSection/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['previewGeneratedSectionRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Test-generate example questions from an (unsaved) AI-section prompt without persisting anything to the quiz — the quiz builder\'s Test button. Returns a generation job to poll via quizSuggestionJobs/{id}/; the completed job\'s resultData holds the example questions. seed picks how per-student {variables} resolve: a random submitter\'s latest submission, or instructor-uploaded demoFiles.
+   */
+  async previewGeneratedSectionCreate(
+    requestParameters: PreviewGeneratedSectionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<QuizSuggestionJob> {
+    const response = await this.previewGeneratedSectionCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

@@ -6,7 +6,7 @@
 | ---------------- | ----------------------------------- |
 | `checkedAt`      | string                              |
 | `overall`        | [OverallEnum](OverallEnum.md)       |
-| `database`       | [HealthCheck](HealthCheck.md)       |
+| `database`       | [DatabaseCheck](DatabaseCheck.md)   |
 | `celery`         | [CeleryCheck](CeleryCheck.md)       |
 | `cache`          | [HealthCheck](HealthCheck.md)       |
 | `migrations`     | [MigrationCheck](MigrationCheck.md) |

@@ -71,6 +71,92 @@ export interface AIProviderModelsList {
   providers: Array<AIProviderModels>;
 }
 /**
+ * Optional request body for the AI provider connection test.
+ * @export
+ * @interface AIProviderTestRequest
+ */
+export interface AIProviderTestRequest {
+  /**
+   * Optional custom prompt to send instead of the default connectivity prompt
+   * @type {string}
+   * @memberof AIProviderTestRequest
+   */
+  prompt?: string;
+  /**
+   * Optional model id to test against, overriding the saved model without saving it
+   * @type {string}
+   * @memberof AIProviderTestRequest
+   */
+  model?: string;
+}
+/**
+ * Result of a live AI provider connection test.
+ * @export
+ * @interface AIProviderTestResult
+ */
+export interface AIProviderTestResult {
+  /**
+   * Whether the provider answered the test prompt
+   * @type {boolean}
+   * @memberof AIProviderTestResult
+   */
+  success: boolean;
+  /**
+   * Provider identifier the test ran against
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  provider: string;
+  /**
+   * Model the test ran against
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  model: string;
+  /**
+   * Model id the provider reported back (may differ from the requested model, e.g. a gateway-routed or versioned model)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  reportedModel?: string | null;
+  /**
+   * Round-trip time of the test request in milliseconds
+   * @type {number}
+   * @memberof AIProviderTestResult
+   */
+  latencyMs?: number | null;
+  /**
+   * System prompt sent to the provider (null if no request was attempted)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  requestSystemPrompt?: string | null;
+  /**
+   * User prompt sent to the provider (null if no request was attempted)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  requestUserPrompt?: string | null;
+  /**
+   * The model's reply (up to 2000 characters)
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  response?: string | null;
+  /**
+   * Friendly error message
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  error?: string | null;
+  /**
+   * Raw exception detail for debugging
+   * @type {string}
+   * @memberof AIProviderTestResult
+   */
+  errorDetail?: string | null;
+}
+/**
  * Usage breakdown by a dimension (course, assignment, provider, model).
  * @export
  * @interface AIUsageBreakdown
@@ -216,6 +302,12 @@ export interface AIUsageSummary {
    * @memberof AIUsageSummary
    */
   modelBreakdown?: Array<AIUsageBreakdown>;
+  /**
+   * Usage breakdown by AI feature (request type)
+   * @type {Array<AIUsageBreakdown>}
+   * @memberof AIUsageSummary
+   */
+  featureBreakdown?: Array<AIUsageBreakdown>;
   /**
    *
    * @type {GranularityEnum}
@@ -2131,6 +2223,12 @@ export interface BatchCapabilitiesResponseResultsValue {
    * @type {boolean}
    * @memberof BatchCapabilitiesResponseResultsValue
    */
+  generatePersonalizedQuizQuestions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
   editAssignment?: boolean;
   /**
    *
@@ -2607,6 +2705,12 @@ export interface CapabilitiesResponseCapabilitiesMap {
    * @memberof CapabilitiesResponseCapabilitiesMap
    */
   generateAiQuizQuestions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  generatePersonalizedQuizQuestions?: boolean;
   /**
    *
    * @type {boolean}
@@ -4020,6 +4124,56 @@ export interface DashboardStats {
 /**
  * Result of a single health probe.
  * @export
+ * @interface DatabaseCheck
+ */
+export interface DatabaseCheck {
+  /**
+   *
+   * @type {StatusDfeEnum}
+   * @memberof DatabaseCheck
+   */
+  status: StatusDfeEnum;
+  /**
+   *
+   * @type {string}
+   * @memberof DatabaseCheck
+   */
+  label: string;
+  /**
+   *
+   * @type {string}
+   * @memberof DatabaseCheck
+   */
+  detail: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  latencyMs?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsCurrent?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsMaxUsed?: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof DatabaseCheck
+   */
+  connectionsLimit?: number | null;
+}
+
+/**
+ * Result of a single health probe.
+ * @export
  * @interface DiskCheck
  */
 export interface DiskCheck {
@@ -4827,25 +4981,6 @@ export interface GenerateQuizQuestionsRequest {
    * @memberof GenerateQuizQuestionsRequest
    */
   instructions?: string;
-}
-/**
- *
- * @export
- * @interface GenerateQuizQuestionsResponse
- */
-export interface GenerateQuizQuestionsResponse {
-  /**
-   *
-   * @type {string}
-   * @memberof GenerateQuizQuestionsResponse
-   */
-  taskId: string;
-  /**
-   *
-   * @type {string}
-   * @memberof GenerateQuizQuestionsResponse
-   */
-  status: string;
 }
 /**
  * A student's generated question set with its questions — the review payload.
@@ -8680,6 +8815,24 @@ export interface PatchedQuiz {
    */
   autoPublishGenerated?: boolean;
   /**
+   * If true (the default), per-student question sets never generate automatically (no per-submission trigger, no backfill on publish or section creation) — staff generate via generateForStudent/generateMissing, or the one-time generationDate run.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  manualGeneration?: boolean;
+  /**
+   * Manual mode only: one-time scheduled run that generates question sets for students who have a submission but no set yet, at/after this time.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  generationDate?: string | null;
+  /**
+   * When the scheduled generationDate run last fired (one-shot stamp). Moving generationDate past this re-arms the run.
+   * @type {string}
+   * @memberof PatchedQuiz
+   */
+  readonly scheduledGenerationRanAt?: string | null;
+  /**
    *
    * @type {Array<QuizGeneratedSection>}
    * @memberof PatchedQuiz
@@ -9689,6 +9842,12 @@ export interface PatchedSuggestedQuizQuestion {
    */
   text?: string;
   /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof PatchedSuggestedQuizQuestion
+   */
+  description?: string;
+  /**
    *
    * @type {any}
    * @memberof PatchedSuggestedQuizQuestion
@@ -10261,6 +10420,63 @@ export interface PendingAdminActionResponse {
    */
   status: string;
 }
+/**
+ *
+ * @export
+ * @interface PreviewDemoFile
+ */
+export interface PreviewDemoFile {
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewDemoFile
+   */
+  name: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewDemoFile
+   */
+  content: string;
+}
+/**
+ *
+ * @export
+ * @interface PreviewGeneratedSectionRequest
+ */
+export interface PreviewGeneratedSectionRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  systemPrompt: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  numQuestions?: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  questionTypes?: Array<string>;
+  /**
+   *
+   * @type {SeedEnum}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  seed?: SeedEnum;
+  /**
+   *
+   * @type {Array<PreviewDemoFile>}
+   * @memberof PreviewGeneratedSectionRequest
+   */
+  demoFiles?: Array<PreviewDemoFile>;
+}
+
 /**
  *
  * @export
@@ -11104,6 +11320,24 @@ export interface Quiz {
    */
   autoPublishGenerated?: boolean;
   /**
+   * If true (the default), per-student question sets never generate automatically (no per-submission trigger, no backfill on publish or section creation) — staff generate via generateForStudent/generateMissing, or the one-time generationDate run.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  manualGeneration?: boolean;
+  /**
+   * Manual mode only: one-time scheduled run that generates question sets for students who have a submission but no set yet, at/after this time.
+   * @type {string}
+   * @memberof Quiz
+   */
+  generationDate?: string | null;
+  /**
+   * When the scheduled generationDate run last fired (one-shot stamp). Moving generationDate past this re-arms the run.
+   * @type {string}
+   * @memberof Quiz
+   */
+  readonly scheduledGenerationRanAt: string | null;
+  /**
    *
    * @type {Array<QuizGeneratedSection>}
    * @memberof Quiz
@@ -11671,6 +11905,100 @@ export enum QuizSourceEnum {
 }
 
 /**
+ * Read-only view of an AI quiz-suggestion generation run (for status polling).
+ * @export
+ * @interface QuizSuggestionJob
+ */
+export interface QuizSuggestionJob {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly id: number;
+  /**
+   * The related course_id.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly course: number;
+  /**
+   * The assignment suggestions were generated for (fresh generation).
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly assignment: number | null;
+  /**
+   * The existing question a refresh suggestion was generated from.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly sourceQuestion: number | null;
+  /**
+   * The quiz a section-prompt test preview was run for (preview runs only).
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly quiz: number | null;
+  /**
+   * Current status of the generation run.
+   *
+   * * `pending` - Queued
+   * * `running` - Generating
+   * * `completed` - Completed
+   * * `failed` - Failed
+   * @type {QuizSuggestionJobStatusEnum}
+   * @memberof QuizSuggestionJob
+   */
+  readonly status: QuizSuggestionJobStatusEnum;
+  /**
+   * Celery task id, for debugging.
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly taskId: string;
+  /**
+   * Number of suggestions the run produced.
+   * @type {number}
+   * @memberof QuizSuggestionJob
+   */
+  readonly createdCount: number;
+  /**
+   * Friendly error detail if the run failed.
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly errorMessage: string;
+  /**
+   *
+   * @type {any}
+   * @memberof QuizSuggestionJob
+   */
+  readonly resultData: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizSuggestionJob
+   */
+  readonly created: string;
+}
+
+/**
+ * * `pending` - Queued
+ * * `running` - Generating
+ * * `completed` - Completed
+ * * `failed` - Failed
+ * @export
+ * @enum {string}
+ */
+export enum QuizSuggestionJobStatusEnum {
+  Pending = 'pending',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+}
+
+/**
  *
  * @export
  * @interface RegenerateSuggestionRequest
@@ -11700,25 +12028,6 @@ export interface RegenerateSuggestionRequest {
    * @memberof RegenerateSuggestionRequest
    */
   instructions?: string;
-}
-/**
- *
- * @export
- * @interface RegenerateSuggestionResponse
- */
-export interface RegenerateSuggestionResponse {
-  /**
-   *
-   * @type {string}
-   * @memberof RegenerateSuggestionResponse
-   */
-  taskId: string;
-  /**
-   *
-   * @type {string}
-   * @memberof RegenerateSuggestionResponse
-   */
-  status: string;
 }
 /**
  *
@@ -12000,6 +12309,17 @@ export interface Section {
    */
   students: Array<string | null>;
 }
+/**
+ * * `random` - random
+ * * `demo` - demo
+ * @export
+ * @enum {string}
+ */
+export enum SeedEnum {
+  Random = 'random',
+  Demo = 'demo',
+}
+
 /**
  *
  * @export
@@ -14038,6 +14358,12 @@ export interface SuggestedQuizQuestion {
    */
   text: string;
   /**
+   * Optional Markdown description shown beneath the stem (rich content: code blocks, lists, formatting).
+   * @type {string}
+   * @memberof SuggestedQuizQuestion
+   */
+  description?: string;
+  /**
    *
    * @type {any}
    * @memberof SuggestedQuizQuestion
@@ -14154,10 +14480,10 @@ export interface SystemHealthResponse {
   overall: OverallEnum;
   /**
    *
-   * @type {HealthCheck}
+   * @type {DatabaseCheck}
    * @memberof SystemHealthResponse
    */
-  database: HealthCheck;
+  database: DatabaseCheck;
   /**
    *
    * @type {CeleryCheck}

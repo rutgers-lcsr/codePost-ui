@@ -8,7 +8,7 @@
  */
 
 import * as React from 'react';
-import { Alert, Card, Flex, Input, message, Select, Space, Spin, Switch, Typography } from 'antd';
+import { Alert, AutoComplete, Card, Flex, Input, message, Select, Space, Spin, Switch, Tooltip, Typography } from 'antd';
 import { RobotOutlined, BankOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import TokenRateEditor from '../../core/TokenRateEditor';
@@ -18,6 +18,7 @@ import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
 import type { AIModel } from '../../../api-client';
+import AIProviderTestModal from '../../core/AIProviderTestModal';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
 const { Text } = Typography;
@@ -29,6 +30,7 @@ interface IAISettingsCardProps {
 const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [testOpen, setTestOpen] = React.useState(false);
 
   // Org-level availability
   const [orgAiAvailable, setOrgAiAvailable] = React.useState(false);
@@ -207,15 +209,28 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         </Space>
       }
       extra={
-        <CPButton
-          cpType="primary"
-          size="small"
-          onClick={handleSave}
-          loading={isSaving}
-          disabled={!isDirty || isLoading}
-        >
-          Save AI Settings
-        </CPButton>
+        <Space>
+          <Tooltip
+            title={
+              isDirty
+                ? 'Save your changes first — the test runs against saved settings'
+                : 'Send a test request to your AI provider'
+            }
+          >
+            <CPButton size="small" onClick={() => setTestOpen(true)} disabled={isDirty || isLoading}>
+              Test
+            </CPButton>
+          </Tooltip>
+          <CPButton
+            cpType="primary"
+            size="small"
+            onClick={handleSave}
+            loading={isSaving}
+            disabled={!isDirty || isLoading}
+          >
+            Save AI Settings
+          </CPButton>
+        </Space>
       }
       style={{ marginBottom: 24 }}
     >
@@ -319,7 +334,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   )}
                   {provider === 'portkey' && (
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      For self-hosted Portkey gateway, the API key is optional. If provided, it is sent as the
+                      Required when using the official Portkey API; optional for a self-hosted gateway. Sent as the
                       x-portkey-api-key header.
                     </Text>
                   )}
@@ -340,39 +355,48 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                       provider === 'ollama'
                         ? 'http://localhost:11434'
                         : provider === 'portkey'
-                          ? 'http://portkey-gateway.example.com:8787'
+                          ? 'https://api.portkey.ai/v1'
                           : 'https://api.example.com'
                     }
                     style={{ maxWidth: 400 }}
                   />
+                  {provider === 'portkey' && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      Leave blank to use the official Portkey API (https://api.portkey.ai/v1). Enter a URL only to
+                      route through a self-hosted Portkey gateway.
+                    </Text>
+                  )}
                 </Flex>
               )}
 
               {/* Model */}
-              {/* Model */}
               {provider && (
                 <Flex vertical gap={4}>
                   <Text strong>Model</Text>
-                  <Select
-                    showSearch
-                    value={model || undefined}
-                    onChange={(value) => {
+                  <AutoComplete
+                    value={model}
+                    onChange={(value: string) => {
                       setModel(value);
                       mark();
                     }}
-                    placeholder={DEFAULT_MODELS[provider] || 'Select a model'}
+                    placeholder={DEFAULT_MODELS[provider] || 'Enter a model id'}
+                    aria-label="AI Model"
                     style={{ maxWidth: 400 }}
-                    loading={loadingModels}
-                    notFoundContent={loadingModels ? <Spin size="small" /> : 'No models found'}
+                    allowClear
                     options={modelOptions}
-                    filterOption={(input, option) =>
-                      !!option &&
-                      (option.value.toLowerCase().includes(input.toLowerCase()) ||
-                        (typeof option.label === 'string' && option.label.toLowerCase().includes(input.toLowerCase())))
-                    }
+                    showSearch={{
+                      filterOption: (input, option) =>
+                        !!option &&
+                        (String(option.value).toLowerCase().includes(input.toLowerCase()) ||
+                          (typeof option.label === 'string' &&
+                            option.label.toLowerCase().includes(input.toLowerCase()))),
+                    }}
+                    notFoundContent={loadingModels ? <Spin size="small" /> : null}
                   />
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    Default: {DEFAULT_MODELS[provider]}
+                    {provider === 'portkey'
+                      ? "Type any model id your gateway can route. 'default' uses the gateway-configured model."
+                      : `Select a suggested model or type any model id. Default: ${DEFAULT_MODELS[provider]}`}
                   </Text>
                 </Flex>
               )}
@@ -460,12 +484,11 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                             </Text>
                           )}
                           {effectiveEnabled && (
-                            <Select
-                              showSearch
+                            <AutoComplete
                               allowClear
                               size="small"
-                              value={modelOverride || undefined}
-                              onChange={(value?: string) => {
+                              value={modelOverride ?? ''}
+                              onChange={(value: string) => {
                                 setFeatureModels((prev) => {
                                   const next = { ...prev };
                                   if (value) next[feature.key] = value;
@@ -481,15 +504,15 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                               }
                               aria-label={`Model for ${feature.label}`}
                               style={{ width: 320, marginTop: 8 }}
-                              loading={loadingModels}
-                              notFoundContent={loadingModels ? <Spin size="small" /> : 'No models found'}
                               options={modelOptions}
-                              filterOption={(input, option) =>
-                                !!option &&
-                                (option.value.toLowerCase().includes(input.toLowerCase()) ||
-                                  (typeof option.label === 'string' &&
-                                    option.label.toLowerCase().includes(input.toLowerCase())))
-                              }
+                              showSearch={{
+                                filterOption: (input, option) =>
+                                  !!option &&
+                                  (String(option.value).toLowerCase().includes(input.toLowerCase()) ||
+                                    (typeof option.label === 'string' &&
+                                      option.label.toLowerCase().includes(input.toLowerCase()))),
+                              }}
+                              notFoundContent={loadingModels ? <Spin size="small" /> : null}
                             />
                           )}
                         </Flex>
@@ -519,6 +542,15 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
           )}
         </Flex>
       )}
+      <AIProviderTestModal
+        open={testOpen}
+        onClose={() => setTestOpen(false)}
+        provider={usingOrgSettings ? undefined : provider}
+        savedModel={usingOrgSettings ? undefined : model || undefined}
+        modelOptions={modelOptions}
+        loadingModels={loadingModels}
+        runTest={(prompt, testModel) => AIUsageService.testCourseAI(courseId, prompt, testModel)}
+      />
     </Card>
   );
 };

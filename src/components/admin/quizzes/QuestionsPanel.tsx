@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Button, Card, Dropdown, Empty, Flex, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Button, Dropdown, Empty, Flex, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd';
 import {
   CopyOutlined,
   DeleteOutlined,
@@ -23,6 +23,7 @@ import QuestionChoicesInline from './QuestionChoicesInline';
 import QuestionEditorModal from './QuestionEditorModal';
 import BankSuggestModal from './BankSuggestModal';
 import RegenerateQuestionModal from './RegenerateQuestionModal';
+import PanelCard from './PanelCard';
 import Markdown from '../../core/Markdown';
 
 const { Text } = Typography;
@@ -184,13 +185,19 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
 
   return (
     <>
-      <Card
+      <PanelCard
         title={
-          <Flex align="center" gap={8}>
-            <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+          <Flex align="center" gap={8} style={{ minWidth: 0 }}>
+            <Typography.Title
+              level={2}
+              ellipsis={{ tooltip: bank.name }}
+              style={{ margin: 0, fontSize: 16, fontWeight: 600 }}
+            >
               {bank.name}
             </Typography.Title>
-            <Tag color="blue">{questions.length} questions</Tag>
+            <Tag color="blue" style={{ flex: '0 0 auto' }}>
+              {questions.length} questions
+            </Tag>
           </Flex>
         }
         extra={
@@ -275,7 +282,7 @@ const QuestionsPanel: React.FC<IProps> = ({ course, bank }) => {
             }}
           />
         )}
-      </Card>
+      </PanelCard>
 
       <QuestionEditorModal
         open={editorOpen}

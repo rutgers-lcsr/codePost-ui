@@ -35,6 +35,7 @@ export { QuizImagesApi } from './QuizImagesApi';
 export { QuizImportJobsApi } from './QuizImportJobsApi';
 export { QuizQuestionGroupsApi } from './QuizQuestionGroupsApi';
 export { QuizQuestionsApi } from './QuizQuestionsApi';
+export { QuizSuggestionJobsApi } from './QuizSuggestionJobsApi';
 export { QuizzesApi } from './QuizzesApi';
 export { RegistrationApi } from './RegistrationApi';
 export { RubricCategoriesApi } from './RubricCategoriesApi';

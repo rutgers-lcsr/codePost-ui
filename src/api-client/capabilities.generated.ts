@@ -18,6 +18,7 @@ export type Capability =
   | 'manage_course_api_keys'
   | 'grade_quiz'
   | 'generate_ai_quiz_questions'
+  | 'generate_personalized_quiz_questions'
   | 'edit_assignment'
   | 'copy_assignment'
   | 'view_assignment'
@@ -75,7 +76,9 @@ export const CAPABILITY_DESCRIPTIONS: Record<Capability, string> = {
   manage_course_api_keys: 'Create, revoke, and manage course-scoped API keys.',
   grade_quiz: 'View quiz attempts and manually grade essay/code responses (course admins and quiz graders).',
   generate_ai_quiz_questions:
-    "Request AI-suggested quiz questions for a bank or an existing question (requires the course's quiz_generation AI feature to be on).",
+    "Request AI-suggested quiz questions for a question bank or an existing question (requires the course's quiz_generation AI feature to be on).",
+  generate_personalized_quiz_questions:
+    "Author per-student AI-generated quiz question sections — generated from the student's submission when they submit, or right away for prompts that don't use the submission (requires the course's personalized_quiz_generation AI feature to be on).",
   edit_assignment: 'Modify assignment settings including name, deadlines, point values, and visibility.',
   copy_assignment: "Duplicate an assignment's configuration, rubric, and test cases to another course.",
   view_assignment: 'View the assignment and its associated submissions.',

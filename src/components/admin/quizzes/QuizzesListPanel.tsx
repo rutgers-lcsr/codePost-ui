@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Button, Card, Empty, Flex, Form, Input, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Button, Empty, Flex, Form, Input, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, FileDoneOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -10,6 +10,7 @@ import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useCourseQuizzes } from './queries';
 import MarkdownField from './MarkdownField';
+import PanelCard from './PanelCard';
 
 interface IProps {
   courseId: number;
@@ -90,7 +91,16 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
             size="small"
             onClick={() => onSelect(record)}
             aria-current={record.id === selectedQuizId ? 'true' : undefined}
-            style={{ padding: 0, height: 'auto', fontWeight: record.id === selectedQuizId ? 600 : 400 }}
+            // Buttons are nowrap by default, which lets a long quiz title push the table
+            // wider than its column and spill over the builder pane.
+            style={{
+              padding: 0,
+              height: 'auto',
+              textAlign: 'left',
+              whiteSpace: 'normal',
+              overflowWrap: 'anywhere',
+              fontWeight: record.id === selectedQuizId ? 600 : 400,
+            }}
           >
             {title}
           </Button>
@@ -133,9 +143,9 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
 
   return (
     <>
-      <Card
+      <PanelCard
         title={
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap={8} style={{ minWidth: 0 }}>
             <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
               Quizzes
             </Typography.Title>
@@ -166,7 +176,7 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
             onRow={(record) => ({ onClick: () => onSelect(record), style: { cursor: 'pointer' } })}
           />
         )}
-      </Card>
+      </PanelCard>
 
       <Modal
         title="New Quiz"
