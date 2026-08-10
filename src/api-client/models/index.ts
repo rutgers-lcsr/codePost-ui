@@ -492,7 +492,7 @@ export interface Assignment {
    */
   readonly scheduledPublishRanAt: string | null;
   /**
-   * A boolean field. 'True' if the assignment is released for students to view. 'False' otherwise.
+   *
    * @type {boolean}
    * @memberof Assignment
    */
@@ -588,7 +588,7 @@ export interface Assignment {
    */
   explanation?: string;
   /**
-   * A boolean field. 'True' if the assignment is viewable by students.
+   *
    * @type {boolean}
    * @memberof Assignment
    */
@@ -6765,7 +6765,7 @@ export interface PatchedAssignment {
    */
   readonly scheduledPublishRanAt?: string | null;
   /**
-   * A boolean field. 'True' if the assignment is released for students to view. 'False' otherwise.
+   *
    * @type {boolean}
    * @memberof PatchedAssignment
    */
@@ -6861,7 +6861,7 @@ export interface PatchedAssignment {
    */
   explanation?: string;
   /**
-   * A boolean field. 'True' if the assignment is viewable by students.
+   *
    * @type {boolean}
    * @memberof PatchedAssignment
    */
