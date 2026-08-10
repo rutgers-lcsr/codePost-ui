@@ -455,11 +455,48 @@ export interface Assignment {
    */
   name: string;
   /**
+   * Lifecycle state: draft -> visible -> preview -> published -> closed -> archived. Students see visible through closed, download files from preview onward, and submit only while published.
+   *
+   * * `draft` - Draft
+   * * `visible` - Visible
+   * * `preview` - Preview
+   * * `published` - Published
+   * * `closed` - Closed
+   * * `archived` - Archived
+   * @type {AssignmentStateEnum}
+   * @memberof Assignment
+   */
+  state?: AssignmentStateEnum;
+  /**
+   *
+   * @type {AssignmentStateEnum}
+   * @memberof Assignment
+   */
+  readonly effectiveState: AssignmentStateEnum;
+  /**
+   * When the assignment last entered the published state. Cleared if it moves back to a pre-published state (not on close/archive).
+   * @type {string}
+   * @memberof Assignment
+   */
+  readonly publishedAt: string | null;
+  /**
+   * Visible/Preview assignments auto-publish at this time (checked every few minutes).
+   * @type {string}
+   * @memberof Assignment
+   */
+  publishAt?: string | null;
+  /**
+   * When the scheduled publishAt run last fired (one-shot stamp). Moving publishAt past this re-arms the run.
+   * @type {string}
+   * @memberof Assignment
+   */
+  readonly scheduledPublishRanAt: string | null;
+  /**
    * A boolean field. 'True' if the assignment is released for students to view. 'False' otherwise.
    * @type {boolean}
    * @memberof Assignment
    */
-  isReleased?: boolean;
+  readonly isReleased: boolean;
   /**
    * A boolean field. 'True' if grades/feedback are released for students to view. 'False' otherwise.
    * @type {boolean}
@@ -555,7 +592,7 @@ export interface Assignment {
    * @type {boolean}
    * @memberof Assignment
    */
-  isVisible?: boolean;
+  readonly isVisible: boolean;
   /**
    * Sections from which to hide this assignment.
    * @type {Array<number>}
@@ -719,6 +756,7 @@ export interface Assignment {
    */
   testsAffectGrade?: boolean;
 }
+
 /**
  *
  * @export
@@ -1922,6 +1960,25 @@ export interface AssignmentRubricResponse {
    */
   rubricComments: Array<RubricComment>;
 }
+/**
+ * * `draft` - Draft
+ * * `visible` - Visible
+ * * `preview` - Preview
+ * * `published` - Published
+ * * `closed` - Closed
+ * * `archived` - Archived
+ * @export
+ * @enum {string}
+ */
+export enum AssignmentStateEnum {
+  Draft = 'draft',
+  Visible = 'visible',
+  Preview = 'preview',
+  Published = 'published',
+  Closed = 'closed',
+  Archived = 'archived',
+}
+
 /**
  *
  * @export
@@ -6671,11 +6728,48 @@ export interface PatchedAssignment {
    */
   name?: string;
   /**
+   * Lifecycle state: draft -> visible -> preview -> published -> closed -> archived. Students see visible through closed, download files from preview onward, and submit only while published.
+   *
+   * * `draft` - Draft
+   * * `visible` - Visible
+   * * `preview` - Preview
+   * * `published` - Published
+   * * `closed` - Closed
+   * * `archived` - Archived
+   * @type {AssignmentStateEnum}
+   * @memberof PatchedAssignment
+   */
+  state?: AssignmentStateEnum;
+  /**
+   *
+   * @type {AssignmentStateEnum}
+   * @memberof PatchedAssignment
+   */
+  readonly effectiveState?: AssignmentStateEnum;
+  /**
+   * When the assignment last entered the published state. Cleared if it moves back to a pre-published state (not on close/archive).
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  readonly publishedAt?: string | null;
+  /**
+   * Visible/Preview assignments auto-publish at this time (checked every few minutes).
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  publishAt?: string | null;
+  /**
+   * When the scheduled publishAt run last fired (one-shot stamp). Moving publishAt past this re-arms the run.
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  readonly scheduledPublishRanAt?: string | null;
+  /**
    * A boolean field. 'True' if the assignment is released for students to view. 'False' otherwise.
    * @type {boolean}
    * @memberof PatchedAssignment
    */
-  isReleased?: boolean;
+  readonly isReleased?: boolean;
   /**
    * A boolean field. 'True' if grades/feedback are released for students to view. 'False' otherwise.
    * @type {boolean}
@@ -6771,7 +6865,7 @@ export interface PatchedAssignment {
    * @type {boolean}
    * @memberof PatchedAssignment
    */
-  isVisible?: boolean;
+  readonly isVisible?: boolean;
   /**
    * Sections from which to hide this assignment.
    * @type {Array<number>}
@@ -6935,6 +7029,7 @@ export interface PatchedAssignment {
    */
   testsAffectGrade?: boolean;
 }
+
 /**
  * Serializer for updating AssignmentDataSet (without file upload)
  * @export

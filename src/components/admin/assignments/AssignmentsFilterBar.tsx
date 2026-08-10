@@ -17,7 +17,7 @@ import { colors } from '../../../theme/colors';
 /* Types
 /**********************************************************************************************************************/
 
-export type StatusFilter = 'all' | 'draft' | 'visible' | 'published';
+export type StatusFilter = 'all' | 'draft' | 'visible' | 'preview' | 'published' | 'closed' | 'archived';
 export type ProgressFilter = 'all' | 'not_started' | 'in_progress' | 'complete';
 export type VisibilityFilter = 'all' | 'visible' | 'hidden';
 export type FeedbackFilter = 'all' | 'released' | 'not_released';
@@ -57,8 +57,11 @@ const FILTER_SELECT_WIDTH = 330;
 const STATUS_OPTIONS = [
   { label: 'All statuses', value: 'all' },
   { label: 'Draft — hidden from students', value: 'draft' },
-  { label: 'Visible — students can see, not yet published', value: 'visible' },
+  { label: 'Visible — students see it, no files or submitting', value: 'visible' },
+  { label: 'Preview — students can read files, not submit', value: 'preview' },
   { label: 'Published — students can start work', value: 'published' },
+  { label: 'Closed — no longer accepting submissions', value: 'closed' },
+  { label: 'Archived — retired, hidden from students', value: 'archived' },
 ];
 
 const PROGRESS_OPTIONS = [
@@ -97,7 +100,7 @@ const FEEDBACK_SHORT: Record<string, string> = { released: 'Released', not_relea
 // Tooltips explaining each filter
 const FILTER_TOOLTIPS = {
   status:
-    'Draft = hidden from students entirely. Visible = students can see the assignment but cannot start work. Published (isReleased) = students can start working on it. Note: grade/feedback visibility is a separate setting controlled by the Feedback filter.',
+    'Draft = hidden from students entirely. Visible = students see the name and due date only. Preview = students can also read the assignment files but not submit. Published = students can start work. Closed = submissions are no longer accepted (automatic once the deadline passes, or set manually). Archived = retired and hidden from students. Grade/feedback visibility is a separate setting controlled by the Feedback filter.',
   progress: 'Filters by grading progress across all submissions. Complete means every submission has been finalized.',
   visibility: 'Filters by whether the assignment appears in the Student Console.',
   feedback: 'Filters by whether finalized submission feedback and grades are visible to students.',

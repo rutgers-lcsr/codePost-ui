@@ -57,6 +57,7 @@ const statusTagColor: Record<SubmissionStatus, string> = {
   [SubmissionStatus.NOT_REVIEWED]: 'default',
   [SubmissionStatus.NOT_PUBLISHED]: 'default',
   [SubmissionStatus.NO_SUBMISSION]: 'error',
+  [SubmissionStatus.CLOSED]: 'error',
 };
 
 const statusLabel: Record<SubmissionStatus, string> = {
@@ -65,6 +66,7 @@ const statusLabel: Record<SubmissionStatus, string> = {
   [SubmissionStatus.NOT_REVIEWED]: 'Not reviewed yet',
   [SubmissionStatus.NOT_PUBLISHED]: 'Not published',
   [SubmissionStatus.NO_SUBMISSION]: 'No submission',
+  [SubmissionStatus.CLOSED]: 'Closed',
 };
 
 function getRelativeDueDate(dueDate: string): { text: string; urgent: boolean } {

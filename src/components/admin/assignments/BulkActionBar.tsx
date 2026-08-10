@@ -10,6 +10,7 @@ import {
   CloseOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  RollbackOutlined,
   SendOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons';
@@ -27,6 +28,7 @@ interface IProps {
   canEditAssignment: boolean;
   canReleaseGrades: boolean;
   onPublish: () => void;
+  onUnpublish: () => void;
   onShow: () => void;
   onHide: () => void;
   onReleaseFeedback: () => void;
@@ -43,6 +45,7 @@ const BulkActionBar: React.FC<IProps> = ({
   canEditAssignment,
   canReleaseGrades,
   onPublish,
+  onUnpublish,
   onShow,
   onHide,
   onReleaseFeedback,
@@ -78,7 +81,7 @@ const BulkActionBar: React.FC<IProps> = ({
         <div style={{ width: 1, height: 20, background: colors.neutralBorder, margin: '0 2px' }} aria-hidden="true" />
 
         {canEditAssignment && (
-          <Tooltip title="Set isReleased = true for all selected assignments so students can start work">
+          <Tooltip title="Publish all selected assignments so students can start work">
             <CPButton
               cpType="primary"
               size="small"
@@ -92,7 +95,21 @@ const BulkActionBar: React.FC<IProps> = ({
         )}
 
         {canEditAssignment && (
-          <Tooltip title="Make all selected assignments visible in the Student Console">
+          <Tooltip title="Move all selected assignments back to Preview — students can read the files but no longer submit">
+            <CPButton
+              cpType="secondary"
+              size="small"
+              icon={<RollbackOutlined />}
+              onClick={onUnpublish}
+              disabled={isLoading}
+            >
+              Un-publish
+            </CPButton>
+          </Tooltip>
+        )}
+
+        {canEditAssignment && (
+          <Tooltip title="Move all selected assignments to Preview — visible in the Student Console with files, not yet submittable">
             <CPButton cpType="secondary" size="small" icon={<EyeOutlined />} onClick={onShow} disabled={isLoading}>
               Show
             </CPButton>
@@ -100,7 +117,7 @@ const BulkActionBar: React.FC<IProps> = ({
         )}
 
         {canEditAssignment && (
-          <Tooltip title="Hide all selected assignments from the Student Console">
+          <Tooltip title="Move all selected assignments to Draft — hidden from the Student Console">
             <CPButton
               cpType="secondary"
               size="small"

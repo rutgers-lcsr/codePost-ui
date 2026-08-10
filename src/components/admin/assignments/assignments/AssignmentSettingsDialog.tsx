@@ -138,6 +138,11 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
         values.allowRegradeRequests && values.regradeDeadline
           ? dayjs.tz(values.regradeDeadline.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
           : null,
+      // A publish schedule only applies before the assignment is published.
+      publishAt:
+        values.publishAt && !['published', 'closed', 'archived'].includes(currentAssignment.state ?? '')
+          ? dayjs.tz(values.publishAt.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
+          : null,
       maxLateDays: values.maxLateDays,
       liveFeedbackMode: values.liveFeedbackMode,
       additiveGrading: values.additiveGrading,
@@ -303,6 +308,7 @@ interface IFormValues {
   allowStudentUpload: boolean;
   allowStudentUploadWithPartners: boolean;
   uploadDueDate: dayjs.Dayjs | null;
+  publishAt: dayjs.Dayjs | null;
   maxLateDays: number;
   liveFeedbackMode: boolean;
   additiveGrading: boolean;
@@ -444,6 +450,9 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         regradeDeadline: assignment.regradeDeadline
           ? dayjs(dayjs(assignment.regradeDeadline).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
           : dayjs(dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss')),
+        publishAt: assignment.publishAt
+          ? dayjs(dayjs(assignment.publishAt).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+          : null,
 
         // AI settings
         aiSystemPrompt: assignment.aiSystemPrompt || '',
@@ -600,6 +609,31 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                           </Select.Option>
                         ))}
                       </Select>
+                    </Form.Item>
+                  ) : null}
+                  {!['published', 'closed', 'archived'].includes(assignment.state ?? '') ? (
+                    <Form.Item
+                      name="publishAt"
+                      label="Publish at"
+                      extra={
+                        <span>
+                          Optional: automatically publish this assignment at this time (checked every
+                          few minutes). Only fires while the assignment is Visible or Preview — a
+                          Draft stays hidden until you move it. Your course&apos;s timezone is{' '}
+                          <b>{timezone}</b>.
+                          {assignment.scheduledPublishRanAt ? (
+                            <>
+                              {' '}
+                              Last scheduled run:{' '}
+                              {dayjs(assignment.scheduledPublishRanAt).tz(timezone).format('YYYY-MM-DD HH:mm')}
+                            </>
+                          ) : null}
+                        </span>
+                      }
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 20 }}
+                    >
+                      <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="Publish at… (optional)" inputReadOnly />
                     </Form.Item>
                   ) : null}
                 </div>

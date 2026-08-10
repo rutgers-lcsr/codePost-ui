@@ -105,6 +105,7 @@ docs/AssignmentGenerateTest.md
 docs/AssignmentGenerateTestResponse.md
 docs/AssignmentQueueLengthResponse.md
 docs/AssignmentRubricResponse.md
+docs/AssignmentStateEnum.md
 docs/AssignmentStudentTestsResponse.md
 docs/AssignmentStudentUploadGetResponse.md
 docs/AssignmentsApi.md

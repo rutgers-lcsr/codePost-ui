@@ -24,7 +24,6 @@ import {
   MoreOutlined,
   NumberOutlined,
   OrderedListOutlined,
-  QuestionCircleOutlined,
   SettingOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
@@ -39,12 +38,11 @@ import {
   Flex,
   message,
   Modal,
-  Popconfirm,
   Popover,
   Progress,
+  Select,
   Space,
   Spin,
-  Switch,
   Tooltip,
   Typography,
 } from 'antd';
@@ -78,7 +76,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import { SubmissionInfoType, UploadFile } from '../../../types/common';
-import { Course, Section, User } from '../../../api-client';
+import { AssignmentStateEnum, Course, Section, User } from '../../../api-client';
 
 import { Assignment, IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -429,13 +427,9 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [sortedOrder, createAssignmentProp],
   );
 
-  // Helper to get publish confirmation text based on assignment state
+  // Helper to get publish confirmation text based on grading progress
   const getPublishConfirmText = useCallback(
     (assignment: Assignment): React.ReactElement | string => {
-      if (assignment.isReleased) {
-        return 'Are you sure you want to un-publish this assignment?';
-      }
-
       const stats = assignmentStats[assignment.id];
       const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
 
@@ -457,41 +451,37 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [assignmentStats],
   );
 
-  // Helper to toggle assignment visibility
-  const toggleAssignmentVisibility = useCallback(
-    (assignment: Assignment) => {
-      const oldVal = assignment.isVisible;
-
-      updateAssignmentProp({
-        id: assignment.id,
-        isVisible: !assignment.isVisible,
-      }).then(() => {
-        message.success(`Assignment made ${oldVal ? 'in' : ''}visible.`);
-      });
-    },
-    [updateAssignmentProp],
-  );
-
-  // Helper to handle assignment publish toggle
-  const toggleAssignmentPublish = useCallback(
-    (assignment: Assignment) => {
-      if (!assignment.isReleased) {
-        Logger.info('Assignment published', {
-          text: `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
-            currentCourse ? currentCourse.period : ''
-          }`,
-          color: colors.brandPrimary,
-          channel: '#user_notifications_everything',
-          courseID: currentCourse ? currentCourse.id : 0,
+  // Set the lifecycle state (draft/visible/preview/published/closed/archived).
+  // Publishing gets a confirmation dialog; everything else applies directly.
+  const setAssignmentState = useCallback(
+    (assignment: Assignment, state: AssignmentStateEnum) => {
+      const apply = () => {
+        if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
+          Logger.info('Assignment published', {
+            text: `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
+              currentCourse ? currentCourse.period : ''
+            }`,
+            color: colors.brandPrimary,
+            channel: '#user_notifications_everything',
+            courseID: currentCourse ? currentCourse.id : 0,
+          });
+        }
+        return updateAssignmentProp({ id: assignment.id, state }).then(() => {
+          message.success(`Assignment moved to ${state}.`);
         });
-      }
+      };
 
-      updateAssignmentProp({
-        id: assignment.id,
-        isReleased: !assignment.isReleased,
-      });
+      if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
+        Modal.confirm({
+          title: 'Publish assignment',
+          content: getPublishConfirmText(assignment),
+          onOk: apply,
+        });
+      } else {
+        apply();
+      }
     },
-    [currentCourse, updateAssignmentProp],
+    [currentCourse, updateAssignmentProp, getPublishConfirmText],
   );
 
   // Helper to toggle submissions released
@@ -691,10 +681,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       ];
 
       // --- Helpers ---
-      const publishToggleText = getPublishConfirmText(assignment);
-      const onConfirmPublish = () => toggleAssignmentPublish(assignment);
-      const toggleVisible = () => toggleAssignmentVisibility(assignment);
-
       const notifyButton = (toggleDialog: () => void) => {
         return (
           <CPButton cpType="secondary" size="small" icon={<MailOutlined />} onClick={toggleDialog}>
@@ -703,42 +689,26 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         );
       };
 
-      // --- New Status Logic ---
-      let statusBadge: 'success' | 'warning' | 'default' = 'default';
-      let statusText = 'Draft';
-
-      if (assignment.isReleased) {
-        statusBadge = 'success';
-        statusText = 'Published';
-      } else if (assignment.isVisible) {
-        statusBadge = 'warning';
-        statusText = 'Visible';
-      }
+      // --- Status badge: derived effectiveState (a past-deadline published assignment
+      // reads as Closed without the instructor touching anything) ---
+      const effState = assignment.effectiveState ?? assignment.state ?? AssignmentStateEnum.Draft;
+      const STATE_BADGES: Record<string, { badge: 'success' | 'processing' | 'warning' | 'default'; text: string }> = {
+        draft: { badge: 'default', text: 'Draft' },
+        visible: { badge: 'warning', text: 'Visible' },
+        preview: { badge: 'processing', text: 'Preview' },
+        published: { badge: 'success', text: 'Published' },
+        closed: { badge: 'default', text: 'Closed' },
+        archived: { badge: 'default', text: 'Archived' },
+      };
+      const { badge: statusBadge, text: statusText } = STATE_BADGES[effState] ?? STATE_BADGES.draft;
+      const isAutoClosed = effState === AssignmentStateEnum.Closed && assignment.state === AssignmentStateEnum.Published;
 
       const statusContent = (
         <div style={{ width: 300 }}>
           <Flex vertical gap="middle">
             <Flex justify="space-between" align="center">
               <span style={{ fontSize: '14px' }}>
-                Visible to Students
-                <CPTooltip
-                  title={'If visible, students can see the assignment in the Student Console.'}
-                  infoIcon={true}
-                  hideThisOnHideTips={true}
-                  iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
-                />
-              </span>
-              <Switch
-                checked={assignment.isVisible}
-                onChange={toggleVisible}
-                size="small"
-                disabled={!canEditAssignment}
-              />
-            </Flex>
-
-            <Flex justify="space-between" align="center">
-              <span style={{ fontSize: '14px' }}>
-                Published
+                Status
                 <CPTooltip
                   title={tooltips.admin.assignments.published}
                   infoIcon={true}
@@ -746,18 +716,31 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
                 />
               </span>
-              {!assignment.isVisible && !assignment.isReleased ? (
-                <Tooltip title={'Your assignment cannot be published unless it is made visible to students.'}>
-                  <Switch disabled={true} checked={assignment.isReleased} size="small" />
-                </Tooltip>
-              ) : (
-                <Popconfirm onConfirm={onConfirmPublish} title={publishToggleText} icon={<QuestionCircleOutlined />}>
-                  <Switch checked={assignment.isReleased} size="small" />
-                </Popconfirm>
-              )}
+              <Select<AssignmentStateEnum>
+                size="small"
+                style={{ width: 130 }}
+                value={assignment.state ?? AssignmentStateEnum.Draft}
+                disabled={!canEditAssignment}
+                onChange={(state) => setAssignmentState(assignment, state)}
+                options={[
+                  { value: AssignmentStateEnum.Draft, label: 'Draft' },
+                  { value: AssignmentStateEnum.Visible, label: 'Visible' },
+                  { value: AssignmentStateEnum.Preview, label: 'Preview' },
+                  { value: AssignmentStateEnum.Published, label: 'Published' },
+                  { value: AssignmentStateEnum.Closed, label: 'Closed' },
+                  { value: AssignmentStateEnum.Archived, label: 'Archived' },
+                ]}
+              />
             </Flex>
 
-            {assignment.isReleased && (
+            {isAutoClosed && (
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                The submission deadline has passed, so students can no longer submit. Set the
+                status to Closed to make this permanent, or extend the due date to reopen.
+              </Text>
+            )}
+
+            {assignment.state === AssignmentStateEnum.Published && (
               <div style={{ textAlign: 'right' }}>
                 <SendEmailModal
                   buttonText={'Notify students'}
@@ -785,12 +768,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const percent = totalSubmissions > 0 ? Math.round((graded / totalSubmissions) * 100) : 0;
 
       // --- Compute shadow fields for filtering ---
-      let statusValue: StatusFilter = 'draft';
-      if (assignment.isReleased) {
-        statusValue = 'published';
-      } else if (assignment.isVisible) {
-        statusValue = 'visible';
-      }
+      const statusValue: StatusFilter = (effState as StatusFilter) ?? 'draft';
 
       const totalSubs = assignmentStats[assignment.id]?.numSubmissions ?? 0;
       const gradedCount = assignmentStats[assignment.id]?.numGraded ?? 0;
@@ -1156,9 +1134,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [selectedRowKeys, updateAssignmentProp],
   );
 
-  const bulkPublish = useCallback(() => bulkUpdate({ isReleased: true }), [bulkUpdate]);
-  const bulkShow = useCallback(() => bulkUpdate({ isVisible: true }), [bulkUpdate]);
-  const bulkHide = useCallback(() => bulkUpdate({ isVisible: false }), [bulkUpdate]);
+  const bulkPublish = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Published }), [bulkUpdate]);
+  const bulkUnpublish = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
+  const bulkShow = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
+  const bulkHide = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Draft }), [bulkUpdate]);
   const bulkReleaseFeedback = useCallback(() => bulkUpdate({ feedbackReleased: true }), [bulkUpdate]);
   const clearSelection = useCallback(() => setSelectedRowKeys([]), []);
 
@@ -1470,6 +1449,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 canEditAssignment={canEditAssignment}
                 canReleaseGrades={canReleaseGrades}
                 onPublish={bulkPublish}
+                onUnpublish={bulkUnpublish}
                 onShow={bulkShow}
                 onHide={bulkHide}
                 onReleaseFeedback={bulkReleaseFeedback}

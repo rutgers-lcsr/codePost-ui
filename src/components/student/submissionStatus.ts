@@ -6,4 +6,6 @@ export enum SubmissionStatus {
   NOT_REVIEWED = 'not_reviewed',
   NOT_PUBLISHED = 'not_published',
   NO_SUBMISSION = 'no_submission',
+  /** The assignment is closed and the student never submitted. */
+  CLOSED = 'closed',
 }

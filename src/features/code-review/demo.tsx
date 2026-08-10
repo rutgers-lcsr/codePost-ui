@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { demoFilesGrader, demoFilesStudent } from './demoCode';
 
-import { Course } from '../../api-client';
+import { AssignmentStateEnum, Course } from '../../api-client';
 import { RubricCategory as RubricCategoryType } from '../../api-client';
 import {
   AnonymousSubmissionType,
@@ -37,6 +37,11 @@ type DemoUploadFile = {
 const demoAssignmentBase: AssignmentType = {
   id: DEMO_ASSIGNMENT_ID,
   name: 'codePost Demo',
+  state: AssignmentStateEnum.Preview,
+  effectiveState: AssignmentStateEnum.Preview,
+  publishedAt: null,
+  publishAt: null,
+  scheduledPublishRanAt: null,
   isReleased: false,
   feedbackReleased: false,
   hideGrades: false,

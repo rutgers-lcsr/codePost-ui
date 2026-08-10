@@ -6,7 +6,7 @@ import { assignmentKeys, courseKeys, studentKeys } from '../lib/queryKeys';
 import { Course } from '../api-client';
 import { sanitizeAssignment, sortAssignments } from '../components/admin/hooks/useAssignmentsQuery';
 import { normalizeRoster } from '../components/admin/hooks/useRosterQuery';
-import { Assignment } from '../types/common';
+import { fetchVisibleAssignments } from '../components/student/fetchVisibleAssignments';
 
 /**
  * Returns a callback that prefetches course data (assignments, roster, sections)
@@ -70,16 +70,7 @@ export const usePrefetchStudentAssignments = () => {
     (course: Course, studentSections: number[]) => {
       queryClient.prefetchQuery({
         queryKey: studentKeys.assignments(course.id),
-        queryFn: async () => {
-          const results = await Promise.all(
-            course.assignments.map((id) => assignmentsApi.retrieve({ id })),
-          );
-          return (results as unknown as Assignment[]).filter(
-            (a) =>
-              a.isVisible &&
-              !(a.hideFrom ?? []).some((shouldHide: number) => studentSections.indexOf(shouldHide) > -1),
-          );
-        },
+        queryFn: () => fetchVisibleAssignments(course.assignments, studentSections),
         staleTime: 30_000,
       });
     },

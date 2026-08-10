@@ -41,7 +41,7 @@ import {
 } from '../../types/common';
 
 /* API library */
-import { Course, Section } from '../../api-client';
+import { AssignmentStateEnum, Course, Section } from '../../api-client';
 import type {
   CreateRequest as AssignmentCreateRequest,
   PartialUpdateRequest as AssignmentPartialUpdateRequest,
@@ -523,12 +523,12 @@ const Admin: React.FC<IComponentProps> = (props) => {
       course: currentCourse.id,
       name: aName,
       points: aPoints,
-      isReleased: false,
+      // isVisible/isReleased are read-only now — lifecycle is driven by `state`.
+      state: isVisible ? AssignmentStateEnum.Preview : AssignmentStateEnum.Draft,
       hideGrades: false,
       sortKey,
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
-      isVisible,
       feedbackReleased: false,
     };
 

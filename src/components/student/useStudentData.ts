@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { Course, Submission } from '../../api-client';
-import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
 import { getHeaders } from '../../utils/generics';
 import { studentKeys } from '../../lib/queryKeys';
 import { SubmissionStatus } from './submissionStatus';
+import { fetchVisibleAssignments } from './fetchVisibleAssignments';
 
 /* ────────────────────────────────────────────────────────────────────────── */
 /* Helper utilities                                                          */
@@ -71,13 +71,15 @@ export function getSubmissionStatusFor(
   submission: Submission | undefined,
   viewsBySubmission: Record<number, boolean>,
 ): SubmissionStatus {
-  // An assignment is "not published" only if it's neither released, nor open for
-  // uploads, nor in live-feedback mode. allowStudentUpload means students can
-  // interact with it even before isReleased is flipped.
-  if (!assignment.isReleased && !assignment.liveFeedbackMode && !assignment.allowStudentUpload) {
+  // Lifecycle: students can only interact from `published` onward. `closed` (stored, or
+  // derived once the deadline passes) still shows their submission but blocks new work.
+  const state = assignment.effectiveState ?? assignment.state;
+  if (state !== 'published' && state !== 'closed') {
     return SubmissionStatus.NOT_PUBLISHED;
   }
-  if (!submission) return SubmissionStatus.NO_SUBMISSION;
+  if (!submission) {
+    return state === 'closed' ? SubmissionStatus.CLOSED : SubmissionStatus.NO_SUBMISSION;
+  }
   // Feedback is available when the submission is finalized, live-feedback is on,
   // or the instructor has explicitly released feedback (separate from isReleased).
   const isFeedbackAvailable = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
@@ -131,6 +133,9 @@ export function groupAssignments(
       status === SubmissionStatus.PENDING
     ) {
       completed.push(assignment);
+    } else if (status === SubmissionStatus.CLOSED) {
+      // Closed with no submission: the window has passed.
+      overdue.push(assignment);
     } else if (assignment.uploadDueDate) {
       const dueDate = new Date(assignment.uploadDueDate);
       if (dueDate < now) {
@@ -183,11 +188,8 @@ async function fetchCourseData(
   userEmail: string,
   studentSections: number[],
 ): Promise<{ assignments: Assignment[]; submissions: Record<number, Submission[]>; views: Record<number, boolean> }> {
-  // 1. Fetch assignments
-  const rawAssignments = await Promise.all(course.assignments.map((id) => assignmentsApi.retrieve({ id })));
-  const assignments = (rawAssignments as unknown as Assignment[]).filter(
-    (a) => a.isVisible && !(a.hideFrom ?? []).some((h: number) => studentSections.indexOf(h) > -1),
-  );
+  // 1. Fetch assignments (allSettled inside — one 403 must not blank the course)
+  const assignments = await fetchVisibleAssignments(course.assignments, studentSections);
 
   // 2. Fetch submissions (only for eligible assignments). Fire them all at once — the browser
   // already caps concurrent connections per host, so manual batching only added serial barriers.

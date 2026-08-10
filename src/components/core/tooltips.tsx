@@ -119,9 +119,13 @@ const ADMIN_GRADERSUBMISSIONS_EXPANDASSIGNMENT = 'View graded submissions for th
 
 const ADMIN_ASSIGNMENTS_PUBLISHED = (
   <div>
-    If published (and visible), students with finalized submissions can view their submission and feedback.
+    <b>Draft</b>: hidden from students. <b>Visible</b>: students see the name and due date only.{' '}
+    <b>Preview</b>: students can also read the assignment files, but not submit.{' '}
+    <b>Published</b>: students can download files and submit. <b>Closed</b>: submissions are no
+    longer accepted (happens automatically when the deadline passes). <b>Archived</b>: retired
+    and hidden from students.
     <div style={{ height: 10 }} />
-    If not published, no student will be able to view their submissions.
+    Grades and feedback are controlled separately by &ldquo;Release feedback&rdquo;.
   </div>
 );
 const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment.';
