@@ -18,6 +18,7 @@ import { StudentQuiz } from '../../api-client';
 import QuizActions from './quizzes/QuizActions';
 import QuizScoreTags from './quizzes/QuizScoreTags';
 import { assignmentIsDone, assignmentNeedsAction } from './actionStatus';
+import Markdown from '../core/Markdown';
 
 interface AssignmentRowProps {
   assignmentName: string;
@@ -30,6 +31,8 @@ interface AssignmentRowProps {
   dueDate?: string | null;
   uploadDate?: string | null;
   showStats?: boolean;
+  /** Instructor-authored assignment description (Markdown). */
+  explanation?: string | null;
   showPartners?: boolean;
   showUpload?: boolean;
   allowStudentUpload?: boolean;
@@ -99,6 +102,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   dueDate,
   uploadDate,
   showStats = false,
+  explanation,
   showUpload = false,
   allowStudentUpload = false,
   hasExistingSubmission = false,
@@ -126,12 +130,14 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
   const isDone = assignmentIsDone(actionInput);
   const needsAction = !isDone && assignmentNeedsAction(actionInput);
 
-  // Only stats live in the dropdown
+  // The dropdown holds the assignment description and/or class stats
   const hasStatsContent = showStats && !hideGrades && (meanGrade || medianGrade);
+  const hasDescription = !!explanation?.trim();
+  const hasExpandableContent = Boolean(hasStatsContent || hasDescription);
 
   const toggle = useCallback(() => {
-    if (!disabled && hasStatsContent) setExpanded((prev) => !prev);
-  }, [disabled, hasStatsContent]);
+    if (!disabled && hasExpandableContent) setExpanded((prev) => !prev);
+  }, [disabled, hasExpandableContent]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -342,12 +348,12 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
       <Flex
         align="center"
         gap={12}
-        onClick={hasStatsContent ? toggle : undefined}
-        onKeyDown={hasStatsContent ? handleKeyDown : undefined}
-        role={hasStatsContent ? 'button' : undefined}
-        tabIndex={hasStatsContent && !disabled ? 0 : undefined}
-        aria-expanded={hasStatsContent ? expanded : undefined}
-        style={{ cursor: hasStatsContent && !disabled ? 'pointer' : 'default' }}
+        onClick={hasExpandableContent ? toggle : undefined}
+        onKeyDown={hasExpandableContent ? handleKeyDown : undefined}
+        role={hasExpandableContent ? 'button' : undefined}
+        tabIndex={hasExpandableContent && !disabled ? 0 : undefined}
+        aria-expanded={hasExpandableContent ? expanded : undefined}
+        style={{ cursor: hasExpandableContent && !disabled ? 'pointer' : 'default' }}
       >
         {/* Left: name + subline */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -398,7 +404,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
         <Flex gap={4} align="center" style={{ flexShrink: 0 }}>
           {primaryAction}
           {secondaryButtons}
-          {hasStatsContent && (
+          {hasExpandableContent && (
             <DownOutlined
               style={{
                 fontSize: 12,
@@ -453,7 +459,7 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
 
       {/* Expandable stats panel */}
       <AnimatePresence initial={false}>
-        {expanded && hasStatsContent && (
+        {expanded && hasExpandableContent && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -462,24 +468,36 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
             style={{ overflow: 'hidden' }}
           >
             <Flex
-              gap={16}
+              vertical
+              gap={12}
               style={{
                 paddingTop: 12,
                 marginTop: 12,
                 borderTop: '1px solid #f0f0f0',
               }}
             >
-              <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Class Stats
-                </Typography.Text>
-                <br />
-                <Typography.Text style={{ fontSize: 13 }}>
-                  {meanGrade && `Mean: ${meanGrade}/${maxPoints}`}
-                  {meanGrade && medianGrade && ' · '}
-                  {medianGrade && `Median: ${medianGrade}/${maxPoints}`}
-                </Typography.Text>
-              </div>
+              {hasDescription && (
+                <div data-testid="assignment-description">
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Description
+                  </Typography.Text>
+                  {/* Body renders in default text color — secondary gray fails WCAG AA */}
+                  <Markdown>{explanation}</Markdown>
+                </div>
+              )}
+              {hasStatsContent && (
+                <div>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    Class Stats
+                  </Typography.Text>
+                  <br />
+                  <Typography.Text style={{ fontSize: 13 }}>
+                    {meanGrade && `Mean: ${meanGrade}/${maxPoints}`}
+                    {meanGrade && medianGrade && ' · '}
+                    {medianGrade && `Median: ${medianGrade}/${maxPoints}`}
+                  </Typography.Text>
+                </div>
+              )}
             </Flex>
           </motion.div>
         )}

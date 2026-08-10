@@ -29,6 +29,9 @@ const { Sider, Content } = Layout;
 
 import { ConsoleThemeContext } from '../../styles/abstracts/_console-theme-context.js';
 import Markdown from '../../features/code-review/code-panel/Markdown';
+// The safe plain-Markdown renderer (sanitized, no raw HTML) — distinct from the
+// code-review `Markdown` above, which is a full file renderer used for Jupyter files.
+import AssignmentDescriptionMarkdown from '../core/Markdown';
 import { CURSOR_DOMAIN } from '../../features/code-review/CodeConsoleEnums';
 import styles from './StudentConsole.module.scss';
 
@@ -241,7 +244,24 @@ function ViewUpload(props: IProps) {
           style={menuStyle}
         />
       </Sider>
-      <Content style={contentStyle}>{fileContent}</Content>
+      <Content style={contentStyle}>
+        {props.assignment?.explanation?.trim() && (
+          <div
+            data-testid="assignment-description"
+            style={{
+              // contentStyle is mono (for code); the description is prose
+              fontFamily: 'var(--sc-font-body, "Plus Jakarta Sans", system-ui, sans-serif)',
+              color: consoleTheme.text,
+              marginBottom: 16,
+              paddingBottom: 16,
+              borderBottom: `1px solid ${borderColor}`,
+            }}
+          >
+            <AssignmentDescriptionMarkdown>{props.assignment.explanation}</AssignmentDescriptionMarkdown>
+          </div>
+        )}
+        {fileContent}
+      </Content>
     </Layout>
   );
 }

@@ -452,6 +452,7 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
           medianGrade={assignment.median}
           dueDate={assignment.uploadDueDate}
           uploadDate={submission?.dateUploaded}
+          explanation={assignment.explanation}
           showStats={opts.showStats}
           showPartners={opts.showPartners && partners.length > 0}
           showUpload={opts.showUpload && assignment.allowStudentUpload}
