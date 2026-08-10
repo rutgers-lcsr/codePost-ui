@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   BarChartOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
   CompassOutlined,
   DeleteOutlined,
   DownloadOutlined,
@@ -19,18 +20,21 @@ import {
   FileOutlined,
   FolderOutlined,
   ImportOutlined,
+  InboxOutlined,
+  LockOutlined,
   MailOutlined,
   MessageOutlined,
   MoreOutlined,
   NumberOutlined,
   OrderedListOutlined,
+  ReadOutlined,
   SettingOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 
 /* ant imports */
 import {
-  Badge,
+  Alert,
   Breadcrumb,
   Button,
   Dropdown,
@@ -40,9 +44,9 @@ import {
   Modal,
   Popover,
   Progress,
-  Select,
   Space,
   Spin,
+  Tag,
   Tooltip,
   Typography,
 } from 'antd';
@@ -51,8 +55,6 @@ import {
 import { colors } from '../../../theme/colors';
 
 import CPButton from '../../../components/core/CPButton';
-import CPTooltip from '../../../components/core/CPTooltip';
-import { tooltips } from '../../../components/core/tooltips';
 
 import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
 
@@ -151,6 +153,55 @@ interface AssignmentRow extends Record<string, unknown> {
 
 const DEFAULT_PAGINATION_SIZE = 10;
 const FINALIZED_THRESHOLD = 0.5;
+
+/** Per-state presentation + instructor-facing description, in lifecycle order.
+ *  The table tag renders the DERIVED effectiveState; the picker sets the stored state. */
+const STATE_META: Record<AssignmentStateEnum, { label: string; color: string; icon: React.ReactNode; description: string }> = {
+  [AssignmentStateEnum.Draft]: {
+    label: 'Draft',
+    color: 'default',
+    icon: <EditOutlined />,
+    description: 'Hidden from students while you set it up.',
+  },
+  [AssignmentStateEnum.Visible]: {
+    label: 'Visible',
+    color: 'gold',
+    icon: <EyeOutlined />,
+    description: 'Students see the name and due date — no files, no submitting.',
+  },
+  [AssignmentStateEnum.Preview]: {
+    label: 'Preview',
+    color: 'blue',
+    icon: <ReadOutlined />,
+    description: "Students can read the assignment files but can't submit yet.",
+  },
+  [AssignmentStateEnum.Published]: {
+    label: 'Published',
+    color: 'green',
+    icon: <CheckCircleOutlined />,
+    description: 'Open for work — students can download files and submit.',
+  },
+  [AssignmentStateEnum.Closed]: {
+    label: 'Closed',
+    color: 'volcano',
+    icon: <LockOutlined />,
+    description: 'Submissions are no longer accepted; students keep access to their work.',
+  },
+  [AssignmentStateEnum.Archived]: {
+    label: 'Archived',
+    color: 'default',
+    icon: <InboxOutlined />,
+    description: 'Retired — hidden from students entirely.',
+  },
+};
+const STATE_ORDER: AssignmentStateEnum[] = [
+  AssignmentStateEnum.Draft,
+  AssignmentStateEnum.Visible,
+  AssignmentStateEnum.Preview,
+  AssignmentStateEnum.Published,
+  AssignmentStateEnum.Closed,
+  AssignmentStateEnum.Archived,
+];
 
 /**********************************************************************************************************************/
 
@@ -689,58 +740,73 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         );
       };
 
-      // --- Status badge: derived effectiveState (a past-deadline published assignment
-      // reads as Closed without the instructor touching anything) ---
-      const effState = assignment.effectiveState ?? assignment.state ?? AssignmentStateEnum.Draft;
-      const STATE_BADGES: Record<string, { badge: 'success' | 'processing' | 'warning' | 'default'; text: string }> = {
-        draft: { badge: 'default', text: 'Draft' },
-        visible: { badge: 'warning', text: 'Visible' },
-        preview: { badge: 'processing', text: 'Preview' },
-        published: { badge: 'success', text: 'Published' },
-        closed: { badge: 'default', text: 'Closed' },
-        archived: { badge: 'default', text: 'Archived' },
-      };
-      const { badge: statusBadge, text: statusText } = STATE_BADGES[effState] ?? STATE_BADGES.draft;
-      const isAutoClosed = effState === AssignmentStateEnum.Closed && assignment.state === AssignmentStateEnum.Published;
+      // --- Status: the table tag shows the DERIVED effectiveState (a past-deadline
+      // published assignment reads as Closed on its own); the picker sets the stored state ---
+      const storedState = assignment.state ?? AssignmentStateEnum.Draft;
+      const effState = assignment.effectiveState ?? storedState;
+      const effMeta = STATE_META[effState] ?? STATE_META[AssignmentStateEnum.Draft];
+      const isAutoClosed = effState === AssignmentStateEnum.Closed && storedState === AssignmentStateEnum.Published;
 
       const statusContent = (
-        <div style={{ width: 300 }}>
-          <Flex vertical gap="middle">
-            <Flex justify="space-between" align="center">
-              <span style={{ fontSize: '14px' }}>
-                Status
-                <CPTooltip
-                  title={tooltips.admin.assignments.published}
-                  infoIcon={true}
-                  hideThisOnHideTips={true}
-                  iconStyle={{ paddingLeft: 8, color: colors.neutralSecondaryText }}
-                />
-              </span>
-              <Select<AssignmentStateEnum>
-                size="small"
-                style={{ width: 130 }}
-                value={assignment.state ?? AssignmentStateEnum.Draft}
-                disabled={!canEditAssignment}
-                onChange={(state) => setAssignmentState(assignment, state)}
-                options={[
-                  { value: AssignmentStateEnum.Draft, label: 'Draft' },
-                  { value: AssignmentStateEnum.Visible, label: 'Visible' },
-                  { value: AssignmentStateEnum.Preview, label: 'Preview' },
-                  { value: AssignmentStateEnum.Published, label: 'Published' },
-                  { value: AssignmentStateEnum.Closed, label: 'Closed' },
-                  { value: AssignmentStateEnum.Archived, label: 'Archived' },
-                ]}
-              />
-            </Flex>
-
+        <div style={{ width: 340 }}>
+          <Flex vertical gap="small">
             {isAutoClosed && (
-              <Text type="secondary" style={{ fontSize: '12px' }}>
-                The submission deadline has passed, so students can no longer submit. Set the
-                status to Closed to make this permanent, or extend the due date to reopen.
-              </Text>
+              <Alert
+                type="warning"
+                showIcon
+                icon={<ClockCircleOutlined />}
+                message="Closed automatically — due date passed"
+                description={
+                  <span style={{ fontSize: 12 }}>
+                    Students can no longer submit, even though the setting below is still{' '}
+                    <b>Published</b>. Extend the due date to reopen, or select <b>Closed</b> to
+                    make it permanent.
+                  </span>
+                }
+              />
             )}
 
-            {assignment.state === AssignmentStateEnum.Published && (
+            {STATE_ORDER.map((s) => {
+              const meta = STATE_META[s];
+              const isCurrent = s === storedState;
+              const clickable = canEditAssignment && !isCurrent;
+              return (
+                <div
+                  key={s}
+                  role="button"
+                  aria-pressed={isCurrent}
+                  aria-label={`Set status to ${meta.label}`}
+                  onClick={clickable ? () => setAssignmentState(assignment, s) : undefined}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 10,
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: `1px solid ${isCurrent ? colors.brandPrimary : colors.neutralBorder}`,
+                    background: isCurrent ? colors.brandLight : undefined,
+                    cursor: clickable ? 'pointer' : 'default',
+                    opacity: !canEditAssignment && !isCurrent ? 0.55 : 1,
+                  }}
+                >
+                  <span style={{ marginTop: 2 }}>{meta.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>
+                      {meta.label}
+                      {isCurrent && isAutoClosed && (
+                        <Text type="warning" style={{ fontSize: 11, marginLeft: 6 }}>
+                          showing as Closed (past due)
+                        </Text>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, color: colors.neutralSecondaryText }}>{meta.description}</div>
+                  </div>
+                  {isCurrent && <CheckCircleOutlined style={{ color: colors.brandPrimary, marginTop: 4 }} />}
+                </div>
+              );
+            })}
+
+            {storedState === AssignmentStateEnum.Published && (
               <div style={{ textAlign: 'right' }}>
                 <SendEmailModal
                   buttonText={'Notify students'}
@@ -818,9 +884,16 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Space>
         ),
         status: (
-          <Popover content={statusContent} trigger="click" title="Assignment Status" styles={{ root: { width: 320 } }}>
+          <Popover content={statusContent} trigger="click" title="Assignment status" styles={{ root: { width: 360 } }}>
             <div style={{ cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
-              <Badge status={statusBadge} text={statusText} />{' '}
+              <Tag color={effMeta.color} icon={effMeta.icon} style={{ marginRight: 0 }}>
+                {effMeta.label}
+              </Tag>
+              {isAutoClosed && (
+                <Tooltip title="Closed automatically — the due date has passed. The setting is still Published; click for options.">
+                  <ClockCircleOutlined style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }} />
+                </Tooltip>
+              )}
               <SettingOutlined style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
             </div>
           </Popover>
