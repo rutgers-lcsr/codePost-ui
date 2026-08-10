@@ -34,7 +34,6 @@ import {
 
 /* ant imports */
 import {
-  Alert,
   Breadcrumb,
   Button,
   Dropdown,
@@ -155,41 +154,59 @@ const DEFAULT_PAGINATION_SIZE = 10;
 const FINALIZED_THRESHOLD = 0.5;
 
 /** Per-state presentation + instructor-facing description, in lifecycle order.
- *  The table tag renders the DERIVED effectiveState; the picker sets the stored state. */
-const STATE_META: Record<AssignmentStateEnum, { label: string; color: string; icon: React.ReactNode; description: string }> = {
+ *  The table tag renders the DERIVED effectiveState; the picker sets the stored state.
+ *  Tag colors are hand-picked so the label text meets WCAG 2.1 AA (>=4.5:1) on its tinted
+ *  background — the antd presets ('gold' especially) do not. State is never conveyed by
+ *  color alone: every state pairs a distinct icon with a text label (1.4.1). */
+const STATE_META: Record<
+  AssignmentStateEnum,
+  { label: string; bg: string; border: string; text: string; icon: React.ReactNode; description: string }
+> = {
   [AssignmentStateEnum.Draft]: {
     label: 'Draft',
-    color: 'default',
+    bg: '#fafafa',
+    border: '#d9d9d9',
+    text: 'rgba(0, 0, 0, 0.7)',
     icon: <EditOutlined />,
     description: 'Hidden from students while you set it up.',
   },
   [AssignmentStateEnum.Visible]: {
     label: 'Visible',
-    color: 'gold',
+    bg: '#fffbe6',
+    border: '#d4b106',
+    text: '#7c4a03', // 7.1:1 on #fffbe6
     icon: <EyeOutlined />,
     description: 'Students see the name and due date — no files, no submitting.',
   },
   [AssignmentStateEnum.Preview]: {
     label: 'Preview',
-    color: 'blue',
+    bg: '#e6f4ff',
+    border: '#91caff',
+    text: '#0b53c7', // 5.6:1 on #e6f4ff
     icon: <ReadOutlined />,
     description: "Students can read the assignment files but can't submit yet.",
   },
   [AssignmentStateEnum.Published]: {
     label: 'Published',
-    color: 'green',
+    bg: '#f6ffed',
+    border: '#b7eb8f',
+    text: '#237804', // 5.4:1 on #f6ffed
     icon: <CheckCircleOutlined />,
     description: 'Open for work — students can download files and submit.',
   },
   [AssignmentStateEnum.Closed]: {
     label: 'Closed',
-    color: 'volcano',
+    bg: '#fff2e8',
+    border: '#ffbb96',
+    text: '#ad2102', // 6.5:1 on #fff2e8
     icon: <LockOutlined />,
     description: 'Submissions are no longer accepted; students keep access to their work.',
   },
   [AssignmentStateEnum.Archived]: {
     label: 'Archived',
-    color: 'default',
+    bg: '#fafafa',
+    border: '#d9d9d9',
+    text: 'rgba(0, 0, 0, 0.7)',
     icon: <InboxOutlined />,
     description: 'Retired — hidden from students entirely.',
   },
@@ -750,59 +767,67 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const statusContent = (
         <div style={{ width: 340 }}>
           <Flex vertical gap="small">
-            {isAutoClosed && (
-              <Alert
-                type="warning"
-                showIcon
-                icon={<ClockCircleOutlined />}
-                message="Closed automatically — due date passed"
-                description={
-                  <span style={{ fontSize: 12 }}>
-                    Students can no longer submit, even though the setting below is still{' '}
-                    <b>Published</b>. Extend the due date to reopen, or select <b>Closed</b> to
-                    make it permanent.
-                  </span>
-                }
-              />
-            )}
-
             {STATE_ORDER.map((s) => {
               const meta = STATE_META[s];
               const isCurrent = s === storedState;
-              const clickable = canEditAssignment && !isCurrent;
+              // Auto-closed divergence is explained inline, exactly where it applies,
+              // instead of a banner: on the current (Published) row and the Closed row.
+              let description: React.ReactNode = meta.description;
+              if (isAutoClosed && s === AssignmentStateEnum.Published) {
+                description = (
+                  <>
+                    {meta.description}
+                    <br />
+                    <ClockCircleOutlined aria-hidden style={{ marginRight: 4 }} />
+                    Past the due date — students can no longer submit. Extend the due date to
+                    reopen.
+                  </>
+                );
+              } else if (isAutoClosed && s === AssignmentStateEnum.Closed) {
+                description = `${meta.description} In effect now — select to make it permanent.`;
+              }
               return (
-                <div
+                <button
                   key={s}
-                  role="button"
+                  type="button"
                   aria-pressed={isCurrent}
-                  aria-label={`Set status to ${meta.label}`}
-                  onClick={clickable ? () => setAssignmentState(assignment, s) : undefined}
+                  disabled={!canEditAssignment && !isCurrent}
+                  onClick={!isCurrent ? () => setAssignmentState(assignment, s) : undefined}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
+                    textAlign: 'left',
+                    width: '100%',
+                    font: 'inherit',
                     gap: 10,
                     padding: '6px 10px',
                     borderRadius: 6,
                     border: `1px solid ${isCurrent ? colors.brandPrimary : colors.neutralBorder}`,
-                    background: isCurrent ? colors.brandLight : undefined,
-                    cursor: clickable ? 'pointer' : 'default',
-                    opacity: !canEditAssignment && !isCurrent ? 0.55 : 1,
+                    background: isCurrent ? colors.brandLight : '#ffffff',
+                    cursor: canEditAssignment && !isCurrent ? 'pointer' : 'default',
                   }}
                 >
-                  <span style={{ marginTop: 2 }}>{meta.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600 }}>
+                  <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
+                    {meta.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.neutralMainText }}>
                       {meta.label}
-                      {isCurrent && isAutoClosed && (
-                        <Text type="warning" style={{ fontSize: 11, marginLeft: 6 }}>
-                          showing as Closed (past due)
-                        </Text>
+                      {isCurrent && (
+                        <span style={{ fontWeight: 400, color: colors.neutralSecondaryText }}>
+                          {' '}
+                          — current{isAutoClosed && s === AssignmentStateEnum.Published ? ' setting' : ''}
+                        </span>
                       )}
-                    </div>
-                    <div style={{ fontSize: 12, color: colors.neutralSecondaryText }}>{meta.description}</div>
-                  </div>
-                  {isCurrent && <CheckCircleOutlined style={{ color: colors.brandPrimary, marginTop: 4 }} />}
-                </div>
+                    </span>
+                    <span style={{ display: 'block', fontSize: 12, color: colors.neutralSecondaryText }}>
+                      {description}
+                    </span>
+                  </span>
+                  {isCurrent && (
+                    <CheckCircleOutlined aria-hidden style={{ color: colors.brandPrimary, marginTop: 4 }} />
+                  )}
+                </button>
               );
             })}
 
@@ -885,17 +910,39 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         ),
         status: (
           <Popover content={statusContent} trigger="click" title="Assignment status" styles={{ root: { width: 360 } }}>
-            <div style={{ cursor: 'pointer', display: 'inline-block', whiteSpace: 'nowrap' }}>
-              <Tag color={effMeta.color} icon={effMeta.icon} style={{ marginRight: 0 }}>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              aria-label={`Assignment status: ${effMeta.label}${
+                isAutoClosed ? ', closed automatically because the due date passed (setting: Published)' : ''
+              }. Open status options.`}
+              style={{
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+              }}
+            >
+              <Tag
+                icon={effMeta.icon}
+                style={{ marginRight: 0, background: effMeta.bg, borderColor: effMeta.border, color: effMeta.text }}
+              >
                 {effMeta.label}
               </Tag>
               {isAutoClosed && (
                 <Tooltip title="Closed automatically — the due date has passed. The setting is still Published; click for options.">
-                  <ClockCircleOutlined style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }} />
+                  <ClockCircleOutlined
+                    aria-hidden
+                    style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }}
+                  />
                 </Tooltip>
               )}
-              <SettingOutlined style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
-            </div>
+              <SettingOutlined aria-hidden style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
+            </button>
           </Popover>
         ),
         progress: (
