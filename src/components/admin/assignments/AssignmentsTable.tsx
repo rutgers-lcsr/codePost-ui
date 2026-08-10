@@ -495,26 +495,29 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     [sortedOrder, createAssignmentProp],
   );
 
-  // Helper to get publish confirmation text based on grading progress
+  // Publish confirmation: lead with what publishing does (opens the assignment for
+  // students); when grading of existing submissions is still in progress, reassure
+  // that publishing does NOT reveal it — grading visibility is a separate control.
   const getPublishConfirmText = useCallback(
-    (assignment: Assignment): React.ReactElement | string => {
+    (assignment: Assignment): React.ReactElement => {
       const stats = assignmentStats[assignment.id];
       const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
+      const gradingInProgress = !assignment.liveFeedbackMode && finalizedRatio < FINALIZED_THRESHOLD;
 
-      if (!assignment.liveFeedbackMode && finalizedRatio < FINALIZED_THRESHOLD) {
-        return (
-          <div>
-            <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
-              Are you sure you want to publish this assignment?
-            </div>
-            <div style={{ paddingBottom: '4px', maxWidth: '260px' }}>
-              The majority of your submissions are still unfinalized, so students will not be able to view them.
-            </div>
+      return (
+        <div style={{ maxWidth: '300px' }}>
+          <div style={{ paddingBottom: '4px' }}>
+            Students will be able to download the assignment files and submit their work.
           </div>
-        );
-      }
-
-      return 'Are you sure you want to publish this assignment?';
+          {gradingInProgress && (
+            <div style={{ paddingBottom: '4px' }}>
+              Grading in progress is not revealed: most existing submissions are still
+              unfinalized, and students can&rsquo;t open a submission until it&rsquo;s finalized.
+              Grades and feedback stay hidden until you release feedback.
+            </div>
+          )}
+        </div>
+      );
     },
     [assignmentStats],
   );
@@ -541,8 +544,9 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
 
       if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
         Modal.confirm({
-          title: 'Publish assignment',
+          title: 'Publish this assignment?',
           content: getPublishConfirmText(assignment),
+          okText: 'Publish',
           onOk: apply,
         });
       } else {
