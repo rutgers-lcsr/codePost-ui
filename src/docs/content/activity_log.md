@@ -43,6 +43,8 @@ Filters combine with AND semantics. Clear a filter by clicking its **×**.
 | `autograder_failed`    | A test run errored out (environment, timeout, or runtime error).             |
 | `late_day_used`        | A submission consumed a late-day allowance.                                  |
 | `comment_feedback`     | A student left thumbs-up/down on a rubric comment.                           |
+| `assignment_state_changed` | The assignment's lifecycle status changed (e.g. published); scheduled publishes are marked. |
+| `assignment_feedback_changed` | The assignment's feedback flow changed (e.g. released); scheduled releases are marked. |
 
 ### Quiz events
 

@@ -27,7 +27,7 @@ This guide helps graders and TAs work efficiently in codePost while staying alig
 6. Mark the submission **Finalized** when complete.
 
 > [!IMPORTANT]
-> Finalized submissions are ready for instructor release, but students still do not see feedback until the assignment is published.
+> Finalized submissions are ready for release — students see feedback once the instructor opens the assignment's **Feedback** flow. One exception: if the instructor set feedback to **Per student**, finalizing reveals that student's feedback immediately.
 
 ## Reviewing Jupyter notebooks
 

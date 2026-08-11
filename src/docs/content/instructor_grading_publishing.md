@@ -57,16 +57,32 @@ Speed up your grading with these hotkeys:
   - `Shift + Enter`: Save comment
   - `Cmd/Ctrl + Enter`: Save and move to next
 
-## Publish workflow
+## Releasing feedback
 
-Students do not see grades/feedback until publish is performed.
+Students do not see grades, comments, or the rubric until you open the **Feedback**
+badge on the assignment row (next to Status) and pick a mode:
 
-- Go to **Assignments > Overview**
-- Click **Publish Grades**
-- Choose to notify students via email (optional)
+| Feedback | What students see |
+| --- | --- |
+| **Hidden** (default) | Nothing — grade at your own pace. |
+| **Live** | Feedback appears immediately as it's written — office hours, ungraded exercises. |
+| **Per student** | Each student sees their grades, comments, and rubric as soon as *their own* submission is finalized — a rolling release with no global switch. |
+| **Released** | Everything is out for all finalized submissions at once. |
+
+Two extras:
+
+- **Hide grades** (the `#` button on the row, or Settings > Publishing) masks numeric
+  grades in any revealing mode — students see comments and the rubric but no number.
+- **Release at** (Settings > Publishing) schedules an automatic move to Released —
+  "grades out Friday 5pm" without being at a keyboard.
 
 > [!IMPORTANT]
-> Treat publish as a coordinated release event. Confirm policy checks (late submissions, exceptions, regrade queue) first.
+> Treat a global release as a coordinated event. Confirm policy checks (late
+> submissions, exceptions, regrade queue) first — the pre-release checklist below helps.
+
+> [!NOTE]
+> Under **Per student**, finalizing a submission *is* the release for that student —
+> make sure graders know their finalize toggle reveals feedback immediately.
 
 ## Export workflow
 
@@ -78,13 +94,13 @@ To export grades:
 
 ## Operational playbook
 
-### Before publish
+### Before releasing
 
 - Confirm finalization threshold reached
 - Resolve obvious missing grades
 - Spot-check rubric consistency
 
-### After publish
+### After releasing
 
 - Monitor regrade requests
 - Track known rubric clarifications

@@ -31,10 +31,19 @@ For each course, you will see a table of assignments. The table includes:
 
 ### Statuses
 
-- **Not Published**: The assignment is not yet visible or open for submissions.
-- **No Submission**: The assignment is open, but you haven't submitted anything yet.
-- **Submitted**: You have submitted, and the assignment is awaiting grading or release.
-- **View Feedback**: The assignment has been graded! Click to see your feedback.
+- **Not published**: The assignment is announced but not yet open for submissions. You
+  may still be able to read its description — and, once your instructor allows it,
+  download the starter files.
+- **No submission**: The assignment is open, but you haven't submitted anything yet.
+- **Not reviewed yet**: You have submitted; grading isn't visible to you yet.
+- **Grade available / Graded**: Your feedback is ready — click to see grades, comments,
+  and the rubric. (Your instructor may release feedback all at once, per student as
+  grading finishes, or live.)
+- **Closed**: The deadline passed and the assignment no longer accepts submissions. If
+  you submitted, you keep access to your work.
+
+Expand an assignment row to read its **description**; it also appears above your files
+while you work.
 
 ## Submitting Work
 

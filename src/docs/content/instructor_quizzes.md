@@ -111,6 +111,11 @@ On the **Quizzes** tab, create a quiz, then work through the quiz builder's four
   *when feedback is released*, or a *fixed date* — with an optional **offset** (e.g. "a week after
   feedback"). **End attempts at close** makes the close a hard deadline that auto-submits any
   in-progress attempt; otherwise the close only blocks *new* attempts.
+- **Per-student feedback caveat** — if the assignment's feedback flow is **Per student**, there is
+  no single feedback-release moment, so the *after feedback is released* trigger and the
+  *when feedback is released* close event can't be used (codePost blocks the combination in both
+  directions). Use *after each student's feedback is released* instead — it's the self-paced
+  equivalent.
 - **Late access code** — optional. Generate a code and share it with students who missed the
   deadline: entering it lets them start the quiz **after it closes**, with the normal time limit.
   Nothing else about availability changes, and the code is never shown to students. You can

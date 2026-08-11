@@ -63,8 +63,8 @@ Events follow a `<resource>.<change>` naming pattern. The most common ones:
 
 - `assignment.added`, `assignment.changed`, `assignment.removed`
 - `assignment.name`, `assignment.points`, `assignment.explanation`
-- `assignment.isVisible` — assignment shown/hidden to students
-- `assignment.isReleased` — grades published or unpublished
+- `assignment.state` — lifecycle transition (draft/visible/preview/published/closed/archived)
+- `assignment.feedbackStatus` — feedback flow transition (hidden/live/per_student/released)
 
 ### Rubric
 
@@ -165,8 +165,8 @@ curl -X DELETE https://codepost-api.cs.rutgers.edu/webhooks/42/ \
 
 ## Common integrations
 
-- **LMS grade sync** — listen to `assignment.isReleased` or `submission.isFinalized` and push grades to Canvas/Blackboard.
-- **Slack notifications** — post to a channel on `submission.added` for staff-grading channels or `assignment.isReleased` for announcements.
+- **LMS grade sync** — listen to `assignment.feedbackStatus` (released) or `submission.isFinalized` and push grades to Canvas/Blackboard.
+- **Slack notifications** — post to a channel on `submission.added` for staff-grading channels or `assignment.state` (published) for announcements.
 - **Plagiarism pipelines** — kick off MOSS or a custom comparison job on `submission.added`.
 - **Roster sync confirmation** — react to `course.students` / `course.graders` to mirror codePost roster changes into another system.
 

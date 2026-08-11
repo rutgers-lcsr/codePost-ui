@@ -28,7 +28,7 @@ When enabled:
 - Graders see submissions labeled with anonymous IDs (e.g., "Student A", "Student B")
 - Student names and emails are hidden during grading
 - Admins can still view student identities
-- Anonymization is removed when grades are published
+- Anonymization is removed when feedback is released
 
 > [!IMPORTANT]
 > Enable anonymous grading before grading begins. Graders who have already seen submissions will have seen the student names.

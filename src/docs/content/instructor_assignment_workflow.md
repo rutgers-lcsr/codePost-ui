@@ -14,14 +14,44 @@ This page covers the full instructor lifecycle for assignments — from creation
 
 ## Recommended lifecycle
 
-1. **Create** — Add the assignment shell with a name, point value, and visibility.
+1. **Create** — Add the assignment shell with a name and point value. It starts as a **Draft** — invisible to students.
 2. **Configure** — Set submission rules, deadlines, grading options, and upload policies.
 3. **Add files** — Upload assignment files (starter code, helper files, test resources).
 4. **Build the rubric** — Create rubric categories and comments before grading begins.
 5. **Set up tests** _(optional)_ — Configure the execution environment and autograder tests.
-6. **Open for submissions** — Enable student upload or bulk-upload submissions yourself.
-7. **Grade** — Assign graders, review submissions, apply rubric, finalize.
-8. **Publish** — Release grades and feedback to students.
+6. **Announce** — Set the **Status** badge to **Visible** (students see the name, due date, and description) or **Preview** (they can also read the hand-out files). Optionally set **Publish at** to open automatically on schedule.
+7. **Publish** — Students can submit (with **Allow student upload** on). The assignment **Closes** by itself when the deadline (plus any late window) passes.
+8. **Grade** — Assign graders, review submissions, apply rubric, finalize.
+9. **Release feedback** — Use the **Feedback** badge: release everything at once, per student as you finalize, or live as you type. See [Grading, Release & Exports](/docs/instructor-grading-publishing).
+
+---
+
+## The Status and Feedback badges
+
+Every assignment row carries two colored badges. Click either to open a picker where each
+option explains itself.
+
+**Status** controls the *work*:
+
+| Status | Students see it | Read files | Submit |
+| --- | :---: | :---: | :---: |
+| **Draft** (default) | ✗ | ✗ | ✗ |
+| **Visible** | ✓ | ✗ | ✗ |
+| **Preview** | ✓ | ✓ | ✗ |
+| **Published** | ✓ | ✓ | ✓ |
+| **Closed** | ✓ | ✓ | ✗ |
+| **Archived** | ✗ | ✗ | ✗ |
+
+- **Closed usually happens by itself** when the due date (plus any late window) passes —
+  the badge shows a small clock icon. Extend the due date to reopen, or set Closed
+  yourself to end submissions early.
+- **Publish at** (Settings > General) schedules an automatic move to Published from
+  Visible or Preview, checked every few minutes.
+- Moving backwards never deletes anything — submissions and grades are kept.
+
+**Feedback** controls the *grading* — see
+[Grading, Release & Exports](/docs/instructor-grading-publishing) for the four feedback
+modes (Hidden, Live, Per student, Released), grade masking, and scheduled release.
 
 ---
 
@@ -34,12 +64,13 @@ From **Assignments > Overview**, click **New Assignment**. You have two options:
 - **Name** — must be unique within the course (max 32 characters).
 - **Points** — total points available (≥ 0). Used as the starting score in subtractive grading mode.
 - **Allow student upload** — toggle on if students should upload their own submissions.
-- **Visible** — toggle off to hide the assignment from students while you prepare it.
+- **Visible** — off creates the assignment as a **Draft**; on creates it in **Preview** so
+  students can see it and read the hand-out. Adjust anytime with the Status badge.
 - **Due Date** — optional; submissions after this date are marked late.
 
 ### Clone from existing
 
-Select any assignment from any course in your organization. Cloning copies the rubric, environment, assignment files, test categories, and all configuration — but not student submissions. This is useful when reusing assignments across terms.
+Select any assignment from any course in your organization. Cloning copies the rubric, environment, assignment files, test categories, and all configuration — but not student submissions. The clone lands as a **Draft** with student upload off and dates cleared, so it can never accept submissions by accident. This is useful when reusing assignments across terms.
 
 ---
 
@@ -55,6 +86,7 @@ Open any assignment's **Settings** (gear icon) to access four tabs of configurat
 | **Points**             | Total points (≥ 0).                                                                                            |
 | **Explanation**        | Markdown text shown to students (instructions, expectations, etc.). Toggle **Preview** to see rendered output. |
 | **Sort Key**           | Integer that controls assignment ordering in the list. Lower numbers appear first.                             |
+| **Publish at**         | Optional: automatically move a Visible/Preview assignment to Published at this time.                           |
 | **Hide from sections** | Multi-select specific sections; the assignment will be invisible to students in those sections.                |
 | **Assignment Files**   | Manage starter code, helper files, and test resources (see [Assignment files](#assignment-files) below).       |
 | **Data Sets**          | Upload large data files for use by the autograder environment.                                                 |
@@ -69,7 +101,6 @@ Open any assignment's **Settings** (gear icon) to access four tabs of configurat
 | **Allow late submissions** | Accept submissions after the due date.                                                                                                  |
 | **Max late days**          | Maximum number of days a late submission is accepted (default: 2).                                                                      |
 | **Late deductions**        | Array of point penalties per day late (e.g., `[5, 10]` means −5 on day 1, −10 on day 2).                                                |
-| **Live feedback mode**     | Students see their submission, comments, and test results _before_ finalization and grade release. Useful for iterative feedback loops. |
 
 ### Grading tab
 
@@ -84,10 +115,18 @@ Open any assignment's **Settings** (gear icon) to access four tabs of configurat
 | **Run tests on submit**             | Auto-run autograder test cases when a submission is uploaded.                                                                              |
 | **Tests affect grade**              | Include autograder test results in the grade calculation.                                                                                  |
 | **Anonymous grading**               | Graders cannot see which student(s) submitted. (If the course has an anonymous grading default, new assignments inherit it automatically.) |
-| **Students can see graders**        | Override the course-level setting for this assignment. `null` = use course default.                                                        |
-| **Comment feedback**                | Students can provide feedback (thumbs up/down) on rubric comments.                                                                         |
-| **Allow regrade requests**          | Students can submit questions or regrade requests after grading.                                                                           |
-| **Regrade deadline**                | Cutoff date for new regrade requests.                                                                                                      |
+
+### Publishing tab
+
+| Setting                      | Description                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Feedback flow**            | How grading becomes visible: Hidden, Live, Per student, or Released — the same choice as the Feedback badge.       |
+| **Release at**               | Optional: automatically release feedback at this time (only while the flow is Hidden or Per student).              |
+| **Show graders**             | Override the course-level setting for whether students see who graded them. `null` = use course default.           |
+| **Hide grades**              | Mask numeric grades in any revealing feedback mode — students see comments and the rubric but no number.           |
+| **Comment feedback**         | Students can provide feedback (thumbs up/down) on rubric comments.                                                 |
+| **Allow regrade requests**   | Students can submit questions or regrade requests after grading.                                                   |
+| **Regrade deadline**         | Cutoff date for new regrade requests.                                                                              |
 
 ### AI tab
 
