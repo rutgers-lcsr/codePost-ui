@@ -1,0 +1,75 @@
+/* Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software. */
+
+/* Status / Feedback state pickers — hover, press, and keyboard-focus affordances.
+   Base + current styling lives here (not inline) so :hover can win. Palette matches
+   theme/colors.ts (brandPrimary #198665, brandLight #f0fff6). */
+
+.stateOption {
+  display: flex;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+
+  &:hover:not(:disabled):not(.stateOptionCurrent) {
+    border-color: #198665;
+    background: #fafafa;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  &:active:not(:disabled):not(.stateOptionCurrent) {
+    transform: scale(0.99);
+    background: #f0fff6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #198665;
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+.stateOptionCurrent {
+  border-color: #198665;
+  background: #f0fff6;
+  cursor: default;
+}
+
+/* The tag-buttons in the Status / Feedback cells that open the pickers. */
+.cellTrigger {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 6px;
+  font: inherit;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #198665;
+    outline-offset: 1px;
+  }
+}

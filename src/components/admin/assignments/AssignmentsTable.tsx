@@ -131,6 +131,7 @@ import { AssignmentSetupDialog } from './assignments/AssignmentSetupDialog';
 const { Text } = Typography;
 
 import { DETAIL_TYPE } from './types';
+import styles from './AssignmentsTable.module.scss';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -873,19 +874,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   aria-pressed={isCurrent}
                   disabled={!canEditAssignment && !isCurrent}
                   onClick={!isCurrent ? () => setAssignmentState(assignment, s) : undefined}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    textAlign: 'left',
-                    width: '100%',
-                    font: 'inherit',
-                    gap: 10,
-                    padding: '6px 10px',
-                    borderRadius: 6,
-                    border: `1px solid ${isCurrent ? colors.brandPrimary : colors.neutralBorder}`,
-                    background: isCurrent ? colors.brandLight : '#ffffff',
-                    cursor: canEditAssignment && !isCurrent ? 'pointer' : 'default',
-                  }}
+                  className={`${styles.stateOption} ${isCurrent ? styles.stateOptionCurrent : ''}`}
                 >
                   <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
                     {meta.icon}
@@ -947,19 +936,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   aria-pressed={isCurrent}
                   disabled={!canReleaseGrades && !isCurrent}
                   onClick={!isCurrent ? () => setFeedbackStatus(assignment, s) : undefined}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    textAlign: 'left',
-                    width: '100%',
-                    font: 'inherit',
-                    gap: 10,
-                    padding: '6px 10px',
-                    borderRadius: 6,
-                    border: `1px solid ${isCurrent ? colors.brandPrimary : colors.neutralBorder}`,
-                    background: isCurrent ? colors.brandLight : '#ffffff',
-                    cursor: canReleaseGrades && !isCurrent ? 'pointer' : 'default',
-                  }}
+                  className={`${styles.stateOption} ${isCurrent ? styles.stateOptionCurrent : ''}`}
                 >
                   <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
                     {meta.icon}
@@ -1057,16 +1034,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               aria-label={`Assignment status: ${effMeta.label}${
                 isAutoClosed ? ', closed automatically because the due date passed (setting: Published)' : ''
               }. Open status options.`}
-              style={{
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                whiteSpace: 'nowrap',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                font: 'inherit',
-              }}
+              className={styles.cellTrigger}
             >
               <Tag
                 icon={effMeta.icon}
@@ -1094,16 +1062,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               aria-label={`Feedback: ${fbMeta.label}${
                 assignment.hideGrades ? ', numeric grades hidden' : ''
               }. Open feedback options.`}
-              style={{
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                whiteSpace: 'nowrap',
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                font: 'inherit',
-              }}
+              className={styles.cellTrigger}
             >
               <Tag
                 icon={fbMeta.icon}
