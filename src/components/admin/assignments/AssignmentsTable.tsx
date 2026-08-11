@@ -1276,49 +1276,32 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 <Button shape="circle" icon={<UploadOutlined />} />
               </Dropdown>
             </Tooltip>
-            <Tooltip title="Student visibility">
-              <Dropdown
-                menu={{
-                  items: [
-                    {
-                      key: 'grades',
-                      icon: assignment.hideGrades ? (
-                        <EyeInvisibleOutlined
-                          style={{ color: assignment.feedbackReleased ? colors.actionRed : undefined }}
-                        />
-                      ) : (
-                        <NumberOutlined
-                          style={{ color: assignment.feedbackReleased ? colors.brandPrimary : undefined }}
-                        />
-                      ),
-                      label: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
-                        ? 'Grades (feedback hidden)'
-                        : assignment.hideGrades
-                          ? 'Grades hidden'
-                          : 'Grades visible',
-                      disabled: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades,
-                      onClick: () => toggleHideGrades(assignment),
-                    },
-                  ],
-                }}
-                trigger={['click']}
-              >
-                <Button
-                  shape="circle"
-                  icon={
-                    assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden ? (
-                      <EyeOutlined />
-                    ) : (
-                      <EyeInvisibleOutlined />
-                    )
-                  }
-                  style={
-                    assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden
-                      ? { borderColor: colors.brandPrimary, color: colors.brandPrimary }
-                      : undefined
-                  }
-                />
-              </Dropdown>
+            <Tooltip
+              title={
+                assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
+                  ? 'Grades — feedback is hidden, so grades are not shown regardless'
+                  : assignment.hideGrades
+                    ? 'Grades hidden — click to show numeric grades'
+                    : 'Grades visible — click to hide numeric grades'
+              }
+            >
+              <Button
+                shape="circle"
+                aria-label={
+                  assignment.hideGrades
+                    ? `Grades hidden for ${assignment.name} — show numeric grades`
+                    : `Grades visible for ${assignment.name} — hide numeric grades`
+                }
+                aria-pressed={!assignment.hideGrades}
+                disabled={assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades}
+                onClick={() => toggleHideGrades(assignment)}
+                icon={assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />}
+                style={
+                  !assignment.hideGrades && assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden
+                    ? { borderColor: colors.brandPrimary, color: colors.brandPrimary }
+                    : undefined
+                }
+              />
             </Tooltip>
             {canViewStats && (
               <Tooltip title="Analyze grades & stats">
