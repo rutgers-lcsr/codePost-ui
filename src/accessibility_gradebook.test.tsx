@@ -52,13 +52,16 @@ const data = {
 } as unknown as GradebookResponse;
 
 describe('Gradebook accessibility', () => {
+  // Full-tag axe runs regularly exceed vitest's default 5s under load; 30s matches the
+  // other accessibility suites. (A mid-run timeout also cascades: the next test's
+  // axe.run() throws "Axe is already running".)
   it('GradebookTable grid has no structural violations', async () => {
     const { container } = render(<GradebookTable data={data} />);
     expect(await stripStylesAndRunAxe(container)).toHaveNoViolations();
-  });
+  }, 30000);
 
   it('GradebookTable empty state has no structural violations', async () => {
     const { container } = render(<GradebookTable data={{ ...data, rows: [] } as GradebookResponse} />);
     expect(await stripStylesAndRunAxe(container)).toHaveNoViolations();
-  });
+  }, 30000);
 });
