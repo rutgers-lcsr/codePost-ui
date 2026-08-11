@@ -97,7 +97,8 @@
     "lint:fix": "oxlint src/ --fix",
     "lint": "oxlint src/",
     "prepare": "husky install",
-    "find-hardcoded-colors": "node scripts/find-hardcoded-colors.js"
+    "find-hardcoded-colors": "node scripts/find-hardcoded-colors.js",
+    "docs:screenshots": "playwright test --project=docs"
   },
   "browserslist": {
     "production": [

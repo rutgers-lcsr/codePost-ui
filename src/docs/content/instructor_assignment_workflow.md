@@ -33,6 +33,8 @@ option explains itself.
 
 **Status** controls the *work*:
 
+![The assignment status picker](/assets/docs/instructor_status_picker.png)
+
 | Status | Students see it | Read files | Submit |
 | --- | :---: | :---: | :---: |
 | **Draft** (default) | ✗ | ✗ | ✗ |

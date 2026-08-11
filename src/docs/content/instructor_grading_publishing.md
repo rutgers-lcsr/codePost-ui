@@ -62,6 +62,8 @@ Speed up your grading with these hotkeys:
 Students do not see grades, comments, or the rubric until you open the **Feedback**
 badge on the assignment row (next to Status) and pick a mode:
 
+![The feedback picker](/assets/docs/instructor_feedback_picker.png)
+
 | Feedback | What students see |
 | --- | --- |
 | **Hidden** (default) | Nothing — grade at your own pace. |

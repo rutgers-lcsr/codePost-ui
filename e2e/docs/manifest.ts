@@ -1,0 +1,145 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+//
+// Screenshot manifest for the in-app documentation (/docs). Each entry describes how to
+// reproduce one image referenced from src/docs/content/*.md, against the seeded demo
+// course (see e2e/global.setup.ts). Images are written to public/assets/docs/ — the
+// path the docs markdown serves them from.
+//
+// To add a documentation image: add an entry here, run `npm run docs:screenshots`, and
+// reference `/assets/docs/<file>` from the markdown. Keep files stable — docs pages
+// link them by name.
+import type { APIRequestContext, Page } from '@playwright/test';
+import { COURSE_NAME, COURSE_PERIOD } from '../constants';
+
+const course = `${encodeURIComponent(COURSE_NAME)}/${encodeURIComponent(COURSE_PERIOD)}`;
+
+export interface DocShot {
+  /** Output file name under public/assets/docs/ */
+  file: string;
+  /** Which saved auth state to browse with (see e2e/.auth/) */
+  auth: 'none' | 'student' | 'instructor';
+  /** App route to open, or a resolver when the route needs seeded object ids. */
+  path: string | ((api: APIRequestContext) => Promise<string>);
+  /** Wait for this locator before shooting (beyond network-idle). */
+  readySelector?: string;
+  /** Extra interactions before the shot (open a popover, switch a tab, ...). */
+  prepare?: (page: Page) => Promise<void>;
+  /** Clip to this locator instead of the viewport. */
+  clipSelector?: string;
+  /** Full scrollable page instead of the viewport. */
+  fullPage?: boolean;
+}
+
+/** Resolve a submission id on the seeded released assignment ("9. Released+Frozen"). */
+async function releasedSubmissionPath(api: APIRequestContext): Promise<string> {
+  const courses = await (await api.get('/users/me/')).json();
+  const courseObj = [...(courses.courseadminCourses ?? []), ...(courses.studentCourses ?? [])].find(
+    (c: { name: string; period: string }) => c.name === COURSE_NAME && c.period === COURSE_PERIOD,
+  );
+  if (!courseObj) throw new Error(`Seeded course "${COURSE_NAME}" not found — run the setup project first.`);
+  for (const assignmentId of courseObj.assignments as number[]) {
+    const assignment = await (await api.get(`/assignments/${assignmentId}/`)).json();
+    if (assignment.name?.startsWith('9.')) {
+      const subs = await (await api.get(`/assignments/${assignmentId}/submissions/`)).json();
+      const finalized = (Array.isArray(subs) ? subs : (subs.results ?? [])).find(
+        (s: { isFinalized: boolean }) => s.isFinalized,
+      );
+      if (finalized) return `/code/${finalized.id}`;
+    }
+  }
+  throw new Error('No finalized submission on the released demo assignment — reseed with create_demo_course.');
+}
+
+export const DOC_SHOTS: DocShot[] = [
+  // ── Pre-auth ────────────────────────────────────────────────────────────────
+  {
+    file: 'login_page.png',
+    auth: 'none',
+    path: '/login',
+    readySelector: 'input',
+  },
+  {
+    file: 'signup_page.png',
+    auth: 'none',
+    path: '/signup',
+    readySelector: 'button',
+  },
+
+  // ── Student ────────────────────────────────────────────────────────────────
+  {
+    file: 'student_dashboard.png',
+    auth: 'student',
+    path: '/student',
+    readySelector: 'text=Demo Course',
+  },
+  {
+    file: 'student_assignment_list.png',
+    auth: 'student',
+    path: `/student/${course}`,
+    readySelector: 'text=Released',
+  },
+  {
+    file: 'student_feedback_view.png',
+    auth: 'student',
+    path: releasedSubmissionPath,
+    readySelector: '[class*="console"], [data-testid="rubric-panel"], .ant-layout',
+  },
+
+  // ── Instructor ─────────────────────────────────────────────────────────────
+  {
+    file: 'instructor_dashboard.png',
+    auth: 'instructor',
+    path: `/admin/${course}/assignments`,
+    readySelector: 'text=Feedback',
+  },
+  {
+    file: 'instructor_status_picker.png',
+    auth: 'instructor',
+    path: `/admin/${course}/assignments`,
+    readySelector: 'text=Feedback',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: /Assignment status:/ }).first().click();
+      await page.getByText('Hidden from students while you set it up.').waitFor();
+    },
+    clipSelector: '.ant-popover:visible',
+  },
+  {
+    file: 'instructor_feedback_picker.png',
+    auth: 'instructor',
+    path: `/admin/${course}/assignments`,
+    readySelector: 'text=Feedback',
+    prepare: async (page) => {
+      await page.getByRole('button', { name: /^Feedback:/ }).first().click();
+      await page.getByText('Grading in progress').first().waitFor();
+    },
+    clipSelector: '.ant-popover:visible',
+  },
+  {
+    file: 'instructor_grading_interface.png',
+    auth: 'instructor',
+    path: releasedSubmissionPath,
+    readySelector: 'text=Files',
+  },
+  {
+    file: 'instructor_grading_rubric_panel.png',
+    auth: 'instructor',
+    path: releasedSubmissionPath,
+    readySelector: 'text=Files',
+    prepare: async (page) => {
+      // The rubric lives in a sidebar tab; Ctrl+Shift+G toggles it (documented hotkey).
+      await page.keyboard.press('Control+Shift+KeyG');
+      await page.locator('[data-testid="rubric-panel"]').waitFor({ timeout: 10_000 });
+    },
+    clipSelector: '[data-testid="rubric-panel"]',
+  },
+  {
+    file: 'instructor_ai_settings.png',
+    auth: 'instructor',
+    path: `/admin/${course}/settings`,
+    readySelector: 'text=AI Features',
+    prepare: async (page) => {
+      await page.getByText('AI Features', { exact: true }).first().click();
+      await page.waitForTimeout(400); // tab transition
+    },
+  },
+];

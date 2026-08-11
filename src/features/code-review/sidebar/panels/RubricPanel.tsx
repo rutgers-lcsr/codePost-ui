@@ -40,6 +40,8 @@ function RubricPanel({ config }: { config: LayoutConfig }) {
         : {})}
     >
       {({ props, state: rubricState, helpers }: IRubricManagerParams) => (
+        // data-testid: stable clip target for the docs screenshot harness
+        <div data-testid="rubric-panel" style={{ height: '100%' }}>
         <React.Suspense fallback={<Loading />}>
           <RubricMenuUI
             props={{ ...props, isDemoMode: config.isDemoMode, isAdmin: config.isAdmin }}
@@ -47,6 +49,7 @@ function RubricPanel({ config }: { config: LayoutConfig }) {
             helpers={helpers}
           />
         </React.Suspense>
+        </div>
       )}
     </RubricManager>
   );

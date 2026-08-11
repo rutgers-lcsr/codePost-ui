@@ -25,7 +25,16 @@ export default defineConfig({
     { name: 'setup', testMatch: /global\.setup\.ts/ },
     {
       name: 'chromium',
+      testIgnore: /docs\//,
       use: { ...devices['Desktop Chrome'], storageState: 'e2e/.auth/student.json' },
+      dependencies: ['setup'],
+    },
+    // Documentation screenshot harness (npm run docs:screenshots) — writes the images
+    // referenced by src/docs/content into public/assets/docs/.
+    {
+      name: 'docs',
+      testMatch: /docs\/capture\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup'],
     },
   ],
