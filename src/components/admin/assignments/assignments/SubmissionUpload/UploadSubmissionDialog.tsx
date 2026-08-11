@@ -304,16 +304,18 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       // Only fetch test data when student test runs are configured or live feedback is on
       const hasStudentTestRuns =
         selectedAssignment.maxStudentTestRuns != null && selectedAssignment.maxStudentTestRuns > 0;
-      const isLiveFeedback = selectedAssignment.liveFeedbackMode ?? false;
+      const isLiveFeedback = selectedAssignment.feedbackStatus === 'live';
       if (!hasStudentTestRuns && !isLiveFeedback) return;
 
       if (submission) {
         try {
           const studentTests = await assignmentsApi.studentTestsRetrieve({ id: selectedAssignment.id });
 
-          // Only merge in test results when feedback is released, submission is finalized, or in live feedback mode
+          // Mirror the API's testResults gate: live shows immediately; released and
+          // per-student require the submission to be finalized.
+          const fb = selectedAssignment.feedbackStatus;
           const canSeeResults =
-            isLiveFeedback || selectedAssignment.feedbackReleased || submission.isFinalized;
+            fb === 'live' || ((fb === 'released' || fb === 'per_student') && !!submission.isFinalized);
 
           if (canSeeResults) {
             const testResults = await submissionsApi.testResultsRetrieve({
@@ -442,12 +444,13 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
           if (primaryStudent !== null) {
             const sub = submissions[primaryStudent][propsSelectedAssignment.id];
             setSubmission(sub);
-            // Only load test results for students when feedback is accessible
+            // Mirror the API's testResults gate (live immediately; released/per-student
+            // once finalized); staff always load.
+            const fb2 = propsSelectedAssignment.feedbackStatus;
             const canSeeResults =
               !isStudent ||
-              propsSelectedAssignment.liveFeedbackMode ||
-              propsSelectedAssignment.feedbackReleased ||
-              sub.isFinalized;
+              fb2 === 'live' ||
+              ((fb2 === 'released' || fb2 === 'per_student') && !!sub.isFinalized);
             if (canSeeResults) {
               loadTestResults(sub, false);
             }

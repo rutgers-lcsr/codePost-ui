@@ -529,7 +529,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
       sortKey,
       allowStudentUpload: studentUpload,
       uploadDueDate: dueDate,
-      feedbackReleased: false,
+      // feedback starts hidden (feedbackStatus model default)
     };
 
     // assignmentsApi is imported from clients

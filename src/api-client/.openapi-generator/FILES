@@ -98,6 +98,7 @@ docs/AssignmentDataSetsApi.md
 docs/AssignmentDataSetsSplitIntoVariantsCreateRequest.md
 docs/AssignmentDeadline.md
 docs/AssignmentDownloadResponse.md
+docs/AssignmentFeedbackStatusEnum.md
 docs/AssignmentFile.md
 docs/AssignmentFileSummary.md
 docs/AssignmentFilesApi.md

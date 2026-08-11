@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { demoFilesGrader, demoFilesStudent } from './demoCode';
 
-import { AssignmentStateEnum, Course } from '../../api-client';
+import { AssignmentFeedbackStatusEnum, AssignmentStateEnum, Course } from '../../api-client';
 import { RubricCategory as RubricCategoryType } from '../../api-client';
 import {
   AnonymousSubmissionType,
@@ -42,6 +42,9 @@ const demoAssignmentBase: AssignmentType = {
   publishedAt: null,
   publishAt: null,
   scheduledPublishRanAt: null,
+  feedbackStatus: AssignmentFeedbackStatusEnum.Hidden,
+  releaseFeedbackAt: null,
+  scheduledFeedbackReleaseRanAt: null,
   isReleased: false,
   feedbackReleased: false,
   hideGrades: false,

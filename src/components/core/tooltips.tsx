@@ -125,7 +125,9 @@ const ADMIN_ASSIGNMENTS_PUBLISHED = (
     longer accepted (happens automatically when the deadline passes). <b>Archived</b>: retired
     and hidden from students.
     <div style={{ height: 10 }} />
-    Grades and feedback are controlled separately by &ldquo;Release feedback&rdquo;.
+    Grades and feedback are controlled separately by the <b>Feedback</b> column: Hidden, Live
+    (as it&rsquo;s written), Per student (each student once their submission is finalized), or
+    Released.
   </div>
 );
 const ADMIN_ASSIGNMENTS_SUBMISSIONS = 'All submissions for this assignment.';

@@ -29,7 +29,7 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-import { PromptTemplate, PromptVariable, Section } from '../../../../api-client';
+import { AssignmentFeedbackStatusEnum, PromptTemplate, PromptVariable, Section } from '../../../../api-client';
 import { Assignment } from '../../../../types/common';
 import TemplateTextArea from '../../../core/TemplateTextArea';
 import PromptTemplatePicker from '../../../core/PromptTemplatePicker';
@@ -44,7 +44,7 @@ import { assignmentFilesApi, assignmentsApi, promptTypesApi } from '../../../../
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
 import { getCourseAISettings } from '../../../../utils/aiService';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
-import { Button, Space } from 'antd';
+import { Button, Radio, Space } from 'antd';
 
 /**********************************************************************************************************************/
 
@@ -144,7 +144,12 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
           ? dayjs.tz(values.publishAt.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
           : null,
       maxLateDays: values.maxLateDays,
-      liveFeedbackMode: values.liveFeedbackMode,
+      feedbackStatus: values.feedbackStatus,
+      // A feedback-release schedule only applies while feedback is hidden/per-student.
+      releaseFeedbackAt:
+        values.releaseFeedbackAt && !['released', 'live'].includes(values.feedbackStatus ?? '')
+          ? dayjs.tz(values.releaseFeedbackAt.format('YYYY-MM-DD HH:mm:ss'), props.timezone).utc().format()
+          : null,
       additiveGrading: values.additiveGrading,
       forcedRubricMode: values.forcedRubricMode,
       templateMode,
@@ -310,7 +315,8 @@ interface IFormValues {
   uploadDueDate: dayjs.Dayjs | null;
   publishAt: dayjs.Dayjs | null;
   maxLateDays: number;
-  liveFeedbackMode: boolean;
+  feedbackStatus: Assignment['feedbackStatus'];
+  releaseFeedbackAt: dayjs.Dayjs | null;
   additiveGrading: boolean;
   forcedRubricMode: boolean;
   templateMode: boolean;
@@ -393,6 +399,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
 
   // Watch form field values for conditional rendering
   const studentUploadEnabled = Form.useWatch('allowStudentUpload', form);
+  const feedbackStatusValue = Form.useWatch('feedbackStatus', form);
   const lateUploadEnabled = Form.useWatch('allowLateUploads', form);
   const regradesEnabled = Form.useWatch('allowRegradeRequests', form);
 
@@ -429,7 +436,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
         allowStudentUpload: assignment.allowStudentUpload,
         allowStudentUploadWithPartners: assignment.allowStudentUploadWithPartners,
         maxLateDays: assignment.maxLateDays ?? 2,
-        liveFeedbackMode: assignment.liveFeedbackMode,
+        feedbackStatus: assignment.feedbackStatus ?? AssignmentFeedbackStatusEnum.Hidden,
         additiveGrading: assignment.additiveGrading,
         forcedRubricMode: assignment.forcedRubricMode,
         templateMode: assignment.templateMode,
@@ -452,6 +459,9 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
           : dayjs(dayjs().tz(timezone).format('YYYY-MM-DD HH:mm:ss')),
         publishAt: assignment.publishAt
           ? dayjs(dayjs(assignment.publishAt).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
+          : null,
+        releaseFeedbackAt: assignment.releaseFeedbackAt
+          ? dayjs(dayjs(assignment.releaseFeedbackAt).tz(timezone).format('YYYY-MM-DD HH:mm:ss'))
           : null,
 
         // AI settings
@@ -823,27 +833,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                         />
                       </Form.Item>
 
-                      <div style={{ marginTop: 28, marginBottom: 20, borderTop: '1px solid rgba(0, 0, 0, 0.06)' }} />
-                      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0, 0, 0, 0.75)', marginBottom: 16 }}>
-                        Feedback Config
-                      </h3>
-
-                      <Form.Item
-                        name="liveFeedbackMode"
-                        label="Live feedback mode"
-                        extra={
-                          <div>
-                            Students can see their feedback and comments without the submission being finalized or
-                            published. Ideal for office hours or ungraded feedback.
-                          </div>
-                        }
-                        labelCol={{ span: 6 }}
-                        wrapperCol={{ span: 18 }}
-                        initialValue={assignment.liveFeedbackMode}
-                        valuePropName="checked"
-                      >
-                        <Switch />
-                      </Form.Item>
                     </>
                   )}
                 </div>
@@ -1008,6 +997,58 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'publishing',
               children: (
                 <div style={tabPaneStyle}>
+                  <Form.Item
+                    name="feedbackStatus"
+                    label="Feedback flow"
+                    extra={
+                      <div>
+                        How grading becomes visible to students. Grades can additionally be
+                        masked with &ldquo;Hide grades&rdquo; below in any revealing mode.
+                      </div>
+                    }
+                    labelCol={{ span: 6 }}
+                    wrapperCol={{ span: 18 }}
+                  >
+                    <Radio.Group>
+                      <Space direction="vertical">
+                        <Radio value="hidden">
+                          <b>Hidden</b> — students see nothing while you grade
+                        </Radio>
+                        <Radio value="live">
+                          <b>Live</b> — feedback appears as it&rsquo;s written (office hours, ungraded work)
+                        </Radio>
+                        <Radio value="per_student">
+                          <b>Per student</b> — each student sees theirs once their submission is finalized
+                        </Radio>
+                        <Radio value="released">
+                          <b>Released</b> — everything out for finalized submissions
+                        </Radio>
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+                  {!['released', 'live'].includes(feedbackStatusValue ?? '') ? (
+                    <Form.Item
+                      name="releaseFeedbackAt"
+                      label="Release at"
+                      extra={
+                        <span>
+                          Optional: automatically release feedback at this time (checked every few
+                          minutes). Your course&apos;s timezone is <b>{timezone}</b>.
+                          {assignment.scheduledFeedbackReleaseRanAt ? (
+                            <>
+                              {' '}
+                              Last scheduled run:{' '}
+                              {dayjs(assignment.scheduledFeedbackReleaseRanAt).tz(timezone).format('YYYY-MM-DD HH:mm')}
+                            </>
+                          ) : null}
+                        </span>
+                      }
+                      labelCol={{ span: 6 }}
+                      wrapperCol={{ span: 18 }}
+                    >
+                      <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="Release feedback at… (optional)" inputReadOnly />
+                    </Form.Item>
+                  ) : null}
                   <Form.Item
                     name="studentsCanSeeGraders"
                     label="Show graders"

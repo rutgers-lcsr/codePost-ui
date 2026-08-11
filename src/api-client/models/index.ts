@@ -498,11 +498,34 @@ export interface Assignment {
    */
   readonly isReleased: boolean;
   /**
-   * A boolean field. 'True' if grades/feedback are released for students to view. 'False' otherwise.
+   * How grading becomes visible to students: hidden (nothing), live (as it's written), per_student (each student once their submission is finalized), released (finalized submissions, globally).
+   *
+   * * `hidden` - Hidden
+   * * `live` - Live
+   * * `per_student` - Per student
+   * * `released` - Released
+   * @type {AssignmentFeedbackStatusEnum}
+   * @memberof Assignment
+   */
+  feedbackStatus?: AssignmentFeedbackStatusEnum;
+  /**
+   * Hidden/per-student assignments auto-release feedback at this time (checked every few minutes).
+   * @type {string}
+   * @memberof Assignment
+   */
+  releaseFeedbackAt?: string | null;
+  /**
+   * When the scheduled releaseFeedbackAt run last fired (one-shot stamp). Moving releaseFeedbackAt past this re-arms the run.
+   * @type {string}
+   * @memberof Assignment
+   */
+  readonly scheduledFeedbackReleaseRanAt: string | null;
+  /**
+   *
    * @type {boolean}
    * @memberof Assignment
    */
-  feedbackReleased?: boolean;
+  readonly feedbackReleased: boolean;
   /**
    * The related course_id.
    * @type {number}
@@ -540,11 +563,11 @@ export interface Assignment {
    */
   maxLateDays?: number;
   /**
-   * A boolean field. If true, students can see their submission and comments before finalization and published
+   *
    * @type {boolean}
    * @memberof Assignment
    */
-  liveFeedbackMode?: boolean;
+  readonly liveFeedbackMode: boolean;
   /**
    * A boolean field. If True and an uploadDueDate is set, students will still be able to submit after a deadline has passed.
    * @type {boolean}
@@ -630,7 +653,7 @@ export interface Assignment {
    */
   points: number;
   /**
-   * A boolean field. 'True' if the students should not see their grades for this assignment. 'False' otherwise.
+   * A boolean field. If True, numeric grades are masked from students in any revealing feedbackStatus — they still see comments and the rubric.
    * @type {boolean}
    * @memberof Assignment
    */
@@ -1700,6 +1723,21 @@ export interface AssignmentDownloadResponse {
    */
   filename: string;
 }
+/**
+ * * `hidden` - Hidden
+ * * `live` - Live
+ * * `per_student` - Per student
+ * * `released` - Released
+ * @export
+ * @enum {string}
+ */
+export enum AssignmentFeedbackStatusEnum {
+  Hidden = 'hidden',
+  Live = 'live',
+  PerStudent = 'per_student',
+  Released = 'released',
+}
+
 /**
  * Serializer for AssignmentFile objects.
  * These are files that belong to assignments (templates, instructions, etc.).
@@ -6771,11 +6809,34 @@ export interface PatchedAssignment {
    */
   readonly isReleased?: boolean;
   /**
-   * A boolean field. 'True' if grades/feedback are released for students to view. 'False' otherwise.
+   * How grading becomes visible to students: hidden (nothing), live (as it's written), per_student (each student once their submission is finalized), released (finalized submissions, globally).
+   *
+   * * `hidden` - Hidden
+   * * `live` - Live
+   * * `per_student` - Per student
+   * * `released` - Released
+   * @type {AssignmentFeedbackStatusEnum}
+   * @memberof PatchedAssignment
+   */
+  feedbackStatus?: AssignmentFeedbackStatusEnum;
+  /**
+   * Hidden/per-student assignments auto-release feedback at this time (checked every few minutes).
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  releaseFeedbackAt?: string | null;
+  /**
+   * When the scheduled releaseFeedbackAt run last fired (one-shot stamp). Moving releaseFeedbackAt past this re-arms the run.
+   * @type {string}
+   * @memberof PatchedAssignment
+   */
+  readonly scheduledFeedbackReleaseRanAt?: string | null;
+  /**
+   *
    * @type {boolean}
    * @memberof PatchedAssignment
    */
-  feedbackReleased?: boolean;
+  readonly feedbackReleased?: boolean;
   /**
    * The related course_id.
    * @type {number}
@@ -6813,11 +6874,11 @@ export interface PatchedAssignment {
    */
   maxLateDays?: number;
   /**
-   * A boolean field. If true, students can see their submission and comments before finalization and published
+   *
    * @type {boolean}
    * @memberof PatchedAssignment
    */
-  liveFeedbackMode?: boolean;
+  readonly liveFeedbackMode?: boolean;
   /**
    * A boolean field. If True and an uploadDueDate is set, students will still be able to submit after a deadline has passed.
    * @type {boolean}
@@ -6903,7 +6964,7 @@ export interface PatchedAssignment {
    */
   points?: number;
   /**
-   * A boolean field. 'True' if the students should not see their grades for this assignment. 'False' otherwise.
+   * A boolean field. If True, numeric grades are masked from students in any revealing feedbackStatus — they still see comments and the rubric.
    * @type {boolean}
    * @memberof PatchedAssignment
    */

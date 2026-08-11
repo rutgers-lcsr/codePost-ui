@@ -37,6 +37,7 @@ import {
   Segmented,
   Spin,
   Statistic,
+  Select,
   Switch,
   Tag,
   Timeline,
@@ -46,7 +47,7 @@ import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 
-import { Course, CourseAuditEvent, User } from '../../api-client';
+import { AssignmentFeedbackStatusEnum, Course, CourseAuditEvent, User } from '../../api-client';
 import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
 import { assignmentKeys } from '../../lib/queryKeys';
@@ -386,12 +387,20 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                               </Text>
                               <Flex vertical gap={8}>
                                 <Flex justify="space-between" align="center">
-                                  <Text style={{ fontSize: 13 }}>Release grades</Text>
-                                  <Switch
+                                  <Text style={{ fontSize: 13 }}>Feedback</Text>
+                                  <Select<AssignmentFeedbackStatusEnum>
                                     size="small"
-                                    checked={!!a.feedbackReleased}
-                                    loading={isSaving(a.id, 'feedbackReleased')}
-                                    onChange={(checked) => handleUpdateAssignment(a.id, { feedbackReleased: checked })}
+                                    style={{ width: 130 }}
+                                    value={a.feedbackStatus ?? AssignmentFeedbackStatusEnum.Hidden}
+                                    loading={isSaving(a.id, 'feedbackStatus')}
+                                    onChange={(status) => handleUpdateAssignment(a.id, { feedbackStatus: status })}
+                                    aria-label="Feedback flow"
+                                    options={[
+                                      { value: AssignmentFeedbackStatusEnum.Hidden, label: 'Hidden' },
+                                      { value: AssignmentFeedbackStatusEnum.Live, label: 'Live' },
+                                      { value: AssignmentFeedbackStatusEnum.PerStudent, label: 'Per student' },
+                                      { value: AssignmentFeedbackStatusEnum.Released, label: 'Released' },
+                                    ]}
                                   />
                                 </Flex>
                                 <Flex justify="space-between" align="center">
@@ -401,15 +410,6 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                                     checked={!!a.hideGrades}
                                     loading={isSaving(a.id, 'hideGrades')}
                                     onChange={(checked) => handleUpdateAssignment(a.id, { hideGrades: checked })}
-                                  />
-                                </Flex>
-                                <Flex justify="space-between" align="center">
-                                  <Text style={{ fontSize: 13 }}>Live feedback mode</Text>
-                                  <Switch
-                                    size="small"
-                                    checked={!!a.liveFeedbackMode}
-                                    loading={isSaving(a.id, 'liveFeedbackMode')}
-                                    onChange={(checked) => handleUpdateAssignment(a.id, { liveFeedbackMode: checked })}
                                   />
                                 </Flex>
                               </Flex>

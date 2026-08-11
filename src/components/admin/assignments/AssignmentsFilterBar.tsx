@@ -79,7 +79,7 @@ const VISIBILITY_OPTIONS = [
 
 const FEEDBACK_OPTIONS = [
   { label: 'Any feedback state', value: 'all' },
-  { label: 'Released — students can view their grades', value: 'released' },
+  { label: 'Released — grades, comments, and rubric are out', value: 'released' },
   { label: 'Not released — grades are private', value: 'not_released' },
 ];
 
@@ -87,7 +87,10 @@ const FEEDBACK_OPTIONS = [
 const STATUS_SHORT: Record<string, string> = {
   draft: 'Draft',
   visible: 'Visible',
+  preview: 'Preview',
   published: 'Published',
+  closed: 'Closed',
+  archived: 'Archived',
 };
 const PROGRESS_SHORT: Record<string, string> = {
   not_started: 'Not started',
@@ -103,7 +106,7 @@ const FILTER_TOOLTIPS = {
     'Draft = hidden from students entirely. Visible = students see the name and due date only. Preview = students can also read the assignment files but not submit. Published = students can start work. Closed = submissions are no longer accepted (automatic once the deadline passes, or set manually). Archived = retired and hidden from students. Grade/feedback visibility is a separate setting controlled by the Feedback filter.',
   progress: 'Filters by grading progress across all submissions. Complete means every submission has been finalized.',
   visibility: 'Filters by whether the assignment appears in the Student Console.',
-  feedback: 'Filters by whether finalized submission feedback and grades are visible to students.',
+  feedback: 'Filters by whether feedback is fully released. Live and per-student flows count as not released here — they reveal continuously rather than globally.',
   dateRange: 'Show only assignments whose student upload due date falls within this range.',
 };
 

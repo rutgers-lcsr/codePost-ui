@@ -28,6 +28,9 @@ import {
   NumberOutlined,
   OrderedListOutlined,
   ReadOutlined,
+  SendOutlined,
+  ThunderboltOutlined,
+  UserOutlined,
   SettingOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
@@ -77,7 +80,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import { SubmissionInfoType, UploadFile } from '../../../types/common';
-import { AssignmentStateEnum, Course, Section, User } from '../../../api-client';
+import { AssignmentFeedbackStatusEnum, AssignmentStateEnum, Course, Section, User } from '../../../api-client';
 
 import { Assignment, IAssignmentToSubmissionsMap, IStudentSubmissionsDataTable } from '../../../types/common';
 
@@ -135,6 +138,7 @@ interface AssignmentRow extends Record<string, unknown> {
   key: number;
   assignment: React.ReactNode;
   status: React.ReactNode;
+  feedback: React.ReactNode;
   progress: React.ReactNode;
   actions: React.ReactNode;
   // Searchable plain-text shadow fields (not rendered as columns)
@@ -219,6 +223,77 @@ const STATE_ORDER: AssignmentStateEnum[] = [
   AssignmentStateEnum.Closed,
   AssignmentStateEnum.Archived,
 ];
+
+/** Feedback-axis presentation + instructor-facing descriptions, in escalation order.
+ *  Same AA-checked palette approach as STATE_META; hideGrades is an independent
+ *  modifier and keeps its own menu toggle. */
+const FEEDBACK_META: Record<
+  AssignmentFeedbackStatusEnum,
+  { label: string; bg: string; border: string; text: string; icon: React.ReactNode; description: string }
+> = {
+  [AssignmentFeedbackStatusEnum.Hidden]: {
+    label: 'Hidden',
+    bg: '#fafafa',
+    border: '#d9d9d9',
+    text: 'rgba(0, 0, 0, 0.7)',
+    icon: <EyeInvisibleOutlined />,
+    description: 'Grading in progress — students see no comments, rubric, or grades.',
+  },
+  [AssignmentFeedbackStatusEnum.Live]: {
+    label: 'Live',
+    bg: '#e6f4ff',
+    border: '#91caff',
+    text: '#0b53c7', // 5.6:1 on #e6f4ff
+    icon: <ThunderboltOutlined />,
+    description: 'Students see feedback immediately as it is written — for office hours and ungraded work.',
+  },
+  [AssignmentFeedbackStatusEnum.PerStudent]: {
+    label: 'Per student',
+    bg: '#f9f0ff',
+    border: '#d3adf7',
+    text: '#531dab', // 7.6:1 on #f9f0ff
+    icon: <UserOutlined />,
+    description: 'Each student sees their feedback as soon as THEIR submission is finalized — no global switch.',
+  },
+  [AssignmentFeedbackStatusEnum.Released]: {
+    label: 'Released',
+    bg: '#f6ffed',
+    border: '#b7eb8f',
+    text: '#237804', // 5.4:1 on #f6ffed
+    icon: <SendOutlined />,
+    description: 'Grades, comments, and the rubric are out for all finalized submissions.',
+  },
+};
+const FEEDBACK_ORDER: AssignmentFeedbackStatusEnum[] = [
+  AssignmentFeedbackStatusEnum.Hidden,
+  AssignmentFeedbackStatusEnum.Live,
+  AssignmentFeedbackStatusEnum.PerStudent,
+  AssignmentFeedbackStatusEnum.Released,
+];
+
+/** Per-transition confirmation copy for the feedback picker. */
+const FEEDBACK_CONFIRM: Record<AssignmentFeedbackStatusEnum, { title: string; content: string; ok: string }> = {
+  [AssignmentFeedbackStatusEnum.Hidden]: {
+    title: 'Hide feedback?',
+    content: 'Students will no longer see grades, comments, or the rubric.',
+    ok: 'Hide',
+  },
+  [AssignmentFeedbackStatusEnum.Live]: {
+    title: 'Turn on live feedback?',
+    content: 'Students will see comments and grades immediately as they are written, before finalization.',
+    ok: 'Go live',
+  },
+  [AssignmentFeedbackStatusEnum.PerStudent]: {
+    title: 'Release feedback per student?',
+    content: 'Each student will see their grades, comments, and the rubric as soon as their own submission is finalized.',
+    ok: 'Release per student',
+  },
+  [AssignmentFeedbackStatusEnum.Released]: {
+    title: 'Release feedback?',
+    content: 'Students will immediately see their grades, comments, and the rubric for finalized submissions.',
+    ok: 'Release',
+  },
+};
 
 /**********************************************************************************************************************/
 
@@ -502,7 +577,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     (assignment: Assignment): React.ReactElement => {
       const stats = assignmentStats[assignment.id];
       const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
-      const gradingInProgress = !assignment.liveFeedbackMode && finalizedRatio < FINALIZED_THRESHOLD;
+      const gradingInProgress = assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Live && finalizedRatio < FINALIZED_THRESHOLD;
 
       return (
         <div style={{ maxWidth: '300px' }}>
@@ -557,26 +632,21 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   );
 
   // Helper to toggle submissions released
-  const toggleSubmissionsReleased = useCallback(
-    (assignment: Assignment) => {
-      const isReleased = assignment.feedbackReleased;
-      const action = isReleased ? 'unrelease' : 'release';
-      const title = `Are you sure you want to ${action} submissions?`;
-      const content = isReleased
-        ? 'Students will no longer be able to see their grades or feedback.'
-        : 'Students will immediately be able to see their grades and feedback for finalized submissions.';
-
+  // Set the feedback axis (hidden/live/per_student/released) with a per-transition confirm.
+  const setFeedbackStatus = useCallback(
+    (assignment: Assignment, status: AssignmentFeedbackStatusEnum) => {
+      const confirm = FEEDBACK_CONFIRM[status];
       Modal.confirm({
-        title,
-        content,
-        onOk: () => {
+        title: confirm.title,
+        content: confirm.content,
+        okText: confirm.ok,
+        onOk: () =>
           updateAssignmentProp({
             id: assignment.id,
-            feedbackReleased: !isReleased,
+            feedbackStatus: status,
           }).then(() => {
-            message.success(`Submissions ${isReleased ? 'unreleased' : 'released'} successfully.`);
-          });
-        },
+            message.success(`Feedback set to ${FEEDBACK_META[status].label.toLowerCase()}.`);
+          }),
       });
     },
     [updateAssignmentProp],
@@ -640,10 +710,16 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       width: isCompact ? 100 : 140,
     },
     {
+      title: 'Feedback',
+      dataIndex: 'feedback',
+      key: 'feedback',
+      width: isCompact ? 90 : 130,
+    },
+    {
       title: 'Progress',
       dataIndex: 'progress',
       key: 'progress',
-      width: isCompact ? '30%' : '35%',
+      width: isCompact ? '25%' : '30%',
     },
     {
       title: '',
@@ -854,6 +930,67 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         </div>
       );
 
+      // --- Feedback axis: tag + described picker (Status-popover pattern) ---
+      const fbStatus = assignment.feedbackStatus ?? AssignmentFeedbackStatusEnum.Hidden;
+      const fbMeta = FEEDBACK_META[fbStatus] ?? FEEDBACK_META[AssignmentFeedbackStatusEnum.Hidden];
+
+      const feedbackContent = (
+        <div style={{ width: 340 }}>
+          <Flex vertical gap="small">
+            {FEEDBACK_ORDER.map((s) => {
+              const meta = FEEDBACK_META[s];
+              const isCurrent = s === fbStatus;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={isCurrent}
+                  disabled={!canReleaseGrades && !isCurrent}
+                  onClick={!isCurrent ? () => setFeedbackStatus(assignment, s) : undefined}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    textAlign: 'left',
+                    width: '100%',
+                    font: 'inherit',
+                    gap: 10,
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: `1px solid ${isCurrent ? colors.brandPrimary : colors.neutralBorder}`,
+                    background: isCurrent ? colors.brandLight : '#ffffff',
+                    cursor: canReleaseGrades && !isCurrent ? 'pointer' : 'default',
+                  }}
+                >
+                  <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
+                    {meta.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.neutralMainText }}>
+                      {meta.label}
+                      {isCurrent && (
+                        <span style={{ fontWeight: 400, color: colors.neutralSecondaryText }}> — current</span>
+                      )}
+                    </span>
+                    <span style={{ display: 'block', fontSize: 12, color: colors.neutralSecondaryText }}>
+                      {meta.description}
+                    </span>
+                  </span>
+                  {isCurrent && (
+                    <CheckCircleOutlined aria-hidden style={{ color: colors.brandPrimary, marginTop: 4 }} />
+                  )}
+                </button>
+              );
+            })}
+            {assignment.hideGrades && (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Numeric grades are hidden for this assignment (Hide grades) — students see
+                comments and the rubric only.
+              </Text>
+            )}
+          </Flex>
+        </div>
+      );
+
       // --- New Progress Logic ---
       const totalSubmissions = statsForRow.numSubmissions;
       const graded = statsForRow.numGraded;
@@ -877,7 +1014,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       }
 
       const visibilityValue: VisibilityFilter = assignment.isVisible ? 'visible' : 'hidden';
-      const feedbackValue: FeedbackFilter = assignment.feedbackReleased ? 'released' : 'not_released';
+      const feedbackValue: FeedbackFilter = fbStatus === AssignmentFeedbackStatusEnum.Released ? 'released' : 'not_released';
       const dueDateValue: string | null =
         assignment.allowStudentUpload && assignment.uploadDueDate ? assignment.uploadDueDate : null;
 
@@ -940,6 +1077,43 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               {isAutoClosed && (
                 <Tooltip title="Closed automatically — the due date has passed. The setting is still Published; click for options.">
                   <ClockCircleOutlined
+                    aria-hidden
+                    style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }}
+                  />
+                </Tooltip>
+              )}
+              <SettingOutlined aria-hidden style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
+            </button>
+          </Popover>
+        ),
+        feedback: (
+          <Popover content={feedbackContent} trigger="click" title="Feedback" styles={{ root: { width: 360 } }}>
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              aria-label={`Feedback: ${fbMeta.label}${
+                assignment.hideGrades ? ', numeric grades hidden' : ''
+              }. Open feedback options.`}
+              style={{
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+              }}
+            >
+              <Tag
+                icon={fbMeta.icon}
+                style={{ marginRight: 0, background: fbMeta.bg, borderColor: fbMeta.border, color: fbMeta.text }}
+              >
+                {fbMeta.label}
+              </Tag>
+              {assignment.hideGrades && (
+                <Tooltip title="Numeric grades are hidden — students see comments and the rubric only.">
+                  <NumberOutlined
                     aria-hidden
                     style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }}
                   />
@@ -1042,25 +1216,14 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 },
                 { type: 'divider' as const },
                 {
-                  key: 'feedback',
-                  icon: assignment.feedbackReleased ? (
-                    <CheckCircleOutlined style={{ color: colors.brandPrimary }} />
-                  ) : (
-                    <MessageOutlined />
-                  ),
-                  label: assignment.feedbackReleased ? 'Feedback released' : 'Feedback unreleased',
-                  disabled: !canReleaseGrades,
-                  onClick: () => toggleSubmissionsReleased(assignment),
-                },
-                {
                   key: 'grades',
                   icon: assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />,
-                  label: !assignment.feedbackReleased
-                    ? 'Grades (feedback unreleased)'
+                  label: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
+                    ? 'Grades (feedback hidden)'
                     : assignment.hideGrades
                       ? 'Grades hidden'
                       : 'Grades visible',
-                  disabled: !assignment.feedbackReleased || !canReleaseGrades,
+                  disabled: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades,
                   onClick: () => toggleHideGrades(assignment),
                 },
                 { type: 'divider' as const },
@@ -1118,17 +1281,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 menu={{
                   items: [
                     {
-                      key: 'feedback',
-                      icon: assignment.feedbackReleased ? (
-                        <CheckCircleOutlined style={{ color: colors.brandPrimary }} />
-                      ) : (
-                        <MessageOutlined />
-                      ),
-                      label: assignment.feedbackReleased ? 'Feedback released' : 'Feedback unreleased',
-                      onClick: () => toggleSubmissionsReleased(assignment),
-                      disabled: !canReleaseGrades,
-                    },
-                    {
                       key: 'grades',
                       icon: assignment.hideGrades ? (
                         <EyeInvisibleOutlined
@@ -1139,12 +1291,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                           style={{ color: assignment.feedbackReleased ? colors.brandPrimary : undefined }}
                         />
                       ),
-                      label: !assignment.feedbackReleased
-                        ? 'Grades (feedback unreleased)'
+                      label: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
+                        ? 'Grades (feedback hidden)'
                         : assignment.hideGrades
                           ? 'Grades hidden'
                           : 'Grades visible',
-                      disabled: !assignment.feedbackReleased || !canReleaseGrades,
+                      disabled: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades,
                       onClick: () => toggleHideGrades(assignment),
                     },
                   ],
@@ -1153,9 +1305,15 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               >
                 <Button
                   shape="circle"
-                  icon={assignment.feedbackReleased ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  icon={
+                    assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden ? (
+                      <EyeOutlined />
+                    ) : (
+                      <EyeInvisibleOutlined />
+                    )
+                  }
                   style={
-                    assignment.feedbackReleased
+                    assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden
                       ? { borderColor: colors.brandPrimary, color: colors.brandPrimary }
                       : undefined
                   }
@@ -1262,7 +1420,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const bulkUnpublish = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
   const bulkShow = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
   const bulkHide = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Draft }), [bulkUpdate]);
-  const bulkReleaseFeedback = useCallback(() => bulkUpdate({ feedbackReleased: true }), [bulkUpdate]);
+  const bulkReleaseFeedback = useCallback(() => bulkUpdate({ feedbackStatus: AssignmentFeedbackStatusEnum.Released }), [bulkUpdate]);
   const clearSelection = useCallback(() => setSelectedRowKeys([]), []);
 
   const hasSelection = selectedRowKeys.length > 0;

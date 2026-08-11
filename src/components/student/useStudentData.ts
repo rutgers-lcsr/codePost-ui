@@ -80,9 +80,12 @@ export function getSubmissionStatusFor(
   if (!submission) {
     return state === 'closed' ? SubmissionStatus.CLOSED : SubmissionStatus.NO_SUBMISSION;
   }
-  // Feedback is available when the submission is finalized, live-feedback is on,
-  // or the instructor has explicitly released feedback (separate from isReleased).
-  const isFeedbackAvailable = submission.isFinalized || assignment.liveFeedbackMode || assignment.feedbackReleased;
+  // Feedback availability mirrors the API's feedback axis: live shows immediately;
+  // released and per-student open once THIS submission is finalized. (The old client
+  // logic ORed isFinalized on its own, overstating availability while feedback was hidden.)
+  const fb = assignment.feedbackStatus;
+  const isFeedbackAvailable =
+    fb === 'live' || ((fb === 'released' || fb === 'per_student') && !!submission.isFinalized);
   if (!isFeedbackAvailable) return SubmissionStatus.NOT_REVIEWED;
   const isViewed = !(submission.id in viewsBySubmission) || viewsBySubmission[submission.id];
   return isViewed ? SubmissionStatus.SUBMITTED : SubmissionStatus.PENDING;
