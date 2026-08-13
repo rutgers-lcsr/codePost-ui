@@ -10,7 +10,7 @@ order: 20
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 → 4.0.0 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 → 4.0.0 → 4.1.0 → 4.2.0 (current)
 
 ---
 
@@ -29,6 +29,106 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 - Allow Assignments to be assigned to graders per problem instead of per submission.
 - Allow PDF only assignments for non-code-based courses.
+
+---
+
+## v4.2.0 — Assignment & Feedback Lifecycle, Exam Lockdown
+
+> **Highlight**: Assignment publishing and feedback release are now two clear, independent
+> badges — each with more states, scheduling, and safer defaults — and quizzes can require
+> Safe Exam Browser. See the updated
+> [Assignment Workflow](/docs/instructor-assignment-workflow) and
+> [Grading, Release & Exports](/docs/instructor-grading-publishing) guides.
+
+### New: Assignment Status badge (six states)
+
+Each assignment now moves through an explicit lifecycle:
+**Draft → Visible → Preview → Published → Closed → Archived**.
+
+- **Draft** — invisible to students. New assignments (and clones) start here, so nothing
+  is accidentally live while you set it up.
+- **Visible** — students see the name, due date, and description: an announcement.
+- **Preview** — students can also read the hand-out files, but can't submit yet.
+- **Published** — open for work.
+- **Closed** — happens **by itself** when the due date (plus any late window) passes; the
+  badge shows a small clock. Extend the due date to reopen, or close early by hand.
+- **Archived** — retired mid-course.
+
+Set **Publish at** in the assignment settings to open an assignment automatically on
+schedule — no more 11:59pm publishing from your couch.
+
+### New: Feedback badge (four modes)
+
+Releasing grades is now its own control next to Status, so *when students can work* and
+*when they see grading* never get tangled:
+
+- **Hidden** (default) — grade at your own pace, nothing shows.
+- **Live** — feedback appears as it's written; good for office hours and exercises.
+- **Per student** — each student sees their feedback as soon as *their own* submission is
+  finalized — a rolling release with no global switch.
+- **Released** — everything is out at once.
+
+**Hide grades** still masks numeric scores in any revealing mode, and **Release at**
+schedules an automatic global release ("grades out Friday 5pm").
+
+### New: Safe Exam Browser for quizzes
+
+Require a quiz to be taken in [Safe Exam Browser](https://safeexambrowser.org) — a free
+locked-down browser for Windows, macOS, and iPad. Students get a one-click **Launch in
+Safe Exam Browser** button (no config files to distribute), the server rejects any quiz
+request made outside SEB, and blocked attempts appear in the Activity Log. Per-student
+exemptions (for platforms SEB doesn't support, like Linux or ChromeOS) live on the course
+roster, and staff can see which attempts were verified.
+
+### New: Assignment descriptions shown to students
+
+The assignment description is now displayed where students actually look: the assignment
+row on their dashboard expands to show it (from Visible onward), and it appears above the
+files on the submission view.
+
+### Improved: Datasets
+
+Test-resource datasets are no longer copied into normal execution runs — they stage only
+when a run actually uses them — and the assignment form makes dataset visibility and
+selection clearer.
+
+### Security & fixes
+
+- Closed several gaps where students could interact with assignments they shouldn't see:
+  hidden assignments no longer accept uploads (a state cloned assignments used to land
+  in), per-section hiding is enforced on the server, and partner links can only be
+  accepted by students who could submit themselves.
+- After feedback release, student API responses no longer include staff-only settings
+  (AI prompts, anonymous-grading configuration, and similar internals).
+- Several notification emails (upload receipts, feedback notices, regrade reminders)
+  failed to render in production due to a template typo — fixed.
+- The student console no longer suggests feedback is available while it's still hidden.
+
+---
+
+## v4.1.0 — AI Provider Testing & Quiz Generation Polish
+
+> **Highlight**: Test your AI provider connection end to end from the settings page, and
+> AI question generation became a tracked job with progress and clear failures.
+
+### New: AI Provider Connection Test
+
+Course and organization AI settings gained a **Test connection** button — send a real
+prompt (optionally overriding the model) and see the provider's response, response time,
+and the model that actually answered. Test requests are tracked separately in the AI
+usage dashboard under a `provider_test` type.
+
+### Improved: AI Question Generation
+
+Suggestion and per-student generation now run as tracked jobs with live progress and
+explicit failure states, plus on-demand **manual generation and preview** for
+personalized sections. AI work also moved to a dedicated worker, so heavy generation
+can't slow down autograding.
+
+### Fixed
+
+- Production image builds could fail intermittently due to a packaging race — resolved.
+- Tightened course API key management permissions, and quiz taking is now browser-only.
 
 ---
 
