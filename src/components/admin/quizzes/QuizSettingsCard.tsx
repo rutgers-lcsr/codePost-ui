@@ -90,13 +90,14 @@ const closeOptionsFor = (trigger: string): QuizCloseEventEnum[] =>
   CLOSE_OPTIONS_BY_TRIGGER[trigger] ?? [QuizCloseEventEnum.None, QuizCloseEventEnum.FixedDate];
 
 /** A titled settings section, so the page scans as setup steps. */
-const Section: React.FC<{ title: string; hint?: string; first?: boolean; children: React.ReactNode }> = ({
+const Section: React.FC<{ title: string; hint?: string; first?: boolean; testId?: string; children: React.ReactNode }> = ({
   title,
   hint,
   first,
+  testId,
   children,
 }) => (
-  <div>
+  <div data-testid={testId}>
     {!first && <Divider style={{ margin: '4px 0 12px' }} />}
     <Text strong style={{ display: 'block', marginBottom: hint ? 2 : 12 }}>
       {title}
@@ -618,6 +619,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
 
         <Section
           title="Exam security"
+          testId="quiz-exam-security"
           hint="Require students to take this quiz in Safe Exam Browser, a free locked-down browser (Windows, macOS, iPad). Students get a “Launch in Safe Exam Browser” button that opens the quiz in SEB directly — no setup needed. The server rejects any quiz request that doesn't carry a valid SEB signature; per-student exemptions (e.g. Linux/ChromeOS users) are set on the roster."
         >
           <Flex vertical gap={10}>

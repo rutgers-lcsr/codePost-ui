@@ -161,6 +161,31 @@ your instructor — codes can be changed or removed at any time.
 - **Attempts** — some quizzes allow more than one attempt. When you have multiple, the quiz's
   scoring policy decides which one counts (highest, latest, or average).
 
+### Quizzes that require Safe Exam Browser
+
+Some instructors require a quiz to be taken in **Safe Exam Browser (SEB)** — a free
+locked-down browser (Windows, macOS, iPad) that keeps the quiz as the only thing on your
+screen. If a quiz requires it, opening the quiz in a normal browser shows a gate screen
+instead of the questions:
+
+![The Safe Exam Browser gate screen](/assets/docs/student_quiz_seb_gate.png)
+
+1. If you don't have SEB yet, click **Download Safe Exam Browser** and install it (one
+   time).
+2. Click **Launch in Safe Exam Browser**. Your browser opens SEB automatically, and the
+   quiz loads inside it with you already signed in — no setup or passwords to type.
+3. Take the quiz as normal. When you submit, quit SEB and you're back in your regular
+   browser.
+
+If SEB doesn't open by itself, use the **Download the exam configuration** link on the
+gate screen and open the downloaded file with Safe Exam Browser.
+
+> [!NOTE]
+> Launch links are single-use and expire after a few minutes — if a launch fails, go back
+> to the quiz in your normal browser and press **Launch in Safe Exam Browser** again.
+> Using Linux or ChromeOS (where SEB doesn't run)? Contact your instructor — they can
+> exempt you so the quiz works in your normal browser.
+
 ### Reviewing your results
 
 Once you've submitted (and if your instructor allows it), you can review your attempt: your

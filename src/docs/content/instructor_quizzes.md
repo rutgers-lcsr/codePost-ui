@@ -131,6 +131,8 @@ On the **Quizzes** tab, create a quiz, then work through the quiz builder's four
   or *average*.
 - **Publish** — an unpublished quiz is a **draft** only you can see. Students only see published
   quizzes.
+- **Require Safe Exam Browser** — lock the quiz down to
+  [Safe Exam Browser](https://safeexambrowser.org) (see below).
 
 ### What students see after submitting
 
@@ -202,10 +204,50 @@ submits, generate questions from *their* code to confirm they understand what th
 > **off by default** because it spends AI tokens on every submission. When it's off, the builder
 > hides the "Add AI questions" option.
 
+## Safe Exam Browser lockdown
+
+For high-stakes quizzes, turn on **Require Safe Exam Browser** (Settings → Exam security).
+[Safe Exam Browser](https://safeexambrowser.org) (SEB) is a free locked-down browser for
+**Windows, macOS, and iPad** that blocks other apps, copy/paste, and navigation away from
+the quiz while it runs.
+
+![The Exam security section of the quiz settings](/assets/docs/instructor_quiz_seb_settings.png)
+
+With the requirement on, the server rejects every quiz interaction — starting, reading an
+in-progress attempt, answering, submitting — that doesn't come from inside SEB. A student
+who opens the quiz in a normal browser sees an explanation screen instead of the quiz:
+
+- **Launch in Safe Exam Browser** — one click generates a personal exam configuration and
+  opens it in the student's installed SEB, which lands directly back on the quiz, already
+  signed in. There is nothing for you to configure or distribute.
+- **Download Safe Exam Browser** — for students who don't have SEB installed yet.
+
+When the student quits SEB they're returned to their normal browser session.
+
+A few operational notes:
+
+- **Exemptions** — SEB doesn't run on Linux or ChromeOS. Exempt individual students in
+  **Roster → Manage Students** (the **SEB exempt** checkbox); they take the quiz in a
+  normal browser. Exemptions are course-wide, like time accommodations.
+- **Verification flag** — each attempt records whether it was actually taken under SEB.
+  Attempts by exempt students (or started before the requirement was switched on) show as
+  not verified to staff.
+- **Blocked attempts** are recorded in the [Activity Log](/docs/activity-log), so you can
+  see who tried to open a locked-down quiz outside SEB.
+- **Custom configurations** — if your department distributes its own `.seb` file instead
+  of the built-in launch, paste its **Config Key** (from the SEB Config Tool) into the
+  quiz's Exam security settings; the built-in launch keeps working alongside it.
+
+> [!IMPORTANT]
+> Turning the requirement on mid-quiz blocks in-progress attempts until students re-enter
+> through SEB — their saved answers are kept. Prefer setting it before the quiz opens.
+
 ## Accommodations
 
 To give a specific student extra time on **every** timed quiz in the course, set their **Quiz time**
 multiplier in the roster (Roster → Manage Students). A multiplier of 1× means no accommodation.
+The roster is also where you mark a student **SEB exempt** for
+[locked-down quizzes](#safe-exam-browser-lockdown).
 
 ## Grade quizzes
 

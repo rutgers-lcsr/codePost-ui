@@ -133,6 +133,38 @@ export const DOC_SHOTS: DocShot[] = [
     clipSelector: '[data-testid="rubric-panel"]',
   },
   {
+    file: 'instructor_quiz_seb_settings.png',
+    auth: 'instructor',
+    path: `/admin/${course}/quizzes`,
+    readySelector: 'text=Question Banks',
+    prepare: async (page) => {
+      // The builder is selection-state, not a route: open the Quizzes tab, pick the
+      // seeded SEB quiz, and scroll its Exam security section into view.
+      await page.getByRole('tab', { name: 'Quizzes', exact: true }).click();
+      await page.getByText('QT · Safe Exam Browser required').first().click();
+      const section = page.locator('[data-testid="quiz-exam-security"]');
+      await section.waitFor({ timeout: 10_000 });
+      await section.scrollIntoViewIfNeeded();
+    },
+    clipSelector: '[data-testid="quiz-exam-security"]',
+  },
+  {
+    file: 'student_quiz_seb_gate.png',
+    auth: 'student',
+    path: `/student/${course}/quizzes`,
+    readySelector: '[data-testid="student-quiz-card"]',
+    prepare: async (page) => {
+      // Starting the seeded SEB quiz outside SEB 403s into the gate screen.
+      await page
+        .getByTestId('student-quiz-card')
+        .filter({ hasText: 'Safe Exam Browser required' })
+        .getByTestId('student-quiz-action')
+        .click();
+      await page.getByTestId('quiz-seb-launch').waitFor({ timeout: 10_000 });
+    },
+    clipSelector: '.ant-result',
+  },
+  {
     file: 'instructor_ai_settings.png',
     auth: 'instructor',
     path: `/admin/${course}/settings`,
