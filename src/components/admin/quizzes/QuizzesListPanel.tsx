@@ -1,16 +1,31 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { Button, Empty, Flex, Form, Input, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
-import { DeleteOutlined, FileDoneOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, FileDoneOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { quizzesApi } from '../../../api-client/clients';
 import { Quiz } from '../../../api-client';
 import { apiErrorMessage } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
-import { useCourseQuizzes } from './queries';
+import { useBackfillPreview, useCourseQuizzes } from './queries';
 import MarkdownField from './MarkdownField';
 import PanelCard from './PanelCard';
+
+/** Red "N missing" tag for a quiz whose students lack generated question sets — those
+ *  students can't open the quiz, so the instructor must see it from the list, before ever
+ *  opening the quiz. Mounted only for quizzes with AI sections, so the per-quiz backfill
+ *  preview is fetched sparingly; shares the builder/Review panel's query key. */
+const MissingSetsTag: React.FC<{ quizId: number }> = ({ quizId }) => {
+  const { data } = useBackfillPreview(quizId);
+  const missing = data?.missing ?? 0;
+  if (missing === 0) return null;
+  return (
+    <Tag color="red" title={`${missing} students are missing generated questions`} data-testid="quiz-missing-tag">
+      {missing} missing
+    </Tag>
+  );
+};
 
 interface IProps {
   courseId: number;
@@ -104,7 +119,15 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
           >
             {title}
           </Button>
+          {/* Same grey Draft chip idiom as the assignments table — unpublished quizzes are
+              invisible to students, which instructors kept missing. */}
+          {!record.isPublished && (
+            <Tag icon={<EditOutlined />} title="Hidden from students until you publish it (Settings → Published)" data-testid="quiz-draft-tag">
+              Draft
+            </Tag>
+          )}
           {record.assignment != null && <Tag color="green">Attached</Tag>}
+          {(record.generatedSections ?? []).length > 0 && <MissingSetsTag quizId={record.id!} />}
         </Space>
       ),
     },

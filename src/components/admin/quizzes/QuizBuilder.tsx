@@ -36,7 +36,7 @@ import { Course, Quiz, QuizGeneratedSection, QuizQuestion, QuizQuestionGroup } f
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
 import {
-  useCourseQuestions, useGeneratedSets, useQuizAttempts, useQuizMembership,
+  useBackfillPreview, useCourseQuestions, useGeneratedSets, useQuizAttempts, useQuizMembership,
   useQuizDetail, useQuestionBanks,
 } from './queries';
 import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
@@ -246,6 +246,11 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
   // Quiz graders / admins only — a 403 for plain staff simply hides the count.
   const { data: pendingAttempts = [] } = useQuizAttempts(quiz.id, { needsGrading: true });
   const needsGradingCount = pendingAttempts.length;
+  // Missing generated sets, surfaced on every tab (banner + red Review badge) — instructors
+  // shouldn't have to open the Review tab to learn students are blocked from the quiz.
+  // Shares the Review panel's query key, so Generate-missing refreshes it everywhere.
+  const { data: builderBackfill } = useBackfillPreview(quiz.id, orderedSections.length > 0);
+  const missingSetsCount = builderBackfill?.missing ?? 0;
   // The authoring surface only shows when the course's AI feature is on (the
   // generate_personalized_quiz_questions capability); existing sections stay
   // manageable (with a warning) so they can be cleaned up after a course turns
@@ -567,6 +572,23 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
 
   return (
     <>
+      {/* Visible on every tab: students without a generated set can't open the quiz, so
+          this must not hide inside the Review tab. */}
+      {missingSetsCount > 0 && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 12 }}
+          title={`${missingSetsCount} student${missingSetsCount === 1 ? ' is' : 's are'} missing generated questions`}
+          description="They can't open this quiz until a question set is generated and approved for them."
+          action={
+            <CPButton small onClick={() => setActiveTab('review')} data-testid="missing-sets-review">
+              Go to Review
+            </CPButton>
+          }
+          data-testid="missing-sets-alert"
+        />
+      )}
       <Tabs
         activeKey={activeTab}
         onChange={(k) => setActiveTab(k as BuilderTab)}
@@ -601,7 +623,9 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
                     Review
                     {/* Darker amber (#996800 ≈ 4.9:1 with the Badge's white count) — antd
                         gold #faad14 gives only ~1.8:1. */}
-                    <Badge count={readyCount} style={{ backgroundColor: '#996800' }} />
+                    <Badge count={readyCount} style={{ backgroundColor: '#996800' }} title={`${readyCount} sets awaiting review`} />
+                    {/* Red = students with no set at all (they can't open the quiz). */}
+                    <Badge count={missingSetsCount} title={`${missingSetsCount} students missing generated questions`} />
                   </Space>
                 ),
                 children: (
