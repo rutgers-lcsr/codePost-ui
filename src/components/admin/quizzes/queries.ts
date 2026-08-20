@@ -7,8 +7,8 @@ import {
 import { quizKeys } from '../../../lib/queryKeys';
 import {
   BackfillPreviewResponse, GeneratedQuestionSet, GeneratedQuestionSetList, PromptVariable,
-  QuestionBank, Question, Quiz, QuizQuestion, QuizResultRow, QuizSectionTemplate,
-  QuizSuggestionJob, QuizSuggestionJobStatusEnum, Section,
+  QuestionBank, Question, Quiz, QuizGradingProgress, QuizQuestion, QuizResultRow,
+  QuizSectionTemplate, QuizSuggestionJob, QuizSuggestionJobStatusEnum, Section,
   StaffQuizAttempt, SuggestedQuizQuestion,
 } from '../../../api-client';
 
@@ -173,6 +173,16 @@ export const useQuizResults = (quizId: number | undefined, enabled = true) =>
     queryKey: quizKeys.results(quizId ?? -1),
     queryFn: (): Promise<QuizResultRow[]> => quizzesApi.resultsList({ id: quizId! }),
     enabled: enabled && !!quizId,
+    retry: false,
+  });
+
+/** Course-wide manual-grading progress (`courses/{id}/quizGradingProgress/`, admin-only). */
+export const useQuizGradingProgress = (courseId: number | undefined) =>
+  useQuery({
+    queryKey: quizKeys.gradingProgress(courseId ?? -1),
+    queryFn: (): Promise<QuizGradingProgress> => coursesApi.quizGradingProgressRetrieve({ id: courseId! }),
+    enabled: !!courseId,
+    staleTime: 30_000,
     retry: false,
   });
 

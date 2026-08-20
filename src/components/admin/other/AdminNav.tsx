@@ -87,7 +87,8 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
 
     if (/\/course-files(?:\/|$)/.test(pathname)) return 'course-files';
 
-    if (/\/quizzes(?:\/|$)/.test(pathname)) return 'quizzes';
+    if (/\/quizzes\/grading-progress(?:\/|$)/.test(pathname)) return 'quizzes/grading-progress';
+    if (/\/quizzes(?:\/|$)/.test(pathname)) return 'quizzes/overview';
 
     if (/\/gradebook(?:\/|$)/.test(pathname)) return 'gradebook';
 
@@ -141,7 +142,17 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
         {
           key: 'quizzes',
           icon: <FormOutlined />,
-          label: <Link to={`${courseBaseURL}/quizzes`}>Quizzes</Link>,
+          label: 'Quizzes',
+          children: [
+            {
+              key: 'quizzes/overview',
+              label: <Link to={`${courseBaseURL}/quizzes`}>Overview</Link>,
+            },
+            {
+              key: 'quizzes/grading-progress',
+              label: <Link to={`${courseBaseURL}/quizzes/grading-progress`}>Grading Progress</Link>,
+            },
+          ],
         },
         ...(canEditSettings
           ? [

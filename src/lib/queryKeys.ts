@@ -44,6 +44,7 @@ export const quizKeys = {
   backfillPreview: (quizId: number) => ['quizzes', 'backfillPreview', quizId] as const,
   generatedSetDetail: (setId: number) => ['quizzes', 'generatedSetDetail', setId] as const,
   staffSections: (courseId: number) => ['quizzes', 'staffSections', courseId] as const,
+  gradingProgress: (courseId: number) => ['quizzes', 'gradingProgress', courseId] as const,
 };
 
 export const studentKeys = {
