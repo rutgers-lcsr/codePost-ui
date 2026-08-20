@@ -197,7 +197,10 @@ submits, generate questions from *their* code to confirm they understand what th
   answer/working code, plus worked steps for hand-computation questions). It's shown — and is
   editable — on the Review tab and again while grading. **Students never see it.**
 - **Auto-publish generated sets** skips the manual review gate. **Graders can review generated**
-  lets your quiz graders (not just admins) review these sets.
+  lets your quiz graders (not just admins) review these sets, and the nested **Graders may also
+  generate missing question sets** additionally lets them run **Generate missing** — so a grader
+  can generate, review, and release the quiz for their section without an admin. Per-student
+  generate/regenerate stays admin-only.
 
 > [!IMPORTANT]
 > Per-student AI generation requires the course's **AI-generated quiz questions** feature, which is

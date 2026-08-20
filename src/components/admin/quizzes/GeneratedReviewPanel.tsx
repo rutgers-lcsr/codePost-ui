@@ -261,7 +261,10 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
 
   const { data: sets = [], isLoading, error } = useGeneratedSets(active ? quiz.id : undefined);
   // Students with a submission but no set — shown on the Generate-missing button.
-  const { data: backfillPreview } = useBackfillPreview(quiz.id, active && adminActions);
+  // Graders reach this panel with adminActions=false; the instructor's gradersCanGenerate
+  // flag additionally opens the (bounded, missing-only) bulk generate button for them.
+  const canGenerateMissing = adminActions || !!quiz.gradersCanGenerate;
+  const { data: backfillPreview } = useBackfillPreview(quiz.id, active && canGenerateMissing);
   const missingCount = backfillPreview?.missing ?? 0;
   // Submission-free quizzes generate eagerly for enrolled students; undefined (e.g. the
   // preview isn't fetched for graders) falls back to the submission-seeded copy.
@@ -520,23 +523,25 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
                 >
                   Generate
                 </CPButton>
-                <Tooltip
-                  title={
-                    needsSubmission
-                      ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
-                      : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
-                  }
-                >
-                  <CPButton
-                    loading={acting}
-                    disabled={missingCount === 0}
-                    onClick={generateMissing}
-                    data-testid="generate-missing"
-                  >
-                    Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
-                  </CPButton>
-                </Tooltip>
               </>
+            )}
+            {canGenerateMissing && (
+              <Tooltip
+                title={
+                  needsSubmission
+                    ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
+                    : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
+                }
+              >
+                <CPButton
+                  loading={acting}
+                  disabled={missingCount === 0}
+                  onClick={generateMissing}
+                  data-testid="generate-missing"
+                >
+                  Generate missing{missingCount > 0 ? ` (${missingCount})` : ''}
+                </CPButton>
+              </Tooltip>
             )}
           </Space>
           {adminActions && (

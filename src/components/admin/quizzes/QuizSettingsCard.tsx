@@ -140,6 +140,7 @@ const settingsOf = (q: Quiz) => ({
   passingScoreUnit: q.passingScoreUnit || UNIT_DEFAULT,
   isPublished: q.isPublished ?? false,
   gradersCanReviewGenerated: q.gradersCanReviewGenerated ?? false,
+  gradersCanGenerate: q.gradersCanGenerate ?? false,
   autoPublishGenerated: q.autoPublishGenerated ?? false,
   manualGeneration: q.manualGeneration ?? true,
   generationDate: q.generationDate ?? null,
@@ -253,6 +254,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
           passingScoreUnit: settings.passingScoreUnit,
           isPublished: overrides?.isPublished ?? settings.isPublished,
           gradersCanReviewGenerated: settings.gradersCanReviewGenerated,
+          gradersCanGenerate: settings.gradersCanGenerate,
           autoPublishGenerated: settings.autoPublishGenerated,
           manualGeneration: settings.manualGeneration,
           generationDate: settings.generationDate,
@@ -873,10 +875,28 @@ const QuizSettingsCard: React.FC<IProps> = ({
                 <Switch
                   aria-label="Graders may review and publish generated questions"
                   checked={settings.gradersCanReviewGenerated}
-                  onChange={(v) => patch({ gradersCanReviewGenerated: v })}
+                  // A grader can only reach the generate button through the review tab, so
+                  // revoking review also revokes generate — no hidden-but-active state.
+                  onChange={(v) =>
+                    patch(v ? { gradersCanReviewGenerated: true }
+                            : { gradersCanReviewGenerated: false, gradersCanGenerate: false })
+                  }
                 />
                 <Text>Graders may review and publish generated questions</Text>
               </Space>
+              {settings.gradersCanReviewGenerated && (
+                <Space style={{ marginLeft: 36 }}>
+                  <Switch
+                    size="small"
+                    aria-label="Graders may also generate missing question sets"
+                    checked={settings.gradersCanGenerate}
+                    onChange={(v) => patch({ gradersCanGenerate: v })}
+                  />
+                  <Text type="secondary">
+                    Graders may also generate missing question sets (spends AI credits)
+                  </Text>
+                </Space>
+              )}
               <Space>
                 <Switch
                   aria-label="Generate question sets manually"
@@ -911,9 +931,22 @@ const QuizSettingsCard: React.FC<IProps> = ({
                   )}
                 </div>
               )}
-              {settings.closeEvent === QuizCloseEventEnum.Submission && !settings.autoPublishGenerated && (
+              {settings.manualGeneration &&
+                (settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterSubmission ||
+                  settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterStudentFeedback) && (
                 // Explicit dark amber (#8a5a00 ≈ 5.9:1 on white) — antd's default warning
                 // color (~#faad14) fails WCAG AA for normal text.
+                <Text style={{ color: '#8a5a00', fontSize: 13 }}>
+                  This quiz opens per student
+                  {settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterSubmission
+                    ? ' after they submit'
+                    : ' after their feedback is ready'}
+                  , but manual generation is on — students won&apos;t get their questions until
+                  you generate and publish them from the Review tab. For a self-paced flow, turn
+                  off manual generation (and consider auto-publish).
+                </Text>
+              )}
+              {settings.closeEvent === QuizCloseEventEnum.Submission && !settings.autoPublishGenerated && (
                 <Text style={{ color: '#8a5a00', fontSize: 13 }}>
                   This quiz closes relative to each student's submission, but their questions
                   only open once reviewed — a slow review can eat into (or consume) their
