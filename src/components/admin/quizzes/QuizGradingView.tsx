@@ -1,13 +1,14 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 //
 // Staff grading for a quiz, organized into two areas: **Grade** — a needs-grading queue that
-// launches a focused, one-response-at-a-time step-through grader (Save & next walks the whole
-// pending queue) — and **Overview** — the per-student Results report (CSV export) and
-// per-question Item analysis. Access is enforced server-side (Course.quizGraders role or
-// course admin); a 403 here means the viewer lacks the role. Embedded as the quiz page's
-// Grading tab and inline in the grader console; `active` gates the queries.
+// opens a full-screen drawer with the focused, one-response-at-a-time step-through grader
+// ("Next" walks the whole pending queue; dirty grades save automatically on any navigation) —
+// and **Overview** — the per-student Results report (CSV export) and per-question Item
+// analysis. Access is enforced server-side (Course.quizGraders role or course admin); a 403
+// here means the viewer lacks the role. Embedded as the quiz page's Grading tab and inline in
+// the grader console; `active` gates the queries.
 import * as React from 'react';
-import { Alert, Flex, Select, Spin, Tabs, Typography, message } from 'antd';
+import { Alert, Drawer, Flex, Select, Spin, Tabs, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { Quiz, StaffQuizAttempt } from '../../../api-client';
@@ -18,6 +19,7 @@ import { bySortKey } from '../../core/questionMeta';
 import { buildGradingQueue, nextInQueue, queuePosition } from './grading/gradingQueue';
 import GradingQueue from './grading/GradingQueue';
 import FocusedGrader from './grading/FocusedGrader';
+import { GradeControlsHandle } from './grading/GradeControls';
 import GradingOverview from './grading/GradingOverview';
 
 const { Text } = Typography;
@@ -49,13 +51,31 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   const { data: results = [], isLoading: resultsLoading } = useQuizResults(quiz.id, active);
 
   // Section filter: a grader picks their section and sees only those students' attempts and
-  // results. Filtered client-side from the section rosters (attempt rows carry the student email).
-  const [sectionId, setSectionId] = React.useState<number | null>(null);
-  const { data: sections = [] } = useStaffSections(quiz.course, active);
+  // results. Filtered client-side from the section rosters (attempt rows carry the student
+  // email). The choice persists per course (localStorage), so a grader stays on their section
+  // across quiz switches and page reloads until they change it themselves.
+  const sectionStorageKey = `quizGradingSection.${quiz.course}`;
+  const [sectionId, setSectionId] = React.useState<number | null>(() => {
+    const stored = Number(localStorage.getItem(sectionStorageKey));
+    return localStorage.getItem(sectionStorageKey) != null && !Number.isNaN(stored) ? stored : null;
+  });
+  const pickSection = (id: number | null) => {
+    setSectionId(id);
+    if (id == null) localStorage.removeItem(sectionStorageKey);
+    else localStorage.setItem(sectionStorageKey, String(id));
+  };
+  const { data: sections = [], isFetched: sectionsFetched } = useStaffSections(quiz.course, active);
+  // A persisted section that no longer exists (deleted, grader unassigned) falls back to All.
+  React.useEffect(() => {
+    if (sectionsFetched && sectionId != null && !sections.some((s) => s.id === sectionId)) pickSection(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionsFetched, sections, sectionId]);
   const sectionEmails = React.useMemo(() => {
     if (sectionId == null) return null;
     const section = sections.find((s) => s.id === sectionId);
-    return section ? new Set((section.students ?? []).map(String)) : null;
+    // Until the rosters load, filter to nothing rather than briefly leaking every section
+    // into the queue (a fast "Start grading" click must never pull another section's student).
+    return section ? new Set((section.students ?? []).map(String)) : new Set<string>();
   }, [sectionId, sections]);
   const visibleAttempts = sectionEmails ? allAttempts.filter((a) => sectionEmails.has(a.student)) : allAttempts;
   const visibleResults = sectionEmails ? results.filter((r) => sectionEmails.has(r.student)) : results;
@@ -69,7 +89,7 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
       aria-label="Filter by section"
       style={{ minWidth: 160 }}
       value={sectionId ?? 'all'}
-      onChange={(v) => setSectionId(v === 'all' ? null : Number(v))}
+      onChange={(v) => pickSection(v === 'all' ? null : Number(v))}
       options={[
         { value: 'all' as const, label: 'All sections' },
         ...sections.map((s) => ({ value: s.id, label: s.name })),
@@ -106,11 +126,28 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     setCurrent(null);
     setFocusId(null);
   };
+  // The grade editor's draft handle, owned here so closing the drawer (Esc, mask, back) can
+  // flush too. Null while the focused response is auto-graded (no editor mounted).
+  const gradeRef = React.useRef<GradeControlsHandle | null>(null);
+  // Save-on-navigate for the exit paths (mirrors guardNav in FocusedGrader): flush a dirty
+  // draft, stay open if the save failed, warn when a feedback-only draft is discarded.
+  const guardedExit = async () => {
+    const outcome = (await gradeRef.current?.flush()) ?? 'clean';
+    if (outcome === 'failed') return;
+    if (outcome === 'unsaveable') message.warning('Draft discarded — enter valid points to record a grade.');
+    exitGrading();
+  };
   // Advance to the next pending response (across attempts), or stay on a graded last item.
+  // Runs in the click-handler closure, so `queue` is the pre-save snapshot — exactly what
+  // nextInQueue() needs (the just-graded response must still be present to find its successor).
   const goNext = () => {
     const nx = focusId != null ? nextInQueue(queue, focusId) : queue[0];
     if (!nx) {
-      message.success('All caught up — nothing else needs grading.');
+      message.success(
+        sectionEmails != null
+          ? 'All caught up in your section — nothing else there needs grading.'
+          : 'All caught up — nothing else needs grading.',
+      );
       return;
     }
     const attempt = visibleAttempts.find((a) => a.id === nx.attemptId);
@@ -174,22 +211,7 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     );
   }
 
-  const gradeContent = current ? (
-    <FocusedGrader
-      attempt={current}
-      focusResponseId={focusId ?? current.responses[0]?.id ?? 0}
-      queuePos={focusId != null ? queuePosition(queue, focusId) : 0}
-      queueTotal={queue.length}
-      hasNext={focusId != null && !!nextInQueue(queue, focusId)}
-      onNavigate={setFocusId}
-      onNext={goNext}
-      onExit={exitGrading}
-      onGraded={handleGraded}
-      onRunUpdate={setCurrent}
-      onSetOfficial={setOfficial}
-      pinning={pinning}
-    />
-  ) : (
+  const gradeContent = (
     <GradingQueue
       attempts={queueListAttempts}
       queue={queue}
@@ -203,6 +225,7 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   );
 
   return (
+    <>
     <Tabs
       activeKey={topTab}
       onChange={setTopTab}
@@ -234,6 +257,41 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
         },
       ]}
     />
+    {/* The focused grader takes over the whole screen; it portals to document.body so it
+        escapes the constrained admin/grader layouts identically from both consoles. While it
+        is open, `current` is a local snapshot — background refetches from refresh() only
+        re-derive the queue counts and never yank the open attempt. The Overview tab is
+        unreachable while open (the drawer covers the Tabs), so no flush hook is needed there. */}
+    <Drawer
+      open={current != null}
+      width="100%"
+      placement="right"
+      closable={false}
+      maskClosable={false}
+      keyboard
+      destroyOnHidden
+      onClose={() => void guardedExit()}
+      styles={{ body: { padding: 0, height: '100%', overflow: 'hidden' } }}
+    >
+      {current && (
+        <FocusedGrader
+          attempt={current}
+          focusResponseId={focusId ?? current.responses[0]?.id ?? 0}
+          queuePos={focusId != null ? queuePosition(queue, focusId) : 0}
+          queueTotal={queue.length}
+          hasNext={focusId != null && !!nextInQueue(queue, focusId)}
+          onNavigate={setFocusId}
+          onNext={goNext}
+          onExit={exitGrading}
+          onGraded={handleGraded}
+          onRunUpdate={setCurrent}
+          onSetOfficial={setOfficial}
+          pinning={pinning}
+          gradeRef={gradeRef}
+        />
+      )}
+    </Drawer>
+    </>
   );
 };
 

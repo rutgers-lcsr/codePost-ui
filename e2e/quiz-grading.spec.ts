@@ -38,8 +38,9 @@ test.describe('staff quiz grading', () => {
     await ipage.getByRole('tab', { name: /Grading \(\d+\)/ }).click();
 
     // Grade tab: the queue (needs-grading only, by default) lists the pending attempt; open
-    // it into the focused grader.
+    // it into the focused grader, which takes over the screen in a full-height drawer.
     await ipage.getByTestId('grading-open-attempt').first().click();
+    await expect(ipage.getByTestId('grading-drawer')).toBeVisible();
     await expect(ipage.getByTestId('grading-attempt-score')).toBeVisible();
 
     // Grade the essay: 4 / 5 with feedback. (antd InputNumber may put the testid on the
@@ -60,13 +61,13 @@ test.describe('staff quiz grading', () => {
     await expect(ipage.getByTestId('grading-attempt-score')).toContainText(/0(\.0+)? \/ 5/);
     await expect(ipage.getByTestId('grade-feedback')).toHaveValue(/Good work/);
 
-    // Regrade at 4.5.
+    // Regrade at 4.5, then leave via the back button WITHOUT clicking the save/next button:
+    // save-on-navigate must flush the dirty grade before closing the drawer.
     await pointsInput.fill('4.5');
-    await ipage.getByTestId('grade-save').click();
-    await expect(ipage.getByTestId('grading-attempt-score')).toContainText(/4\.50? \/ 5/);
-
-    // ── Overview → Results: official score row + CSV export enabled ────────
     await ipage.getByTestId('grading-back').click();
+    await expect(ipage.getByTestId('grading-drawer')).toBeHidden();
+
+    // ── Overview → Results: official score row (proves the flush landed) ───
     await ipage.getByRole('tab', { name: 'Overview' }).click();
     await ipage.getByRole('tab', { name: 'Results' }).click();
     const row = ipage.getByTestId('results-table').locator('tr', { hasText: 'student_only@dev.edu' });

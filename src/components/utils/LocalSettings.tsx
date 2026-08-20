@@ -190,6 +190,27 @@ const wordWrap = generateSettingFunctions('wordWrap', false, booleanIParser, boo
 // defalut value: true
 const sidebarCollapsed = generateSettingFunctions('sidebarCollapsed', true, booleanIParser, booleanOParser);
 
+// key: quizGradeDock
+// return type: 'bottom' | 'side'. Where the quiz focused grader docks its points/feedback
+// panel: pinned below the question or beside it.
+// default value: 'bottom'
+const quizGradeDock = generateSettingFunctions<'bottom' | 'side'>(
+  'quizGradeDock',
+  'bottom',
+  (value) => value,
+  (value) => (value === 'side' ? 'side' : 'bottom'),
+);
+
+// key: quizGradeSideWidth
+// return type: int. Width (px) of the quiz grade panel when docked beside the question.
+// default value: 380
+const quizGradeSideWidth = generateSettingFunctions('quizGradeSideWidth', 380, intIParser, intOParser);
+
+// key: quizGradeBottomHeight
+// return type: int. Height (px) of the quiz grade panel when docked below the question.
+// default value: 190
+const quizGradeBottomHeight = generateSettingFunctions('quizGradeBottomHeight', 190, intIParser, intOParser);
+
 /******************************************************************************************************************/
 const LOCAL_SETTINGS = {
   darkMode,
@@ -209,6 +230,9 @@ const LOCAL_SETTINGS = {
   sendMeAConfirmationEmail,
   defaultPageSize,
   sidebarCollapsed,
+  quizGradeDock,
+  quizGradeSideWidth,
+  quizGradeBottomHeight,
 };
 
 export { LOCAL_SETTINGS, clearLocalSettings };
