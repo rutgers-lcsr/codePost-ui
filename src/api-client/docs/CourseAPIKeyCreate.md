@@ -4,8 +4,9 @@ Input serializer for creating a new course API key.
 
 ## Properties
 
-| Name   | Type   |
-| ------ | ------ |
-| `name` | string |
+| Name    | Type                                              |
+| ------- | ------------------------------------------------- |
+| `name`  | string                                            |
+| `scope` | [CourseAPIKeyScopeEnum](CourseAPIKeyScopeEnum.md) |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

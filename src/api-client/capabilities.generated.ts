@@ -74,7 +74,8 @@ export const CAPABILITY_DESCRIPTIONS: Record<Capability, string> = {
   view_audit_log: 'View and export the course-level audit log of student and grader activity.',
   change_invite_code: 'Regenerate the course join invite code.',
   manage_course_api_keys: 'Create, revoke, and manage course-scoped API keys.',
-  grade_quiz: 'View quiz attempts and manually grade essay/code responses (course admins and quiz graders).',
+  grade_quiz:
+    "View quiz attempts and manually grade essay/code responses (course admins and all graders by default; only designated quiz graders when the course's graders-can-grade-quizzes setting is off).",
   generate_ai_quiz_questions:
     "Request AI-suggested quiz questions for a question bank or an existing question (requires the course's quiz_generation AI feature to be on).",
   generate_personalized_quiz_questions:

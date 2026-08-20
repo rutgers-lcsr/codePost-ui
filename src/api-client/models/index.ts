@@ -2126,6 +2126,148 @@ export interface AsyncTaskResponse {
 /**
  *
  * @export
+ * @interface AutogradingLanguageFailure
+ */
+export interface AutogradingLanguageFailure {
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingLanguageFailure
+   */
+  language: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingLanguageFailure
+   */
+  executions: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingLanguageFailure
+   */
+  failures: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingLanguageFailure
+   */
+  failureRate: number;
+}
+/**
+ *
+ * @export
+ * @interface AutogradingLanguageUsage
+ */
+export interface AutogradingLanguageUsage {
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingLanguageUsage
+   */
+  language: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingLanguageUsage
+   */
+  count: number;
+}
+/**
+ *
+ * @export
+ * @interface AutogradingStats
+ */
+export interface AutogradingStats {
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingStats
+   */
+  dateFrom: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingStats
+   */
+  dateTo: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingStats
+   */
+  totalRequests: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingStats
+   */
+  cacheHits: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingStats
+   */
+  actualExecutions: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingStats
+   */
+  cacheHitRate: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingStats
+   */
+  failedExecutions: number;
+  /**
+   *
+   * @type {Array<AutogradingLanguageUsage>}
+   * @memberof AutogradingStats
+   */
+  languageUsage: Array<AutogradingLanguageUsage>;
+  /**
+   *
+   * @type {Array<AutogradingLanguageFailure>}
+   * @memberof AutogradingStats
+   */
+  failuresPerLanguage: Array<AutogradingLanguageFailure>;
+  /**
+   *
+   * @type {Array<AutogradingTopError>}
+   * @memberof AutogradingStats
+   */
+  topErrors: Array<AutogradingTopError>;
+}
+/**
+ *
+ * @export
+ * @interface AutogradingTopError
+ */
+export interface AutogradingTopError {
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingTopError
+   */
+  category: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingTopError
+   */
+  count: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingTopError
+   */
+  sampleMessage: string;
+}
+/**
+ *
+ * @export
  * @interface BackfillPreviewResponse
  */
 export interface BackfillPreviewResponse {
@@ -3435,6 +3577,12 @@ export interface Course {
    */
   allowGradersToEditRubric?: boolean;
   /**
+   * A boolean field. If True (default), all course graders may view and grade quiz attempts. If False, quiz grading is restricted to course admins and the designated quizGraders.
+   * @type {boolean}
+   * @memberof Course
+   */
+  gradersCanGradeQuizzes?: boolean;
+  /**
    * An integer representing the minimum number of comments that graders are asked to make prior to finalizing. 0 indicates no minimum.
    * @type {number}
    * @memberof Course
@@ -3683,7 +3831,14 @@ export interface CourseAPIKeyCreate {
    * @memberof CourseAPIKeyCreate
    */
   name: string;
+  /**
+   *
+   * @type {CourseAPIKeyScopeEnum}
+   * @memberof CourseAPIKeyCreate
+   */
+  scope?: CourseAPIKeyScopeEnum;
 }
+
 /**
  * Response serializer that includes the raw key (shown only once).
  * @export
@@ -3714,6 +3869,12 @@ export interface CourseAPIKeyCreateResponse {
    * @memberof CourseAPIKeyCreateResponse
    */
   keyPrefix: string;
+  /**
+   *
+   * @type {string}
+   * @memberof CourseAPIKeyCreateResponse
+   */
+  scope: string;
   /**
    *
    * @type {string}
@@ -3758,6 +3919,16 @@ export interface CourseAPIKeyRead {
    */
   isActive?: boolean;
   /**
+   * How much this key may do. Agent tools are filtered by it: a key never even sees the tools above its scope. 'read' is the safe default.
+   *
+   * * `read` - Read only
+   * * `write` - Read and write (no deletes, no student email)
+   * * `admin` - Full course admin (deletes, resets, student email)
+   * @type {CourseAPIKeyScopeEnum}
+   * @memberof CourseAPIKeyRead
+   */
+  scope?: CourseAPIKeyScopeEnum;
+  /**
    * Last time this key was used to authenticate.
    * @type {string}
    * @memberof CourseAPIKeyRead
@@ -3782,6 +3953,20 @@ export interface CourseAPIKeyRead {
    */
   modified?: string;
 }
+
+/**
+ * * `read` - Read only
+ * * `write` - Read and write (no deletes, no student email)
+ * * `admin` - Full course admin (deletes, resets, student email)
+ * @export
+ * @enum {string}
+ */
+export enum CourseAPIKeyScopeEnum {
+  Read = 'read',
+  Write = 'write',
+  Admin = 'admin',
+}
+
 /**
  * Read-only serializer for course audit events.
  * @export
@@ -4093,6 +4278,12 @@ export interface CourseSettings {
    * @memberof CourseSettings
    */
   allowGradersToEditRubric?: boolean;
+  /**
+   * A boolean field. If True (default), all course graders may view and grade quiz attempts. If False, quiz grading is restricted to course admins and the designated quizGraders.
+   * @type {boolean}
+   * @memberof CourseSettings
+   */
+  gradersCanGradeQuizzes?: boolean;
   /**
    * If True, the course will not be editable.
    * @type {boolean}
@@ -7445,6 +7636,12 @@ export interface PatchedCourse {
    */
   allowGradersToEditRubric?: boolean;
   /**
+   * A boolean field. If True (default), all course graders may view and grade quiz attempts. If False, quiz grading is restricted to course admins and the designated quizGraders.
+   * @type {boolean}
+   * @memberof PatchedCourse
+   */
+  gradersCanGradeQuizzes?: boolean;
+  /**
    * An integer representing the minimum number of comments that graders are asked to make prior to finalizing. 0 indicates no minimum.
    * @type {number}
    * @memberof PatchedCourse
@@ -9008,6 +9205,12 @@ export interface PatchedQuiz {
    * @memberof PatchedQuiz
    */
   gradersCanReviewGenerated?: boolean;
+  /**
+   * If true, graders may trigger the Generate-missing backfill on this quiz (generation spends AI credits), letting them generate, review, and release sets for their section; if false, only course admins may generate.
+   * @type {boolean}
+   * @memberof PatchedQuiz
+   */
+  gradersCanGenerate?: boolean;
   /**
    * If true, per-student generated question sets are approved automatically on generation (no staff review gate).
    * @type {boolean}
@@ -11532,6 +11735,12 @@ export interface Quiz {
    */
   gradersCanReviewGenerated?: boolean;
   /**
+   * If true, graders may trigger the Generate-missing backfill on this quiz (generation spends AI credits), letting them generate, review, and release sets for their section; if false, only course admins may generate.
+   * @type {boolean}
+   * @memberof Quiz
+   */
+  gradersCanGenerate?: boolean;
+  /**
    * If true, per-student generated question sets are approved automatically on generation (no staff review gate).
    * @type {boolean}
    * @memberof Quiz
@@ -11763,6 +11972,99 @@ export interface QuizGeneratedSection {
    * @memberof QuizGeneratedSection
    */
   readonly datasetTruncationWarning: string | null;
+}
+/**
+ *
+ * @export
+ * @interface QuizGradingProgress
+ */
+export interface QuizGradingProgress {
+  /**
+   *
+   * @type {Array<QuizGradingProgressQuiz>}
+   * @memberof QuizGradingProgress
+   */
+  quizzes: Array<QuizGradingProgressQuiz>;
+  /**
+   *
+   * @type {Array<QuizGradingProgressGrader>}
+   * @memberof QuizGradingProgress
+   */
+  graders: Array<QuizGradingProgressGrader>;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgress
+   */
+  pendingUngraded: number;
+}
+/**
+ *
+ * @export
+ * @interface QuizGradingProgressGrader
+ */
+export interface QuizGradingProgressGrader {
+  /**
+   *
+   * @type {string}
+   * @memberof QuizGradingProgressGrader
+   */
+  grader: string;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgressGrader
+   */
+  totalGraded: number;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizGradingProgressGrader
+   */
+  lastGradedAt: string | null;
+  /**
+   *
+   * @type {{ [key: string]: number | undefined; }}
+   * @memberof QuizGradingProgressGrader
+   */
+  perQuiz: { [key: string]: number | undefined };
+}
+/**
+ *
+ * @export
+ * @interface QuizGradingProgressQuiz
+ */
+export interface QuizGradingProgressQuiz {
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgressQuiz
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof QuizGradingProgressQuiz
+   */
+  title: string;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgressQuiz
+   */
+  totalManual: number;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgressQuiz
+   */
+  graded: number;
+  /**
+   *
+   * @type {number}
+   * @memberof QuizGradingProgressQuiz
+   */
+  pending: number;
 }
 /**
  * Read view of an uploaded description image. ``url`` is the public, token-based
@@ -12878,10 +13180,10 @@ export interface StaffQuizAttempt {
 }
 
 /**
- * A response as staff (grading/review) sees it: adds the grader-only answer key and the
- * sandbox code-execution result. NEVER used for student-facing payloads — neither field is
- * in the student's Meta.fields, so StudentQuizResponseSerializer is structurally incapable
- * of exposing them.
+ * A response as staff (grading/review) sees it: adds the grader-only answer key, the
+ * sandbox code-execution result, and the grading provenance (gradedBy/gradedAt). NEVER used
+ * for student-facing payloads — none of these fields are in the student's Meta.fields, so
+ * StudentQuizResponseSerializer is structurally incapable of exposing them.
  * @export
  * @interface StaffQuizResponse
  */
@@ -12958,6 +13260,18 @@ export interface StaffQuizResponse {
    * @memberof StaffQuizResponse
    */
   readonly codeExecution: any | null;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizResponse
+   */
+  readonly gradedBy: string;
+  /**
+   *
+   * @type {string}
+   * @memberof StaffQuizResponse
+   */
+  readonly gradedAt: string | null;
 }
 /**
  *

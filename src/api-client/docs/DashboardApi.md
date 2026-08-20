@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 | Method                                                                     | HTTP request                               | Description |
 | -------------------------------------------------------------------------- | ------------------------------------------ | ----------- |
 | [**approvePendingAdminCreate**](DashboardApi.md#approvependingadmincreate) | **POST** /dashboard/approve_pending_admin/ |             |
+| [**autogradingStatsRetrieve**](DashboardApi.md#autogradingstatsretrieve)   | **GET** /dashboard/autograding_stats/      |             |
 | [**deadlinesList**](DashboardApi.md#deadlineslist)                         | **GET** /dashboard/deadlines/              |             |
 | [**denyPendingAdminCreate**](DashboardApi.md#denypendingadmincreate)       | **POST** /dashboard/deny_pending_admin/    |             |
 | [**pendingAdminsList**](DashboardApi.md#pendingadminslist)                 | **GET** /dashboard/pending_admins/         |             |
@@ -74,6 +75,80 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## autogradingStatsRetrieve
+
+> AutogradingStats autogradingStatsRetrieve(dateFrom, dateTo)
+
+Returns platform-wide autograder execution statistics: cache-hit rate, failure counts, language usage, failures per language, and top errors.
+
+### Example
+
+```ts
+import { Configuration, DashboardApi } from '';
+import type { AutogradingStatsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new DashboardApi(config);
+
+  const body = {
+    // string | Start of range (ISO 8601 datetime or date). Defaults to 30 days ago. (optional)
+    dateFrom: dateFrom_example,
+    // string | End of range (ISO 8601 datetime or date, exclusive). Defaults to now. (optional)
+    dateTo: dateTo_example,
+  } satisfies AutogradingStatsRetrieveRequest;
+
+  try {
+    const data = await api.autogradingStatsRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name         | Type     | Description                                                           | Notes                                |
+| ------------ | -------- | --------------------------------------------------------------------- | ------------------------------------ |
+| **dateFrom** | `string` | Start of range (ISO 8601 datetime or date). Defaults to 30 days ago.  | [Optional] [Defaults to `undefined`] |
+| **dateTo**   | `string` | End of range (ISO 8601 datetime or date, exclusive). Defaults to now. | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**AutogradingStats**](AutogradingStats.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 ### HTTP response details

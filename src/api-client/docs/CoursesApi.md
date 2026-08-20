@@ -30,6 +30,7 @@ All URIs are relative to *http://localhost*
 | [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/          |             |
 | [**questionsList**](CoursesApi.md#questionslist)                                         | **GET** /courses/{id}/questions/              |             |
 | [**quizAccommodationsList**](CoursesApi.md#quizaccommodationslist)                       | **GET** /courses/{id}/quizAccommodations/     |             |
+| [**quizGradingProgressRetrieve**](CoursesApi.md#quizgradingprogressretrieve)             | **GET** /courses/{id}/quizGradingProgress/    |             |
 | [**quizzesList**](CoursesApi.md#quizzeslist)                                             | **GET** /courses/{id}/quizzes/                |             |
 | [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/     |             |
 | [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                        |             |
@@ -1990,6 +1991,77 @@ example().catch(console.error);
 ### Return type
 
 [**Array&lt;QuizAccommodationRow&gt;**](QuizAccommodationRow.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## quizGradingProgressRetrieve
+
+> QuizGradingProgress quizGradingProgressRetrieve(id)
+
+Per-grader manual quiz-grading progress across the course\&#39;s published quizzes (submitted attempts only). perQuiz keys are quiz ids; graders who left the course keep their rows (accountability, not a roster).
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { QuizGradingProgressRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies QuizGradingProgressRetrieveRequest;
+
+  try {
+    const data = await api.quizGradingProgressRetrieve(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**QuizGradingProgress**](QuizGradingProgress.md)
 
 ### Authorization
 

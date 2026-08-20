@@ -10,6 +10,7 @@ Response serializer that includes the raw key (shown only once).
 | `name`      | string |
 | `key`       | string |
 | `keyPrefix` | string |
+| `scope`     | string |
 | `createdBy` | string |
 | `created`   | string |
 

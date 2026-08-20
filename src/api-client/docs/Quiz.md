@@ -33,6 +33,7 @@
 | `multiAttemptScoreMethod`   | [QuizMultiAttemptScoreMethodEnum](QuizMultiAttemptScoreMethodEnum.md) |
 | `isPublished`               | boolean                                                               |
 | `gradersCanReviewGenerated` | boolean                                                               |
+| `gradersCanGenerate`        | boolean                                                               |
 | `autoPublishGenerated`      | boolean                                                               |
 | `manualGeneration`          | boolean                                                               |
 | `generationDate`            | string                                                                |

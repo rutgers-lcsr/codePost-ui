@@ -15,6 +15,7 @@
 | `emailNewUsers`                      | boolean                  |
 | `anonymousGradingDefault`            | boolean                  |
 | `allowGradersToEditRubric`           | boolean                  |
+| `gradersCanGradeQuizzes`             | boolean                  |
 | `minComments`                        | number                   |
 | `noUnfinalize`                       | boolean                  |
 | `archived`                           | boolean                  |

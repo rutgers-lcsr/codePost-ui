@@ -114,6 +114,10 @@ docs/AsyncExecutionRequest.md
 docs/AsyncTaskResponse.md
 docs/AuthApi.md
 docs/AutograderApi.md
+docs/AutogradingLanguageFailure.md
+docs/AutogradingLanguageUsage.md
+docs/AutogradingStats.md
+docs/AutogradingTopError.md
 docs/BackfillPreviewResponse.md
 docs/BankCopyRequest.md
 docs/BankQuestionsRequest.md
@@ -140,6 +144,7 @@ docs/CourseAISettings.md
 docs/CourseAPIKeyCreate.md
 docs/CourseAPIKeyCreateResponse.md
 docs/CourseAPIKeyRead.md
+docs/CourseAPIKeyScopeEnum.md
 docs/CourseAuditEvent.md
 docs/CourseFile.md
 docs/CourseFilesApi.md
@@ -318,6 +323,9 @@ docs/QuizAvailability.md
 docs/QuizCloseEventEnum.md
 docs/QuizGeneratedSection.md
 docs/QuizGeneratedSectionsApi.md
+docs/QuizGradingProgress.md
+docs/QuizGradingProgressGrader.md
+docs/QuizGradingProgressQuiz.md
 docs/QuizImage.md
 docs/QuizImagesApi.md
 docs/QuizImportJob.md
