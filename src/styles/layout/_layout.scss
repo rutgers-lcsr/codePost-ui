@@ -375,7 +375,9 @@
 }
 
 .layout--standard-console {
-  min-height: 100%;
+  // A resolved height (not min-height) so the inner `calc(100% - 49px)` console body can
+  // size itself — keeps the bottom bar reachable when the app is embedded in an iframe.
+  height: 100%;
 
   &__sider {
     background-color: #fff;

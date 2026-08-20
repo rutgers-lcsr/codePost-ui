@@ -169,7 +169,9 @@ const StandardConsoleLayout = (props: IStandardConsoleLayoutProps) => {
         >
           {props.header}
         </Header>
-        <Layout style={{ overflowX: 'hidden', height: 'calc(100vh - 49px)', overflow: 'hidden', flexDirection: 'row' }}>
+        {/* 100% (not 100vh) so the console honestly fills its container — inside an iframe,
+            100vh is the iframe's own box, which can extend past the embedder's visible area. */}
+        <Layout style={{ overflowX: 'hidden', height: 'calc(100% - 49px)', overflow: 'hidden', flexDirection: 'row' }}>
           {backToSubmissionsButton}
           <div
             id="Code-Header"
