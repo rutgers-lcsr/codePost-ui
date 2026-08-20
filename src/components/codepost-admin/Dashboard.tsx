@@ -14,6 +14,7 @@ import {
   RiseOutlined,
   ApiOutlined,
   RobotOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import {
   Badge,
@@ -54,6 +55,7 @@ import AIUsageDashboard from '../core/AIUsageDashboard';
 import { AIUsageService } from '../../services/aiUsage';
 import PendingAdminsTable from './PendingAdminsTable';
 import PromptLab from './PromptLab';
+import AutogradingStats from './AutogradingStats';
 
 import type { RosterType, UserType } from '../../types/models';
 import { Organization, Course } from '../../api-client';
@@ -72,6 +74,7 @@ type TabType =
   | 'Users'
   | 'Activity'
   | 'Deploy Calendar'
+  | 'Autograding'
   | 'System Health'
   | 'Banner'
   | 'API'
@@ -515,6 +518,16 @@ const Dashboard = () => {
         return <ActivityFeed />;
       case 'Deploy Calendar':
         return <DeployCalendar />;
+      case 'Autograding':
+        return (
+          <div style={{ padding: 24 }}>
+            <AdminPageHeader
+              title="Autograding"
+              subtitle="Cache efficiency, language usage, and failure diagnostics for the autograder."
+            />
+            <AutogradingStats />
+          </div>
+        );
       case 'System Health':
         return (
           <div style={{ padding: 24 }}>
@@ -666,6 +679,11 @@ const Dashboard = () => {
                     key: 'Deploy Calendar',
                     icon: <CalendarOutlined />,
                     label: 'Deploy Calendar',
+                  },
+                  {
+                    key: 'Autograding',
+                    icon: <ThunderboltOutlined />,
+                    label: 'Autograding',
                   },
                   {
                     key: 'System Health',
