@@ -206,6 +206,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       timezone: values.timezone,
       emailNewUsers: values.emailNewUsers,
       anonymousGradingDefault: values.anonymousGradingDefault,
+      gradersCanGradeQuizzes: values.gradersCanGradeQuizzes,
       lateDayCreditsAllowable: values.lateDayCreditsAllowable,
       assignments: [],
       sections: [],
@@ -353,6 +354,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
   const sendReleasedSubmissionsToBack = Form.useWatch('sendReleasedSubmissionsToBack', form);
   const emailNewUsers = Form.useWatch('emailNewUsers', form);
   const anonymousGradingDefault = Form.useWatch('anonymousGradingDefault', form);
+  const gradersCanGradeQuizzes = Form.useWatch('gradersCanGradeQuizzes', form);
   const archived = Form.useWatch('archived', form);
 
   const settingsData = [
@@ -385,6 +387,15 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       description: 'New assignments will default to Anonymous Grading Mode. This can be toggled per-assignment.',
       enabled: anonymousGradingDefault ?? thisCourse.anonymousGradingDefault,
       initialValue: thisCourse.anonymousGradingDefault,
+    },
+    {
+      key: 'gradersCanGradeQuizzes',
+      title: 'Graders Can Grade Quizzes',
+      description:
+        'All graders can view and grade quiz responses (essay/code). Turn off to grant quiz ' +
+        'grading per-grader via the Quiz Grader role on the Graders roster page.',
+      enabled: gradersCanGradeQuizzes ?? thisCourse.gradersCanGradeQuizzes ?? true,
+      initialValue: thisCourse.gradersCanGradeQuizzes ?? true,
     },
     {
       key: 'archived',

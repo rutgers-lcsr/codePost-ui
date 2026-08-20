@@ -10,7 +10,7 @@ import { useMemo, useCallback } from 'react';
 import { DisconnectOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
+import { Alert, Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -68,6 +68,9 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
   const { updateRoster } = props;
   const courseCaps = useCourseCapabilities(props.currentCourse?.id);
   const canManageRoster = courseCaps.manage_roster !== false;
+  // Default on: every grader can grade quizzes, so the per-grader Quiz Grader role column
+  // is hidden (it only applies while the course setting is off).
+  const allGradersCanGradeQuizzes = props.currentCourse.gradersCanGradeQuizzes ?? true;
 
   const sendActivationEmail = useCallback(
     (grader: string) => {
@@ -259,23 +262,30 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
           a.isRubricEditor === b.isRubricEditor ? 0 : a.isRubricEditor ? -1 : 1,
       },
-      {
-        title: (
-          <div>
-            Quiz Grader{' '}
-            <CPTooltip
-              title="Quiz graders can grade quiz responses (essay/code). Assignment graders can't grade quizzes without this role."
-              infoIcon={true}
-              hideThisOnHideTips={true}
-            />
-          </div>
-        ),
-        dataIndex: 'quizGraderStatus',
-        key: 'quizGraderStatus',
-        align: aligner,
-        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
-          a.isQuizGrader === b.isQuizGrader ? 0 : a.isQuizGrader ? -1 : 1,
-      },
+      // The Quiz Grader role only matters while the course restricts quiz grading — with
+      // the (default-on) gradersCanGradeQuizzes setting every grader can grade, so the
+      // column would be noise (a hint above the table points at Course Settings instead).
+      ...(!allGradersCanGradeQuizzes
+        ? [
+            {
+              title: (
+                <div>
+                  Quiz Grader{' '}
+                  <CPTooltip
+                    title="Quiz graders can grade quiz responses (essay/code). While the course's Graders Can Grade Quizzes setting is off, other graders can't grade quizzes without this role."
+                    infoIcon={true}
+                    hideThisOnHideTips={true}
+                  />
+                </div>
+              ),
+              dataIndex: 'quizGraderStatus',
+              key: 'quizGraderStatus',
+              align: aligner,
+              sorter: (a: Record<string, unknown>, b: Record<string, unknown>) =>
+                a.isQuizGrader === b.isQuizGrader ? 0 : a.isQuizGrader ? -1 : 1,
+            },
+          ]
+        : []),
       {
         title: 'Actions',
         dataIndex: 'actions',
@@ -334,7 +344,7 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
       );
 
       const isQuizGrader = props.quizGraders.includes(graderEmail);
-      const quizGraderStatusElement = isQuizGrader ? (
+      const quizGraderStatusElement = allGradersCanGradeQuizzes ? null : isQuizGrader ? (
         <Popconfirm
           title="Remove Quiz Grader access?"
           onConfirm={() => toggleQuizGrader(graderEmail, false)}
@@ -394,6 +404,22 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
   return (
     <TableDetail
       title={'Graders'}
+      beforeTable={
+        allGradersCanGradeQuizzes ? (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message={
+              <span>
+                All graders in this course can grade quizzes. To restrict quiz grading to specific
+                graders, turn off &quot;Graders Can Grade Quizzes&quot; in{' '}
+                <Link to={location.pathname.replace('roster/graders', 'settings')}>Course Settings</Link>.
+              </span>
+            }
+          />
+        ) : undefined
+      }
       loadComplete={props.loadComplete}
       isEmpty={props.graders.length === 0}
       emptyNode={
