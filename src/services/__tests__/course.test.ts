@@ -150,7 +150,7 @@ describe('Course service', () => {
       expect(result).toEqual(keys);
     });
 
-    it('createAPIKey sends POST with name', async () => {
+    it('createAPIKey sends POST with name and scope', async () => {
       const created = { id: 2, name: 'new-key', key: 'raw-key-value' };
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
@@ -164,10 +164,27 @@ describe('Course service', () => {
         'https://api.example.com/courses/42/apiKeys/',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ name: 'new-key' }),
+          body: JSON.stringify({ name: 'new-key', scope: 'read' }),
         }),
       );
       expect(result).toEqual(created);
+    });
+
+    it('createAPIKey forwards an explicit scope', async () => {
+      vi.mocked(fetch).mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: () => Promise.resolve({ id: 3, name: 'agent-key', key: 'raw', scope: 'write' }),
+      } as Response);
+
+      await Course.createAPIKey(42, 'agent-key', 'write');
+
+      expect(fetch).toHaveBeenCalledWith(
+        'https://api.example.com/courses/42/apiKeys/',
+        expect.objectContaining({
+          body: JSON.stringify({ name: 'agent-key', scope: 'write' }),
+        }),
+      );
     });
 
     it('updateAPIKey sends PATCH', async () => {
