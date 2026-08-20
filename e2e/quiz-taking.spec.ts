@@ -50,10 +50,17 @@ test.describe('student quiz taking', () => {
   test('every answer input renders, and a mixed quiz submits as pending grading', async ({ page }) => {
     await openQuiz(page, 'QT · All question types');
 
+    // Nothing is answered yet — in particular the code question, whose editor is pre-filled with
+    // the starter code the server seeds as its answer, must not count.
+    const progress = page.getByTestId('quiz-progress');
+    await expect(progress).toContainText('0/7');
+
     await answerAutoCorrect(page);
     await page.locator('[data-question-type="essay"] [data-testid="quiz-answer-text"]').fill('A stack is LIFO; a queue is FIFO.');
     // The code editor (Monaco) renders with the starter code pre-filled — just confirm it's there.
     await expect(page.locator('[data-question-type="code"] [data-testid="quiz-answer-code"]')).toBeVisible();
+    // Six of seven: the untouched code question is still not counted.
+    await expect(progress).toContainText('6/7');
 
     await submitQuiz(page);
     // Essay + code ⇒ manual grading, so no numeric score yet.

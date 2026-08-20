@@ -25,6 +25,17 @@ export const initialAnswer = (response: StudentQuizResponse): AnswerValue => {
   return { answerText, selectedChoices: [...response.selectedChoices] };
 };
 
+/** Whether a response counts as answered for the progress bar. Mirrors `initialAnswer`: a code
+ *  question opens pre-filled with its starter code, so unedited starter code is not an answer. */
+export const isAnswered = (response: StudentQuizResponse, value: AnswerValue): boolean => {
+  if (value.selectedChoices.length > 0) return true;
+  const text = value.answerText.trim();
+  if (text === '') return false;
+  if (response.question.questionType === QuestionTypeEnum.Code)
+    return text !== (response.question.starterCode ?? '').trim();
+  return true;
+};
+
 interface IProps {
   response: StudentQuizResponse;
   index: number;

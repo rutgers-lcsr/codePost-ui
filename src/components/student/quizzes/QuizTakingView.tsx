@@ -11,7 +11,7 @@ import { apiErrorMessage } from '../../../lib/apiError';
 import { studentKeys } from '../../../lib/queryKeys';
 import { parseAccessCode403 } from './accessCode';
 import { bySortKey } from '../../core/questionMeta';
-import { AnswerValue, initialAnswer } from './QuestionAnswerer';
+import { AnswerValue, initialAnswer, isAnswered } from './QuestionAnswerer';
 import QuizQuestions from './QuizQuestions';
 import QuizResults from './QuizResults';
 
@@ -547,9 +547,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
   }
 
   const responses = [...attempt.responses].sort(bySortKey);
-  const answeredCount = responses.filter(
-    (r) => (answers[r.id]?.answerText ?? '').trim() !== '' || (answers[r.id]?.selectedChoices.length ?? 0) > 0,
-  ).length;
+  const answeredCount = responses.filter((r) => isAnswered(r, answers[r.id] ?? initialAnswer(r))).length;
 
   return (
     <main style={{ maxWidth: 860, margin: '0 auto', padding: 24 }} data-testid="quiz-taking">
@@ -609,6 +607,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         format={() => `${answeredCount}/${responses.length}`}
         // Name + real count for AT — the bare progressbar otherwise announces only "60".
         aria-label={`Questions answered: ${answeredCount} of ${responses.length}`}
+        data-testid="quiz-progress"
         style={{ marginBottom: 16 }}
       />
 
