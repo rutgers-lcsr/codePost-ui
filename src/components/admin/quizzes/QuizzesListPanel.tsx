@@ -1,15 +1,14 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Button, Empty, Flex, Form, Input, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Button, Empty, Flex, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
 import { DeleteOutlined, EditOutlined, FileDoneOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { quizzesApi } from '../../../api-client/clients';
-import { Quiz } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { Course, Quiz } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useBackfillPreview, useCourseQuizzes } from './queries';
-import MarkdownField from './MarkdownField';
+import QuizCreateWizard from './create/QuizCreateWizard';
 import PanelCard from './PanelCard';
 
 /** Red "N missing" tag for a quiz whose students lack generated question sets — those
@@ -28,49 +27,22 @@ const MissingSetsTag: React.FC<{ quizId: number }> = ({ quizId }) => {
 };
 
 interface IProps {
-  courseId: number;
+  course: Course;
   selectedQuizId?: number;
   onSelect: (quiz: Quiz | undefined) => void;
 }
 
-interface IQuizForm {
-  title: string;
-  description?: string;
-}
-
-const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect }) => {
+const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }) => {
+  const courseId = course.id!;
   const queryClient = useQueryClient();
   const { data: quizzes = [], isLoading } = useCourseQuizzes(courseId);
-  const [form] = Form.useForm<IQuizForm>();
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
+  // Quizzes are created through the wizard (all settings up front, or Skip & create);
+  // everything remains editable in the builder's Quiz Settings.
+  const [wizardOpen, setWizardOpen] = React.useState(false);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
 
-  const openCreate = () => {
-    form.resetFields();
-    setModalOpen(true);
-  };
-
-  // Quizzes are created here; title/description/assignment are edited in the builder's
-  // Quiz Settings (select a quiz on the right).
-  const handleCreate = async () => {
-    const values = await form.validateFields();
-    setSaving(true);
-    try {
-      const created = await quizzesApi.create({
-        quiz: { course: courseId, title: values.title, description: values.description },
-      });
-      message.success('Quiz created.');
-      setModalOpen(false);
-      invalidate();
-      onSelect(created);
-    } catch (err) {
-      message.error(apiErrorMessage(err, 'title') ?? 'Failed to create quiz.');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const openCreate = () => setWizardOpen(true);
 
   const handleDelete = (quiz: Quiz) => {
     Modal.confirm({
@@ -201,24 +173,16 @@ const QuizzesListPanel: React.FC<IProps> = ({ courseId, selectedQuizId, onSelect
         )}
       </PanelCard>
 
-      <Modal
-        title="New Quiz"
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={handleCreate}
-        okText="Create"
-        confirmLoading={saving}
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Please name the quiz.' }]}>
-            <Input placeholder="e.g., Week 1 Quiz" maxLength={128} />
-          </Form.Item>
-          <Form.Item name="description" label="Description (optional, Markdown)">
-            <MarkdownField courseId={courseId} minRows={3} placeholder="What this quiz covers — supports Markdown and images…" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <QuizCreateWizard
+        open={wizardOpen}
+        course={course}
+        onCancel={() => setWizardOpen(false)}
+        onCreated={(created) => {
+          setWizardOpen(false);
+          invalidate();
+          onSelect(created);
+        }}
+      />
     </>
   );
 };

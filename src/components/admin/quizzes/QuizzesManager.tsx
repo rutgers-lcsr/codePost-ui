@@ -37,7 +37,7 @@ const QuizzesManager: React.FC<IProps> = ({ course }) => {
   const quizzesTab = (
     <Row gutter={24}>
       <Col xs={24} lg={9}>
-        <QuizzesListPanel courseId={course.id!} selectedQuizId={selectedQuiz?.id} onSelect={setSelectedQuiz} />
+        <QuizzesListPanel course={course} selectedQuizId={selectedQuiz?.id} onSelect={setSelectedQuiz} />
       </Col>
       <Col xs={24} lg={15}>
         {selectedQuiz ? (

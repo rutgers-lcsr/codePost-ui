@@ -99,8 +99,15 @@ keeping its identity and bank/quiz memberships. This is handy for reusing a bank
 
 ## Build a quiz
 
-On the **Quizzes** tab, create a quiz, then work through the quiz builder's four tabs:
-**Settings**, **Questions**, **Grading**, and **Review**.
+On the **Quizzes** tab, **New Quiz** opens a short setup workflow — **Basics**, **Availability**,
+**Attempts**, **Results**, **Security**, **AI questions**, and a final **Review** — so the quiz is
+created already configured the way you want it. Only a title is required: **Skip & create** on any
+step creates the quiz immediately with the defaults, and the Review step lets you **create as a
+draft** or **create & publish** in one go. Every choice remains editable afterwards in the builder's
+**Settings** tab.
+
+After creating the quiz, work through the quiz builder's four tabs: **Settings**, **Questions**,
+**Grading**, and **Review**.
 
 ### Settings
 
