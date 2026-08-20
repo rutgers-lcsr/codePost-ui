@@ -16,10 +16,10 @@ import {
   sectionOptions,
 } from './gradebookMath';
 import { useGradebook } from './queries';
+import { PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
+import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
 const { Text, Title } = Typography;
-
-const PAGE_SIZE = 50;
 
 const Muted: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Text type="secondary">{children}</Text>
@@ -71,6 +71,7 @@ interface ITableProps {
 export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
   const [search, setSearch] = React.useState('');
   const [section, setSection] = React.useState<string | undefined>(undefined);
+  const [pageSize, setPageSize] = useDefaultPageSize();
 
   const rows = React.useMemo(() => buildRows(data), [data]);
   const sections = React.useMemo(() => sectionOptions(rows), [rows]);
@@ -225,8 +226,11 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
         rowKey="student"
         size="small"
         pagination={{
-          pageSize: PAGE_SIZE,
+          pageSize,
           showSizeChanger: true,
+          pageSizeOptions: PAGE_SIZE_OPTIONS,
+          onShowSizeChange: (_current, size) => setPageSize(size),
+          onChange: (_page, size) => setPageSize(size),
           showTotal: (total) => `${total} student${total === 1 ? '' : 's'}`,
         }}
         scroll={{ x: 'max-content' }}
