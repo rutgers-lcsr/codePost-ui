@@ -12,6 +12,7 @@ import { test, expect, request } from '@playwright/test';
 import path from 'node:path';
 import { API_URL, BASE_URL } from '../constants';
 import { DOC_SHOTS } from './manifest';
+import { resolveCourseId, resolveEssayQuizId, seedQuizGrading, seedSectionsAndGraders } from './seed';
 
 const OUT_DIR = path.resolve(__dirname, '../../public/assets/docs');
 const AUTH_DIR = path.resolve(__dirname, '../.auth');
@@ -26,6 +27,43 @@ async function tokenFor(auth: 'student' | 'instructor'): Promise<string> {
   const state = require(authFile(auth));
   return state.origins[0].localStorage.find((e: { name: string }) => e.name === 'token').value;
 }
+
+/** A fresh JWT for a role the saved auth states don't cover (DEBUG-only dev endpoint). */
+async function tokenAsRole(role: string): Promise<string> {
+  const api = await request.newContext({ baseURL: API_URL });
+  const resp = await api.post('/dev-auth/login-as/', { data: { role } });
+  expect(resp.ok(), `dev-auth/login-as ${role} failed (${resp.status()})`).toBeTruthy();
+  const token = (await resp.json()).token as string;
+  await api.dispose();
+  return token;
+}
+
+// NOTE: run the whole project, not `-g <one shot>`. The setup project reseeds (which wipes
+// quiz attempts) on every run, and a -g filter drops the fixtures test below with it, so the
+// grading shots would then open an empty queue.
+//
+// Fixtures the global setup doesn't cover: the demo course has no sections and
+// seed_test_quizzes clears every attempt, so the sections matrix and both quiz grading
+// shots would capture empty states. Runs first — the config is workers: 1, serial.
+test('docs fixtures: sections, graders, and a quiz grading queue', async ({ browser }) => {
+  test.setTimeout(180_000);
+  const instructorApi = await request.newContext({
+    baseURL: API_URL,
+    extraHTTPHeaders: { Authorization: `Bearer ${await tokenFor('instructor')}` },
+  });
+  const graderApi = await request.newContext({
+    baseURL: API_URL,
+    extraHTTPHeaders: { Authorization: `Bearer ${await tokenAsRole('grader_basic')}` },
+  });
+  try {
+    const courseId = await resolveCourseId(instructorApi);
+    await seedSectionsAndGraders(instructorApi, courseId);
+    await seedQuizGrading(browser, graderApi, await resolveEssayQuizId(instructorApi, courseId));
+  } finally {
+    await instructorApi.dispose();
+    await graderApi.dispose();
+  }
+});
 
 for (const shot of DOC_SHOTS) {
   test(`docs screenshot: ${shot.file}`, async ({ browser }) => {

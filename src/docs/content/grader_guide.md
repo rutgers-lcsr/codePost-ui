@@ -182,18 +182,41 @@ person. Everything else (multiple choice, true/false, short answer, numerical) i
 the student submits, so you only ever see the responses that genuinely need a human.
 
 > [!IMPORTANT]
-> Grading quizzes requires the **Quiz Grader** role. Being an assignment grader is **not** enough —
-> an instructor has to grant Quiz Grader in Roster → Graders. Once granted, a **Quiz Grading** item
-> appears in your grader navigation. (Course admins can always grade quizzes.)
+> Graders can grade quizzes by default — if a **Quiz Grading** item appears in your grader
+> navigation, you have access. Some courses restrict it: the instructor turns off *Graders Can
+> Grade Quizzes* and grants the **Quiz Grader** role per grader in Roster → Graders. If you don't
+> see the nav item, ask your instructor for that role.
 
 To grade:
 
 1. Open **Quiz Grading** and pick a quiz — its "needs grading" count is shown.
-2. Work through the responses. For each essay/code response, assign points and optionally leave
-   **feedback** for the student.
-3. Use **Grade and next** to jump straight to the next response awaiting grading.
-4. Use **Reopen** to undo a grade you already saved and send it back to the queue (your feedback is
+2. If the course uses sections, set the **section filter** to your own students. codePost remembers
+   the choice per course, so you land on the same section next time.
+3. Pick an attempt. The **focused grader** opens full-height on one response at a time: assign
+   points and optionally leave **feedback** for the student.
+4. Press **Next** (**Finish** on the last one) or `⌘/Ctrl + Enter` to save and move to the next
+   response awaiting grading. **Skip** moves on without grading.
+5. Use **Reopen** to undo a grade you already saved and send it back to the queue (your feedback is
    kept as a draft).
+
+![The focused quiz grader, showing one response with the points and feedback panel](/assets/docs/instructor_quiz_focused_grader.png)
+
+While you are in the focused grader:
+
+- The header shows the student, their attempt number, the running score, and how far through the
+  queue you are.
+- The numbered **chips** jump to any other question in the same attempt — a dot means it still
+  needs grading, a check means it is done.
+- **Grade below** / **Grade beside** moves the points-and-feedback panel under the question or
+  beside it; codePost remembers your choice and the panel size.
+- **Answer key (graders only)** expands the expected answer where the instructor provided one.
+  Students never see it.
+
+> [!TIP]
+> **You don't have to remember to save.** Navigating away — Next, a chip, back to the queue, or
+> closing the grader — saves the grade you have typed first. If the save fails you stay put, so
+> nothing is silently lost. The exception is feedback with no valid points, which can't be
+> recorded: enter points to save the grade.
 
 > [!TIP]
 > **Run a student's code.** On a **Code** response, use **Run code** to execute the student's

@@ -266,9 +266,35 @@ student submits. **Essay** and **Code** questions need a human — grade them on
 **Grading** tab:
 
 1. Open the **Grading** tab (its label shows a count of responses awaiting grading).
-2. For each essay/code response, assign points and optionally leave **feedback**.
-3. Use **Grade and next** to jump straight to the next response that needs grading.
-4. **Reopen** undoes a saved grade and sends it back to the queue (feedback is kept as a draft).
+2. If the course has sections, use the **section filter** to narrow the queue to your own
+   students. Your choice is remembered per course, so you come back to the same section next time.
+3. Pick an attempt to open the **focused grader** — a full-height workspace showing one response
+   at a time.
+4. Enter **points** and optional **feedback** for the student, then press **Next** (**Finish** on
+   the last one) or `⌘/Ctrl + Enter` to save and advance.
+5. **Reopen** undoes a saved grade and sends it back to the queue (feedback is kept as a draft).
+
+![The focused quiz grader, showing one response with the points and feedback panel](/assets/docs/instructor_quiz_focused_grader.png)
+
+Inside the focused grader:
+
+- The header carries the student, attempt number, running score, and your position in the queue
+  ("Response 3 of 12 to grade").
+- The numbered **chips** under the header jump to any question in the same attempt — useful for
+  context before you score. A dot means it still needs grading, a check means it is done.
+- **Grade below** / **Grade beside** moves the points-and-feedback panel under the question or next
+  to it. The choice and the panel's size are remembered for you across quizzes.
+- **Use as official grade** pins this attempt as the student's official one, overriding the quiz's
+  scoring policy (highest, latest, and so on). **Unpin official grade** hands it back to the policy.
+  A student can have at most one pinned attempt per quiz.
+- **Skip** moves on without grading.
+- **Queue** returns to the attempt list.
+
+> [!IMPORTANT]
+> **Your draft is saved when you navigate.** Moving to another response — Next, a chip, the queue,
+> or closing the grader — saves a grade you have typed but not yet submitted. If the save fails you
+> stay on the response so nothing is lost. The one case that cannot be saved is feedback with no
+> valid points: that draft is discarded with a warning, so enter points to record the grade.
 
 > [!TIP]
 > **Run a student's code.** On a **Code** response, use **Run code** to execute the student's answer
@@ -278,9 +304,25 @@ student submits. **Essay** and **Code** questions need a human — grade them on
 > work. This is grader-only and never shown to the student.
 
 > [!NOTE]
-> **Quiz graders.** By default an assignment grader **cannot** grade quizzes. Grant the **Quiz
-> Grader** role in Roster → Graders to let a TA grade essay/code responses from their own grader
-> console. Course admins can always grade quizzes. See the [Grader Guide](/docs/grader).
+> **Who can grade quizzes.** By default **every grader on the course can**, alongside course admins.
+> To restrict it, turn off **Graders Can Grade Quizzes** in Course Settings → Behavior; a **Quiz
+> Grader** column then appears in Roster → Graders so you can grant quiz grading one grader at a
+> time. Course admins can always grade quizzes. See the [Grader Guide](/docs/grader).
+
+## Track grading progress
+
+**Quizzes → Grading Progress** shows where a grading push stands across the whole course, without
+opening each quiz. Rows are graders; there is one column per published quiz that has manually
+graded (essay/code) responses.
+
+![The quiz grading progress page, one row per grader and one column per quiz](/assets/docs/instructor_quiz_grading_progress.png)
+
+- A banner reports how many responses are still awaiting grading across all quizzes.
+- **Responses Graded** and **% of All Grading** show each grader's share of the work, and **Last
+  Graded** how recently they worked.
+- Each quiz column shows that grader's `graded / total` with a progress bar.
+- Graders who have not started yet appear with zeros, and graders who have since left the course
+  keep their rows — the page is a record of who graded what, not a roster.
 
 ## Review results
 

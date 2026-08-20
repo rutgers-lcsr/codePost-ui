@@ -165,6 +165,34 @@ export const DOC_SHOTS: DocShot[] = [
     clipSelector: '.ant-result',
   },
   {
+    file: 'instructor_section_leaders.png',
+    auth: 'instructor',
+    path: `/admin/${course}/roster/sections/assign`,
+    readySelector: 'text=Assign Graders to Sections',
+  },
+  {
+    file: 'instructor_quiz_grading_progress.png',
+    auth: 'instructor',
+    path: `/admin/${course}/quizzes/grading-progress`,
+    readySelector: 'text=Quiz Grading Progress',
+  },
+  {
+    file: 'instructor_quiz_focused_grader.png',
+    auth: 'instructor',
+    path: `/admin/${course}/quizzes`,
+    readySelector: 'text=Question Banks',
+    prepare: async (page) => {
+      // The builder is selection-state, not a route: open the Quizzes tab, pick the seeded
+      // essay quiz, then open the first pending attempt from its Grading tab.
+      await page.getByRole('tab', { name: 'Quizzes', exact: true }).click();
+      await page.getByRole('cell', { name: 'QT · Essay · manual grading', exact: true }).click();
+      await page.getByRole('tab', { name: /Grading \(\d+\)/ }).click();
+      await page.getByTestId('grading-open-attempt').first().click();
+      await page.getByTestId('grading-drawer').waitFor({ timeout: 15_000 });
+    },
+    clipSelector: '[data-testid="grading-drawer"]',
+  },
+  {
     file: 'instructor_ai_settings.png',
     auth: 'instructor',
     path: `/admin/${course}/settings`,
