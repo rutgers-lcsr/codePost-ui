@@ -13,6 +13,7 @@ import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';
 import ManageGraders, { IManageGradersProps } from './ManageGraders';
 import ManageSections, { IManageSectionsProps } from './ManageSections';
 import ManageStudents, { IManageStudentsProps } from './ManageStudents';
+import AssignGradersMatrix from './sections/AssignGradersMatrix';
 
 /**********************************************************************************************************************/
 
@@ -25,6 +26,7 @@ const RosterManager = (props: IProps) => {
       <Route path="graders" element={<ManageGraders {...props} key="graders" />} />
       <Route path="admins" element={<ManageAdmins {...props} key="admins" />} />
       <Route path="sections" element={<ManageSections {...props} key="sections" />} />
+      <Route path="sections/assign" element={<AssignGradersMatrix {...props} key="sections-assign" />} />
     </Routes>
   );
 };

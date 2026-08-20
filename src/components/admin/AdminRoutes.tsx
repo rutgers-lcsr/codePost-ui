@@ -86,8 +86,9 @@ interface AdminRoutesProps {
 
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
 
-  createSection: (newSection: string) => Promise<Section>;
+  createSection: (newSection: string, students?: string[], leaders?: string[]) => Promise<Section>;
   updateSection: (toUpdate: Section) => Promise<void>;
+  updateSectionLeaders: (sectionID: number, leaders: string[]) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
   updateStudentSection: (studentEmail: string, sectionID: number) => Promise<void>;
 
@@ -188,6 +189,7 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
               updateRoster={props.updateRoster}
               sectionsByStudent={props.sectionsByStudent}
               updateSection={props.updateSection}
+              updateSectionLeaders={props.updateSectionLeaders}
               createSection={props.createSection}
               updateStudentSection={props.updateStudentSection}
               myEmail={props.myEmail}

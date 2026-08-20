@@ -412,12 +412,12 @@ const Admin: React.FC<IComponentProps> = (props) => {
   /* Section handling methods
   /***********************************************************************/
 
-  const createSection = (newSection: string, students: string[] = []) => {
+  const createSection = (newSection: string, students: string[] = [], leaders: string[] = []) => {
     if (!props.currentCourse) return Promise.reject();
     const payload = {
       name: newSection,
       course: props.currentCourse.id,
-      leaders: [],
+      leaders,
       students,
     };
 
@@ -466,6 +466,16 @@ const Admin: React.FC<IComponentProps> = (props) => {
           }));
         return [...otherSections, newSection];
       });
+    });
+  };
+
+  const updateSectionLeaders = (sectionID: number, leaders: string[]): Promise<void> => {
+    // Leaders-only PATCH: never resend students — a stale students array would clobber
+    // concurrent membership edits (sections replace membership wholesale on PATCH).
+    return sectionsApi.partialUpdate({ id: sectionID, patchedSection: { leaders } }).then((newSection) => {
+      queryClient.setQueryData(courseKeys.sections(courseId!), (old: Section[] | undefined) =>
+        (old ?? []).map((s) => (s.id === newSection.id ? newSection : s)),
+      );
     });
   };
 
@@ -815,6 +825,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
         updateRoster={updateRoster}
         createSection={createSection}
         updateSection={updateSection}
+        updateSectionLeaders={updateSectionLeaders}
         deleteSection={deleteSection}
         updateStudentSection={updateStudentSection}
         uploadSubmission={uploadSubmission}

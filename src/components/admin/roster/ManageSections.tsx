@@ -8,10 +8,13 @@ import * as React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import {
+  CheckOutlined,
+  CloseOutlined,
   DeleteOutlined,
   EditOutlined,
   InboxOutlined,
   SearchOutlined,
+  TeamOutlined,
   UploadOutlined,
   UserAddOutlined,
 } from '@ant-design/icons';
@@ -39,6 +42,7 @@ import {
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import ReactSelect from 'react-select';
+import { useNavigate } from 'react-router-dom';
 
 /* codePost imports */
 import { tooltips } from '../../../components/core/tooltips';
@@ -46,6 +50,7 @@ import { Course, Section } from '../../../api-client';
 import { USER_APP } from '../../../types/common';
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';
 import AddSectionDialog from './sections/AddSectionDialog';
+import { ParsedSectionRow, parseSectionsCsv } from './sections/sectionCsv';
 
 const { confirm } = Modal;
 const { TextArea } = Input;
@@ -68,15 +73,24 @@ export interface IManageSectionsProps {
   /* object-level REST operations */
   updateRoster: (adds: string[], deletes: string[], userType: USER_APP) => Promise<void>;
   deleteSection: (sectionID: number) => Promise<void>;
-  createSection: (sectionName: string, students?: string[]) => Promise<Section>;
+  createSection: (sectionName: string, students?: string[], leaders?: string[]) => Promise<Section>;
   updateSection: (section: Section) => Promise<void>;
+  updateSectionLeaders: (sectionID: number, leaders: string[]) => Promise<void>;
   updateStudentSection: (student: string, section: number) => Promise<void>;
 }
 
 /**********************************************************************************************************************/
 
 const ManageSections: React.FC<IManageSectionsProps> = (props) => {
-  const [activeSection, setActiveSection] = useState<string>('');
+  const navigate = useNavigate();
+  // Inline Leaders editing: draft is local until Save (one leaders-only PATCH) — the old
+  // design PATCHed the whole section on every Select change. Keyed by section id so a
+  // rename can't confuse the editor.
+  const [editingLeaders, setEditingLeaders] = useState<{
+    sectionId: number;
+    draft: string[];
+    saving: boolean;
+  } | null>(null);
   const [openSection, setOpenSection] = useState<Section | undefined>(undefined);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [allowSectionReassignment, setAllowSectionReassignment] = useState<boolean>(false);
@@ -92,7 +106,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   // CSV import state
   const [csvModalOpen, setCsvModalOpen] = useState(false);
-  const [csvData, setCsvData] = useState<{ section: string; students: string[] }[]>([]);
+  const [csvData, setCsvData] = useState<ParsedSectionRow[]>([]);
   const [csvImporting, setCsvImporting] = useState(false);
   const [csvProgress, setCsvProgress] = useState<{ done: number; total: number } | null>(null);
   const csvCancelRef = useRef(false);
@@ -110,17 +124,30 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
     [props],
   );
 
-  const changeLeaders = useCallback(
-    async (section: number, leaders: string[]) => {
-      const sectionObj = props.sections.find((el) => el.id === section);
-      if (sectionObj) {
-        const updated = { ...sectionObj, leaders };
-        await props.updateSection(updated);
-        message.success('Leaders updated');
-      }
-    },
-    [props],
-  );
+  // How many sections each grader currently leads — shown in the dropdown options so an
+  // instructor spreading TAs around can see who's already loaded.
+  const leadCountByGrader = useMemo(() => {
+    const counts = new Map<string, number>();
+    props.sections.forEach((s) =>
+      (s.leaders ?? []).forEach((l) => {
+        if (l) counts.set(l, (counts.get(l) ?? 0) + 1);
+      }),
+    );
+    return counts;
+  }, [props.sections]);
+
+  const saveLeaders = useCallback(async () => {
+    if (!editingLeaders) return;
+    setEditingLeaders({ ...editingLeaders, saving: true });
+    try {
+      await props.updateSectionLeaders(editingLeaders.sectionId, editingLeaders.draft);
+      message.success('Leaders updated');
+      setEditingLeaders(null);
+    } catch {
+      message.error('Failed to update leaders.');
+      setEditingLeaders((e) => (e ? { ...e, saving: false } : null));
+    }
+  }, [editingLeaders, props]);
 
   const handleSetOpenSection = useCallback((section: Section | undefined) => {
     if (section === undefined) {
@@ -147,23 +174,44 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const renderLeadersCell = useCallback(
     (searchText: string) => {
       return (_: string, record: { section: string; leaderData: string[] }) => {
-        if (record.section === activeSection) {
+        const sectionId = (record as Record<string, unknown>).key as number;
+        if (editingLeaders?.sectionId === sectionId) {
           return (
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Select
                 mode="multiple"
-                value={record.leaderData}
-                onChange={(value) => changeLeaders((record as Record<string, unknown>).key as number, value)}
+                showSearch
+                optionFilterProp="label"
+                value={editingLeaders.draft}
+                disabled={editingLeaders.saving}
+                onChange={(draft) => setEditingLeaders({ sectionId, draft, saving: false })}
                 style={{ width: 400 }}
-              >
-                {props.graders.map((grader) => (
-                  <Select.Option key={grader} value={grader}>
-                    {grader}
-                  </Select.Option>
-                ))}
-              </Select>
-              &nbsp;&nbsp;
-              <EditOutlined onClick={() => setActiveSection('')} />
+                options={props.graders.map((grader) => ({
+                  value: grader,
+                  label: `${grader} — leads ${leadCountByGrader.get(grader) ?? 0}`,
+                }))}
+              />
+              <Tooltip title="Save leaders">
+                <Button
+                  size="small"
+                  type="primary"
+                  shape="circle"
+                  icon={<CheckOutlined />}
+                  loading={editingLeaders.saving}
+                  onClick={saveLeaders}
+                  aria-label="Save leaders"
+                />
+              </Tooltip>
+              <Tooltip title="Cancel">
+                <Button
+                  size="small"
+                  shape="circle"
+                  icon={<CloseOutlined />}
+                  disabled={editingLeaders.saving}
+                  onClick={() => setEditingLeaders(null)}
+                  aria-label="Cancel editing leaders"
+                />
+              </Tooltip>
             </div>
           );
         } else {
@@ -179,13 +227,22 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
                 textToHighlight={record.leaderData.length === 0 ? 'No leaders' : record.leaderData.join(', ')}
               />
               &nbsp;&nbsp;
-              <EditOutlined onClick={() => setActiveSection(record.section)} />
+              <EditOutlined
+                aria-label={`Edit leaders for ${record.section}`}
+                onClick={() =>
+                  setEditingLeaders({
+                    sectionId,
+                    draft: record.leaderData.filter((l): l is string => !!l),
+                    saving: false,
+                  })
+                }
+              />
             </div>
           );
         }
       };
     },
-    [activeSection, changeLeaders, props.graders],
+    [editingLeaders, leadCountByGrader, props.graders, saveLeaders],
   );
 
   const columns: ITableDetailColumn[] = useMemo(
@@ -244,40 +301,13 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   // ─── CSV Import ──────────────────────────────────────────
   const parseCSV = (text: string) => {
-    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    if (lines.length === 0) return;
-
-    // Detect header
-    const firstLine = lines[0].toLowerCase();
-    const hasHeader = firstLine.includes('section') || firstLine.includes('student') || firstLine.includes('email');
-    const dataLines = hasHeader ? lines.slice(1) : lines;
-
-    // Determine delimiter
-    const delimiter = lines[0].includes('\t') ? '\t' : ',';
-
-    const sectionMap: Record<string, Set<string>> = {};
-
-    for (const line of dataLines) {
-      const parts = line.split(delimiter).map((p) => p.trim().replace(/^"|"$/g, ''));
-      if (parts.length < 2) continue;
-      const sectionName = parts[0];
-      const email = parts[1].toLowerCase();
-      if (!sectionName || !email || !email.includes('@')) continue;
-
-      if (!sectionMap[sectionName]) sectionMap[sectionName] = new Set();
-      sectionMap[sectionName].add(email);
-    }
-
-    const parsed = Object.entries(sectionMap).map(([section, students]) => ({
-      section,
-      students: [...students],
-    }));
-
+    const parsed = parseSectionsCsv(text);
     if (parsed.length === 0) {
-      message.error('No valid section/student rows found. Expected columns: section, student email');
+      message.error(
+        'No valid rows found. Expected columns: section, email, and an optional role (student/leader)',
+      );
       return;
     }
-
     setCsvData(parsed);
   };
 
@@ -302,6 +332,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
     let sectionsCreated = 0;
     let studentsAssigned = 0;
+    let leadersAssigned = 0;
     let unknownCount = 0;
     let stepsDone = 0;
 
@@ -311,6 +342,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
       existingSections[s.name.toLowerCase()] = s;
     });
     const knownRoster = new Set(props.students);
+    const knownGraders = new Set(props.graders);
 
     for (const entry of csvData) {
       if (csvCancelRef.current) break;
@@ -319,28 +351,35 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
       const existing = existingSections[key];
       const currentStudents = existing ? existing.students : [];
       const inSection = new Set(currentStudents);
+      const currentLeaders = (existing?.leaders ?? []).filter((l): l is string => !!l);
+      const leading = new Set(currentLeaders);
 
-      // Only students on the course roster and not already in the section. A
-      // single unknown email would otherwise fail the whole section's request.
+      // Only students on the roster / leaders who are course graders, and not already in
+      // the section. A single unknown email would otherwise fail the whole request.
       const uniqueStudents = [...new Set(entry.students)];
       const toAdd = uniqueStudents.filter((email) => knownRoster.has(email) && !inSection.has(email));
       unknownCount += uniqueStudents.filter((email) => !knownRoster.has(email)).length;
+      const uniqueLeaders = [...new Set(entry.leaders)];
+      const leadersToAdd = uniqueLeaders.filter((email) => knownGraders.has(email) && !leading.has(email));
+      unknownCount += uniqueLeaders.filter((email) => !knownGraders.has(email)).length;
 
       try {
         if (!existing) {
-          // Create the section with its students in a single request — this also
-          // avoids a stale-closure lookup for a section made during this import.
-          const created = await props.createSection(entry.section, toAdd);
+          // Create the section with its students and leaders in a single request — this
+          // also avoids a stale-closure lookup for a section made during this import.
+          const created = await props.createSection(entry.section, toAdd, leadersToAdd);
           existingSections[key] = created;
           sectionsCreated++;
-        } else if (toAdd.length > 0) {
-          // Replace membership once with the full appended list; concurrent
-          // per-student PATCHes would clobber each other (last write wins).
+        } else if (toAdd.length > 0 || leadersToAdd.length > 0) {
+          // Replace membership once with the full appended lists; concurrent
+          // per-person PATCHes would clobber each other (last write wins).
           const nextStudents = [...currentStudents, ...toAdd];
-          await props.updateSection({ ...existing, students: nextStudents });
-          existingSections[key] = { ...existing, students: nextStudents };
+          const nextLeaders = [...currentLeaders, ...leadersToAdd];
+          await props.updateSection({ ...existing, students: nextStudents, leaders: nextLeaders });
+          existingSections[key] = { ...existing, students: nextStudents, leaders: nextLeaders };
         }
         studentsAssigned += toAdd.length;
+        leadersAssigned += leadersToAdd.length;
       } catch {
         message.error(`Failed to import section "${entry.section}", skipping it`);
       }
@@ -350,14 +389,20 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
     }
 
     if (unknownCount > 0) {
-      message.warning(`${unknownCount} email${unknownCount !== 1 ? 's' : ''} not on the course roster were skipped`, 5);
+      message.warning(
+        `${unknownCount} email${unknownCount !== 1 ? 's' : ''} not on the course roster (or not graders, for leaders) were skipped`,
+        5,
+      );
     }
 
+    const leadersNote = leadersAssigned > 0 ? `, ${leadersAssigned} leader${leadersAssigned !== 1 ? 's' : ''}` : '';
     if (csvCancelRef.current) {
-      message.info(`Import cancelled. Created ${sectionsCreated} sections, assigned ${studentsAssigned} students.`);
+      message.info(
+        `Import cancelled. Created ${sectionsCreated} sections, assigned ${studentsAssigned} students${leadersNote}.`,
+      );
     } else {
       message.success(
-        `Import complete: ${sectionsCreated} new section${sectionsCreated !== 1 ? 's' : ''} created, ${studentsAssigned} student${studentsAssigned !== 1 ? 's' : ''} assigned.`,
+        `Import complete: ${sectionsCreated} new section${sectionsCreated !== 1 ? 's' : ''} created, ${studentsAssigned} student${studentsAssigned !== 1 ? 's' : ''}${leadersNote} assigned.`,
       );
     }
 
@@ -427,7 +472,9 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
               <UploadOutlined />
             </p>
             <p className="ant-upload-text">Click or drag a CSV file here</p>
-            <p className="ant-upload-hint">File should have two columns: section name and student email</p>
+            <p className="ant-upload-hint">
+              Columns: section name, email, and an optional role (student, or leader for graders)
+            </p>
           </Upload.Dragger>
 
           <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginTop: 12 }}>
@@ -442,9 +489,11 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
                 lineHeight: 1.6,
               }}
             >
-              {`section,student\nSection A,student1@university.edu\nSection A,student2@university.edu\nSection B,student3@university.edu`}
+              {`section,email,role\nSection A,student1@university.edu\nSection A,student2@university.edu\nSection A,ta1@university.edu,leader\nSection B,student3@university.edu`}
             </pre>
-            Supports CSV, TSV, or tab-separated files. Headers are auto-detected and optional.
+            Supports CSV, TSV, or tab-separated files. Headers are auto-detected and optional. The
+            role column is optional — omit it (or use &quot;student&quot;) for students; &quot;leader&quot;
+            marks a grader as the section&apos;s leader.
           </Typography.Paragraph>
         </div>
       ) : (
@@ -526,6 +575,13 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
                 align: 'center' as const,
               },
               {
+                title: 'Leaders',
+                dataIndex: 'leaders',
+                key: 'leaders',
+                render: (leaders: string[]) => leaders.length,
+                align: 'center' as const,
+              },
+              {
                 title: 'Preview',
                 dataIndex: 'students',
                 key: 'preview',
@@ -545,12 +601,15 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
 
   const actions = useMemo(() => {
     return [
+      <Button key="assign-graders" icon={<TeamOutlined />} onClick={() => navigate('assign')}>
+        Assign graders
+      </Button>,
       <Button key="import-csv" icon={<UploadOutlined />} onClick={() => setCsvModalOpen(true)}>
         Import from CSV
       </Button>,
       <AddSectionDialog key="add-section" sections={props.sections} addSection={props.createSection} />,
     ];
-  }, [props.sections, props.createSection]);
+  }, [navigate, props.sections, props.createSection]);
 
   const handleRemoveStudent = useCallback(
     async (studentEmail: string) => {
