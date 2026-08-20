@@ -10,6 +10,7 @@ import {
   Input,
   message,
   Modal,
+  Select,
   Space,
   Spin,
   Table,
@@ -20,7 +21,7 @@ import { CopyOutlined, DeleteOutlined, KeyOutlined, PlusOutlined } from '@ant-de
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { Course } from '../../../services/course';
-import type { CourseAPIKey, CourseAPIKeyCreateResponse } from '../../../services/course';
+import type { CourseAPIKey, CourseAPIKeyCreateResponse, CourseAPIKeyScope } from '../../../services/course';
 import { assignmentKeys } from '../../../lib/queryKeys';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -37,6 +38,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
   const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
   const [newKeyName, setNewKeyName] = React.useState('');
+  const [newKeyScope, setNewKeyScope] = React.useState<CourseAPIKeyScope>('read');
   const [isCreating, setIsCreating] = React.useState(false);
   const [createdKey, setCreatedKey] = React.useState<CourseAPIKeyCreateResponse | null>(null);
 
@@ -54,9 +56,10 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     }
     setIsCreating(true);
     try {
-      const result = await Course.createAPIKey(courseId, newKeyName.trim());
+      const result = await Course.createAPIKey(courseId, newKeyName.trim(), newKeyScope);
       setCreatedKey(result);
       setNewKeyName('');
+      setNewKeyScope('read');
       message.success('API key created.');
       queryClient.invalidateQueries({ queryKey });
     } catch (err: unknown) {
@@ -125,6 +128,20 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
             }
           />
         ),
+    },
+    {
+      title: 'Scope',
+      dataIndex: 'scope',
+      key: 'scope',
+      width: 90,
+      render: (scope: CourseAPIKeyScope) => {
+        const colors: Record<CourseAPIKeyScope, string> = {
+          read: 'green',
+          write: 'orange',
+          admin: 'red',
+        };
+        return <Tag color={colors[scope] ?? 'default'}>{scope ?? 'read'}</Tag>;
+      },
     },
     {
       title: 'Prefix',
@@ -249,6 +266,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
         onCancel={() => {
           setIsCreateModalOpen(false);
           setNewKeyName('');
+          setNewKeyScope('read');
         }}
         onOk={handleCreate}
         okText="Create"
@@ -264,6 +282,25 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
             onPressEnter={handleCreate}
             maxLength={128}
             count={{ show: true }}
+          />
+          <Text>Access level. This is enforced server-side: AI agents connected with this key never even see tools above its level.</Text>
+          <Select<CourseAPIKeyScope>
+            value={newKeyScope}
+            onChange={setNewKeyScope}
+            options={[
+              {
+                value: 'read',
+                label: 'Read only — answer questions about the course (recommended)',
+              },
+              {
+                value: 'write',
+                label: 'Read & write — manage assignments and settings; no deletes, no student email',
+              },
+              {
+                value: 'admin',
+                label: 'Full admin — includes deletes, attempt resets, and emailing students',
+              },
+            ]}
           />
         </Flex>
       </Modal>

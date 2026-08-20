@@ -5,11 +5,14 @@ import { getAuthToken } from '../utils/auth';
 
 // ─── Types for Course API Keys ────────────────────────────────────────────────
 
+export type CourseAPIKeyScope = 'read' | 'write' | 'admin';
+
 export interface CourseAPIKey {
   id: number;
   name: string;
   keyPrefix: string;
   isActive: boolean;
+  scope: CourseAPIKeyScope;
   lastUsedAt: string | null;
   createdBy: string | null;
   created: string;
@@ -73,10 +76,14 @@ export class Course {
   public static listAPIKeys = (courseId: number): Promise<CourseAPIKey[]> =>
     apiFetch(`/courses/${courseId}/apiKeys/`);
 
-  public static createAPIKey = (courseId: number, name: string): Promise<CourseAPIKeyCreateResponse> =>
+  public static createAPIKey = (
+    courseId: number,
+    name: string,
+    scope: CourseAPIKeyScope = 'read',
+  ): Promise<CourseAPIKeyCreateResponse> =>
     apiFetch(`/courses/${courseId}/apiKeys/`, {
       method: 'POST',
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, scope }),
     });
 
   public static updateAPIKey = (courseId: number, keyId: number, payload: { name?: string; isActive?: boolean }) =>
