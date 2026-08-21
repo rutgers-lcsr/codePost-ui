@@ -10,7 +10,7 @@ order: 20
 
 Stay up to date with new features, improvements, and fixes in codePost.
 
-> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 → 4.0.0 → 4.1.0 → 4.2.0 (current)
+> **Versions**: 0.1.0 → 3.0.0 → 3.1.0 → 3.1.1 → 3.2.0 → 3.3.0 → 3.4.0 → 4.0.0 → 4.1.0 → 4.2.0 → 4.3.0 (current)
 
 ---
 
@@ -29,6 +29,97 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 - Allow Assignments to be assigned to graders per problem instead of per submission.
 - Allow PDF only assignments for non-code-based courses.
+
+---
+
+## v4.3.0 — Instructor Agents, Quiz Workflow & Section Staffing
+
+> **Highlight**: Your graders can grade quizzes out of the box, quizzes are created through
+> a setup wizard instead of a bare modal, and a quiz grade is saved when you move on —
+> whether or not you remembered to press the button. See the updated
+> [Quizzes](/docs/instructor-quizzes), [Managing Sections](/docs/instructor-sections), and
+> [Grader Guide](/docs/grader) pages.
+
+### Changed: graders can grade quizzes by default
+
+Quiz grading used to require a separate **Quiz Grader** role, so every instructor had to
+maintain a second roster before a TA could touch the queue. Now **every grader on your
+course can grade quizzes**, alongside course admins.
+
+If you relied on the old behaviour, turn off **Graders Can Grade Quizzes** in
+Course Settings → Behavior. The per-grader Quiz Grader column reappears on the Graders
+roster, and any roles you already granted take effect again.
+
+### New: quiz setup wizard
+
+**New Quiz** used to open a two-field modal, which meant every quiz started with default
+availability, attempts, results, and security settings you then had to hunt down in the
+builder. It now opens a stepped wizard — Basics, Availability, Attempts, Results, Security,
+AI questions, Review — so the quiz is configured by the time it exists.
+
+Only the title is required. **Skip & create** ends the wizard at any step with the
+remaining defaults, and the Review step offers create-as-draft or create & publish.
+
+### Improved: grading a quiz
+
+Grading moved into a full-screen workspace that shows one response at a time, with the
+question, the student's answer, and the answer key together.
+
+- **Your draft is saved when you navigate.** Pressing Next, jumping to another question,
+  or closing the grader saves the grade you typed. If the save fails, you stay on the
+  response rather than losing it. (Feedback with no points still can't be recorded — enter
+  points to save the grade.)
+- **Section filter** — narrow the queue to your own students; the choice is remembered per
+  course.
+- **Grade below / Grade beside** — put the points and feedback panel wherever you prefer;
+  the choice and its size are remembered.
+- `⌘/Ctrl + Enter` saves and advances.
+
+### New: quiz grading progress
+
+**Quizzes → Grading Progress** shows where a grading push stands across the whole course:
+how many responses are still waiting, each grader's share of the work and when they last
+graded, and a per-quiz progress bar. Graders who have left the course keep their rows, so
+it stays an accurate record of who graded what.
+
+### New: missing question sets are flagged
+
+A student with no AI-generated question set can't open the quiz at all — previously that
+was only visible from the Review tab. A red **N missing** tag now appears in the quiz list,
+with a banner and a red Review badge on the builder tabs. Unpublished quizzes also show the
+same grey **Draft** chip the assignments table uses.
+
+### Improved: assigning graders to sections
+
+Section leaders used to be edited one section at a time. **Roster → Sections → Assign
+graders** now opens a graders × sections grid: tick the boxes, see which sections have no
+leader, use **Distribute evenly** to fill the gaps, and save everything at once. If one
+section fails to save, the rest still go through.
+
+The sections **CSV import** also accepts an optional third `role` column — mark a row
+`leader` to assign a grader as a section leader. Existing two-column files import exactly
+as before.
+
+### New: scopes for course API keys
+
+When you create a course API key (Course Settings → API Keys) you now choose what it can
+do: **Read only** (recommended), **Read & write**, or **Full admin**. The key table shows
+each key's scope at a glance.
+
+The scope controls what an AI assistant connected with that key is allowed to do — a
+read-only key never even sees the tools that would change anything. Instructors can connect
+a course to Claude Code or Claude Desktop and ask about their course in plain language.
+
+### Fixed
+
+- **Quizzes** — starter code sitting in a code question no longer counts as a submitted
+  answer, so the progress bar reflects what the student actually typed. Leftover starter
+  code also no longer appears inside essay or short-answer questions.
+- **Sections** — editing a section's name or leaders no longer removes its students from
+  their other sections.
+- **Gradebook** — the rows-per-page setting now sticks instead of snapping back to 50.
+- **Code console** — the bottom bar stays reachable when codePost is embedded in another
+  page (such as an LMS).
 
 ---
 
