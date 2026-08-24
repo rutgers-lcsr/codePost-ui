@@ -56,6 +56,16 @@ export function getDecodedTokenPayload(): Record<string, unknown> | null {
 }
 
 /**
+ * Gets the `user_id` claim of the stored access token, or null if there is no
+ * token or it cannot be decoded. Used to detect identity switches performed by
+ * another tab (the tokens live in shared localStorage).
+ */
+export function getStoredTokenUserId(): number | null {
+  const payload = getDecodedTokenPayload();
+  return payload && typeof payload.user_id === 'number' ? payload.user_id : null;
+}
+
+/**
  * Check whether the current JWT token is expired.
  * Returns `true` if expired or unparseable, `false` if still valid.
  */
@@ -78,6 +88,11 @@ let refreshPromise: Promise<boolean> | null = null;
  */
 export async function tryRefreshToken(): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
+
+  // Another tab may have already rotated the pair (rotation blacklists the
+  // old refresh token, so racing it would fail); if the stored access token
+  // is still fresh there is nothing to do.
+  if (!isTokenExpired()) return true;
 
   refreshPromise = (async () => {
     const refresh = getRefreshToken();
