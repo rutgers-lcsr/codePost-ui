@@ -152,6 +152,14 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
       },
       sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
     },
+    {
+      title: 'Projected Cost',
+      dataIndex: 'projectedCost',
+      key: 'projectedCost',
+      align: 'right' as const,
+      render: (v: string | number) => formatCost(v),
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.projectedCost - b.projectedCost,
+    },
   ];
 
   // Metric columns shared by the model and feature breakdown tables.
@@ -208,6 +216,14 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
         return formatCost(v);
       },
       sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.estimatedCost - b.estimatedCost,
+    },
+    {
+      title: 'Projected Cost',
+      dataIndex: 'projectedCost',
+      key: 'projectedCost',
+      align: 'right' as const,
+      render: (v: string | number) => formatCost(v),
+      sorter: (a: AIUsageBreakdown, b: AIUsageBreakdown) => a.projectedCost - b.projectedCost,
     },
   ];
 
@@ -333,6 +349,27 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
               <Statistic
                 title="Estimated Cost"
                 value={data.estimatedCost as unknown as string}
+                prefix={<DollarOutlined style={{ color: colors.actionGreen }} />}
+                formatter={(v) => formatCost(v as string)}
+              />
+            </Card>
+            <Card
+              size="small"
+              style={{
+                flex: '1 1 200px',
+                borderLeft: `4px solid ${colors.actionGreen}`,
+              }}
+            >
+              <Statistic
+                title={
+                  <Space size={4}>
+                    <span>Projected Cost</span>
+                    <Tooltip title="What this usage would cost at the currently configured token rates">
+                      <QuestionCircleOutlined style={{ fontSize: 12 }} />
+                    </Tooltip>
+                  </Space>
+                }
+                value={data.projectedCost as unknown as string}
                 prefix={<DollarOutlined style={{ color: colors.actionGreen }} />}
                 formatter={(v) => formatCost(v as string)}
               />

@@ -159,9 +159,9 @@ Every AI API call is recorded with token counts, cost estimates, and metadata. U
 
 Course admins can view AI usage for their course:
 
-1. Go to **Course Settings > General**.
-2. Scroll to the **AI Usage** card below AI settings.
-3. View total requests, tokens, estimated cost, and breakdowns by assignment and by model.
+1. Go to **Course Settings**.
+2. Select the **AI Usage** section in the settings navigation.
+3. View total requests, tokens, estimated cost, projected cost, and breakdowns by assignment and by model.
 4. Use the date range picker and granularity selector (hourly, daily, monthly) to zoom in.
 
 ### Organization-Level Usage
@@ -193,7 +193,7 @@ Each AI call records:
 | **Request type**   | One of: `comment_generation`, `suggested_comments`, `submission_summary`, `assignment_description`, `test_generation`, `code_review`, `feedback` |
 | **Input tokens**   | Tokens sent to the model                                                                                                                         |
 | **Output tokens**  | Tokens returned by the model                                                                                                                     |
-| **Estimated cost** | USD cost estimate based on published pricing                                                                                                     |
+| **Estimated cost** | USD cost estimate, frozen at request time using the rates configured at that moment                                                              |
 | **Status**         | `success` or `error`                                                                                                                             |
 | **User**           | The grader or instructor who triggered it                                                                                                        |
 
@@ -226,11 +226,22 @@ Cost estimates are calculated from per-model token pricing and recorded alongsid
 
 Default rates are built in for common models:
 
-- **Gemini**: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`
+- **Gemini**: `gemini-3-pro-preview`, `gemini-3-flash-preview`, `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-1.5-pro`
 - **OpenAI**: `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `o3-mini`
 
 > [!NOTE]
 > Default rates are approximate and may lag behind provider pricing changes. They are intended for budgeting visibility, not billing.
+
+Gateway providers (such as Portkey) often report model names with a provider prefix, like `my-gateway/gemini-2.5-flash`. Rate lookup first tries the full name, then falls back to the part after the last `/` — so prefixed models still match built-in defaults, and you can key a custom rate by either form (the full name wins if both exist).
+
+### Estimated vs. Projected Cost
+
+The usage dashboards show two cost figures:
+
+- **Estimated Cost** — the sum of the cost recorded on each AI call *at the time it was made*. Calls made before a rate was configured are recorded at $0 and stay that way; this figure is a historical record and is never rewritten.
+- **Projected Cost** — computed live from the recorded token counts using the *currently configured* rates. Use it to answer "what would this usage cost at today's prices?" — for example, after setting a rate for a model that previously showed $0, or to compare a past date range against new pricing.
+
+Projected cost appears as a summary card, a dashed line on the cost chart, and a column in every breakdown table. At the course level it uses the course's effective rates (course overrides, then org rates, then defaults); the platform dashboard applies each organization's own rates.
 
 ### Token Rate Overrides
 
@@ -243,12 +254,16 @@ Organization and course admins can override the default token rates — useful f
 5. Overrides are shown with a blue "override" badge. Click the delete icon to revert to the default rate.
 6. Click **Save** to persist your changes.
 
+Rates set at the organization level flow down to every course automatically: in a course's rate table, org-configured models appear as read-only rows with a purple **org default** badge (built-in rates show a plain **default** badge). When the org adds a rate for a new model, it shows up in all its courses without any action on the course side. Clicking **Edit** on an org default creates a course-level override, which takes precedence for that course only.
+
 Rate lookup precedence:
 
 1. **Course custom rates** — if the course has a rate for the model, it wins.
 2. **Organization custom rates** — if not set at course level, the org rate is used.
 3. **Built-in defaults** — the hardcoded rates listed above.
 4. **$0.00** — for completely unknown models with no overrides.
+
+At each step, the full model name is tried first, then its name after the last `/` for gateway-prefixed models.
 
 ---
 
@@ -271,3 +286,6 @@ By default, self-hosted models report $0 because there are no API charges. If yo
 
 **Q: Can I see which model is consuming the most tokens?**
 Yes. The usage dashboard includes a **Usage by Model** breakdown table showing token counts, costs, and request counts for each model used.
+
+**Q: I set a token rate but Estimated Cost still shows $0. Why?**
+Estimated cost is frozen into each usage record when the call is made, so usage recorded before the rate existed keeps its original $0. Check the **Projected Cost** figure instead — it reprices all recorded usage (including historical) at the currently configured rates. New calls made after you save the rate will record a correct estimated cost going forward.

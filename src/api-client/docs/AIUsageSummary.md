@@ -9,7 +9,9 @@ Aggregated usage summary with time-series data and breakdowns.
 | `totalTokens`      | number                                               |
 | `inputTokens`      | number                                               |
 | `outputTokens`     | number                                               |
+| `cachedTokens`     | number                                               |
 | `estimatedCost`    | number                                               |
+| `projectedCost`    | number                                               |
 | `requestCount`     | number                                               |
 | `timeSeries`       | [Array&lt;AIUsageBucket&gt;](AIUsageBucket.md)       |
 | `breakdown`        | [Array&lt;AIUsageBreakdown&gt;](AIUsageBreakdown.md) |
