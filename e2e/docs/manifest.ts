@@ -71,6 +71,12 @@ export const DOC_SHOTS: DocShot[] = [
     auth: 'student',
     path: '/student',
     readySelector: 'text=Demo Course',
+    prepare: async (page) => {
+      // Course cards stream in their assignment counts; don't shoot mid-load.
+      await page
+        .waitForFunction(() => !document.body.innerText.includes('Loading'), undefined, { timeout: 30_000 })
+        .catch(() => {});
+    },
   },
   {
     file: 'student_assignment_list.png',
