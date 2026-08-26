@@ -28,7 +28,14 @@ import { registrationApi, tokenAuthApi } from './api-client/clients';
 import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 
 import { normalizeUser } from './utils/normalizeUser';
-import { resolveSafeRedirectPath, tryRefreshToken, setTokens, clearTokens, logout } from './utils/auth';
+import {
+  resolveSafeRedirectPath,
+  tryRefreshToken,
+  setTokens,
+  clearTokens,
+  logout,
+  getStoredTokenUserId,
+} from './utils/auth';
 
 import IndexManager from './components/pre-auth/IndexManager';
 import ChangeLog from './components/pre-auth/ChangeLog';
@@ -555,6 +562,52 @@ Firefox:
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Cross-tab auth sync: the tokens live in shared localStorage, so another
+  // tab logging out or switching identity (loginAs / impersonation / JupyterHub
+  // hand-off) silently changes who this tab's requests authenticate as.
+  // `storage` events fire only in tabs that did not perform the write.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== 'token' || !user) return;
+
+      if (!e.newValue) {
+        // Another tab logged out; this tab's session is dead.
+        window.location.assign('/');
+        return;
+      }
+
+      const newUserId = getStoredTokenUserId();
+      if (newUserId === null) {
+        // Undecodable token — leave this tab alone.
+        return;
+      }
+      if (newUserId !== user.id) {
+        // Another tab became a different user. Reload: role routing sends this
+        // tab to the right dashboard if the current page is no longer
+        // accessible to the new identity.
+        window.location.reload();
+        return;
+      }
+
+      // Same user, rotated token: re-arm the proactive refresh timer to the
+      // new expiry instead of racing the tab that already refreshed (rotation
+      // blacklists the old refresh token, so the loser's refresh would fail).
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+      const exp = getTokenExpiration(e.newValue);
+      refreshTimerRef.current = setTimeout(
+        () => {
+          refreshToken(user);
+        },
+        Math.max(0, exp - Date.now() - 1000),
+      );
+    };
+
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [user, refreshToken, getTokenExpiration]);
 
   // Trigger tryToLogin when hasToken changes
   useEffect(() => {

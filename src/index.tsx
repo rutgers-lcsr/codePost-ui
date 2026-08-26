@@ -46,7 +46,9 @@ root.render(
           </BrowserRouter>
         </DndProvider>
       </ConfigProvider>
-      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+      {process.env.NODE_ENV === 'development' && !window.localStorage.getItem('codepost:hide-dev-tools') && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   </ErrorBoundary>,
 );

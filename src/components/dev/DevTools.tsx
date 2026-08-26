@@ -8,6 +8,9 @@ interface IProps {
 }
 
 const DevTools: React.FC<IProps> = (props) => {
+  // The docs screenshot harness sets this flag so dev chrome never appears in
+  // captured documentation images (see e2e/docs/capture.spec.ts).
+  if (window.localStorage.getItem('codepost:hide-dev-tools')) return null;
   return <DevPanel replaceUser={props.replaceUser} />;
 };
 

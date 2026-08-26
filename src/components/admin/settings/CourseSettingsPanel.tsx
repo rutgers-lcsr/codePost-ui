@@ -28,6 +28,7 @@ import InputNumberOrNull from './InputNumberOrNull';
 import AISettingsCard from './AISettingsCard';
 import CourseAIUsageCard from './CourseAIUsageCard';
 import CourseAPIKeysCard from './CourseAPIKeysCard';
+import PendingAgentActionsCard from './PendingAgentActionsCard';
 
 import { timezones } from '../other/timezones';
 import { colors } from '../../../theme/colors';
@@ -593,6 +594,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {visibleSectionKeys.includes('api-keys') && (
         <div ref={setSectionRef('api-keys')} style={styles.section}>
           <CourseAPIKeysCard courseId={thisCourse.id} />
+          <PendingAgentActionsCard courseId={thisCourse.id} />
         </div>
       )}
 

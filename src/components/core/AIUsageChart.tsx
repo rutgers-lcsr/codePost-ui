@@ -58,6 +58,7 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({ timeSeries, granularity, ch
     ...bucket,
     period: formatDate(bucket.period as unknown as string, granularity),
     estimatedCostNum: parseFloat(bucket.estimatedCost as unknown as string),
+    projectedCostNum: parseFloat(bucket.projectedCost as unknown as string),
   }));
 
   if (data.length === 0) {
@@ -86,19 +87,28 @@ const AIUsageChart: React.FC<AIUsageChartProps> = ({ timeSeries, granularity, ch
           <XAxis dataKey="period" tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} />
           <YAxis tick={{ fontSize: 12 }} stroke={colors.neutralSecondaryText} tickFormatter={(v) => formatCost(v)} />
           <Tooltip
-            formatter={(value) => [formatCost(Number(value) || 0), 'Cost']}
+            formatter={(value, name) => [formatCost(Number(value) || 0), String(name ?? '')]}
             contentStyle={{
               borderRadius: 8,
               border: `1px solid ${colors.neutralBorder}`,
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}
           />
+          <Legend />
           <Area
             type="monotone"
             dataKey="estimatedCostNum"
             stroke={colors.brandAccent}
             fill={`${colors.brandAccent}33`}
             name="Estimated Cost"
+          />
+          <Area
+            type="monotone"
+            dataKey="projectedCostNum"
+            stroke={colors.actionBlue}
+            strokeDasharray="4 4"
+            fill="none"
+            name="Projected Cost"
           />
         </AreaChart>
       </ResponsiveContainer>

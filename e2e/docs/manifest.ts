@@ -71,6 +71,12 @@ export const DOC_SHOTS: DocShot[] = [
     auth: 'student',
     path: '/student',
     readySelector: 'text=Demo Course',
+    prepare: async (page) => {
+      // Course cards stream in their assignment counts; don't shoot mid-load.
+      await page
+        .waitForFunction(() => !document.body.innerText.includes('Loading'), undefined, { timeout: 30_000 })
+        .catch(() => {});
+    },
   },
   {
     file: 'student_assignment_list.png',
@@ -201,5 +207,27 @@ export const DOC_SHOTS: DocShot[] = [
       await page.getByText('AI Features', { exact: true }).first().click();
       await page.waitForTimeout(400); // tab transition
     },
+  },
+  {
+    file: 'instructor_api_keys.png',
+    auth: 'instructor',
+    path: `/admin/${course}/settings`,
+    readySelector: 'text=API Keys',
+    prepare: async (page) => {
+      await page.getByText('API Keys', { exact: true }).first().click();
+      await page.waitForTimeout(400); // tab transition
+      // Seed one key so the table isn't empty. The demo course survives reseeds
+      // (get_or_create), so only create it when the empty state is showing.
+      if (await page.getByText('No API keys yet').isVisible()) {
+        await page.getByRole('button', { name: 'Create Key' }).click();
+        await page.getByPlaceholder('e.g., Jupyter Integration, Grading Script').fill('Claude');
+        await page.getByRole('button', { name: 'Create', exact: true }).click();
+        await page.getByRole('button', { name: 'Done' }).click();
+        // Let the "API key created" toast expire before shooting.
+        await page.getByText('API key created.').waitFor({ state: 'hidden', timeout: 10000 });
+        await page.waitForTimeout(400); // table refresh
+      }
+    },
+    clipSelector: '[data-testid="course-api-keys-card"]',
   },
 ];

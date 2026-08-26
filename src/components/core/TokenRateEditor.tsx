@@ -29,6 +29,8 @@ interface TokenRateEditorProps {
   customRates: CustomTokenRates;
   /** Callback when custom rates change */
   onChange: (rates: CustomTokenRates) => void;
+  /** Models whose default rate is inherited from the organization (course scope only) */
+  orgModels?: string[];
 }
 
 interface RateRow {
@@ -39,7 +41,7 @@ interface RateRow {
   source: 'default' | 'custom';
 }
 
-const TokenRateEditor: React.FC<TokenRateEditorProps> = ({ defaultRates, customRates, onChange }) => {
+const TokenRateEditor: React.FC<TokenRateEditorProps> = ({ defaultRates, customRates, onChange, orgModels }) => {
   const [newModel, setNewModel] = React.useState('');
 
   // Merge default + custom into display rows
@@ -108,6 +110,10 @@ const TokenRateEditor: React.FC<TokenRateEditorProps> = ({ defaultRates, customR
           {row.source === 'custom' ? (
             <Tag color="blue" style={{ fontSize: 10 }}>
               override
+            </Tag>
+          ) : orgModels?.includes(model) ? (
+            <Tag color="purple" style={{ fontSize: 10 }}>
+              org default
             </Tag>
           ) : (
             <Tag style={{ fontSize: 10 }}>default</Tag>

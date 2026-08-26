@@ -25,5 +25,6 @@ Serializer for course AI configuration. Admin-only access.
 | `hasApiKey`               | boolean                               |
 | `apiKeyHint`              | string                                |
 | `defaultTokenRates`       | { [key: string]: { [key: string]: any | undefined; } | undefined; } |
+| `orgTokenRates`           | { [key: string]: { [key: string]: any | undefined; } | undefined; } |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)

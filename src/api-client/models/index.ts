@@ -199,6 +199,12 @@ export interface AIUsageBreakdown {
    */
   estimatedCost: number;
   /**
+   * Cost of this item's usage at the currently configured token rates
+   * @type {number}
+   * @memberof AIUsageBreakdown
+   */
+  projectedCost: number;
+  /**
    *
    * @type {number}
    * @memberof AIUsageBreakdown
@@ -242,6 +248,12 @@ export interface AIUsageBucket {
    */
   estimatedCost: number;
   /**
+   * Cost of this bucket's usage at the currently configured token rates
+   * @type {number}
+   * @memberof AIUsageBucket
+   */
+  projectedCost: number;
+  /**
    * Number of API calls in this bucket
    * @type {number}
    * @memberof AIUsageBucket
@@ -273,11 +285,23 @@ export interface AIUsageSummary {
    */
   outputTokens: number;
   /**
+   * Grand total cached input tokens
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  cachedTokens: number;
+  /**
    *
    * @type {number}
    * @memberof AIUsageSummary
    */
   estimatedCost: number;
+  /**
+   * Total cost of the range's usage at the currently configured token rates
+   * @type {number}
+   * @memberof AIUsageSummary
+   */
+  projectedCost: number;
   /**
    * Total number of requests
    * @type {number}
@@ -3805,6 +3829,12 @@ export interface CourseAISettings {
    * @memberof CourseAISettings
    */
   readonly defaultTokenRates: { [key: string]: { [key: string]: any | undefined } | undefined };
+  /**
+   *
+   * @type {{ [key: string]: { [key: string]: any | undefined; } | undefined; }}
+   * @memberof CourseAISettings
+   */
+  readonly orgTokenRates: { [key: string]: { [key: string]: any | undefined } | undefined };
 }
 
 /**
@@ -7864,6 +7894,12 @@ export interface PatchedCourseAISettings {
    * @memberof PatchedCourseAISettings
    */
   readonly defaultTokenRates?: { [key: string]: { [key: string]: any | undefined } | undefined };
+  /**
+   *
+   * @type {{ [key: string]: { [key: string]: any | undefined; } | undefined; }}
+   * @memberof PatchedCourseAISettings
+   */
+  readonly orgTokenRates?: { [key: string]: { [key: string]: any | undefined } | undefined };
 }
 
 /**
@@ -10828,6 +10864,56 @@ export interface PendingAdminActionResponse {
    * @memberof PendingAdminActionResponse
    */
   status: string;
+}
+/**
+ * Dashboard rows for Tier-3 agent confirmations — includes the code, so
+ * this serializer must only ever be reachable by a human course admin.
+ * @export
+ * @interface PendingAgentAction
+ */
+export interface PendingAgentAction {
+  /**
+   *
+   * @type {number}
+   * @memberof PendingAgentAction
+   */
+  readonly id: number;
+  /**
+   * The agent tool name.
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly tool: string;
+  /**
+   * The short confirmation code shown in the dashboard.
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly code: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly plan: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly expiresAt: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly requestedBy: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly created: string;
 }
 /**
  *

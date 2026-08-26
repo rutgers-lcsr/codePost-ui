@@ -50,6 +50,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   const [apiKeyHint, setApiKeyHint] = React.useState<string | null>(null);
   const [customTokenRates, setCustomTokenRates] = React.useState<CustomTokenRates>({});
   const [defaultTokenRates, setDefaultTokenRates] = React.useState<DefaultTokenRates>({});
+  const [orgRateModels, setOrgRateModels] = React.useState<string[]>([]);
 
   // Per-feature toggles
   const [featureRegistry, setFeatureRegistry] = React.useState<AIFeatureEntry[]>([]);
@@ -85,6 +86,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setApiKeyHint(settings.apiKeyHint ?? null);
         setCustomTokenRates((settings.aiTokenRates as CustomTokenRates) ?? {});
         setDefaultTokenRates((settings.defaultTokenRates as DefaultTokenRates) ?? {});
+        setOrgRateModels(Object.keys((settings.orgTokenRates as DefaultTokenRates) ?? {}));
         setFeatureRegistry(features);
         setFeatureConfig(((s.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
         setFeatureStatus(((s.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
@@ -406,6 +408,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                 <TokenRateEditor
                   defaultRates={defaultTokenRates}
                   customRates={customTokenRates}
+                  orgModels={orgRateModels}
                   onChange={(rates) => {
                     setCustomTokenRates(rates);
                     mark();

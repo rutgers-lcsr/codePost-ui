@@ -72,6 +72,14 @@ for (const shot of DOC_SHOTS) {
       deviceScaleFactor: 2,
       ...(shot.auth !== 'none' ? { storageState: authFile(shot.auth) } : {}),
     });
+    // Hide dev-server chrome (DevPanel tab, react-query devtools) in every shot.
+    await context.addInitScript(() => {
+      try {
+        window.localStorage.setItem('codepost:hide-dev-tools', '1');
+      } catch {
+        /* storage unavailable — dev chrome will show, better than failing the run */
+      }
+    });
     const page = await context.newPage();
 
     // Resolve dynamic routes through the API with the same identity.
