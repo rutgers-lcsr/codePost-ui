@@ -101,6 +101,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       dataIndex: 'name',
       key: 'name',
       ellipsis: true,
+      width: 130,
       render: (name: string, record: CourseAPIKey) => (
         <Space>
           <KeyOutlined style={{ color: record.isActive ? '#198665' : '#bfbfbf' }} />
@@ -147,7 +148,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       title: 'Prefix',
       dataIndex: 'keyPrefix',
       key: 'keyPrefix',
-      width: 110,
+      width: 100,
       render: (prefix: string) => (
         <Text code style={{ fontSize: 12 }}>
           {prefix}...
@@ -158,7 +159,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       title: 'Last Used',
       dataIndex: 'lastUsedAt',
       key: 'lastUsedAt',
-      width: 110,
+      width: 100,
       render: (v: string | null) =>
         v ? (
           <Text type="secondary" style={{ fontSize: 13 }}>
@@ -174,7 +175,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       title: 'Created',
       dataIndex: 'created',
       key: 'created',
-      width: 110,
+      width: 115,
       render: (v: string) => (
         <Text type="secondary" style={{ fontSize: 13 }}>
           {dayjs(v).format('MMM D, YYYY')}
@@ -184,7 +185,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     {
       title: '',
       key: 'actions',
-      width: 150,
+      width: 120,
       render: (_: unknown, record: CourseAPIKey) => (
         <Space.Compact size="small">
           <Button size="small" onClick={() => handleToggleActive(record)}>
@@ -212,6 +213,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
   return (
     <>
       <Card
+        data-testid="course-api-keys-card"
         title={
           <Flex align="center" gap={8}>
             <KeyOutlined style={{ fontSize: 18, color: '#198665' }} />
@@ -237,8 +239,8 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
           resulting token is also restricted to this course.
         </Paragraph>
         <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
-          Usage example: to use the API key with a Jupyter integration, set the{' '}
-          <Text code>Authorization: CourseKey {'<token>'}</Text> header to{' '}
+          Usage example: to use the API key with a Jupyter integration or an AI agent, send the{' '}
+          <Text code>Authorization: CourseKey {'<token>'}</Text> header with each request.
         </Paragraph>
 
         {isLoading ? (

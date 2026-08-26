@@ -103,3 +103,4 @@ These are generated from the live OpenAPI schema and are the source of truth for
 - [**Grading Workflow**](/docs/sdk-grading-workflow) — End-to-end guide: create assignment → upload submissions → comment → finalize → export grades.
 - [**Programmatic Comments**](/docs/programmatic-comments) — Automate inline feedback on student code.
 - [**Backend API Docs (Swagger + Elements)**](https://codepost-api.cs.rutgers.edu/api/schema/swagger-ui/) — Full endpoint and model reference.
+- [**AI Agents (MCP)**](/docs/mcp-agents) — Connect Claude Code or Claude Desktop to a course with the same token, no code required.

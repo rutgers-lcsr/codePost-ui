@@ -87,6 +87,10 @@ Authorization: CourseKey cpk_<course_id>_<secret>
 > scope that does the job, and prefer a separate key per integration so you can revoke one without
 > breaking the others.
 
+> [!TIP]
+> To connect Claude Code, Claude Desktop, or another MCP client to your course with one of these
+> keys, see [AI Agents (MCP)](/docs/mcp-agents).
+
 ### Managing existing keys
 
 The table lists each key with its scope, status, and creation date.

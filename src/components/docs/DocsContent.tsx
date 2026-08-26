@@ -657,6 +657,8 @@ const DocsContent: React.FC = () => {
             fontWeight: 600,
             textAlign: 'left',
             color: colors.neutralTitle,
+            overflowWrap: 'normal',
+            wordBreak: 'normal',
           }}
           {...props}
         >
@@ -688,6 +690,8 @@ const DocsContent: React.FC = () => {
         style={{
           padding: '12px 16px',
           color: colors.neutralMainText,
+          overflowWrap: 'normal',
+          wordBreak: 'normal',
         }}
         {...props}
       >
