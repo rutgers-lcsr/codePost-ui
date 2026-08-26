@@ -28,11 +28,14 @@ const PendingAgentActionsCard: React.FC<IPendingAgentActionsCardProps> = ({ cour
   const queryClient = useQueryClient();
   const queryKey = ['course', courseId, 'pendingAgentActions'];
 
-  const { data: actions, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey,
     queryFn: () => Course.listPendingAgentActions(courseId),
     refetchInterval: (query) => ((query.state.data?.length ?? 0) > 0 ? 10_000 : 30_000),
   });
+  // Defensive: an unmocked/erroring endpoint can resolve to a non-array, and
+  // antd's Table throws on a non-array dataSource (rawData.some).
+  const actions = Array.isArray(data) ? data : [];
 
   const handleDeny = async (action: PendingAgentAction) => {
     try {
@@ -116,7 +119,7 @@ const PendingAgentActionsCard: React.FC<IPendingAgentActionsCardProps> = ({ cour
       </Paragraph>
       {isLoading ? (
         <Spin />
-      ) : !actions || actions.length === 0 ? (
+      ) : actions.length === 0 ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No pending agent actions" />
       ) : (
         <>
