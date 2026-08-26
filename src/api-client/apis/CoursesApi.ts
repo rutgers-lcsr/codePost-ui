@@ -37,6 +37,7 @@ import type {
   PatchedCourseRosterMap,
   PatchedCourseStudentCaptions,
   PatchedQuizAccommodationRow,
+  PendingAgentAction,
   Question,
   QuestionBank,
   Quiz,
@@ -193,6 +194,15 @@ export interface PartialUpdateRequest {
     PatchedCourse,
     'id' | 'assignments' | 'sections' | 'inviteCode' | 'webhooks' | 'studentCount' | 'isRubricEditor' | 'capabilities'
   >;
+}
+
+export interface PendingAgentActionsDenyCreateRequest {
+  actionId: string;
+  id: number;
+}
+
+export interface PendingAgentActionsListRequest {
+  id: number;
 }
 
 export interface QuestionBanksListRequest {
@@ -1780,6 +1790,133 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Course> {
     const response = await this.partialUpdateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Deny a pending agent action — the code stops working immediately.
+   */
+  async pendingAgentActionsDenyCreateRaw(
+    requestParameters: PendingAgentActionsDenyCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters['actionId'] == null) {
+      throw new runtime.RequiredError(
+        'actionId',
+        'Required parameter "actionId" was null or undefined when calling pendingAgentActionsDenyCreate().',
+      );
+    }
+
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling pendingAgentActionsDenyCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/pendingAgentActions/{actionId}/deny/`;
+    urlPath = urlPath.replace(`{${'actionId'}}`, encodeURIComponent(String(requestParameters['actionId'])));
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Deny a pending agent action — the code stops working immediately.
+   */
+  async pendingAgentActionsDenyCreate(
+    requestParameters: PendingAgentActionsDenyCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<void> {
+    await this.pendingAgentActionsDenyCreateRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   * Active Tier-3 agent confirmation codes for this course.  The whole point of these codes is that the AGENT cannot read them, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see them.
+   */
+  async pendingAgentActionsListRaw(
+    requestParameters: PendingAgentActionsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<PendingAgentAction>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling pendingAgentActionsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/pendingAgentActions/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Active Tier-3 agent confirmation codes for this course.  The whole point of these codes is that the AGENT cannot read them, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see them.
+   */
+  async pendingAgentActionsList(
+    requestParameters: PendingAgentActionsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<PendingAgentAction>> {
+    const response = await this.pendingAgentActionsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

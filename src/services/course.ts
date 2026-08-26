@@ -3,6 +3,18 @@ import { coursesApi, apiClientConfig } from '../api-client/clients';
 import type { Course as CourseModel, CourseRoster, CourseSettings } from '../api-client';
 import { getAuthToken } from '../utils/auth';
 
+// ─── Types for pending agent actions (MCP Tier-3 confirmations) ──────────────
+
+export interface PendingAgentAction {
+  id: number;
+  tool: string;
+  code: string;
+  plan: Record<string, unknown>;
+  expiresAt: string;
+  requestedBy: string | null;
+  created: string;
+}
+
 // ─── Types for Course API Keys ────────────────────────────────────────────────
 
 export type CourseAPIKeyScope = 'read' | 'write' | 'admin';
@@ -94,4 +106,14 @@ export class Course {
 
   public static deleteAPIKey = (courseId: number, keyId: number) =>
     apiFetch<void>(`/courses/${courseId}/apiKeys/${keyId}/`, { method: 'DELETE' });
+
+  // ── Pending agent actions (MCP Tier-3 confirmation codes) ─────────────────
+  // Codes are only served to a signed-in course admin — never to a
+  // course-scoped credential — which is the whole point of the flow.
+
+  public static listPendingAgentActions = (courseId: number): Promise<PendingAgentAction[]> =>
+    apiFetch(`/courses/${courseId}/pendingAgentActions/`);
+
+  public static denyPendingAgentAction = (courseId: number, actionId: number) =>
+    apiFetch<void>(`/courses/${courseId}/pendingAgentActions/${actionId}/deny/`, { method: 'POST' });
 }

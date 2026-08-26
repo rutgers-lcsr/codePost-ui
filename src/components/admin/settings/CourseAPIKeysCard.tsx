@@ -90,6 +90,9 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     }
   };
 
+  const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  const mcpSnippet = `claude mcp add --transport http codepost ${apiBase}/mcp --header "Authorization: CourseKey <your-key>"`;
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     message.success('Copied to clipboard.');
@@ -241,6 +244,16 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
         <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
           Usage example: to use the API key with a Jupyter integration or an AI agent, send the{' '}
           <Text code>Authorization: CourseKey {'<token>'}</Text> header with each request.
+        </Paragraph>
+        <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
+          To let an AI agent manage this course over MCP, connect Claude Code with:{' '}
+          <Text code copyable={{ text: mcpSnippet }}>
+            {mcpSnippet}
+          </Text>{' '}
+          A <Tag style={{ fontSize: 11 }}>read</Tag> key can only look things up; <Tag style={{ fontSize: 11 }}>write</Tag>{' '}
+          adds course setup (assignments, quizzes, rubrics, autograder); <Tag style={{ fontSize: 11 }}>admin</Tag> also
+          allows deletes, attempt resets and student email &mdash; each of those still needs a confirmation code from the{' '}
+          <Text strong>Pending agent actions</Text> panel below.
         </Paragraph>
 
         {isLoading ? (

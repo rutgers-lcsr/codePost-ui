@@ -10866,6 +10866,56 @@ export interface PendingAdminActionResponse {
   status: string;
 }
 /**
+ * Dashboard rows for Tier-3 agent confirmations — includes the code, so
+ * this serializer must only ever be reachable by a human course admin.
+ * @export
+ * @interface PendingAgentAction
+ */
+export interface PendingAgentAction {
+  /**
+   *
+   * @type {number}
+   * @memberof PendingAgentAction
+   */
+  readonly id: number;
+  /**
+   * The agent tool name.
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly tool: string;
+  /**
+   * The short confirmation code shown in the dashboard.
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly code: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly plan: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly expiresAt: string;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly requestedBy: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAgentAction
+   */
+  readonly created: string;
+}
+/**
  *
  * @export
  * @interface PreviewDemoFile
