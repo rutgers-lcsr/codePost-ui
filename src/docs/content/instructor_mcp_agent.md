@@ -34,31 +34,29 @@ its scope:
 
 The key is shown once — copy it immediately.
 
-**2. Connect your client.** For Claude Code:
+**2. Connect your client.**
+
+**Claude Desktop / claude.ai (easiest):** add a custom connector pointing at
+`https://codepost-api.cs.rutgers.edu/mcp`. Claude opens a codePost sign-in in your
+browser (your university single sign-on works), shows you exactly which permissions the
+agent is asking for, and connects — no keys to copy. Approving as yourself means the
+agent asks which of your courses to work on and can switch mid-conversation. If your
+client asks for an OAuth Client ID (Advanced settings), leave it blank — registration is
+automatic; a fallback client id is available from your codePost admins if needed.
+
+**Claude Code**, with a course key:
 
 ```bash
 claude mcp add --transport http codepost https://codepost-api.cs.rutgers.edu/mcp \
   --header "Authorization: CourseKey cpk_..."
 ```
 
-For Claude Desktop, use the standard `mcp-remote` bridge in your MCP settings:
-
-```json
-{
-  "mcpServers": {
-    "codepost": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://codepost-api.cs.rutgers.edu/mcp",
-               "--transport", "http-only",
-               "--header", "Authorization:CourseKey cpk_..."]
-    }
-  }
-}
-```
+…or with no header at all — Claude Code will run the same browser sign-in flow as
+Desktop. Course keys remain the right choice for headless or scripted use.
 
 You can also connect with your **personal API token** (*Account → Request API Token*)
-instead of a course key. The agent then asks which of your courses to work on and can
-switch between them mid-conversation.
+as an `Authorization: Token …` header — like the OAuth path, the agent then asks which
+course to work on.
 
 ## How destructive actions are protected
 
@@ -81,7 +79,9 @@ gain or lose, and it must call again explicitly to apply.
 
 - Every change an agent makes is recorded in the course **Activity Log**, marked as
   agent-initiated, alongside the normal audit events.
-- Revoking the API key (or deactivating it) cuts the agent off immediately.
+- Revoking the API key (or deactivating it) cuts the agent off immediately. OAuth
+  connections are revoked from your AI assistant's connector settings, and their tokens
+  expire on their own within an hour of revocation.
 - The agent sees student emails and grades if you give it a `read`-or-above key — treat
   the key like you would treat your own login.
 - Agent traffic is rate-limited per course, so a runaway agent cannot affect the rest of
