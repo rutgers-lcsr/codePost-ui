@@ -11,7 +11,7 @@ import {
   FileTextOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../lib/monaco';
 import { Button, Card, Empty, Radio, Space, Tooltip, Typography } from 'antd';
 import * as React from 'react';
 import { colors } from '../../../../theme/colors';

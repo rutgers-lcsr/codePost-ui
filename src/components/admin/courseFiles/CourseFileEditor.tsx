@@ -4,7 +4,7 @@
 // admin page only pulls the monaco-vendor chunk when a text file is opened. Fully
 // controlled (value/onChange) so it drops straight into an antd Form.Item.
 import * as React from 'react';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../lib/monaco';
 import CodeEditorTabHint from '../../core/CodeEditorTabHint';
 import { File as CodePostFile } from '../../../utils/file';
 

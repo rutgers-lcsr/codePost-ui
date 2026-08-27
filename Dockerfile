@@ -43,6 +43,9 @@ RUN chmod +x /docker-entrypoint.sh
 # Copy built assets from build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Sourcemaps are built 'hidden' for CI/debugging; don't ship them in the image
+RUN find /usr/share/nginx/html -name '*.map' -delete
+
 # Prepare directories for non-root nginx user
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \

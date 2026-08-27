@@ -14,20 +14,10 @@ import LoginForm from './LoginForm';
 import NoMatch from './NoMatch';
 import PasswordReset from './PasswordReset';
 
-import { AllTestimonials } from '../landing/Testimonial';
 import ValidateInvite from '../student/ValidateInvite';
-import AboutUs from './AboutUs';
-import AutograderDetail from './AutograderDetail';
 import ChangeLog from './ChangeLog';
-import CreateSignup from './CreateSignup';
-import FAQs from './FAQs';
-import IntegrationsPage from './IntegrationsPage';
 import JoinSignup from './JoinSignup';
-import PrivacyPolicy from './PrivacyPolicy';
-import Scholarship from './Scholarship';
 import { SignUpManager } from './SignUpManager';
-import TermsOfService from './TermsOfService';
-import WhyUse from './WhyUse';
 
 import Logout from '../core/Logout';
 
@@ -38,10 +28,26 @@ import { ADMIN, CODE, CODE_DEMO, GRADER, STUDENT } from '../../routes';
 
 const AsyncLanding = React.lazy(() => import('../landing/LandingABTest'));
 const AsyncDocs = React.lazy(() => import('../docs/DocsPage'));
+// Marketing/legal pages are route-scoped and rarely visited — keep them (and their
+// heavy deps: swiper, react-select, the universities list) out of the entry chunk.
+const AsyncAboutUs = React.lazy(() => import('./AboutUs'));
+const AsyncAutograderDetail = React.lazy(() => import('./AutograderDetail'));
+const AsyncCreateSignup = React.lazy(() => import('./CreateSignup'));
+const AsyncFAQs = React.lazy(() => import('./FAQs'));
+const AsyncIntegrationsPage = React.lazy(() => import('./IntegrationsPage'));
+const AsyncPrivacyPolicy = React.lazy(() => import('./PrivacyPolicy'));
+const AsyncScholarship = React.lazy(() => import('./Scholarship'));
+const AsyncTermsOfService = React.lazy(() => import('./TermsOfService'));
+const AsyncWhyUse = React.lazy(() => import('./WhyUse'));
+const AsyncAllTestimonials = React.lazy(() =>
+  import('../landing/Testimonial').then((m) => ({ default: m.AllTestimonials })),
+);
 const AsyncGrade = React.lazy(() => import('../../features/code-review/CodeConsole'));
 const AsyncDemoLanding = React.lazy(() => import('../../features/code-review/DemoLanding'));
 const AsyncDemoAdmin = React.lazy(() => import('../../features/code-review/DemoAdmin'));
 const AsyncDemoGrader = React.lazy(() => import('../../features/code-review/DemoGrader'));
+
+const lazyPage = (node: React.ReactNode) => <React.Suspense fallback={<div />}>{node}</React.Suspense>;
 
 const anonymousUser: User = {
   email: 'anonymous@university.edu',
@@ -124,15 +130,18 @@ class IndexManager extends React.Component<IndexManagerProps> {
 
           <Route path="/forgot-password" element={<ForgotPasswordForm isLoggedIn={this.props.isLoggedIn} />} />
           <Route path="/signup/join" element={<JoinSignup email={this.props.email} />} />
-          <Route path="/signup/create" element={<CreateSignup isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/signup/create" element={lazyPage(<AsyncCreateSignup isLoggedIn={this.props.isLoggedIn} />)} />
           <Route path="/signup" element={<SignUpManager />} />
-          <Route path="/terms" element={<TermsOfService isLoggedIn={this.props.isLoggedIn} />} />
-          <Route path="/integrations" element={<IntegrationsPage isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/terms" element={lazyPage(<AsyncTermsOfService isLoggedIn={this.props.isLoggedIn} />)} />
+          <Route
+            path="/integrations"
+            element={lazyPage(<AsyncIntegrationsPage isLoggedIn={this.props.isLoggedIn} />)}
+          />
           <Route
             path="/scholarships/computer-science-education"
-            element={<Scholarship isLoggedIn={this.props.isLoggedIn} />}
+            element={lazyPage(<AsyncScholarship isLoggedIn={this.props.isLoggedIn} />)}
           />
-          <Route path="/autograder" element={<AutograderDetail isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/autograder" element={lazyPage(<AsyncAutograderDetail isLoggedIn={this.props.isLoggedIn} />)} />
           <Route
             path="/docs/*"
             element={
@@ -141,12 +150,15 @@ class IndexManager extends React.Component<IndexManagerProps> {
               </React.Suspense>
             }
           />
-          <Route path="/faqs" element={<FAQs isLoggedIn={this.props.isLoggedIn} />} />
-          <Route path="/privacy" element={<PrivacyPolicy isLoggedIn={this.props.isLoggedIn} />} />
-          <Route path="/why-use-codepost" element={<WhyUse isLoggedIn={this.props.isLoggedIn} />} />
-          <Route path="/about" element={<AboutUs isLoggedIn={this.props.isLoggedIn} />} />
+          <Route path="/faqs" element={lazyPage(<AsyncFAQs isLoggedIn={this.props.isLoggedIn} />)} />
+          <Route path="/privacy" element={lazyPage(<AsyncPrivacyPolicy isLoggedIn={this.props.isLoggedIn} />)} />
+          <Route path="/why-use-codepost" element={lazyPage(<AsyncWhyUse isLoggedIn={this.props.isLoggedIn} />)} />
+          <Route path="/about" element={lazyPage(<AsyncAboutUs isLoggedIn={this.props.isLoggedIn} />)} />
           <Route path="/changelog" element={<ChangeLog isLoggedIn={this.props.isLoggedIn} />} />
-          <Route path="/testimonials" element={<AllTestimonials isLoggedIn={this.props.isLoggedIn} />} />
+          <Route
+            path="/testimonials"
+            element={lazyPage(<AsyncAllTestimonials isLoggedIn={this.props.isLoggedIn} />)}
+          />
 
           <Route
             path="/password-reset/:uid/:token"

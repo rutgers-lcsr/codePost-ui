@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Card, Checkbox, Flex, Input, Radio, Space, Tag, Typography } from 'antd';
 import { CheckCircleTwoTone, CloseCircleTwoTone, CommentOutlined } from '@ant-design/icons';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../lib/monaco';
 import { StudentQuizResponse, QuestionTypeEnum } from '../../../api-client';
 import Markdown from '../../core/Markdown';
 import CodeEditorTabHint from '../../core/CodeEditorTabHint';

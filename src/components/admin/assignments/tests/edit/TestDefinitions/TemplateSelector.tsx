@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 /* library imports */
 import { Button, Modal, Table } from 'antd';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../../../lib/monaco';
 
 interface IProps {
   populateDefinition: (template: string) => void;

@@ -3,7 +3,7 @@ import { Button, Modal, Tabs } from 'antd';
 
 import { AssignmentFileType } from '../../types/models';
 
-import Editor from '@monaco-editor/react';
+import Editor from '../../lib/monaco';
 
 interface IProps {
   // files: FileType[] | FileTemplateType[];

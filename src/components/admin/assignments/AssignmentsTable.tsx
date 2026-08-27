@@ -59,6 +59,8 @@ import { colors } from '../../../theme/colors';
 import CPButton from '../../../components/core/CPButton';
 
 import DraggableBodyRow from '../../../components/core/DraggableBodyRow';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import update from 'immutability-helper';
 
@@ -1597,6 +1599,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         }) as React.HTMLAttributes<HTMLElement>;
 
   return (
+    // DndProvider lives here (not at the app root) — this drag-sortable table is the
+    // only react-dnd consumer, and hoisting the provider would pull react-dnd's
+    // redux stack into the entry bundle.
+    <DndProvider backend={HTML5Backend}>
     <div className="manage-assignments">
       <StatsDrawer
         type={drawerType || DRAWER_TYPE.None}
@@ -1690,6 +1696,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         }
       />
     </div>
+    </DndProvider>
   );
 };
 

@@ -11,7 +11,7 @@ import {
   FileTextOutlined,
   CodeOutlined,
 } from '@ant-design/icons';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../../lib/syntaxHighlighter';
 import { ExecutionResult } from '../../../utils/fileExecution';
 import { filesApi } from '../../../api-client/clients';
 import { ConsoleThemeContext, consoleThemes } from '../../../styles/abstracts/_console-theme-context';

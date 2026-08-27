@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="theme-color" content="#000000" />
 
-    <!-- Polyfill for AWS SDK and other Node.js libraries -->
-    <script src="/polyfills.js"></script>
+    <!-- Polyfill for AWS SDK and other Node.js libraries (inlined — a separate
+         render-blocking request for one line isn't worth an RTT) -->
+    <script>window.global = window;</script>
 
     <!-- Preventing caching of index.html
       https://stackoverflow.com/questions/49547/how-to-control-web-page-caching-across-all-browsers -->
@@ -22,10 +23,6 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="shortcut icon" href="/favicon.ico" />
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" media="none" />
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Mono" media="none" />
-
     <!-- Student Console fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,75 +33,6 @@
     <title>codePost: Autograder and code review for computer science courses</title>
     <meta name="description"
         content="codePost is a free autograder and code annotation tool that makes it easy to grade computer science course work." />
-
-    <!-- foobar
-    <script>
-        (function () {
-            var w = window;
-            var d = document;
-
-            // dummy definitions
-            w.setFoobarParams = function () { return 1 }
-            w.addToFoobar = function () { return 2 }
-            w.removeFromFoobar = function () { return 3 }
-            w.setFoobar = function () { return 4 }
-
-            var l = function () {
-                g = document.createElement('div');
-                g.setAttribute('id', 'foobar');
-                d.body.appendChild(g);
-                var s = d.createElement('script');
-                s.type = 'text/javascript';
-                s.async = true;
-                s.src = '/foobar.js';
-                var x = d.getElementsByTagName('script')[0];
-                x.parentNode.insertBefore(s, x);
-            };
-            if (w.attachEvent) {
-                w.attachEvent('onload', l);
-            } else {
-                w.addEventListener('load', l, false);
-            }
-        })();
-    </script> -->
-
-    <!-- JQuery -->
-    <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-        integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFsm"
-        crossorigin="anonymous"></script>
-    <!-- 
-    <script defer>
-        console.log("LOADING INTERCOM");
-        var w = window;
-        var ic = w.Intercom;
-
-        var d = document;
-        var i = function () {
-            i.c(arguments);
-        };
-        i.q = [];
-        i.c = function (args) {
-            i.q.push(args);
-        };
-        w.Intercom = i;
-        var l = function () {
-            var s = d.createElement('script');
-            s.type = 'text/javascript';
-            s.async = true;
-            s.src = 'https://widget.intercom.io/widget/' + 'kg4u5rp1';
-            var x = d.getElementsByTagName('script')[0];
-            x.parentNode.insertBefore(s, x);
-        };
-        if (w.attachEvent) {
-            w.attachEvent('onload', l);
-        } else {
-            w.addEventListener('load', l, false);
-        }
-
-    </script> -->
-
-
-
 
 </head>
 

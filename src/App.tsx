@@ -15,7 +15,6 @@ import { CLIENT_URL } from './config';
 import LogInAs from './components/core/LogInAs';
 import Logout from './components/core/Logout';
 
-import Dashboard from './components/codepost-admin/Dashboard';
 
 import Home from './components/core/Home';
 
@@ -40,7 +39,6 @@ import {
 import IndexManager from './components/pre-auth/IndexManager';
 import ChangeLog from './components/pre-auth/ChangeLog';
 import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
-import TermsOfService from './components/pre-auth/TermsOfService';
 
 import Settings from './components/core/settings';
 
@@ -69,6 +67,15 @@ const AsyncDemoAdmin = lazy(() => import('./features/code-review/DemoAdmin'));
 const AsyncDemoGrader = lazy(() => import('./features/code-review/DemoGrader'));
 const AsyncDevTools = lazy(() => import('./components/dev/DevTools'));
 const AsyncDocs = lazy(() => import('./components/docs/DocsPage'));
+// Superadmin-only console — keep lazy so recharts/d3 never ship to regular users.
+const AsyncDashboard = lazy(() => import('./components/codepost-admin/Dashboard'));
+const AsyncTermsOfService = lazy(() => import('./components/pre-auth/TermsOfService'));
+
+const TermsOfService = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
+  <Suspense fallback={<RouterLoading />}>
+    <AsyncTermsOfService isLoggedIn={isLoggedIn} />
+  </Suspense>
+);
 
 /*****************************************************************************/
 
@@ -773,7 +780,16 @@ Firefox:
       </>
     );
 
-    const dashboardRoute = canAccessSuperAdminConsole ? <Route path="/dashboard" element={<Dashboard />} /> : null;
+    const dashboardRoute = canAccessSuperAdminConsole ? (
+      <Route
+        path="/dashboard"
+        element={
+          <Suspense fallback={<RouterLoading />}>
+            <AsyncDashboard />
+          </Suspense>
+        }
+      />
+    ) : null;
 
     const settingsRoute = (
       <Route

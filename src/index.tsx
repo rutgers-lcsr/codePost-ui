@@ -10,8 +10,6 @@ Object.keys(localStorage)
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ConfigProvider } from 'antd';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 
@@ -36,15 +34,13 @@ root.render(
   <ErrorBoundary type="app">
     <QueryClientProvider client={queryClient}>
       <ConfigProvider theme={themeConfig}>
-        <DndProvider backend={HTML5Backend}>
-          <BrowserRouter>
-            <MaintenanceBanner />
-            <StrictMode>
-              <App />
-            </StrictMode>
-            <ReportIssueButton />
-          </BrowserRouter>
-        </DndProvider>
+        <BrowserRouter>
+          <MaintenanceBanner />
+          <StrictMode>
+            <App />
+          </StrictMode>
+          <ReportIssueButton />
+        </BrowserRouter>
       </ConfigProvider>
       {process.env.NODE_ENV === 'development' && !window.localStorage.getItem('codepost:hide-dev-tools') && (
         <ReactQueryDevtools initialIsOpen={false} />

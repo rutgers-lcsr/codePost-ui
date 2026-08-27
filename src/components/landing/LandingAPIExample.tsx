@@ -7,7 +7,7 @@ import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWa
 
 import landingVars from '../../styles/pages/_landingVars';
 import CPButton from '../core/CPButton';
-import Editor from '@monaco-editor/react';
+import Editor from '../../lib/monaco';
 
 const apiCodeExamples = [
   {

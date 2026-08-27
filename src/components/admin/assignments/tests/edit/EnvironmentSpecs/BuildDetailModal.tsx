@@ -17,7 +17,7 @@ import {
   CopyOutlined,
 } from '@ant-design/icons';
 import { AnsiUp } from 'ansi-up';
-import { Editor } from '@monaco-editor/react';
+import { Editor } from '../../../../../../lib/monaco';
 import { sanitizeHtml } from '../../../../../../utils/sanitize';
 
 /**********************************************************************************************************************/

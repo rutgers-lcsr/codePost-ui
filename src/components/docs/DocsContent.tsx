@@ -8,7 +8,7 @@ import { getDocByPath, getDocRoutes } from './DocsLoader';
 import { Image, Typography, Alert, Breadcrumb, Divider } from 'antd';
 import { useParams, Link, useLocation } from 'react-router';
 import { colors } from '../../theme/colors';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../lib/prismHighlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
   HomeOutlined,

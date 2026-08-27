@@ -5,8 +5,7 @@ import type { CommentType } from '../../../types/models';
 import { getFileContent, type AssignmentFileType, type FileType } from '../../../utils/file';
 import { fileTypeRegistry } from '../formats';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import lowlight from 'lowlight';
+import SyntaxHighlighter from '../../../lib/syntaxHighlighter';
 
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context';
 
@@ -64,9 +63,9 @@ const tsvGrammar = {
   ],
 };
 
-// Safe to call multiple times — lowlight just overwrites
-lowlight.registerLanguage('csv', () => csvGrammar);
-lowlight.registerLanguage('tsv', () => tsvGrammar);
+// Safe to call multiple times — the registry just overwrites
+SyntaxHighlighter.registerLanguage('csv', () => csvGrammar);
+SyntaxHighlighter.registerLanguage('tsv', () => tsvGrammar);
 
 export interface ICodeContentCoreProps {
   file: FileType;

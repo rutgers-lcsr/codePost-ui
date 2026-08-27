@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import CPButton from '../core/CPButton';
 
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { OnMount } from '../../lib/monaco';
 
 import confusedStudentImg from './../../img/landing/compressed/confused_student.png';
 

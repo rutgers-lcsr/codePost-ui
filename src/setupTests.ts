@@ -45,6 +45,19 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock react-pdf to avoid Node.js legacy build warnings and heavy rendering in tests.
+// Mock the self-hosted Monaco wrapper: importing it executes real monaco-editor,
+// which needs browser APIs (clipboard, layout) that jsdom doesn't provide.
+vi.mock('./lib/monaco', () => {
+  const Editor = () => React.createElement('div', { 'data-testid': 'monaco-editor-mock' });
+  return {
+    default: Editor,
+    Editor,
+    DiffEditor: () => React.createElement('div', { 'data-testid': 'monaco-diff-mock' }),
+    useMonaco: () => null,
+    loader: { config: () => undefined, init: () => Promise.resolve(null) },
+  };
+});
+
 vi.mock('react-pdf', () => {
   return {
     Document: ({ children }: { children?: React.ReactNode }) => React.createElement('div', null, children),

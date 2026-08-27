@@ -69,27 +69,37 @@ export default defineConfig(async (config) => {
     },
     build: {
       outDir: 'build',
-      sourcemap: true,
+      // 'hidden': emit maps for debugging/CI but without sourceMappingURL comments —
+      // browsers never fetch them, and the Dockerfile excludes them from the image.
+      sourcemap: 'hidden',
       target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
       rolldownOptions: {
         output: {
-          manualChunks(id) {
-            const chunks: Record<string, string[]> = {
-              'react-vendor': ['react', 'react-dom', 'react-router'],
-              'antd-vendor': ['antd', '@ant-design/icons'],
-              'aws-vendor': ['aws-sdk'],
-              'pdf-vendor': ['react-pdf'],
-              'icons-vendor': ['react-icons'],
-              'jszip-vendor': ['jszip'],
-              'dayjs-vendor': ['dayjs'],
-              'monaco-vendor': ['@monaco-editor/react', 'monaco-editor'],
-              'markdown-vendor': ['react-markdown', 'remark-gfm'],
-            };
-            for (const [chunkName, deps] of Object.entries(chunks)) {
-              if (deps.some((dep) => id.includes(`node_modules/${dep}/`) || id.includes(`node_modules/${dep}\0`))) {
-                return chunkName;
-              }
-            }
+          // Rolldown-native chunking. The old manualChunks() function let rolldown
+          // co-locate shared app modules inside these vendor chunks, which dragged
+          // pdf/monaco into every page's modulepreload graph. Path-pure groups with
+          // includeDependenciesRecursively: false keep membership exact.
+          codeSplitting: {
+            includeDependenciesRecursively: false,
+            groups: [
+              { name: 'monaco-vendor', test: /node_modules\/(@monaco-editor\/react|monaco-editor)\/[^?]*$/ },
+              // [^?]*$ keeps ?url/?worker shim modules (e.g. the pdf.js worker URL) out of
+              // the heavy chunk — an eager 1-line URL import must not preload 450KB of pdfjs.
+              { name: 'pdf-vendor', test: /node_modules\/(react-pdf|pdfjs-dist)\/[^?]*$/ },
+              // styles/ are tiny plain-object themes imported eagerly by the console theme
+              // context — keep them out so the grammar payload stays lazy.
+              {
+                name: 'highlight-vendor',
+                test: /node_modules\/(react-syntax-highlighter\/(?![^?]*\/styles\/)|refractor\/|highlight\.js\/|lowlight\/)[^?]*$/,
+              },
+              { name: 'antd-icons-vendor', test: /node_modules\/@ant-design\/(icons|icons-svg)\// },
+              { name: 'antd-vendor', test: /node_modules\/antd\// },
+              { name: 'react-vendor', test: /node_modules\/(react|react-dom|scheduler|react-router)\// },
+              { name: 'icons-vendor', test: /node_modules\/react-icons\// },
+              { name: 'jszip-vendor', test: /node_modules\/jszip\// },
+              { name: 'dayjs-vendor', test: /node_modules\/dayjs\// },
+              { name: 'markdown-vendor', test: /node_modules\/(react-markdown|remark-gfm)\// },
+            ],
           },
         },
       },

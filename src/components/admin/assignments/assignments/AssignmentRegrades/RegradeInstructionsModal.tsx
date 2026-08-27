@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button, Modal, Tabs } from 'antd';
 import ReactMarkdown from 'react-markdown';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../../lib/monaco';
 
 /* codePost imports */
 

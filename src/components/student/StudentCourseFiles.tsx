@@ -7,7 +7,7 @@
 import * as React from 'react';
 import { Button, Card, Empty, Flex, Image, List, Modal, Skeleton, Space, Spin, Tag, Typography } from 'antd';
 import { DownloadOutlined, EyeOutlined, FileOutlined } from '@ant-design/icons';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../lib/syntaxHighlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { CourseFile } from '../../api-client';
 import { useCourseFiles } from '../admin/courseFiles/queries';
