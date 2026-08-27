@@ -6,7 +6,7 @@
 /* react imports */
 import { useContext, useEffect, useMemo, useState, type CSSProperties } from 'react';
 
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../lib/syntaxHighlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { Layout, Menu, MenuProps, Spin } from 'antd';

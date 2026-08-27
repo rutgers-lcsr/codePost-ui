@@ -4,7 +4,7 @@ import { BugOutlined, CameraOutlined, CheckCircleOutlined, SendOutlined } from '
 import { Button, Checkbox, Input, Modal, Select, Space, Typography } from 'antd';
 import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
 import { getAuthToken } from '../../utils/auth';
-import { gatherBrowserContext, getLastScreenshot, recentConsoleLogs } from '../../utils/diagnostics';
+import { captureScreenshotOnDemand, gatherBrowserContext, recentConsoleLogs } from '../../utils/diagnostics';
 
 const { Text, Paragraph } = Typography;
 
@@ -48,7 +48,9 @@ const ReportIssueButton = () => {
     setDescription('');
     setCategory('Bug Report');
     setIncludeScreenshot(true);
-    setCapturedScreenshot(getLastScreenshot());
+    // Capture the page as it looks right now (the modal isn't painted yet).
+    setCapturedScreenshot(null);
+    void captureScreenshotOnDemand().then((shot) => setCapturedScreenshot(shot));
   }, []);
 
   const handleClose = useCallback(() => {

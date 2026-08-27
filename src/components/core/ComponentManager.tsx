@@ -8,7 +8,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 
 /* other library imports */
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 
 /* codePost imports */
 

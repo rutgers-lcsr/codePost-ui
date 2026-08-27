@@ -1,10 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { assignmentsApi, coursesApi } from '../api-client/clients';
+import { coursesApi } from '../api-client/clients';
 import { assignmentKeys, courseKeys, studentKeys } from '../lib/queryKeys';
 import { Course } from '../api-client';
-import { sanitizeAssignment, sortAssignments } from '../components/admin/hooks/useAssignmentsQuery';
+import { fetchCourseAssignments } from '../components/admin/hooks/useAssignmentsQuery';
 import { normalizeRoster } from '../components/admin/hooks/useRosterQuery';
 import { fetchVisibleAssignments } from '../components/student/fetchVisibleAssignments';
 
@@ -17,15 +17,10 @@ export const usePrefetchCourse = () => {
 
   return useCallback(
     (course: Course) => {
-      // Prefetch assignments
+      // Prefetch assignments (single aggregate request; seeds per-id caches too)
       queryClient.prefetchQuery({
         queryKey: assignmentKeys.list(course.id),
-        queryFn: async () => {
-          if (!course.assignments?.length) return [];
-          const promises = course.assignments.map((id) => assignmentsApi.retrieve({ id }));
-          const results = await Promise.all(promises);
-          return sortAssignments(results.map(sanitizeAssignment));
-        },
+        queryFn: () => fetchCourseAssignments(queryClient, course.id),
         staleTime: 30_000,
       });
 
@@ -70,7 +65,7 @@ export const usePrefetchStudentAssignments = () => {
     (course: Course, studentSections: number[]) => {
       queryClient.prefetchQuery({
         queryKey: studentKeys.assignments(course.id),
-        queryFn: () => fetchVisibleAssignments(course.assignments, studentSections),
+        queryFn: () => fetchVisibleAssignments(course.id, studentSections),
         staleTime: 30_000,
       });
     },

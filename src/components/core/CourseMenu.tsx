@@ -5,7 +5,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Button, Dropdown, Input, theme } from 'antd';
 import { AppstoreOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
 

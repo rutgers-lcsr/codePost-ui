@@ -14,7 +14,7 @@ import {
   PlusOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../lib/monaco';
 import {
   Alert,
   Button,

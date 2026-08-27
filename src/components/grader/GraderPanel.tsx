@@ -13,7 +13,7 @@ import type { TableProps } from 'antd';
 
 /* other library imports */
 
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';

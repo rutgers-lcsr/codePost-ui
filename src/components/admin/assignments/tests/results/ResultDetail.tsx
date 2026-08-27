@@ -26,7 +26,7 @@ import {
   PlayCircleOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../../../../lib/syntaxHighlighter';
 import { githubGist } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { SubmissionInfoType, SubmissionTestType, TestCaseType, TestCategoryType } from '../../../../../types/models';

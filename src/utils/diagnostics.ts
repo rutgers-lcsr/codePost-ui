@@ -5,7 +5,7 @@
  * Provides:
  *  - Sensitive-data redaction
  *  - Console error/warn capture (last 30 entries)
- *  - Periodic screenshot caching via html-to-image
+ *  - On-demand screenshot capture via html-to-image
  *  - Browser context gathering (timing, memory, connection, storage)
  */
 
@@ -110,17 +110,14 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// ── Periodic visual screenshot cache ─────────────────────────────────────────
-let _toJpeg: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
-let _toPng: ((node: HTMLElement, options?: Record<string, unknown>) => Promise<string>) | null = null;
+// ── On-demand visual screenshot ──────────────────────────────────────────────
+// Captured only when explicitly requested (Report Issue dialog). A periodic
+// capture loop used to live here — it cloned the whole DOM every 30s and, via
+// cacheBust, re-downloaded every page image each tick. Don't reintroduce it.
 let _lastScreenshot: string | null = null;
-
-const SCREENSHOT_INTERVAL_MS = 30_000;
-let _screenshotTimer: ReturnType<typeof setTimeout> | null = null;
 
 const CAPTURE_OPTS: Record<string, unknown> = {
   quality: 0.4,
-  cacheBust: true,
   skipFonts: true,
   fontEmbedCSS: '',
   filter: (node: HTMLElement) => {
@@ -130,101 +127,42 @@ const CAPTURE_OPTS: Record<string, unknown> = {
   },
 };
 
-export async function captureScreenshotToCache(): Promise<void> {
-  if ((!_toJpeg && !_toPng) || document.hidden) return;
-  try {
-    const captureFn = _toJpeg ?? _toPng!;
-    const dataUrl = await Promise.race<string>([
-      captureFn(document.body, CAPTURE_OPTS),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
-    ]);
-    _lastScreenshot = dataUrl;
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`[diagnostics] Screenshot cached (${Math.round(dataUrl.length / 1024)}KB)`);
-    }
-  } catch (err) {
-    if (_toPng && _toJpeg) {
-      try {
-        const dataUrl = await Promise.race<string>([
-          _toPng(document.body, CAPTURE_OPTS),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
-        ]);
-        _lastScreenshot = dataUrl;
-        return;
-      } catch {
-        // both failed
-      }
-    }
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[diagnostics] Screenshot capture failed:', err);
-    }
-  }
-}
-
-export function scheduleNextScreenshot(): void {
-  _screenshotTimer = setTimeout(() => {
-    if (document.hidden) {
-      scheduleNextScreenshot();
-      return;
-    }
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(
-        () => {
-          void captureScreenshotToCache().then(scheduleNextScreenshot);
-        },
-        { timeout: 10_000 },
-      );
-    } else {
-      void captureScreenshotToCache().then(scheduleNextScreenshot);
-    }
-  }, SCREENSHOT_INTERVAL_MS);
-}
-
-export function stopScreenshotTimer(): void {
-  if (_screenshotTimer) {
-    clearTimeout(_screenshotTimer);
-    _screenshotTimer = null;
-  }
-}
-
 export function getLastScreenshot(): string | null {
   return _lastScreenshot;
 }
 
 /**
- * Capture a fresh screenshot immediately and return it.
- * Also updates the cache. Returns null if capture is unavailable.
+ * Capture a fresh screenshot immediately and return it (loading html-to-image
+ * on first use). Also updates the cache read by getLastScreenshot().
+ * Returns null if capture fails or is unavailable.
  */
 export async function captureScreenshotOnDemand(): Promise<string | null> {
-  await captureScreenshotToCache();
-  return _lastScreenshot;
-}
-
-// Initialise: load html-to-image, take first screenshot after 5s, then every 30s.
-if (typeof window !== 'undefined') {
-  import('html-to-image')
-    .then((mod) => {
-      _toJpeg = mod.toJpeg;
-      _toPng = mod.toPng;
+  if (typeof window === 'undefined') return null;
+  let toJpeg: (node: HTMLElement, options?: Record<string, unknown>) => Promise<string>;
+  let toPng: (node: HTMLElement, options?: Record<string, unknown>) => Promise<string>;
+  try {
+    ({ toJpeg, toPng } = await import('html-to-image'));
+  } catch (err) {
+    console.warn('[diagnostics] Failed to load html-to-image:', err);
+    return null;
+  }
+  const withTimeout = (p: Promise<string>) =>
+    Promise.race<string>([
+      p,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('screenshot timeout')), 5000)),
+    ]);
+  try {
+    _lastScreenshot = await withTimeout(toJpeg(document.body, CAPTURE_OPTS));
+  } catch {
+    try {
+      _lastScreenshot = await withTimeout(toPng(document.body, CAPTURE_OPTS));
+    } catch (err) {
       if (process.env.NODE_ENV === 'development') {
-        console.debug('[diagnostics] html-to-image loaded, toJpeg + toPng ready');
+        console.warn('[diagnostics] Screenshot capture failed:', err);
       }
-      setTimeout(() => {
-        void captureScreenshotToCache().then(scheduleNextScreenshot);
-      }, 5000);
-    })
-    .catch((err) => {
-      console.warn('[diagnostics] Failed to load html-to-image:', err);
-    });
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && _screenshotTimer) {
-      clearTimeout(_screenshotTimer);
-      _screenshotTimer = null;
-    } else if (!document.hidden && !_screenshotTimer && _toJpeg) {
-      scheduleNextScreenshot();
     }
-  });
+  }
+  return _lastScreenshot;
 }
 
 // ── Browser context helper ────────────────────────────────────────────────────

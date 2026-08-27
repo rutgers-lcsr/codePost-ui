@@ -2,7 +2,7 @@
 import * as React from 'react';
 import debounce from 'lodash/debounce';
 import queryString from 'query-string';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 import { ICodeConsoleState } from '../../../types/CodeConsole.types';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';

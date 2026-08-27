@@ -5,7 +5,7 @@ import { Card, Tooltip } from 'antd';
 
 import { CLIENT_URL, SUPPORT_URL } from '../../config';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 // Integration logos
 import blackboardLogo from './../../img/integrations/blackboard.jpeg';

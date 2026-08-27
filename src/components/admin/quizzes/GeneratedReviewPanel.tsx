@@ -11,6 +11,7 @@ import * as React from 'react';
 import {
   Alert,
   AutoComplete,
+  Card,
   Collapse,
   Divider,
   Empty,
@@ -27,7 +28,13 @@ import {
   Typography,
   message,
 } from 'antd';
-import { InfoCircleOutlined, LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  InfoCircleOutlined,
+  LeftOutlined,
+  ExportOutlined,
+  RobotOutlined,
+} from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
@@ -40,7 +47,7 @@ import { useBackfillPreview, useGeneratedSetDetail, useGeneratedSets, useStaffSe
 import { useRosterQuery } from '../hooks/useRosterQuery';
 import ChoicesEditor from './ChoicesEditor';
 import CodeQuestionEditor from './CodeQuestionEditor';
-import { LocalChoice, hasChoiceEditor, validateChoices } from './choiceUtils';
+import { LocalChoice, hasChoiceEditor, isAcceptedAnswers, validateChoices } from './choiceUtils';
 import MarkdownField from './MarkdownField';
 import { typeMeta } from '../../core/questionMeta';
 
@@ -79,13 +86,17 @@ interface IProps {
   adminActions?: boolean;
 }
 
-/** One editable generated question: stem, description, choices, and points. */
+/** One editable generated question: stem, description, choices, and points.
+ *  Laid out to mirror the regular question editor (QuestionEditorModal) so reviewing
+ *  generated questions feels like editing any other quiz question. */
 const GeneratedQuestionCard: React.FC<{
   question: GeneratedQuizQuestion;
+  /** Zero-based position in the set — shown as "Question N" in the card header. */
+  index: number;
   courseId: number;
   editable: boolean;
   onChanged: () => void;
-}> = ({ question, courseId, editable, onChanged }) => {
+}> = ({ question, index, courseId, editable, onChanged }) => {
   const [text, setText] = React.useState(question.text);
   const [description, setDescription] = React.useState(question.description ?? '');
   const [starterCode, setStarterCode] = React.useState(question.starterCode ?? '');
@@ -161,46 +172,66 @@ const GeneratedQuestionCard: React.FC<{
   };
 
   const meta = typeMeta(question.questionType);
-  const fieldLabel = (label: string) => (
-    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-      {label}
-    </Text>
+  const fieldLabel = (label: string, hint?: string) => (
+    <div style={{ marginBottom: 8 }}>
+      <Text style={{ fontSize: 13, fontWeight: 500 }}>{label}</Text>
+      {hint && (
+        <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
+          {hint}
+        </Text>
+      )}
+    </div>
   );
   return (
-    <Flex vertical gap={20} style={{ padding: '16px 20px', border: '1px solid #f0f0f0', borderRadius: 8 }}>
-      <Flex justify="space-between" align="center" wrap gap={8}>
-        <Tag color={meta.color} style={{ margin: 0 }}>
-          {meta.label}
-        </Tag>
-        <Space size={6}>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Points
-          </Text>
-          <InputNumber
-            min={0}
-            step={1}
-            value={points}
-            disabled={!editable}
-            aria-label="Points"
-            onChange={(v) => setPoints(v ?? 0)}
-            size="small"
-            style={{ width: 72 }}
-          />
+    <Card
+      title={
+        <Space size={10}>
+          <Text strong>Question {index + 1}</Text>
+          <Tag color={meta.color} style={{ margin: 0 }}>
+            {meta.label}
+          </Tag>
         </Space>
-      </Flex>
+      }
+      extra={
+        <Space size={12}>
+          <Space size={6}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Points
+            </Text>
+            <InputNumber
+              min={0}
+              step={1}
+              value={points}
+              disabled={!editable}
+              aria-label="Points"
+              onChange={(v) => setPoints(v ?? 0)}
+              size="small"
+              style={{ width: 72 }}
+            />
+          </Space>
+          {editable && (
+            <Tooltip title="Remove this question">
+              <CPButton size="small" danger icon={<DeleteOutlined />} aria-label="Remove question" onClick={remove} />
+            </Tooltip>
+          )}
+        </Space>
+      }
+      styles={{ body: { display: 'flex', flexDirection: 'column', gap: 20 } }}
+    >
       <div>
         {fieldLabel('Question')}
-        <Input.TextArea
-          aria-label="Question stem"
+        <MarkdownField
+          basic
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          autoSize={{ minRows: 2 }}
-          disabled={!editable}
-          placeholder="Question stem"
+          onChange={setText}
+          courseId={courseId}
+          minRows={2}
+          ariaLabel="Question stem"
+          placeholder="The question stem shown to students"
         />
       </div>
       <div>
-        {fieldLabel('Description — shown beneath the question (Markdown, optional)')}
+        {fieldLabel('Description', 'Optional, Markdown — shown beneath the question.')}
         <MarkdownField
           value={description}
           onChange={setDescription}
@@ -212,7 +243,7 @@ const GeneratedQuestionCard: React.FC<{
       </div>
       {hasChoiceEditor(questionType) && (
         <div>
-          {fieldLabel('Choices')}
+          {fieldLabel(isAcceptedAnswers(questionType) ? 'Accepted answers' : 'Choices')}
           <ChoicesEditor questionType={questionType} value={choices} onChange={setChoices} />
         </div>
       )}
@@ -227,8 +258,8 @@ const GeneratedQuestionCard: React.FC<{
           />
         </div>
       )}
-      <div>
-        {fieldLabel('Answer key — graders only, never shown to students')}
+      <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: '12px 16px' }}>
+        {fieldLabel('Answer key', 'Graders only — never shown to students.')}
         <Input.TextArea
           aria-label="Answer key (graders only)"
           value={referenceSolution}
@@ -238,20 +269,17 @@ const GeneratedQuestionCard: React.FC<{
           placeholder="What a correct answer looks like — working code, the computed result, or the key points a grader should check for…"
         />
       </div>
-      {editable && (
+      {editable && dirty && (
         <>
           <Divider style={{ margin: 0 }} />
-          <Space>
-            <CPButton cpType="primary" size="small" onClick={save} loading={saving} disabled={!dirty}>
+          <Flex justify="flex-end">
+            <CPButton cpType="primary" size="small" onClick={save} loading={saving}>
               Save question
             </CPButton>
-            <CPButton size="small" danger onClick={remove}>
-              Remove
-            </CPButton>
-          </Space>
+          </Flex>
         </>
       )}
-    </Flex>
+    </Card>
   );
 };
 
@@ -420,6 +448,8 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
   const failedCount = sets.filter((s) => s.status === 'failed').length;
   const generatingCount = sets.filter((s) => s.status === 'pending' || s.status === 'generating').length;
   const detailEditable = current?.status === 'ready' || current?.status === 'approved';
+  const detailQuestions = current?.questions ?? [];
+  const detailPoints = detailQuestions.reduce((sum, q) => sum + Number(q.points ?? 0), 0);
 
   // What's being reviewed, from the quiz's own sections: N questions per student.
   const sections = quiz.generatedSections ?? [];
@@ -501,8 +531,6 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               <>
                 <AutoComplete
                   style={{ width: 280 }}
-                  aria-label="Generate questions for a student by email"
-                  placeholder="Generate for a student (email)…"
                   value={genEmail}
                   onChange={setGenEmail}
                   options={(roster?.students ?? []).filter((s): s is string => !!s).map((s) => ({ value: s }))}
@@ -513,7 +541,19 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
                         .includes(input.toLowerCase()),
                   }}
                   data-testid="generate-for-student-email"
-                />
+                >
+                  {/* Custom input so the password-manager opt-outs land on the real <input> —
+                      the roster picker looks like a login email field to browser extensions. */}
+                  <Input
+                    aria-label="Generate questions for a student by email"
+                    placeholder="Generate for a student (email)…"
+                    autoComplete="off"
+                    data-bwignore="true"
+                    data-1p-ignore="true"
+                    data-lpignore="true"
+                    data-form-type="other"
+                  />
+                </AutoComplete>
                 <CPButton
                   icon={<RobotOutlined />}
                   loading={acting}
@@ -579,13 +619,45 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
         ))}
       {current && (
         <Flex vertical gap={16}>
-          <Flex align="center" gap={8}>
-            <CPButton cpType="link" small icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
-              All students
-            </CPButton>
-            <Text strong ref={detailHeadingRef} tabIndex={-1} style={{ outline: 'none' }}>
-              Review — {current.studentEmail}
-            </Text>
+          {/* Header: who's being reviewed and the set-level actions, so nothing about the
+              set as a whole is buried below the question cards. */}
+          <Flex justify="space-between" align="center" wrap gap={8}>
+            <Flex align="center" gap={8} wrap>
+              <CPButton cpType="link" small icon={<LeftOutlined />} onClick={() => setCurrentId(null)}>
+                All students
+              </CPButton>
+              <Text strong ref={detailHeadingRef} tabIndex={-1} style={{ outline: 'none' }}>
+                Review — {current.studentEmail}
+              </Text>
+              {(() => {
+                const s = STATUS_META[current.status ?? ''] ?? { label: current.status, color: 'default' };
+                return <Tag color={s.color}>{s.label}</Tag>;
+              })()}
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {detailQuestions.length} question{detailQuestions.length === 1 ? '' : 's'} · {detailPoints} pts
+              </Text>
+            </Flex>
+            <Space wrap>
+              {current.submission != null && (
+                <CPButton
+                  size="small"
+                  icon={<ExportOutlined />}
+                  onClick={() => window.open(`/code/${current.submission}`, '_blank')}
+                >
+                  View submission
+                </CPButton>
+              )}
+              {adminActions && current.submission != null && (
+                <CPButton size="small" loading={acting} onClick={() => regenerate(current.id!)}>
+                  Regenerate
+                </CPButton>
+              )}
+              {current.status === 'approved' && (
+                <CPButton size="small" loading={acting} onClick={() => unapprove(current.id!)}>
+                  Unapprove
+                </CPButton>
+              )}
+            </Space>
           </Flex>
           {current.status === 'failed' && (
             <Alert
@@ -643,17 +715,18 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               },
             ]}
           />
-          {(current.questions ?? []).map((q) => (
+          {detailQuestions.map((q, i) => (
             <GeneratedQuestionCard
               key={q.id}
               question={q}
+              index={i}
               courseId={courseId}
               editable={detailEditable}
               onChanged={refresh}
             />
           ))}
-          <Space>
-            {current.status === 'ready' && (
+          {current.status === 'ready' && (
+            <Flex justify="flex-end">
               <CPButton
                 cpType="primary"
                 loading={acting}
@@ -662,23 +735,8 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               >
                 Approve &amp; publish for this student
               </CPButton>
-            )}
-            {current.status === 'approved' && (
-              <CPButton loading={acting} onClick={() => unapprove(current.id!)}>
-                Unapprove
-              </CPButton>
-            )}
-            {adminActions && current.submission != null && (
-              <CPButton loading={acting} onClick={() => regenerate(current.id!)}>
-                Regenerate
-              </CPButton>
-            )}
-            {current.submission != null && (
-              <CPButton icon={<ExportOutlined />} onClick={() => window.open(`/code/${current.submission}`, '_blank')}>
-                View submission
-              </CPButton>
-            )}
-          </Space>
+            </Flex>
+          )}
         </Flex>
       )}
     </div>

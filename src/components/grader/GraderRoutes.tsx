@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC, lazy } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 
 import { Course, Section } from '../../api-client';
 import type { UserType } from '../../types/models';
@@ -17,7 +17,7 @@ import RubricManager, { IRubricManagerParams } from '../core/rubric/RubricManage
 import RubricUI from '../admin/assignments/rubric/RubricUI';
 import RubricOverview from '../admin/assignments/rubric/RubricOverview';
 import { encodeForRoute } from '../core/URLutils';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 
 interface LegacyRouteProps {

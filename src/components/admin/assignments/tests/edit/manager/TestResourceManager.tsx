@@ -34,7 +34,7 @@ import { getAuthToken } from '../../../../../../utils/auth';
 import { loadIDList } from '../../../../../../utils/generics';
 import { AssignmentDataSetType, AssignmentFileType, TestCategoryResourceType } from '../../../../../../types/models';
 import { File as CodePostFile } from '../../../../../../utils/file';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../../../lib/monaco';
 import NotebookEditor from '../../../assignments/NotebookEditor';
 
 const { Text } = Typography;

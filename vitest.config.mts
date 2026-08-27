@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: [
-      { find: /^@features\/(.*)$/, replacement: path.resolve(__dirname, 'src/features') + '/$1' },
-      { find: /^@code-review\/(.*)$/, replacement: path.resolve(__dirname, 'src/features/code-review') + '/$1' },
-      { find: '@features', replacement: path.resolve(__dirname, 'src/features') },
-      { find: '@code-review', replacement: path.resolve(__dirname, 'src/features/code-review') },
-      { find: '@test-utils', replacement: path.resolve(__dirname, 'src/test-utils') },
-      { find: '@api-client', replacement: path.resolve(__dirname, 'src/api-client') },
+      { find: /^@features\/(.*)$/, replacement: path.resolve(import.meta.dirname, 'src/features') + '/$1' },
+      { find: /^@code-review\/(.*)$/, replacement: path.resolve(import.meta.dirname, 'src/features/code-review') + '/$1' },
+      { find: '@features', replacement: path.resolve(import.meta.dirname, 'src/features') },
+      { find: '@code-review', replacement: path.resolve(import.meta.dirname, 'src/features/code-review') },
+      { find: '@test-utils', replacement: path.resolve(import.meta.dirname, 'src/test-utils') },
+      { find: '@api-client', replacement: path.resolve(import.meta.dirname, 'src/api-client') },
     ],
   },
   test: {
@@ -34,7 +34,6 @@ export default defineConfig({
     // suite. If you re-disable it for speed, expect to fix that cross-file state sharing.
     isolate: true,
     maxWorkers: '75%',
-    poolMatchGlobs: [['**/hooks/__tests__/useTaskPolling.test.ts', 'forks']],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],

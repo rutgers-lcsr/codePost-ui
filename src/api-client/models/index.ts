@@ -1097,6 +1097,12 @@ export interface AssignmentAnalyticsLateSubmissions {
    */
   onTime: number;
   /**
+   * Submissions with no dateUploaded — can't be bucketed on time.
+   * @type {number}
+   * @memberof AssignmentAnalyticsLateSubmissions
+   */
+  unknown: number;
+  /**
    *
    * @type {number}
    * @memberof AssignmentAnalyticsLateSubmissions
@@ -4531,6 +4537,12 @@ export interface DiskCheck {
   freeGb?: number | null;
 }
 
+/**
+ * @type EmailAddress
+ *
+ * @export
+ */
+export type EmailAddress = string;
 /**
  *
  * @export
@@ -10689,10 +10701,10 @@ export interface PatchedUser {
   readonly id?: number;
   /**
    *
-   * @type {string}
+   * @type {EmailAddress}
    * @memberof PatchedUser
    */
-  email?: string;
+  email?: EmailAddress;
   /**
    *
    * @type {string}
@@ -10866,8 +10878,9 @@ export interface PendingAdminActionResponse {
   status: string;
 }
 /**
- * Dashboard rows for Tier-3 agent confirmations — includes the code, so
- * this serializer must only ever be reachable by a human course admin.
+ * Dashboard rows for Tier-3 agent confirmations. The plan describes a
+ * destructive operation in instructor-only detail, so this serializer must
+ * only ever be reachable by a human course admin.
  * @export
  * @interface PendingAgentAction
  */
@@ -10885,17 +10898,17 @@ export interface PendingAgentAction {
    */
   readonly tool: string;
   /**
-   * The short confirmation code shown in the dashboard.
-   * @type {string}
-   * @memberof PendingAgentAction
-   */
-  readonly code: string;
-  /**
    *
    * @type {string}
    * @memberof PendingAgentAction
    */
   readonly plan: string;
+  /**
+   *
+   * @type {PendingAgentActionStatusEnum}
+   * @memberof PendingAgentAction
+   */
+  readonly status: PendingAgentActionStatusEnum;
   /**
    *
    * @type {string}
@@ -10915,6 +10928,18 @@ export interface PendingAgentAction {
    */
   readonly created: string;
 }
+
+/**
+ * * `pending` - pending
+ * * `approved` - approved
+ * @export
+ * @enum {string}
+ */
+export enum PendingAgentActionStatusEnum {
+  Pending = 'pending',
+  Approved = 'approved',
+}
+
 /**
  *
  * @export
@@ -15830,10 +15855,10 @@ export interface User {
   readonly id: number;
   /**
    *
-   * @type {string}
+   * @type {EmailAddress}
    * @memberof User
    */
-  email?: string;
+  email?: EmailAddress;
   /**
    *
    * @type {string}

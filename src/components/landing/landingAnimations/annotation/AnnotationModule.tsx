@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useEffect, useState } from 'react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../../../lib/syntaxHighlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Badge, Card } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';

@@ -10,7 +10,7 @@ import { Image } from 'antd';
 import classNames from 'classnames';
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../../lib/syntaxHighlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
@@ -29,7 +29,7 @@ import {
   type Notebook,
   type CellDiffEntry,
 } from './Jupyter';
-import Editor from '@monaco-editor/react';
+import Editor from '../../../lib/monaco';
 import Link from 'antd/es/typography/Link';
 import { ConsoleThemeContext } from '../../../styles/abstracts/_console-theme-context.js';
 

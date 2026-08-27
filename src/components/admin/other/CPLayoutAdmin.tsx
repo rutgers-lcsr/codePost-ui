@@ -10,7 +10,7 @@ import * as React from 'react';
 import { Layout } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import CPLogo from '../../core/CPLogo';

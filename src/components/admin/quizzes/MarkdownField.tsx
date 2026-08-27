@@ -15,10 +15,9 @@ import {
 } from '@ant-design/icons';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
-import { Markdown } from 'tiptap-markdown';
+import { Markdown } from '@tiptap/markdown';
 // lowlight v3 via the `lowlight3` alias (the real `lowlight` stays v1 for code-review).
 import { createLowlight, common } from 'lowlight3';
 import { getAuthToken } from '../../../utils/auth';
@@ -72,10 +71,14 @@ const MarkdownField: React.FC<IProps> = ({
 
   const editor = useEditor({
     immediatelyRender: false,
+    // Tiptap v3 defaults this to false, which would freeze the toolbar's
+    // isActive() highlights (read during render).
+    shouldRerenderOnTransaction: true,
     editorProps: { attributes: { 'aria-label': editorLabel, role: 'textbox' } },
     extensions: basic
       ? [
           // Inline-only: keep bold/italic/code/strike marks, drop all block nodes.
+          // underline: markdown has no representation for it, so keep it out of the schema.
           StarterKit.configure({
             heading: false,
             bulletList: false,
@@ -84,20 +87,25 @@ const MarkdownField: React.FC<IProps> = ({
             blockquote: false,
             codeBlock: false,
             horizontalRule: false,
+            underline: false,
+            link: { openOnClick: false, autolink: true },
           }),
-          Link.configure({ openOnClick: false, autolink: true }),
-          Markdown.configure({ html: false, transformPastedText: true }),
+          Markdown,
         ]
       : [
-          StarterKit.configure({ codeBlock: false }),
+          StarterKit.configure({
+            codeBlock: false,
+            underline: false,
+            link: { openOnClick: false, autolink: true },
+          }),
           CodeBlockLowlight.configure({ lowlight }),
-          Link.configure({ openOnClick: false, autolink: true }),
           Image,
-          Markdown.configure({ html: false, tightLists: true, bulletListMarker: '-', transformPastedText: true }),
+          Markdown,
         ],
     content: value ?? '',
+    contentType: 'markdown',
     onUpdate: ({ editor }) => {
-      const md = editor.storage.markdown.getMarkdown();
+      const md = editor.getMarkdown();
       lastEmitted.current = md;
       onChange?.(md);
     },
@@ -108,7 +116,7 @@ const MarkdownField: React.FC<IProps> = ({
     if (!editor) return;
     if ((value ?? '') === lastEmitted.current) return;
     lastEmitted.current = value ?? '';
-    editor.commands.setContent(value ?? '', false);
+    editor.commands.setContent(value ?? '', { emitUpdate: false, contentType: 'markdown' });
   }, [value, editor]);
 
   // ----- Markdown-mode text helpers (operate on the raw textarea) -----

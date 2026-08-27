@@ -7,7 +7,7 @@
 
 /* other library imports */
 
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 
 import { CloseOutlined } from '@ant-design/icons';
 

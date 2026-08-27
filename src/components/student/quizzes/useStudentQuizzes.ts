@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { Course, StudentQuiz } from '../../../api-client';
 import { encodedCourseLink } from '../../core/CourseMenu';
 import { quizNeedsAction } from '../actionStatus';

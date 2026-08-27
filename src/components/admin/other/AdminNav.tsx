@@ -18,7 +18,7 @@ import {
 
 import { Menu } from 'antd';
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 import { CLIENT_URL } from '../../../config';
 import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';

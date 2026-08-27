@@ -191,8 +191,8 @@ async function fetchCourseData(
   userEmail: string,
   studentSections: number[],
 ): Promise<{ assignments: Assignment[]; submissions: Record<number, Submission[]>; views: Record<number, boolean> }> {
-  // 1. Fetch assignments (allSettled inside — one 403 must not blank the course)
-  const assignments = await fetchVisibleAssignments(course.assignments, studentSections);
+  // 1. Fetch assignments (one aggregate request; errors return [] rather than blanking the course)
+  const assignments = await fetchVisibleAssignments(course.id, studentSections);
 
   // 2. Fetch submissions (only for eligible assignments). Fire them all at once — the browser
   // already caps concurrent connections per host, so manual batching only added serial barriers.

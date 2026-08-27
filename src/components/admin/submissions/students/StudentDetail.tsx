@@ -29,7 +29,7 @@ import { Breadcrumb, Dropdown, message, Modal, Select, Tag, Typography, Button, 
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import { openSubmission } from '../../other/AdminUtils';

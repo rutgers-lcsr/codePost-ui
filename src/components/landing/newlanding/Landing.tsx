@@ -6,7 +6,7 @@
 /* react imports */
 import React, { Suspense } from 'react';
 
-import { HashLink as Link } from 'react-router-hash-link';
+import { Link } from 'react-router';
 
 import { ArrowRightOutlined } from '@ant-design/icons';
 

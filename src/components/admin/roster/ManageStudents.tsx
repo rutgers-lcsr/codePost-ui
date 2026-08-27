@@ -18,7 +18,7 @@ import { coursesApi } from '../../../api-client/clients';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 /* codePost imports */
 import { USER_APP, USER_TYPE } from '../../../types/common';

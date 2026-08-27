@@ -23,7 +23,7 @@ import { Badge, Button, Card, Empty, Flex, Modal, Skeleton, Spin, Statistic, Tag
 /* other library imports */
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate } from 'react-router';
 
 /* codePost imports */
 import withWindowWatcher, { IWithWindowWatcherProps } from '../core/withWindowWatcher';

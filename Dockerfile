@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 # Set working directory
 WORKDIR /app
@@ -8,8 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies with clean install for reproducibility
-
-# Using --legacy-peer-deps to for react-codemirror2 compatibility
+# --legacy-peer-deps matches the repo's .npmrc (peer conflicts: tiptap/lowlight, @monaco-editor/react RC)
 RUN npm ci --legacy-peer-deps
 
 # Copy source code
@@ -17,7 +16,7 @@ COPY . .
 
 # Build arguments for environment variables
 # Default to a placeholder that nginx sub_filter replaces at runtime.
-# For local dev (npm run dev), the .env / vite.config.ts default to localhost:8000.
+# For local dev (npm run dev), the .env / vite.config.mts default to localhost:8000.
 ARG REACT_APP_API_URL=__CODEPOST_API_URL_PLACEHOLDER__
 ARG REACT_APP_VERSION
 
@@ -25,8 +24,9 @@ ARG REACT_APP_VERSION
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_VERSION=$REACT_APP_VERSION
 
-# Build the application with Vite
-RUN npm run build:production
+# Build the application with Vite, then strip the 'hidden' sourcemaps — they must
+# not reach the nginx stage (deleting there would leave them in the COPY layer)
+RUN npm run build:production && find build -name '*.map' -delete
 
 # Production stage
 FROM nginx:alpine AS production
@@ -41,7 +41,7 @@ COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Copy built assets from build stage
+# Copy built assets from build stage (sourcemaps already stripped there)
 COPY --from=build /app/build /usr/share/nginx/html
 
 # Prepare directories for non-root nginx user

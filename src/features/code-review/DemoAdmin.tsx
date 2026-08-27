@@ -64,7 +64,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Layout } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import CPLayoutAdmin from '../../components/admin/other/CPLayoutAdmin';
 import CPAdminDetail from '../../components/admin/other/CPAdminDetail';

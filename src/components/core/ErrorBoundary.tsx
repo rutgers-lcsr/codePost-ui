@@ -6,12 +6,7 @@ import { FileType, getFileContent } from '../../utils/file';
 import { CLIENT_URL, SUPPORT_URL } from '../../config';
 
 import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
-import {
-  gatherBrowserContext,
-  getLastScreenshot,
-  recentConsoleLogs,
-  stopScreenshotTimer,
-} from '../../utils/diagnostics';
+import { gatherBrowserContext, getLastScreenshot, recentConsoleLogs } from '../../utils/diagnostics';
 
 import { Result, Button, Collapse, Typography, Space, Card, theme, Divider, Modal } from 'antd';
 import {
@@ -255,9 +250,6 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
     // Store errorInfo which is only available in componentDidCatch (not in getDerivedStateFromError)
     this.setState({ errorInfo });
-
-    // Stop the periodic screenshot timer — we've crashed
-    stopScreenshotTimer();
 
     // ── Always send: bare error string only (no identifying info) ──
     Logger.errorMinimal(error.toString());

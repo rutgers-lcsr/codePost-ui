@@ -15,7 +15,7 @@ import { Breadcrumb, Checkbox, Empty, Progress, Space, Typography, Tooltip } fro
 import dayjs from 'dayjs';
 import Highlighter from 'react-highlight-words';
 
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router';
 
 /* codePost imports  */
 import type {

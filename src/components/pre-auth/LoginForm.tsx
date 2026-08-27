@@ -12,7 +12,7 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Alert, Input, Spin, Typography } from 'antd';
 
 /* other library imports */
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router';
 
 /* codePost imports */
 import PreAuthLayout from './PreAuthLayout';

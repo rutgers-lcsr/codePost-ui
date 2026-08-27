@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { animated, SpringValue } from 'react-spring';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../../../lib/syntaxHighlighter';
 import { googlecode } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import { consoleThemes } from '../../../../styles/abstracts/_console-theme-context';

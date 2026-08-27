@@ -7,7 +7,7 @@
 import * as React from 'react';
 
 // /* other library imports */
-// import { Link } from 'react-router-dom';
+// import { Link } from 'react-router';
 
 /* ant imports */
 import { Typography } from 'antd';

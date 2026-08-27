@@ -16,7 +16,7 @@ import {
   TeamOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import { Course } from '../../../../api-client';

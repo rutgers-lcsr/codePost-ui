@@ -19,6 +19,7 @@ import type {
   AIProviderTestRequest,
   AIProviderTestResult,
   AIUsageSummary,
+  Assignment,
   CapabilitiesResponse,
   Course,
   CourseAISettings,
@@ -113,6 +114,10 @@ export interface ApiKeysRetrieveRequest {
   id: number;
 }
 
+export interface AssignmentsListRequest {
+  id: number;
+}
+
 export interface AuditLogExportRetrieveRequest {
   id: number;
   assignment?: number;
@@ -194,6 +199,11 @@ export interface PartialUpdateRequest {
     PatchedCourse,
     'id' | 'assignments' | 'sections' | 'inviteCode' | 'webhooks' | 'studentCount' | 'isRubricEditor' | 'capabilities'
   >;
+}
+
+export interface PendingAgentActionsApproveCreateRequest {
+  actionId: string;
+  id: number;
 }
 
 export interface PendingAgentActionsDenyCreateRequest {
@@ -937,6 +947,66 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CourseAPIKeyCreateResponse> {
     const response = await this.apiKeysRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Every assignment in the course the caller may see, each serialized exactly as GET /assignments/{id}/ would serialize it for this caller. Replaces the client-side per-id fan-out (the course detail returns ids only, and list endpoints are blocked).  The visible set mirrors AssignmentPermissions.has_object_permission, NOT the course serializer\'s id list: staff and superusers see everything; students see STUDENT_VISIBLE_STATES minus section-hidden assignments; anyone else who can read the course (org staff of the org who is not a member) gets an empty list, because every per-id retrieve 403s for them today.
+   */
+  async assignmentsListRaw(
+    requestParameters: AssignmentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<Assignment>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling assignmentsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/assignments/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Every assignment in the course the caller may see, each serialized exactly as GET /assignments/{id}/ would serialize it for this caller. Replaces the client-side per-id fan-out (the course detail returns ids only, and list endpoints are blocked).  The visible set mirrors AssignmentPermissions.has_object_permission, NOT the course serializer\'s id list: staff and superusers see everything; students see STUDENT_VISIBLE_STATES minus section-hidden assignments; anyone else who can read the course (org staff of the org who is not a member) gets an empty list, because every per-id retrieve 403s for them today.
+   */
+  async assignmentsList(
+    requestParameters: AssignmentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<Assignment>> {
+    const response = await this.assignmentsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
@@ -1794,7 +1864,74 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Deny a pending agent action — the code stops working immediately.
+   * Approve a pending agent action — the agent\'s next retry executes it.  The conditional update makes approve-vs-deny and double-click races resolve deterministically: whoever flips the row first wins, everyone else gets 409.
+   */
+  async pendingAgentActionsApproveCreateRaw(
+    requestParameters: PendingAgentActionsApproveCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters['actionId'] == null) {
+      throw new runtime.RequiredError(
+        'actionId',
+        'Required parameter "actionId" was null or undefined when calling pendingAgentActionsApproveCreate().',
+      );
+    }
+
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling pendingAgentActionsApproveCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/pendingAgentActions/{actionId}/approve/`;
+    urlPath = urlPath.replace(`{${'actionId'}}`, encodeURIComponent(String(requestParameters['actionId'])));
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Approve a pending agent action — the agent\'s next retry executes it.  The conditional update makes approve-vs-deny and double-click races resolve deterministically: whoever flips the row first wins, everyone else gets 409.
+   */
+  async pendingAgentActionsApproveCreate(
+    requestParameters: PendingAgentActionsApproveCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<void> {
+    await this.pendingAgentActionsApproveCreateRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   * Deny a pending agent action.  The denial sticks until the request expires: the agent\'s retries get a clear \"denied — stop asking\" error instead of minting a fresh request.
    */
   async pendingAgentActionsDenyCreateRaw(
     requestParameters: PendingAgentActionsDenyCreateRequest,
@@ -1851,7 +1988,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Deny a pending agent action — the code stops working immediately.
+   * Deny a pending agent action.  The denial sticks until the request expires: the agent\'s retries get a clear \"denied — stop asking\" error instead of minting a fresh request.
    */
   async pendingAgentActionsDenyCreate(
     requestParameters: PendingAgentActionsDenyCreateRequest,
@@ -1861,7 +1998,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Active Tier-3 agent confirmation codes for this course.  The whole point of these codes is that the AGENT cannot read them, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see them.
+   * Tier-3 agent actions awaiting (or holding) this course\'s approval.  The whole point of this panel is that the AGENT cannot touch it, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see or decide these.
    */
   async pendingAgentActionsListRaw(
     requestParameters: PendingAgentActionsListRequest,
@@ -1910,7 +2047,7 @@ export class CoursesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Active Tier-3 agent confirmation codes for this course.  The whole point of these codes is that the AGENT cannot read them, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see them.
+   * Tier-3 agent actions awaiting (or holding) this course\'s approval.  The whole point of this panel is that the AGENT cannot touch it, so a course-scoped credential (the agent\'s own key) is refused outright — only a human course admin, signed in normally, may see or decide these.
    */
   async pendingAgentActionsList(
     requestParameters: PendingAgentActionsListRequest,

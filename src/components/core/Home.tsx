@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { AuditOutlined, TeamOutlined } from '@ant-design/icons';
 import { Card, Flex, Typography } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
 import { GrUserAdmin } from 'react-icons/gr';

@@ -6,6 +6,7 @@
 | ----------- | ---------------------------------------------------------------------------- |
 | `dueDate`   | string                                                                       |
 | `onTime`    | number                                                                       |
+| `unknown`   | number                                                                       |
 | `late`      | number                                                                       |
 | `lateByDay` | [Array&lt;AssignmentAnalyticsLateByDay&gt;](AssignmentAnalyticsLateByDay.md) |
 

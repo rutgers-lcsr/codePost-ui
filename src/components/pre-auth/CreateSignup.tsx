@@ -14,7 +14,7 @@ import { Alert, Checkbox, Divider, Input, Modal, Progress, Switch, Typography } 
 /* other library imports */
 import Select, { SingleValue } from 'react-select';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import { SUPPORT_URL } from '../../config';

@@ -9,12 +9,6 @@ declare module 'remark-disable-tokenizers' {
   export default remarkDisableTokenizers;
 }
 
-declare module 'react-router-hash-link' {
-  import type { FC } from 'react';
-  import type { NavLinkProps } from 'react-router-dom';
-  export const HashLink: FC<NavLinkProps & { smooth?: boolean }>;
-}
-
 declare module 'react-player/lib/players/Wistia' {
   import type { ComponentType } from 'react';
   const WistiaPlayer: ComponentType<Record<string, unknown>>;

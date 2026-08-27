@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { redactSensitiveData, recentConsoleLogs, scheduleNextScreenshot, stopScreenshotTimer } from '../diagnostics';
+import { redactSensitiveData, recentConsoleLogs } from '../diagnostics';
 
 // ---------------------------------------------------------------------------
 // redactSensitiveData
@@ -139,26 +139,5 @@ describe('console interceptor', () => {
     console.error('Value: %d', 'not-a-number');
     const last = recentConsoleLogs[recentConsoleLogs.length - 1];
     expect(last.message).toContain('not-a-number');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// scheduleNextScreenshot / stopScreenshotTimer
-// ---------------------------------------------------------------------------
-describe('screenshot scheduling', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    stopScreenshotTimer();
-  });
-
-  afterEach(() => {
-    stopScreenshotTimer();
-    vi.useRealTimers();
-  });
-
-  it('scheduleNextScreenshot sets a timer that can be stopped', () => {
-    scheduleNextScreenshot();
-    // Timer should be set - stopping it should not throw
-    expect(() => stopScreenshotTimer()).not.toThrow();
   });
 });

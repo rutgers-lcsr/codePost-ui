@@ -15,7 +15,7 @@ import TemplateMenu from '../TemplateMenu';
 import { commentTemplatesApi } from '../../../../api-client/clients';
 import { ConsoleThemeContext, consoleThemes } from '../../../../styles/abstracts/_console-theme-context';
 
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 describe('TemplateMenu', () => {
   beforeEach(() => {

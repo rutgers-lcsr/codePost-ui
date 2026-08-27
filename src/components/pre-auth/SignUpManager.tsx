@@ -11,7 +11,7 @@ import { TeamOutlined, UserAddOutlined } from '@ant-design/icons';
 import { Button, Divider, Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import PreAuthSignupLayout from './PreAuthSignupLayout';

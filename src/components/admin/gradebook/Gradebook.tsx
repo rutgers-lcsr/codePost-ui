@@ -70,6 +70,28 @@ interface ITableProps {
  *  tests; the default export wraps it with fetching, error handling, and the export button. */
 export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
   const [search, setSearch] = React.useState('');
+  // Debounced: each keystroke re-filters all rows and recomputes the summary
+  // averages. The input is uncontrolled, so typing itself stays instant.
+  const searchDebounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    if (value === '') {
+      setSearch('');
+      return;
+    }
+    searchDebounceRef.current = setTimeout(() => setSearch(value), 250);
+  }, []);
+  React.useEffect(
+    () => () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    },
+    [],
+  );
   const [section, setSection] = React.useState<string | undefined>(undefined);
   const [pageSize, setPageSize] = useDefaultPageSize();
 
@@ -159,7 +181,9 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
 
   // Class averages over the FILTERED rows, so filtering to a section shows that
   // section's averages. Computed from all filtered rows, not just the visible page.
-  const summary = () => {
+  // Memoized: antd calls the summary function every render, and the averages walk
+  // all filtered rows once per column — O(students × columns).
+  const summaryNode = React.useMemo(() => {
     const classAvg = classAveragePercent(filtered);
     let index = 2;
     return (
@@ -192,7 +216,9 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
         </Table.Summary.Row>
       </Table.Summary>
     );
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, data.assignments, data.quizzes, section]);
+  const summary = () => summaryNode;
 
   if (rows.length === 0) {
     return <Empty description="No students enrolled yet." image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />;
@@ -206,7 +232,7 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
           placeholder="Search students…"
           aria-label="Search students"
           style={{ width: 260 }}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
         />
         {sections.length > 0 && (
           <Select

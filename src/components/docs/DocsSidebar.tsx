@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useState, useMemo } from 'react';
 import { Layout, Menu, Input } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { DocCategory } from './DocsConfig';
 import {
   AppstoreOutlined,

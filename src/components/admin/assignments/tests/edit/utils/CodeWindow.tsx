@@ -9,7 +9,7 @@ import { Button } from 'antd';
 import { codeMirorLanguageMap } from './languageUtils';
 
 import useHotkeys, { S_KEY } from '@code-review/useHotkeys';
-import Editor, { DiffEditor, EditorProps } from '@monaco-editor/react';
+import Editor, { DiffEditor, EditorProps } from '../../../../../../lib/monaco';
 import { osControlKey } from '../../../../../core/operatingSystem';
 import { File } from '../../../../../../utils/file';
 

@@ -71,11 +71,14 @@ export const fetchEnvironment = async (assignment: AssignmentType) => {
 };
 
 //********************************** Complex Fetch Utils (some data processing) *****************************
-export const fetchTestData = async (assignment: AssignmentType) => {
-  // get the latest assignment in case the categories have changed
-  const latestAssignment = (await assignmentsApi.retrieve({
-    id: assignment.id,
-  })) as unknown as AssignmentType;
+export const fetchTestData = async (assignment: AssignmentType, assignmentIsFresh = false) => {
+  // get the latest assignment in case the categories have changed; callers that
+  // fetched the assignment in the same load pass assignmentIsFresh to skip the refetch
+  const latestAssignment = assignmentIsFresh
+    ? assignment
+    : ((await assignmentsApi.retrieve({
+        id: assignment.id,
+      })) as unknown as AssignmentType);
   const categories: TestCategoryType[] = await fetchTestCategories(latestAssignment);
   const casesByCategory: TestCasesByCategory = await fetchTestCasesByCategory(categories);
   return [categories, casesByCategory];

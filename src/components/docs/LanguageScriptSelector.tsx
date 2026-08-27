@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useMemo, useState } from 'react';
 import { Select, Space, Typography } from 'antd';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from '../../lib/prismHighlighter';
 import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { colors } from '../../theme/colors';
 

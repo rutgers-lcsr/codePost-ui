@@ -57,7 +57,7 @@ import locale from './utils/languageLocale';
 
 import themeVars from '../../../../../styles/abstracts/_theme.js';
 
-import Editor from '@monaco-editor/react';
+import Editor from '../../../../../lib/monaco';
 import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client/index.js';
 import { autograderApi } from '../../../../../api-client/clients.js';
 import { AssignmentType } from '../../../../../types/models';
