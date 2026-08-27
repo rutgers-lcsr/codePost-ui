@@ -157,6 +157,7 @@ docs/DashboardApi.md
 docs/DashboardStats.md
 docs/DatabaseCheck.md
 docs/DiskCheck.md
+docs/EmailAddress.md
 docs/EmailPasswordResetRequest.md
 docs/EmailPasswordResetResponse.md
 docs/EmailRegistrationRequest.md

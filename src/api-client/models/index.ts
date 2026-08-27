@@ -4538,6 +4538,12 @@ export interface DiskCheck {
 }
 
 /**
+ * @type EmailAddress
+ *
+ * @export
+ */
+export type EmailAddress = string;
+/**
  *
  * @export
  * @interface EmailPasswordResetRequest
@@ -10695,10 +10701,10 @@ export interface PatchedUser {
   readonly id?: number;
   /**
    *
-   * @type {string}
+   * @type {EmailAddress}
    * @memberof PatchedUser
    */
-  email?: string;
+  email?: EmailAddress;
   /**
    *
    * @type {string}
@@ -15849,10 +15855,10 @@ export interface User {
   readonly id: number;
   /**
    *
-   * @type {string}
+   * @type {EmailAddress}
    * @memberof User
    */
-  email?: string;
+  email?: EmailAddress;
   /**
    *
    * @type {string}

@@ -5,7 +5,7 @@
 | Name                 | Type                               |
 | -------------------- | ---------------------------------- |
 | `id`                 | number                             |
-| `email`              | string                             |
+| `email`              | [EmailAddress](EmailAddress.md)    |
 | `password`           | string                             |
 | `organization`       | number                             |
 | `studentCourses`     | [Array&lt;Course&gt;](Course.md)   |
