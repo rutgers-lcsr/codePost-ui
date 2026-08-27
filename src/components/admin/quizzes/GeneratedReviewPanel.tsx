@@ -531,8 +531,6 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               <>
                 <AutoComplete
                   style={{ width: 280 }}
-                  aria-label="Generate questions for a student by email"
-                  placeholder="Generate for a student (email)…"
                   value={genEmail}
                   onChange={setGenEmail}
                   options={(roster?.students ?? []).filter((s): s is string => !!s).map((s) => ({ value: s }))}
@@ -543,7 +541,19 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
                         .includes(input.toLowerCase()),
                   }}
                   data-testid="generate-for-student-email"
-                />
+                >
+                  {/* Custom input so the password-manager opt-outs land on the real <input> —
+                      the roster picker looks like a login email field to browser extensions. */}
+                  <Input
+                    aria-label="Generate questions for a student by email"
+                    placeholder="Generate for a student (email)…"
+                    autoComplete="off"
+                    data-bwignore="true"
+                    data-1p-ignore="true"
+                    data-lpignore="true"
+                    data-form-type="other"
+                  />
+                </AutoComplete>
                 <CPButton
                   icon={<RobotOutlined />}
                   loading={acting}
