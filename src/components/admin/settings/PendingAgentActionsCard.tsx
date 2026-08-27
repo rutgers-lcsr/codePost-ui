@@ -33,6 +33,7 @@ const PendingAgentActionsCard: React.FC<IPendingAgentActionsCardProps> = ({ cour
     queryKey,
     queryFn: () => Course.listPendingAgentActions(courseId),
     refetchInterval: (query) => ((query.state.data?.length ?? 0) > 0 ? 10_000 : 30_000),
+    refetchIntervalInBackground: false,
   });
   // Defensive: an unmocked/erroring endpoint can resolve to a non-array, and
   // antd's Table throws on a non-array dataSource (rawData.some).

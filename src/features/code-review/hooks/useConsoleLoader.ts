@@ -457,36 +457,43 @@ export function useConsoleLoader({
         );
 
         document.title = `${submissionID}-Submission [${assignment.name}]`;
-        let assignmentFiles: AssignmentFileType[] = [];
-        if (assignment.templateMode) {
-          assignmentFiles = await Promise.all(
-            (assignment.files ?? []).map((assignmentFileOrID) => {
-              if (typeof assignmentFileOrID !== 'number') {
-                return assignmentFileOrID;
-              }
-              return assignmentFilesApi.retrieve({ id: assignmentFileOrID });
-            }),
-          );
-        }
-
-        // load the data only an admin or super grader has access to
-        let graders: string[] = [];
-        let students: string[] = [];
 
         const isSuperGrader = superGraderCourses.some((c) => c.id === assignment!.course);
 
-        if (isCourseAdmin(assignment!) || isSuperGrader) {
-          const roster = (await coursesApi.rosterRetrieve({
-            id: assignment!.course,
-          })) as unknown as CourseRoster;
+        // These loads only depend on the assignment/course resolved above and are
+        // mutually independent — one barrier instead of four serial round trips.
+        // (fetchTestData skips its own assignment refetch: we just fetched it.)
+        const [assignmentFiles, roster, loadedTests, [categories, cases], aiSettingsResult] = await Promise.all([
+          assignment.templateMode
+            ? Promise.all(
+                (assignment.files ?? []).map((assignmentFileOrID) => {
+                  if (typeof assignmentFileOrID !== 'number') {
+                    return assignmentFileOrID;
+                  }
+                  return assignmentFilesApi.retrieve({ id: assignmentFileOrID });
+                }),
+              )
+            : ([] as AssignmentFileType[]),
+          // data only an admin or super grader has access to
+          isCourseAdmin(assignment!) || isSuperGrader
+            ? (coursesApi.rosterRetrieve({ id: assignment!.course }) as unknown as Promise<CourseRoster>)
+            : null,
+          Promise.all(writableSubmission.tests.map((id) => submissionTestsApi.retrieve({ id }))),
+          fetchTestData(assignment, true),
+          // AI settings may be unavailable or forbidden — that must not fail the load
+          getCourseAISettings(course!.id).catch(() => null),
+        ]);
+
+        let graders: string[] = [];
+        let students: string[] = [];
+        if (roster) {
           graders = [...(roster.graders || []), ...(roster.courseAdmins || [])].filter(
             (grader): grader is string => typeof grader === 'string',
           );
           students = (roster.students || []).filter((student): student is string => typeof student === 'string');
         }
 
-        tests = await Promise.all(writableSubmission.tests.map((id) => submissionTestsApi.retrieve({ id })));
-        const [categories, cases] = await fetchTestData(assignment);
+        tests = loadedTests;
 
         ({ files, selectedFile } = selectInitialFile(
           files,
@@ -513,17 +520,13 @@ export function useConsoleLoader({
           submissionWithGrade = { ...writableSubmission, grade: calculatedGrade };
         }
 
-        // Fetch AI settings for this course
+        // AI settings for this course (fetched in the barrier above; null on error/no permission)
         let aiEnabled = false;
         let aiFeatureStatus: Record<string, boolean> = {};
-        try {
-          const aiSettings = await getCourseAISettings(course!.id);
-          aiEnabled = aiSettings.aiCommentsEnabled ?? aiSettings.aiEnabled;
+        if (aiSettingsResult) {
+          aiEnabled = aiSettingsResult.aiCommentsEnabled ?? aiSettingsResult.aiEnabled;
           aiFeatureStatus =
-            ((aiSettings as unknown as Record<string, unknown>).aiFeatures as Record<string, boolean>) ?? {};
-        } catch {
-          // AI settings not available or user doesn't have permission
-          aiEnabled = false;
+            ((aiSettingsResult as unknown as Record<string, unknown>).aiFeatures as Record<string, boolean>) ?? {};
         }
 
         setState((prev) => ({

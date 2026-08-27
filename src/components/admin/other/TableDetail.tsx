@@ -65,6 +65,11 @@ const SEARCH_INPUT_WIDTH = 320;
  * Render a highlighter component for search text
  */
 const renderHighlighter = (text: string, searchText: string): React.ReactNode => {
+  // No search → no Highlighter: on a 500-row roster the wrapper is thousands of
+  // extra component instances doing regex work for nothing.
+  if (searchText === '') {
+    return text;
+  }
   return (
     <Highlighter
       highlightStyle={{ backgroundColor: HIGHLIGHT_BACKGROUND_COLOR, padding: 0 }}
@@ -180,9 +185,29 @@ const TableDetail: React.FC<IProps> = ({
     [searchText],
   );
 
+  // Debounced: filtering + re-highlighting every cell per keystroke makes large
+  // rosters lag. The input itself is uncontrolled, so typing stays instant.
+  const searchDebounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(event.target.value.toUpperCase());
+    const value = event.target.value.toUpperCase();
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    // Apply a cleared search immediately (allowClear should feel instant).
+    if (value === '') {
+      setSearchText('');
+      return;
+    }
+    searchDebounceRef.current = setTimeout(() => setSearchText(value), 250);
   }, []);
+  React.useEffect(
+    () => () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    },
+    [],
+  );
 
   // Generate columns with search highlighting
   const enrichedColumns = useMemo(() => {

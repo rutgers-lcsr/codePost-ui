@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { GradebookResponse } from '../../../../api-client';
 import { DEFAULT_PAGE_SIZE } from '../../../utils/LocalSettings';
@@ -63,10 +63,14 @@ describe('GradebookTable', () => {
   });
 
   it('search filters rows by student email', () => {
+    vi.useFakeTimers();
     const { container } = render(<GradebookTable data={makeData()} />);
     fireEvent.change(screen.getByPlaceholderText('Search students…'), {
       target: { value: 'student59' },
     });
+    // The search is debounced 250ms so typing doesn't re-filter per keystroke.
+    act(() => vi.advanceTimersByTime(300));
+    vi.useRealTimers();
     const rows = bodyRows(container);
     expect(rows).toHaveLength(1);
     expect(rows[0].textContent).toContain('student59@x.edu');
