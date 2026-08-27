@@ -84,7 +84,7 @@
     "dev": "vite",
     "start": "vite",
     "build": "tsc && vite build --mode development",
-    "build:production": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && tsc && vite build --mode production",
+    "build:production": "export NODE_OPTIONS=\"--max-old-space-size=4096\" && tsc && vite build --mode production && node scripts/check-chunk-cycles.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "playwright test",

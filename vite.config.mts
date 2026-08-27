@@ -82,7 +82,11 @@ export default defineConfig(async (config) => {
           codeSplitting: {
             includeDependenciesRecursively: false,
             groups: [
-              { name: 'monaco-vendor', test: /node_modules\/(@monaco-editor\/react|monaco-editor)\/[^?]*$/ },
+              // Babel runtime helpers are imported by nearly every vendor package; left
+              // unclaimed they get merged into app chunks, creating vendor→app import
+              // cycles that crash at module init (undefined bindings mid-cycle).
+              { name: 'vendor-helpers', test: /node_modules\/@babel\/runtime\// },
+              { name: 'monaco-vendor', test: /node_modules\/(@monaco-editor|monaco-editor|state-local)\/[^?]*$/ },
               // [^?]*$ keeps ?url/?worker shim modules (e.g. the pdf.js worker URL) out of
               // the heavy chunk — an eager 1-line URL import must not preload 450KB of pdfjs.
               { name: 'pdf-vendor', test: /node_modules\/(react-pdf|pdfjs-dist)\/[^?]*$/ },
@@ -90,10 +94,19 @@ export default defineConfig(async (config) => {
               // context — keep them out so the grammar payload stays lazy.
               {
                 name: 'highlight-vendor',
-                test: /node_modules\/(react-syntax-highlighter\/(?![^?]*\/styles\/)|refractor\/|highlight\.js\/|lowlight\/)[^?]*$/,
+                // Includes the lowlight/refractor micro-deps (fault, format, prismjs,
+                // character/is-* helpers) — leaving them unclaimed strands them in the
+                // app shim chunks and creates vendor↔shim import cycles.
+                test: /node_modules\/(react-syntax-highlighter\/(?![^?]*\/styles\/)|refractor\/|highlight\.js\/|lowlight\/|prismjs\/|fault\/|format\/|character-entities-legacy\/|character-reference-invalid\/|parse-entities\/|is-decimal\/|is-hexadecimal\/|is-alphabetical\/|is-alphanumerical\/)[^?]*$/,
               },
-              { name: 'antd-icons-vendor', test: /node_modules\/@ant-design\/(icons|icons-svg)\// },
-              { name: 'antd-vendor', test: /node_modules\/antd\// },
+              // One chunk for the whole antd ecosystem: antd, its @rc-component internals,
+              // @ant-design (icons import cssinjs, antd imports icons — splitting them
+              // creates a vendor↔vendor cycle), and cssinjs's own micro-deps. A stray
+              // rc module in an app chunk crashed staging (PromptTemplatePicker cycle).
+              {
+                name: 'antd-vendor',
+                test: /node_modules\/(antd|@rc-component|@ant-design|@emotion\/(hash|unitless)|react-is|is-mobile|stylis)\//,
+              },
               { name: 'react-vendor', test: /node_modules\/(react|react-dom|scheduler|react-router)\// },
               { name: 'icons-vendor', test: /node_modules\/react-icons\// },
               { name: 'jszip-vendor', test: /node_modules\/jszip\// },
