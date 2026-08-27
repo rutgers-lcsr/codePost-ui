@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { useQuery } from '@tanstack/react-query';
-import { assignmentsApi } from '../../../api-client/clients';
+import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query';
+import { coursesApi } from '../../../api-client/clients';
 import { assignmentKeys } from '../../../lib/queryKeys';
 import { Assignment } from '../../../types/common';
 import { Course } from '../../../api-client';
@@ -59,18 +59,25 @@ const sortAssignments = (assignments: Assignment[]) => {
   return [...assignments].sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
 };
 
+/**
+ * Fetch every assignment the caller may see in one request (the API's
+ * courses/{id}/assignments/ aggregate — the old path was one retrieve per id),
+ * and seed the per-id caches so assignmentKeys.detail consumers stay warm.
+ */
+const fetchCourseAssignments = async (queryClient: QueryClient, courseId: number): Promise<Assignment[]> => {
+  const results = await coursesApi.assignmentsList({ id: courseId });
+  const sanitized = results.map(sanitizeAssignment);
+  sanitized.forEach((assignment) => queryClient.setQueryData(assignmentKeys.detail(assignment.id), assignment));
+  return sortAssignments(sanitized);
+};
+
 export const useAssignmentsQuery = (course: Course | undefined) => {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: assignmentKeys.list(course?.id ?? -1),
-    queryFn: async () => {
-      if (!course?.assignments?.length) return [];
-      const promises = course.assignments.map((id) => assignmentsApi.retrieve({ id }));
-      const results = await Promise.all(promises);
-      const sanitized = results.map(sanitizeAssignment);
-      return sortAssignments(sanitized);
-    },
+    queryFn: () => fetchCourseAssignments(queryClient, course!.id),
     enabled: !!course,
   });
 };
 
-export { sanitizeAssignment, sortAssignments };
+export { fetchCourseAssignments, sanitizeAssignment, sortAssignments };

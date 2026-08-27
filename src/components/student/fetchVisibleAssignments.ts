@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { assignmentsApi } from '../../api-client/clients';
+import { coursesApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
 
 /** States students may see — mirrors the server's STUDENT_VISIBLE_STATES. The server
@@ -18,20 +18,20 @@ export const isAssignmentVisibleToStudent = (a: Assignment, studentSections: num
 };
 
 /**
- * Fan out one retrieve per assignment ID and keep only the assignments this student may
- * see. Uses allSettled: a single 403/404 (stale course cache, a state change mid-session)
- * must drop that one assignment, not blank the whole course.
+ * Fetch the assignments this student may see in one request (the API's
+ * courses/{id}/assignments/ aggregate — replaces one retrieve per id). The server
+ * already applies state + section filtering; the client-side predicate stays as
+ * defense in depth. An error returns [] rather than blanking the whole course
+ * (matching the old allSettled resilience).
  */
 export const fetchVisibleAssignments = async (
-  assignmentIds: number[],
+  courseId: number,
   studentSections: number[],
 ): Promise<Assignment[]> => {
-  const results = await Promise.allSettled(assignmentIds.map((id) => assignmentsApi.retrieve({ id })));
-  return results
-    .filter(
-      (r): r is PromiseFulfilledResult<Awaited<ReturnType<typeof assignmentsApi.retrieve>>> =>
-        r.status === 'fulfilled',
-    )
-    .map((r) => r.value as unknown as Assignment)
-    .filter((a) => isAssignmentVisibleToStudent(a, studentSections));
+  try {
+    const results = await coursesApi.assignmentsList({ id: courseId });
+    return (results as unknown as Assignment[]).filter((a) => isAssignmentVisibleToStudent(a, studentSections));
+  } catch {
+    return [];
+  }
 };

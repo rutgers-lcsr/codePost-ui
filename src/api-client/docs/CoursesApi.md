@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost*
 | [**apiKeysDestroy**](CoursesApi.md#apikeysdestroy)                                       | **DELETE** /courses/{id}/apiKeys/{keyId}/                      |             |
 | [**apiKeysPartialUpdate**](CoursesApi.md#apikeyspartialupdate)                           | **PATCH** /courses/{id}/apiKeys/{keyId}/                       |             |
 | [**apiKeysRetrieve**](CoursesApi.md#apikeysretrieve)                                     | **GET** /courses/{id}/apiKeys/                                 |             |
+| [**assignmentsList**](CoursesApi.md#assignmentslist)                                     | **GET** /courses/{id}/assignments/                             |             |
 | [**auditLogExportRetrieve**](CoursesApi.md#auditlogexportretrieve)                       | **GET** /courses/{id}/auditLogExport/                          |             |
 | [**auditLogList**](CoursesApi.md#auditloglist)                                           | **GET** /courses/{id}/auditLog/                                |             |
 | [**capabilitiesRetrieve**](CoursesApi.md#capabilitiesretrieve)                           | **GET** /courses/{id}/capabilities/                            |             |
@@ -799,6 +800,77 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 | ----------- | ----------- | ---------------- |
 | **201**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## assignmentsList
+
+> Array&lt;Assignment&gt; assignmentsList(id)
+
+Every assignment in the course the caller may see, each serialized exactly as GET /assignments/{id}/ would serialize it for this caller. Replaces the client-side per-id fan-out (the course detail returns ids only, and list endpoints are blocked). The visible set mirrors AssignmentPermissions.has_object_permission, NOT the course serializer\&#39;s id list: staff and superusers see everything; students see STUDENT_VISIBLE_STATES minus section-hidden assignments; anyone else who can read the course (org staff of the org who is not a member) gets an empty list, because every per-id retrieve 403s for them today.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { AssignmentsListRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies AssignmentsListRequest;
+
+  try {
+    const data = await api.assignmentsList(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                     | Notes                     |
+| ------ | -------- | ----------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;Assignment&gt;**](Assignment.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

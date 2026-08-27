@@ -11,6 +11,7 @@ vi.mock('../../api-client/clients', () => createApiClientsMock());
 vi.mock('../../components/admin/hooks/useAssignmentsQuery', () => ({
   sanitizeAssignment: vi.fn((a: any) => a),
   sortAssignments: vi.fn((a: any) => a),
+  fetchCourseAssignments: vi.fn(async () => []),
 }));
 
 vi.mock('../../components/admin/hooks/useRosterQuery', () => ({
@@ -106,10 +107,11 @@ describe('usePrefetchStudentAssignments', () => {
   it('prefetches visible student assignments', async () => {
     const { queryClient, wrapper } = createWrapper();
 
-    vi.mocked(assignmentsApi.retrieve)
-      .mockResolvedValueOnce({ id: 1, isVisible: true, hideFrom: [] } as any)
-      .mockResolvedValueOnce({ id: 2, isVisible: false, hideFrom: [] } as any)
-      .mockResolvedValueOnce({ id: 3, isVisible: true, hideFrom: [10] } as any);
+    vi.mocked(coursesApi.assignmentsList).mockResolvedValueOnce([
+      { id: 1, isVisible: true, hideFrom: [] },
+      { id: 2, isVisible: false, hideFrom: [] },
+      { id: 3, isVisible: true, hideFrom: [10] },
+    ] as any);
 
     const { result } = renderHook(() => usePrefetchStudentAssignments(), { wrapper });
 
@@ -126,11 +128,13 @@ describe('usePrefetchStudentAssignments', () => {
   it('handles assignments with null hideFrom', async () => {
     const { queryClient, wrapper } = createWrapper();
 
-    vi.mocked(assignmentsApi.retrieve).mockResolvedValueOnce({
-      id: 1,
-      isVisible: true,
-      hideFrom: null,
-    } as any);
+    vi.mocked(coursesApi.assignmentsList).mockResolvedValueOnce([
+      {
+        id: 1,
+        isVisible: true,
+        hideFrom: null,
+      },
+    ] as any);
 
     const { result } = renderHook(() => usePrefetchStudentAssignments(), { wrapper });
 

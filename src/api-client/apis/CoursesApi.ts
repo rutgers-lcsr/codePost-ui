@@ -19,6 +19,7 @@ import type {
   AIProviderTestRequest,
   AIProviderTestResult,
   AIUsageSummary,
+  Assignment,
   CapabilitiesResponse,
   Course,
   CourseAISettings,
@@ -110,6 +111,10 @@ export interface ApiKeysPartialUpdateRequest {
 }
 
 export interface ApiKeysRetrieveRequest {
+  id: number;
+}
+
+export interface AssignmentsListRequest {
   id: number;
 }
 
@@ -942,6 +947,66 @@ export class CoursesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<CourseAPIKeyCreateResponse> {
     const response = await this.apiKeysRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Every assignment in the course the caller may see, each serialized exactly as GET /assignments/{id}/ would serialize it for this caller. Replaces the client-side per-id fan-out (the course detail returns ids only, and list endpoints are blocked).  The visible set mirrors AssignmentPermissions.has_object_permission, NOT the course serializer\'s id list: staff and superusers see everything; students see STUDENT_VISIBLE_STATES minus section-hidden assignments; anyone else who can read the course (org staff of the org who is not a member) gets an empty list, because every per-id retrieve 403s for them today.
+   */
+  async assignmentsListRaw(
+    requestParameters: AssignmentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Array<Assignment>>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling assignmentsList().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/courses/{id}/assignments/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Every assignment in the course the caller may see, each serialized exactly as GET /assignments/{id}/ would serialize it for this caller. Replaces the client-side per-id fan-out (the course detail returns ids only, and list endpoints are blocked).  The visible set mirrors AssignmentPermissions.has_object_permission, NOT the course serializer\'s id list: staff and superusers see everything; students see STUDENT_VISIBLE_STATES minus section-hidden assignments; anyone else who can read the course (org staff of the org who is not a member) gets an empty list, because every per-id retrieve 403s for them today.
+   */
+  async assignmentsList(
+    requestParameters: AssignmentsListRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<Assignment>> {
+    const response = await this.assignmentsListRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

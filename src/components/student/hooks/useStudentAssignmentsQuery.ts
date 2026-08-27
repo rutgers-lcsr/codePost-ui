@@ -13,8 +13,8 @@ export const useStudentAssignmentsQuery = (
     queryKey: studentKeys.assignments(course?.id ?? -1),
     queryFn: async (): Promise<Assignment[]> => {
       if (!course) return [];
-      return fetchVisibleAssignments(course.assignments, studentSections);
+      return fetchVisibleAssignments(course.id, studentSections);
     },
-    enabled: !!course && course.assignments.length > 0,
+    enabled: !!course,
   });
 };
