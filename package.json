@@ -15,7 +15,6 @@
     "@tiptap/pm": "^3.30.5",
     "@tiptap/react": "^3.30.5",
     "@tiptap/starter-kit": "^3.30.5",
-    "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
@@ -141,11 +140,6 @@
     "vite-plugin-svgr": "^5.2.0",
     "vitest": "^4.1.8",
     "vitest-axe": "^0.1.0"
-  },
-  "jest": {
-    "moduleNameMapper": {
-      ".*hljs": "<rootDir>/empty.js"
-    }
   },
   "overrides": {
     "react-spring": {

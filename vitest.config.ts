@@ -34,7 +34,6 @@ export default defineConfig({
     // suite. If you re-disable it for speed, expect to fix that cross-file state sharing.
     isolate: true,
     maxWorkers: '75%',
-    poolMatchGlobs: [['**/hooks/__tests__/useTaskPolling.test.ts', 'forks']],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],

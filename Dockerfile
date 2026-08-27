@@ -8,8 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Install dependencies with clean install for reproducibility
-
-# Using --legacy-peer-deps to for react-codemirror2 compatibility
+# --legacy-peer-deps matches the repo's .npmrc (peer conflicts: tiptap/lowlight, @monaco-editor/react RC)
 RUN npm ci --legacy-peer-deps
 
 # Copy source code
