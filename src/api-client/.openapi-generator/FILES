@@ -294,6 +294,7 @@ docs/PatchedWebhook.md
 docs/PendingAdminActionRequest.md
 docs/PendingAdminActionResponse.md
 docs/PendingAgentAction.md
+docs/PendingAgentActionStatusEnum.md
 docs/PreviewDemoFile.md
 docs/PreviewGeneratedSectionRequest.md
 docs/PromptExperiment.md

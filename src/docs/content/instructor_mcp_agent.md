@@ -30,7 +30,7 @@ its scope:
 | --- | --- |
 | `read` *(default)* | Look things up: roster, grading progress, gradebook, submissions, quizzes, analytics. Nothing else. |
 | `write` | Everything in `read`, plus course setup: create and edit assignments and quizzes, author autograder tests, upload starter files, manage the rubric, sections, and grading assignments, publish work and release feedback (each with a preview step). |
-| `admin` | Everything in `write`, plus the destructive operations — deleting things, resetting quiz attempts, removing roster members, emailing students. **Every one of these also requires a confirmation code from you** (see below). |
+| `admin` | Everything in `write`, plus the destructive operations — deleting things, resetting quiz attempts, removing roster members, emailing students. **Every one of these also requires your explicit approval** (see below). |
 
 The key is shown once — copy it immediately.
 
@@ -61,15 +61,21 @@ course to work on.
 ## How destructive actions are protected
 
 Anything the agent cannot undo — deleting an assignment, resetting quiz attempts,
-emailing every student — is refused on the first try, no matter the key scope. Instead, a
-**confirmation code** appears under *Course Settings → Pending agent actions*, along with
-exactly what the agent wants to do and how much it affects.
+emailing every student — needs your explicit approval, no matter the key scope.
 
-Read the code there and paste it into the chat to approve, or press **Deny** to kill it.
-Codes work once, expire after 10 minutes, and die automatically if the situation changes
-between the preview and your approval (for example, a TA finalizes more submissions in
-the meantime). The agent cannot read the code itself — the panel refuses the agent's own
-credential — so nothing irreversible happens without a human in the loop.
+**In Claude Code and Claude Desktop**, your client pops a native approval dialog right in
+the chat showing exactly what the agent wants to do and how much it affects. Click
+**Approve** and the operation runs; click **Decline** and the agent is told to stop. The
+AI model itself never sees or answers that dialog — only you can.
+
+**On clients that can't show the dialog**, the request appears under *Course Settings →
+Pending agent actions* instead (the agent hands you a direct link). Review the plan there
+and press **Approve** — the agent proceeds on its next attempt — or **Deny**, which makes
+the agent stop asking. Requests work once, expire after 10 minutes, and die automatically
+if the situation changes between the preview and your approval (for example, a TA
+finalizes more submissions in the meantime). The agent cannot approve anything itself —
+the panel refuses the agent's own credential — so nothing irreversible happens without a
+human in the loop.
 
 Less dangerous changes (publishing an assignment, releasing feedback) use a lighter
 protection: the agent's first call is always a preview of exactly what students would

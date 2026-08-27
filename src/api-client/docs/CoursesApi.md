@@ -2,49 +2,50 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                                                   | HTTP request                                                | Description |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------- |
-| [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate)                   | **PATCH** /courses/{id}/addToRoster/                        |             |
-| [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve)                                   | **GET** /courses/{id}/aiModels/                             |             |
-| [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/                         |             |
-| [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/                           |             |
-| [**aiTestCreate**](CoursesApi.md#aitestcreate)                                           | **POST** /courses/{id}/aiTest/                              |             |
-| [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                              |             |
-| [**apiKeysCreate**](CoursesApi.md#apikeyscreate)                                         | **POST** /courses/{id}/apiKeys/                             |             |
-| [**apiKeysDestroy**](CoursesApi.md#apikeysdestroy)                                       | **DELETE** /courses/{id}/apiKeys/{keyId}/                   |             |
-| [**apiKeysPartialUpdate**](CoursesApi.md#apikeyspartialupdate)                           | **PATCH** /courses/{id}/apiKeys/{keyId}/                    |             |
-| [**apiKeysRetrieve**](CoursesApi.md#apikeysretrieve)                                     | **GET** /courses/{id}/apiKeys/                              |             |
-| [**auditLogExportRetrieve**](CoursesApi.md#auditlogexportretrieve)                       | **GET** /courses/{id}/auditLogExport/                       |             |
-| [**auditLogList**](CoursesApi.md#auditloglist)                                           | **GET** /courses/{id}/auditLog/                             |             |
-| [**capabilitiesRetrieve**](CoursesApi.md#capabilitiesretrieve)                           | **GET** /courses/{id}/capabilities/                         |             |
-| [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/                   |             |
-| [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/                     |             |
-| [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/                       |             |
-| [**create**](CoursesApi.md#create)                                                       | **POST** /courses/                                          |             |
-| [**deleteRubricCategoryPartialUpdate**](CoursesApi.md#deleterubriccategorypartialupdate) | **PATCH** /courses/{id}/deleteRubricCategory/               |             |
-| [**destroy**](CoursesApi.md#destroy)                                                     | **DELETE** /courses/{id}/                                   |             |
-| [**gradebookExportRetrieve**](CoursesApi.md#gradebookexportretrieve)                     | **GET** /courses/{id}/gradebookExport/                      |             |
-| [**gradebookRetrieve**](CoursesApi.md#gradebookretrieve)                                 | **GET** /courses/{id}/gradebook/                            |             |
-| [**list**](CoursesApi.md#list)                                                           | **GET** /courses/                                           |             |
-| [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                                    |             |
-| [**pendingAgentActionsDenyCreate**](CoursesApi.md#pendingagentactionsdenycreate)         | **POST** /courses/{id}/pendingAgentActions/{actionId}/deny/ |             |
-| [**pendingAgentActionsList**](CoursesApi.md#pendingagentactionslist)                     | **GET** /courses/{id}/pendingAgentActions/                  |             |
-| [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/                        |             |
-| [**questionsList**](CoursesApi.md#questionslist)                                         | **GET** /courses/{id}/questions/                            |             |
-| [**quizAccommodationsList**](CoursesApi.md#quizaccommodationslist)                       | **GET** /courses/{id}/quizAccommodations/                   |             |
-| [**quizGradingProgressRetrieve**](CoursesApi.md#quizgradingprogressretrieve)             | **GET** /courses/{id}/quizGradingProgress/                  |             |
-| [**quizzesList**](CoursesApi.md#quizzeslist)                                             | **GET** /courses/{id}/quizzes/                              |             |
-| [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/                   |             |
-| [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                                      |             |
-| [**rosterMapPartialUpdate**](CoursesApi.md#rostermappartialupdate)                       | **PATCH** /courses/{id}/rosterMap/                          |             |
-| [**rosterMapRetrieve**](CoursesApi.md#rostermapretrieve)                                 | **GET** /courses/{id}/rosterMap/                            |             |
-| [**rosterPartialUpdate**](CoursesApi.md#rosterpartialupdate)                             | **PATCH** /courses/{id}/roster/                             |             |
-| [**rosterRetrieve**](CoursesApi.md#rosterretrieve)                                       | **GET** /courses/{id}/roster/                               |             |
-| [**sectionsList**](CoursesApi.md#sectionslist)                                           | **GET** /courses/{id}/sections/                             |             |
-| [**setQuizAccommodationPartialUpdate**](CoursesApi.md#setquizaccommodationpartialupdate) | **PATCH** /courses/{id}/setQuizAccommodation/               |             |
-| [**studentCaptionsPartialUpdate**](CoursesApi.md#studentcaptionspartialupdate)           | **PATCH** /courses/{id}/studentCaptions/                    |             |
-| [**studentCaptionsRetrieve**](CoursesApi.md#studentcaptionsretrieve)                     | **GET** /courses/{id}/studentCaptions/                      |             |
-| [**update**](CoursesApi.md#update)                                                       | **PUT** /courses/{id}/                                      |             |
+| Method                                                                                   | HTTP request                                                   | Description |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ----------- |
+| [**addToRosterPartialUpdate**](CoursesApi.md#addtorosterpartialupdate)                   | **PATCH** /courses/{id}/addToRoster/                           |             |
+| [**aiModelsRetrieve**](CoursesApi.md#aimodelsretrieve)                                   | **GET** /courses/{id}/aiModels/                                |             |
+| [**aiSettingsPartialUpdate**](CoursesApi.md#aisettingspartialupdate)                     | **PATCH** /courses/{id}/aiSettings/                            |             |
+| [**aiSettingsRetrieve**](CoursesApi.md#aisettingsretrieve)                               | **GET** /courses/{id}/aiSettings/                              |             |
+| [**aiTestCreate**](CoursesApi.md#aitestcreate)                                           | **POST** /courses/{id}/aiTest/                                 |             |
+| [**aiUsageRetrieve**](CoursesApi.md#aiusageretrieve)                                     | **GET** /courses/{id}/aiUsage/                                 |             |
+| [**apiKeysCreate**](CoursesApi.md#apikeyscreate)                                         | **POST** /courses/{id}/apiKeys/                                |             |
+| [**apiKeysDestroy**](CoursesApi.md#apikeysdestroy)                                       | **DELETE** /courses/{id}/apiKeys/{keyId}/                      |             |
+| [**apiKeysPartialUpdate**](CoursesApi.md#apikeyspartialupdate)                           | **PATCH** /courses/{id}/apiKeys/{keyId}/                       |             |
+| [**apiKeysRetrieve**](CoursesApi.md#apikeysretrieve)                                     | **GET** /courses/{id}/apiKeys/                                 |             |
+| [**auditLogExportRetrieve**](CoursesApi.md#auditlogexportretrieve)                       | **GET** /courses/{id}/auditLogExport/                          |             |
+| [**auditLogList**](CoursesApi.md#auditloglist)                                           | **GET** /courses/{id}/auditLog/                                |             |
+| [**capabilitiesRetrieve**](CoursesApi.md#capabilitiesretrieve)                           | **GET** /courses/{id}/capabilities/                            |             |
+| [**changeInviteCodePartialUpdate**](CoursesApi.md#changeinvitecodepartialupdate)         | **PATCH** /courses/{id}/changeInviteCode/                      |             |
+| [**courseSettingsPartialUpdate**](CoursesApi.md#coursesettingspartialupdate)             | **PATCH** /courses/{id}/courseSettings/                        |             |
+| [**courseSettingsRetrieve**](CoursesApi.md#coursesettingsretrieve)                       | **GET** /courses/{id}/courseSettings/                          |             |
+| [**create**](CoursesApi.md#create)                                                       | **POST** /courses/                                             |             |
+| [**deleteRubricCategoryPartialUpdate**](CoursesApi.md#deleterubriccategorypartialupdate) | **PATCH** /courses/{id}/deleteRubricCategory/                  |             |
+| [**destroy**](CoursesApi.md#destroy)                                                     | **DELETE** /courses/{id}/                                      |             |
+| [**gradebookExportRetrieve**](CoursesApi.md#gradebookexportretrieve)                     | **GET** /courses/{id}/gradebookExport/                         |             |
+| [**gradebookRetrieve**](CoursesApi.md#gradebookretrieve)                                 | **GET** /courses/{id}/gradebook/                               |             |
+| [**list**](CoursesApi.md#list)                                                           | **GET** /courses/                                              |             |
+| [**partialUpdate**](CoursesApi.md#partialupdate)                                         | **PATCH** /courses/{id}/                                       |             |
+| [**pendingAgentActionsApproveCreate**](CoursesApi.md#pendingagentactionsapprovecreate)   | **POST** /courses/{id}/pendingAgentActions/{actionId}/approve/ |             |
+| [**pendingAgentActionsDenyCreate**](CoursesApi.md#pendingagentactionsdenycreate)         | **POST** /courses/{id}/pendingAgentActions/{actionId}/deny/    |             |
+| [**pendingAgentActionsList**](CoursesApi.md#pendingagentactionslist)                     | **GET** /courses/{id}/pendingAgentActions/                     |             |
+| [**questionBanksList**](CoursesApi.md#questionbankslist)                                 | **GET** /courses/{id}/questionBanks/                           |             |
+| [**questionsList**](CoursesApi.md#questionslist)                                         | **GET** /courses/{id}/questions/                               |             |
+| [**quizAccommodationsList**](CoursesApi.md#quizaccommodationslist)                       | **GET** /courses/{id}/quizAccommodations/                      |             |
+| [**quizGradingProgressRetrieve**](CoursesApi.md#quizgradingprogressretrieve)             | **GET** /courses/{id}/quizGradingProgress/                     |             |
+| [**quizzesList**](CoursesApi.md#quizzeslist)                                             | **GET** /courses/{id}/quizzes/                                 |             |
+| [**removeFromRosterPartialUpdate**](CoursesApi.md#removefromrosterpartialupdate)         | **PATCH** /courses/{id}/removeFromRoster/                      |             |
+| [**retrieve**](CoursesApi.md#retrieve)                                                   | **GET** /courses/{id}/                                         |             |
+| [**rosterMapPartialUpdate**](CoursesApi.md#rostermappartialupdate)                       | **PATCH** /courses/{id}/rosterMap/                             |             |
+| [**rosterMapRetrieve**](CoursesApi.md#rostermapretrieve)                                 | **GET** /courses/{id}/rosterMap/                               |             |
+| [**rosterPartialUpdate**](CoursesApi.md#rosterpartialupdate)                             | **PATCH** /courses/{id}/roster/                                |             |
+| [**rosterRetrieve**](CoursesApi.md#rosterretrieve)                                       | **GET** /courses/{id}/roster/                                  |             |
+| [**sectionsList**](CoursesApi.md#sectionslist)                                           | **GET** /courses/{id}/sections/                                |             |
+| [**setQuizAccommodationPartialUpdate**](CoursesApi.md#setquizaccommodationpartialupdate) | **PATCH** /courses/{id}/setQuizAccommodation/                  |             |
+| [**studentCaptionsPartialUpdate**](CoursesApi.md#studentcaptionspartialupdate)           | **PATCH** /courses/{id}/studentCaptions/                       |             |
+| [**studentCaptionsRetrieve**](CoursesApi.md#studentcaptionsretrieve)                     | **GET** /courses/{id}/studentCaptions/                         |             |
+| [**update**](CoursesApi.md#update)                                                       | **PUT** /courses/{id}/                                         |             |
 
 ## addToRosterPartialUpdate
 
@@ -1798,11 +1799,85 @@ example().catch(console.error);
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
+## pendingAgentActionsApproveCreate
+
+> pendingAgentActionsApproveCreate(actionId, id)
+
+Approve a pending agent action — the agent\&#39;s next retry executes it. The conditional update makes approve-vs-deny and double-click races resolve deterministically: whoever flips the row first wins, everyone else gets 409.
+
+### Example
+
+```ts
+import { Configuration, CoursesApi } from '';
+import type { PendingAgentActionsApproveCreateRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new CoursesApi(config);
+
+  const body = {
+    // string
+    actionId: actionId_example,
+    // number | A unique integer value identifying this course.
+    id: 56,
+  } satisfies PendingAgentActionsApproveCreateRequest;
+
+  try {
+    const data = await api.pendingAgentActionsApproveCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name         | Type     | Description                                     | Notes                     |
+| ------------ | -------- | ----------------------------------------------- | ------------------------- |
+| **actionId** | `string` |                                                 | [Defaults to `undefined`] |
+| **id**       | `number` | A unique integer value identifying this course. | [Defaults to `undefined`] |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
 ## pendingAgentActionsDenyCreate
 
 > pendingAgentActionsDenyCreate(actionId, id)
 
-Deny a pending agent action — the code stops working immediately.
+Deny a pending agent action. The denial sticks until the request expires: the agent\&#39;s retries get a clear \&quot;denied — stop asking\&quot; error instead of minting a fresh request.
 
 ### Example
 
@@ -1876,7 +1951,7 @@ example().catch(console.error);
 
 > Array&lt;PendingAgentAction&gt; pendingAgentActionsList(id)
 
-Active Tier-3 agent confirmation codes for this course. The whole point of these codes is that the AGENT cannot read them, so a course-scoped credential (the agent\&#39;s own key) is refused outright — only a human course admin, signed in normally, may see them.
+Tier-3 agent actions awaiting (or holding) this course\&#39;s approval. The whole point of this panel is that the AGENT cannot touch it, so a course-scoped credential (the agent\&#39;s own key) is refused outright — only a human course admin, signed in normally, may see or decide these.
 
 ### Example
 

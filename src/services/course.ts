@@ -8,8 +8,8 @@ import { getAuthToken } from '../utils/auth';
 export interface PendingAgentAction {
   id: number;
   tool: string;
-  code: string;
   plan: Record<string, unknown>;
+  status: 'pending' | 'approved';
   expiresAt: string;
   requestedBy: string | null;
   created: string;
@@ -107,12 +107,15 @@ export class Course {
   public static deleteAPIKey = (courseId: number, keyId: number) =>
     apiFetch<void>(`/courses/${courseId}/apiKeys/${keyId}/`, { method: 'DELETE' });
 
-  // ── Pending agent actions (MCP Tier-3 confirmation codes) ─────────────────
-  // Codes are only served to a signed-in course admin — never to a
+  // ── Pending agent actions (MCP Tier-3 confirmations) ──────────────────────
+  // Only a signed-in course admin can see or decide these — never a
   // course-scoped credential — which is the whole point of the flow.
 
   public static listPendingAgentActions = (courseId: number): Promise<PendingAgentAction[]> =>
     apiFetch(`/courses/${courseId}/pendingAgentActions/`);
+
+  public static approvePendingAgentAction = (courseId: number, actionId: number) =>
+    apiFetch<void>(`/courses/${courseId}/pendingAgentActions/${actionId}/approve/`, { method: 'POST' });
 
   public static denyPendingAgentAction = (courseId: number, actionId: number) =>
     apiFetch<void>(`/courses/${courseId}/pendingAgentActions/${actionId}/deny/`, { method: 'POST' });

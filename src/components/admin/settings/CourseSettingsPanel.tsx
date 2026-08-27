@@ -9,6 +9,7 @@ import * as React from 'react';
 import {
   BookOutlined,
   KeyOutlined,
+  SafetyOutlined,
   RedoOutlined,
   RobotOutlined,
   SettingOutlined,
@@ -74,6 +75,13 @@ const ALL_SECTIONS: SectionDef[] = [
     label: 'API Keys',
     icon: <KeyOutlined />,
     description: 'Course-scoped keys',
+    capability: 'manage_course_api_keys',
+  },
+  {
+    key: 'pending-agent-actions',
+    label: 'Pending Agent Actions',
+    icon: <SafetyOutlined />,
+    description: 'Agent approvals',
     capability: 'manage_course_api_keys',
   },
   { key: 'info', label: 'Info', icon: <InfoCircleOutlined />, description: 'IDs and metadata' },
@@ -177,6 +185,19 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Deep link: /settings?section=<key> scrolls to that section once its
+  // capability-gated ref exists (agents hand instructors this link to reach
+  // Pending agent actions with ?section=pending-agent-actions).
+  const deepLinkedSection = React.useRef(false);
+  React.useEffect(() => {
+    if (deepLinkedSection.current) return;
+    const wanted = new URLSearchParams(window.location.search).get('section');
+    if (wanted && sections.some((s) => s.key === wanted) && sectionRefs.current[wanted]) {
+      deepLinkedSection.current = true;
+      scrollToSection(wanted);
+    }
+  }, [sections]);
 
   const resetForm = () => {
     form.resetFields();
@@ -594,6 +615,12 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
       {visibleSectionKeys.includes('api-keys') && (
         <div ref={setSectionRef('api-keys')} style={styles.section}>
           <CourseAPIKeysCard courseId={thisCourse.id} />
+        </div>
+      )}
+
+      {/* ━━━ Pending Agent Actions ━━━ */}
+      {visibleSectionKeys.includes('pending-agent-actions') && (
+        <div ref={setSectionRef('pending-agent-actions')} style={styles.section}>
           <PendingAgentActionsCard courseId={thisCourse.id} />
         </div>
       )}
