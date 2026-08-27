@@ -111,12 +111,12 @@ export default defineConfig(async (config) => {
       tsconfigPaths: true,
       alias: [
         { find: 'jszip', replacement: 'jszip/lib/index.js' },
-        { find: /^@features\/(.*)$/, replacement: path.resolve(__dirname, 'src/features') + '/$1' },
-        { find: /^@code-review\/(.*)$/, replacement: path.resolve(__dirname, 'src/features/code-review') + '/$1' },
-        { find: '@features', replacement: path.resolve(__dirname, 'src/features') },
-        { find: '@code-review', replacement: path.resolve(__dirname, 'src/features/code-review') },
-        { find: '@test-utils', replacement: path.resolve(__dirname, 'src/test-utils') },
-        { find: '@api-client', replacement: path.resolve(__dirname, 'src/api-client') },
+        { find: /^@features\/(.*)$/, replacement: path.resolve(import.meta.dirname, 'src/features') + '/$1' },
+        { find: /^@code-review\/(.*)$/, replacement: path.resolve(import.meta.dirname, 'src/features/code-review') + '/$1' },
+        { find: '@features', replacement: path.resolve(import.meta.dirname, 'src/features') },
+        { find: '@code-review', replacement: path.resolve(import.meta.dirname, 'src/features/code-review') },
+        { find: '@test-utils', replacement: path.resolve(import.meta.dirname, 'src/test-utils') },
+        { find: '@api-client', replacement: path.resolve(import.meta.dirname, 'src/api-client') },
       ],
     },
   };

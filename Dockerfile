@@ -16,7 +16,7 @@ COPY . .
 
 # Build arguments for environment variables
 # Default to a placeholder that nginx sub_filter replaces at runtime.
-# For local dev (npm run dev), the .env / vite.config.ts default to localhost:8000.
+# For local dev (npm run dev), the .env / vite.config.mts default to localhost:8000.
 ARG REACT_APP_API_URL=__CODEPOST_API_URL_PLACEHOLDER__
 ARG REACT_APP_VERSION
 
