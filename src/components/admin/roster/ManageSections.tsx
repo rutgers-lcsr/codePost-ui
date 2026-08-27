@@ -42,7 +42,7 @@ import {
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import ReactSelect from 'react-select';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 /* codePost imports */
 import { tooltips } from '../../../components/core/tooltips';

@@ -16,7 +16,7 @@ import { Breadcrumb, Modal, Button, Tooltip, Typography, Popconfirm } from 'antd
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import type { Assignment, SubmissionInfoType } from '../../../../types/common';

@@ -42,7 +42,7 @@ import {
   Upload,
 } from 'antd';
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ReactMarkdown from 'react-markdown';
 
 import { assignmentFilesApi, assignmentsApi, autograderApi, submissionsApi } from '../../../../../api-client/clients';

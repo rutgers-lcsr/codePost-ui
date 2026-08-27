@@ -7,7 +7,7 @@
 import { lazy, ReactElement, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /* other library imports */
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { message } from 'antd';
 
 /* codePost imports */

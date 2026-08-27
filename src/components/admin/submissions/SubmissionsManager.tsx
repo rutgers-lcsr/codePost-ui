@@ -7,7 +7,7 @@
 import React from 'react';
 
 /* other library imports */
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 
 /* codePost imports */
 import GraderData, { IByGraderProps } from './GraderSubmissions';

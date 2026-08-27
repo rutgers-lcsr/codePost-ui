@@ -11,7 +11,7 @@ import { getStoreSnapshot, useCodeConsoleStore } from '../../stores/useCodeConso
 import * as React from 'react';
 
 /* other library imports */
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 /* codePost imports */
 import Loading from '../../components/core/Loading';

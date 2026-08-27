@@ -4,7 +4,7 @@ import React from 'react';
 import { render, cleanup, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import '@testing-library/jest-dom/vitest';
 
 import { usePermissionsStore, selectCaps, type Capabilities } from '../../../stores/usePermissionsStore';

@@ -74,7 +74,7 @@ export default defineConfig(async (config) => {
         output: {
           manualChunks(id) {
             const chunks: Record<string, string[]> = {
-              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'react-vendor': ['react', 'react-dom', 'react-router'],
               'antd-vendor': ['antd', '@ant-design/icons'],
               'aws-vendor': ['aws-sdk'],
               'pdf-vendor': ['react-pdf'],
@@ -94,7 +94,7 @@ export default defineConfig(async (config) => {
       },
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'react-router-dom', 'antd'],
+      include: ['react', 'react-dom', 'react-router', 'antd'],
     },
     oxc: {
       target: 'es2020',

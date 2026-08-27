@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 import React from 'react';
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router';
 import { Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 

@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import { Typography } from 'antd';
 
 /* other library imports */
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 
 /* codePost */
 import PasswordResetForm from './PasswordResetForm';

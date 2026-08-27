@@ -12,7 +12,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Alert, Checkbox, Input, Space, Spin, Tooltip, Typography } from 'antd';
 
 /* other library imports */
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 import queryString from 'query-string';
 

@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Tag, Space } from 'antd';
 import { EditOutlined, EyeOutlined, CloseOutlined, HomeOutlined } from '@ant-design/icons';
 import CPButton from '../../components/core/CPButton';

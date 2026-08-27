@@ -14,7 +14,7 @@ import { colors } from '../../theme/colors';
 import { Button, Divider } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import { SUPPORT_URL } from '../../config';

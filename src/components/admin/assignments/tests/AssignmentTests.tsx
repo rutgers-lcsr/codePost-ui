@@ -9,7 +9,7 @@ import React from 'react';
 /* antd imports */
 
 /* other library imports */
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 
 /* codePost object imports */

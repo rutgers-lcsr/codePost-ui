@@ -19,7 +19,7 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';

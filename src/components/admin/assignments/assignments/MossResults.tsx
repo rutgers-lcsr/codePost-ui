@@ -5,7 +5,7 @@
 
 /* React imports */
 
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { CodeOutlined } from '@ant-design/icons';
 

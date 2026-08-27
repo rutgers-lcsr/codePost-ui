@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 import { Alert, Button, Spin } from 'antd';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 import { colors } from '../../theme/colors';
 import PreAuthLayout from '../pre-auth/PreAuthLayout';

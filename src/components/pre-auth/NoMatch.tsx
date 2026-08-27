@@ -11,7 +11,7 @@ import { Card, Divider, Typography } from 'antd';
 import { DislikeFilled, DislikeOutlined, LikeFilled, LikeOutlined } from '@ant-design/icons';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import CPTooltip from '../core/CPTooltip';

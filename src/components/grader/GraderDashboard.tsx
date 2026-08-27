@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { BookOutlined, FolderOutlined, InboxOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Card, Empty, Flex, Input, Statistic, Tag, Typography } from 'antd';
 import { motion } from 'motion/react';

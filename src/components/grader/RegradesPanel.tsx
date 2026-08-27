@@ -10,7 +10,7 @@ import * as React from 'react';
 import { Switch, Typography } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 /* codePost imports */
 import { assignmentsApi } from '../../api-client/clients';

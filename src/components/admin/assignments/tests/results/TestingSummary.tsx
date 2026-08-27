@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Breadcrumb, Button } from 'antd';
 
 /* other library imports */
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 /* codePost object imports */
 import {

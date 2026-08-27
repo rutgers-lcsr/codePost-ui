@@ -5,7 +5,7 @@
 
 /* react imports */
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Typography } from 'antd';
 import { encodeForLink } from '../core/URLutils';
 

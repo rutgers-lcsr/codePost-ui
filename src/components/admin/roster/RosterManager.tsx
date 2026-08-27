@@ -6,7 +6,7 @@
 /* react imports */
 
 /* other library imports */
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 
 /* codePost imports */
 import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';

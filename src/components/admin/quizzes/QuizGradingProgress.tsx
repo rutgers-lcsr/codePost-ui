@@ -7,7 +7,7 @@
 import * as React from 'react';
 import { Alert, Breadcrumb, Button, Empty, Progress, Tooltip, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 import { Course } from '../../../api-client';
 import { ITableDetailColumn, TableDetail } from '../other/TableDetail';

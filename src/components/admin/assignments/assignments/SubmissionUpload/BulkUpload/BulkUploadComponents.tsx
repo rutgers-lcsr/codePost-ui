@@ -9,7 +9,7 @@
 import { Button, Divider, Popconfirm, Progress, Table, Tag } from 'antd';
 
 /* other library imports */
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import { UPLOAD_STATUS } from './BulkUploadHelpers';
 

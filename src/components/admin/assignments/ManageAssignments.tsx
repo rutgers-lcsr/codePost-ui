@@ -11,7 +11,7 @@ import { Tag } from 'antd';
 
 /* other library imports */
 
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 /* codePost imports */
@@ -107,7 +107,7 @@ export interface IManageAssignmentsProps {
 
 /**********************************************************************************************************************/
 
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router';
 
 interface LegacyRouteProps {
   match: { params: Record<string, string | undefined>; url: string; path: string; isExact: boolean };

@@ -12,7 +12,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 
 /* other library imports */
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 

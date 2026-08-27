@@ -10,7 +10,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Breadcrumb, Button, Skeleton, Tabs, Typography } from 'antd';
 
 /* other library imports */
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 
 /* codePost object imports */
 import { assignmentsApi, assignmentFilesApi, autograderApi } from '../../../../../api-client/clients';

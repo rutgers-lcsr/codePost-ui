@@ -17,7 +17,7 @@ import cloneDeep from 'lodash/cloneDeep';
 import uniqBy from 'lodash/uniqBy';
 import queryString from 'query-string';
 
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router';
 
 /* codePost imports */
 import AdminNav from './other/AdminNav';

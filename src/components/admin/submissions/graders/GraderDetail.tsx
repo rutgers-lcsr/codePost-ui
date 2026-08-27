@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { Breadcrumb, Typography } from 'antd';
 
 /* other library imports */
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router';
 
 /* codePost imports */
 import type { Assignment, SubmissionInfoType } from '../../../../types/common';

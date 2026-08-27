@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { Badge, Button, Card, Col, Descriptions, Drawer, Row, Space, Statistic, Table, Tag } from 'antd';
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { colors } from '../../theme/colors';
 import type { RosterType as InfraRosterType } from '../../types/models';
 import { Organization } from '../../api-client';

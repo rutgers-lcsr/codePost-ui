@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import queryString from 'query-string';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { Empty, Tag } from 'antd';
 
 import type { SubmissionFile } from '../../../api-client';

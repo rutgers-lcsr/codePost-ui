@@ -3,7 +3,7 @@
 import React from 'react';
 import { render, cleanup } from '@testing-library/react';
 import { vi, describe, it, expect, afterEach } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import '@testing-library/jest-dom/vitest';
 
 import { useCodeConsoleStore } from '../../../../stores/useCodeConsoleStore';

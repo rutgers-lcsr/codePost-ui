@@ -28,7 +28,7 @@ import {
 } from 'antd';
 
 /* other library imports */
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 /* codePost imports */
 /* codePost imports */

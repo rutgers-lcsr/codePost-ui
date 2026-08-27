@@ -33,7 +33,7 @@ import {
   Menu,
   theme,
 } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useCallback, useEffect, useState } from 'react';
 
 import { colors } from '../../theme/colors';

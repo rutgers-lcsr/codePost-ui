@@ -5,7 +5,7 @@ import { FileTextOutlined, FolderOutlined, FormOutlined } from '@ant-design/icon
 
 import { Menu } from 'antd';
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 
 import { Course } from '../../api-client';
 import { encodedCourseLink } from '../core/CourseMenu';

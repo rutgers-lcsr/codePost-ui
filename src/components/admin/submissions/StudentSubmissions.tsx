@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router';
 
 /* codePost imports  */
 import type { Assignment, IStudentSubmissionsDataTable, SubmissionInfoType, UploadFile } from '../../../types/common';

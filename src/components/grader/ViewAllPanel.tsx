@@ -12,7 +12,7 @@ import * as React from 'react';
 import { Course } from '../../api-client';
 import { AssignmentType } from '../../types/models';
 import { Typography } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { encodeForLink } from '../core/URLutils';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';

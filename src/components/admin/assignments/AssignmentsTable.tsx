@@ -76,7 +76,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(advancedFormat);
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 
 /* codePost imports */
 import { SubmissionInfoType, UploadFile } from '../../../types/common';

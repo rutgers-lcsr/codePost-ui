@@ -7,7 +7,7 @@
 import * as React from 'react';
 import { Alert, Breadcrumb, Button, Checkbox, Empty, Modal, Progress, Tag, Tooltip, Typography } from 'antd';
 import { ArrowLeftOutlined, WarningOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 import { message } from 'antd';
 import { IManageSectionsProps } from '../ManageSections';
