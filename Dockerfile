@@ -24,8 +24,9 @@ ARG REACT_APP_VERSION
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 ENV REACT_APP_VERSION=$REACT_APP_VERSION
 
-# Build the application with Vite
-RUN npm run build:production
+# Build the application with Vite, then strip the 'hidden' sourcemaps — they must
+# not reach the nginx stage (deleting there would leave them in the COPY layer)
+RUN npm run build:production && find build -name '*.map' -delete
 
 # Production stage
 FROM nginx:alpine AS production
@@ -40,11 +41,8 @@ COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Copy built assets from build stage
+# Copy built assets from build stage (sourcemaps already stripped there)
 COPY --from=build /app/build /usr/share/nginx/html
-
-# Sourcemaps are built 'hidden' for CI/debugging; don't ship them in the image
-RUN find /usr/share/nginx/html -name '*.map' -delete
 
 # Prepare directories for non-root nginx user
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
