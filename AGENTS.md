@@ -2,7 +2,7 @@
 
 ## Architecture
 
-React 19 + TypeScript 5.9 SPA built with Vite 7, consuming the codePost Django API. Ant Design 6 is the primary UI library, Zustand for state management, React Router 7 for routing.
+React 19 + TypeScript 6 SPA built with Vite 8, consuming the codePost Django API. Ant Design 6 is the primary UI library, Zustand for state management, React Router 8 for routing (import from `react-router` — `react-router-dom` no longer exists).
 
 - **`src/api-client/`** — Auto-generated OpenAPI TypeScript-fetch client. **Never edit manually** — regenerated from the API's `schema.yaml` via `scripts/generate_ts_client.sh` in the API repo. Excluded from ESLint and TypeScript checking.
 - **`src/services/`** — Class-based wrappers around generated API clients (`Course.list()`, `Assignment.read(id)`, etc.). Add new service methods here when extending API usage.
