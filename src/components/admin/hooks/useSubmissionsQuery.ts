@@ -50,7 +50,6 @@ export const useSubmissionsQuery = (courseId: number | undefined, assignments: A
       return newSubmissions;
     },
     enabled: !!courseId && !!assignments && assignments.length > 0,
-    staleTime: 0,
   });
 };
 

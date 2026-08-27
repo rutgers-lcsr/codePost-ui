@@ -176,8 +176,12 @@ export interface ICodeConsoleState {
   /* ========================================
    * Reload Triggers
    * ======================================== */
-  /** Timestamp to trigger rubric reload */
+  /** Polling delay in ms for the rubric reload interval (undefined = no polling).
+   *  This is passed to setInterval — never store a timestamp here (delays > 2^31 clamp to 0). */
   rubricReload?: number;
+
+  /** Monotonic counter bumped by triggerRubricReload() to request a one-off rubric refresh. */
+  rubricReloadNonce: number;
 
   /* ========================================
    * Cursor Navigation

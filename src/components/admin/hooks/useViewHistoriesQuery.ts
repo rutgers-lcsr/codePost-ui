@@ -49,6 +49,5 @@ export const useViewHistoriesQuery = (courseId: number | undefined, assignments:
       return views;
     },
     enabled: !!courseId && !!assignments && assignments.length > 0,
-    staleTime: 0,
   });
 };

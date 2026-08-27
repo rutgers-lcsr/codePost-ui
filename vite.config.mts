@@ -51,7 +51,8 @@ export default defineConfig(async (config) => {
     define: {
       'process.env.REACT_APP_API_URL': JSON.stringify(env.REACT_APP_API_URL || 'http://localhost:8000'),
       'process.env.REACT_APP_VERSION': JSON.stringify(packageJson.version),
-      'process.env.NODE_ENV': JSON.stringify(mode),
+      // NOTE: never define process.env.NODE_ENV here — it breaks Vite's own NODE_ENV
+      // constant-folding and made production builds bundle development React.
     },
 
     server: {

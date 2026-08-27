@@ -214,6 +214,7 @@ const getInitialState = (): ICodeConsoleState => ({
   commentCounter: -1,
   commentRefreshCounter: 0,
   rubricReload: undefined,
+  rubricReloadNonce: 0,
   cursorMode: LOCAL_SETTINGS.cursorMode.getter(),
   showCursor: LOCAL_SETTINGS.cursorMode.getter() ? CURSOR_DOMAIN.CODE : CURSOR_DOMAIN.CODE_HIDDEN,
   showCustomCommentExplorer: false,
@@ -402,7 +403,10 @@ export const useCodeConsoleStore = create<CodeConsoleStore>()(
       setAiEnabled: (enabled) => set({ aiEnabled: enabled }, false, 'setAiEnabled'),
 
       // Rubric reload
-      triggerRubricReload: () => set({ rubricReload: Date.now() }, false, 'triggerRubricReload'),
+      // Bumps a counter rather than writing rubricReload — that field is the setInterval
+      // delay, and a Date.now() written there clamps to a 0ms tight-loop.
+      triggerRubricReload: () =>
+        set((state) => ({ rubricReloadNonce: state.rubricReloadNonce + 1 }), false, 'triggerRubricReload'),
 
       // Old comment ID tracking
       setOldCommentID: (currentId, oldId) => {

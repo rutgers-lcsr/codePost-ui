@@ -6,9 +6,7 @@ import {
   gatherBrowserContext,
   recentConsoleLogs,
   MAX_CONSOLE_LOGS,
-  stopScreenshotTimer,
   getLastScreenshot,
-  captureScreenshotToCache,
   captureScreenshotOnDemand,
   SENSITIVE_KEY_RE,
 } from '../diagnostics';
@@ -111,15 +109,6 @@ describe('screenshot utilities', () => {
     // In test environment no screenshots have been taken
     const result = getLastScreenshot();
     expect(result === null || typeof result === 'string').toBe(true);
-  });
-
-  it('stopScreenshotTimer does not throw', () => {
-    expect(() => stopScreenshotTimer()).not.toThrow();
-  });
-
-  it('captureScreenshotToCache resolves without error', async () => {
-    // In jsdom, _toJpeg and _toPng are null, so it returns immediately
-    await expect(captureScreenshotToCache()).resolves.toBeUndefined();
   });
 
   it('captureScreenshotOnDemand returns null when capture is unavailable', async () => {

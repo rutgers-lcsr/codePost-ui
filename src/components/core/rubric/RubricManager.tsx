@@ -201,33 +201,37 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
   // Load feedback scores
   const loadFeedbackScores = useCallback(async (rubricComments: RubricComment[]) => {
     const newMap: Record<number, IFeedbackScore> = {};
-    for (const rComment of rubricComments) {
-      if (rComment.id > 0) {
-        const score = (await rubricCommentsApi.feedbackScoreRetrieve({
-          id: rComment.id,
-        })) as unknown as IFeedbackScore;
-        newMap[rComment.id] = {
-          negative: score.negative,
-          positive: score.positive,
-        };
-      }
-    }
+    await Promise.all(
+      rubricComments
+        .filter((rComment) => rComment.id > 0)
+        .map(async (rComment) => {
+          const score = (await rubricCommentsApi.feedbackScoreRetrieve({
+            id: rComment.id,
+          })) as unknown as IFeedbackScore;
+          newMap[rComment.id] = {
+            negative: score.negative,
+            positive: score.positive,
+          };
+        }),
+    );
     useRubricStore.getState().setFeedbackScores(newMap);
   }, []);
 
   // Load instance lists
   const loadInstanceLists = useCallback(async (rubricComments: RubricComment[]): Promise<Record<number, number[]>> => {
     const newMap: Record<number, number[]> = {};
-    for (const rComment of rubricComments) {
-      if (rComment.id > 0) {
-        const list = (await rubricCommentsApi.retrieve({
-          id: rComment.id,
-        })) as unknown as RubricCommentInstanceList;
-        newMap[rComment.id] = list.comments;
-      } else {
-        newMap[rComment.id] = [];
-      }
-    }
+    await Promise.all(
+      rubricComments.map(async (rComment) => {
+        if (rComment.id > 0) {
+          const list = (await rubricCommentsApi.retrieve({
+            id: rComment.id,
+          })) as unknown as RubricCommentInstanceList;
+          newMap[rComment.id] = list.comments;
+        } else {
+          newMap[rComment.id] = [];
+        }
+      }),
+    );
     useRubricStore.getState().setInstanceLists(newMap);
     return newMap;
   }, []);
@@ -688,6 +692,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
     if (props.reloadInterval !== undefined && !props.defaultRubric) {
       intervalRef.current = window.setInterval(() => {
+        if (document.hidden) return; // don't poll hidden tabs
         loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
       }, props.reloadInterval);
     }
@@ -722,6 +727,7 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
 
     if (props.reloadInterval !== undefined && !props.defaultRubric) {
       intervalRef.current = window.setInterval(() => {
+        if (document.hidden) return; // don't poll hidden tabs
         loadAssignmentRubric(props.assignment, props.shouldLoadInstanceLists, props.shouldLoadFeedback);
       }, props.reloadInterval);
     }

@@ -270,11 +270,12 @@ describe('useCodeConsoleStore', () => {
   });
 
   describe('rubric reload', () => {
-    it('should trigger rubric reload with a timestamp', () => {
-      expect(useCodeConsoleStore.getState().rubricReload).toBeUndefined();
+    it('should bump the reload nonce without touching the polling delay', () => {
+      const before = useCodeConsoleStore.getState().rubricReloadNonce;
       useCodeConsoleStore.getState().triggerRubricReload();
-      expect(useCodeConsoleStore.getState().rubricReload).toBeDefined();
-      expect(typeof useCodeConsoleStore.getState().rubricReload).toBe('number');
+      expect(useCodeConsoleStore.getState().rubricReloadNonce).toBe(before + 1);
+      // rubricReload is the setInterval delay — triggerRubricReload must never write it.
+      expect(useCodeConsoleStore.getState().rubricReload).toBeUndefined();
     });
   });
 
