@@ -11,6 +11,7 @@ vi.mock('../../../../core/slack', () => ({
 
 import { message } from 'antd';
 import { sendSlack } from '../../../../core/slack';
+import { API_UNAVAILABLE_MESSAGE } from '../../../../../lib/apiError';
 import { awaitTestResult } from '../autograderPollingUtils';
 
 describe('autograderPollingUtils', () => {
@@ -93,6 +94,40 @@ describe('autograderPollingUtils', () => {
 
     expect(sendSlack).toHaveBeenCalled();
     expect(message.error).toHaveBeenCalled();
+  });
+
+  it('stops polling with the outage toast (no Slack) when fetch throws', async () => {
+    fetchSpy.mockRejectedValue(new Error('Failed to fetch'));
+
+    const callback = vi.fn();
+    awaitTestResult('task-down', callback);
+
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(message.error).toHaveBeenCalledWith(API_UNAVAILABLE_MESSAGE, 25);
+    expect(sendSlack).not.toHaveBeenCalled();
+
+    // Interval was cleared — no further polls.
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it('treats a gateway 503 as an outage, not an autograder bug', async () => {
+    fetchSpy.mockResolvedValue({
+      status: 503,
+      json: () => Promise.resolve({ detail: 'down' }),
+    });
+
+    awaitTestResult('task-503', vi.fn());
+
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(message.error).toHaveBeenCalledWith(API_UNAVAILABLE_MESSAGE, 25);
+    expect(sendSlack).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
   it('calls progressCallback when result available and status not SUCCESS/FAILURE', async () => {

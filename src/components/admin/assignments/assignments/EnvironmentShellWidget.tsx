@@ -218,14 +218,18 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
         }
       };
       ws.onerror = () => {
-        writeTerminal(`\r\nConnection error. URL: ${wsUrl}\r\n`);
+        writeTerminal('\r\nConnection error.\r\n');
         message.error('Shell connection failed');
       };
       ws.onclose = (event) => {
         setSocket(null);
         socketRef.current = null;
         setSession(null);
-        writeTerminal(`\r\nShell session closed (code ${event.code})\r\n`);
+        if (event.code !== 1000) {
+          writeTerminal('\r\nConnection lost — press Start to open a new shell.\r\n');
+        } else {
+          writeTerminal(`\r\nShell session closed (code ${event.code})\r\n`);
+        }
       };
 
       ws.onopen = () => {

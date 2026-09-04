@@ -1,5 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { clearLocalSettings } from '../components/utils/LocalSettings';
+import { noteApiNetworkError, noteApiResponse } from '../stores/useApiStatusStore';
 
 /**
  * Gets the access token from localStorage.
@@ -76,27 +77,31 @@ export function isTokenExpired(): boolean {
   return Date.now() >= (payload.exp - 30) * 1000;
 }
 
+export type RefreshResult = 'ok' | 'rejected' | 'unavailable';
+
 /** In-flight refresh promise — prevents multiple concurrent refresh attempts. */
-let refreshPromise: Promise<boolean> | null = null;
+let refreshPromise: Promise<RefreshResult> | null = null;
 
 /**
  * Attempt to exchange the refresh token for a fresh access token.
  *
  * Because rotation is enabled server-side, a new refresh token is returned too
- * and stored. Returns `true` if a new access token was obtained, `false`
- * otherwise. Concurrent callers share a single in-flight request.
+ * and stored. Returns `'ok'` if the stored access token is usable, `'rejected'`
+ * when the server refused the refresh (session is dead) and `'unavailable'` when
+ * the server could not be reached (5xx or network error) — the session may still
+ * be fine. Concurrent callers share a single in-flight request.
  */
-export async function tryRefreshToken(): Promise<boolean> {
+export async function tryRefreshToken(): Promise<RefreshResult> {
   if (refreshPromise) return refreshPromise;
 
   // Another tab may have already rotated the pair (rotation blacklists the
   // old refresh token, so racing it would fail); if the stored access token
   // is still fresh there is nothing to do.
-  if (!isTokenExpired()) return true;
+  if (!isTokenExpired()) return 'ok';
 
   refreshPromise = (async () => {
     const refresh = getRefreshToken();
-    if (!refresh) return false;
+    if (!refresh) return 'rejected';
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/token-refresh/`, {
@@ -105,16 +110,19 @@ export async function tryRefreshToken(): Promise<boolean> {
         body: JSON.stringify({ refresh }),
       });
 
-      if (!res.ok) return false;
+      noteApiResponse(res.status);
+      if (res.status >= 500) return 'unavailable';
+      if (!res.ok) return 'rejected';
 
       const data: { access?: string; refresh?: string } = await res.json();
       if (data.access) {
         setTokens(data.access, data.refresh);
-        return true;
+        return 'ok';
       }
-      return false;
+      return 'rejected';
     } catch {
-      return false;
+      noteApiNetworkError();
+      return 'unavailable';
     } finally {
       refreshPromise = null;
     }
@@ -194,14 +202,12 @@ export async function handleUnauthorized(): Promise<void> {
   // If the access token is expired (or about to expire), try to refresh it
   // before giving up and logging the user out.
   if (isTokenExpired()) {
-    const refreshed = await tryRefreshToken();
-    if (refreshed) {
-      // Token was successfully refreshed — do NOT redirect.
-      // The caller (middleware) can retry the request with the new token
-      // on the next call; the one-shot guard is NOT set so future 401s
-      // are still handled.
-      return;
-    }
+    const result = await tryRefreshToken();
+    // Only a definite rejection means the session is dead. 'ok' — the token was
+    // refreshed; 'unavailable' — the server couldn't be reached, so the refresh
+    // token may well still be valid. Neither should log the user out; the one-shot
+    // guard is NOT set so future 401s are still handled.
+    if (result !== 'rejected') return;
   }
 
   didHandleUnauthorized = true;

@@ -52,32 +52,33 @@ describe('tryRefreshToken', () => {
     localStorage.setItem('token', makeToken({ user_id: 1, exp: freshExp() }));
     localStorage.setItem('refresh', 'refresh-token');
 
-    await expect(tryRefreshToken()).resolves.toBe(true);
+    await expect(tryRefreshToken()).resolves.toBe('ok');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('exchanges the refresh token and stores the rotated pair when expired', async () => {
     const fetchSpy = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
       json: () => Promise.resolve({ access: 'new-access', refresh: 'new-refresh' }),
     });
     vi.stubGlobal('fetch', fetchSpy);
     localStorage.setItem('token', makeToken({ user_id: 1, exp: expiredExp() }));
     localStorage.setItem('refresh', 'old-refresh');
 
-    await expect(tryRefreshToken()).resolves.toBe(true);
+    await expect(tryRefreshToken()).resolves.toBe('ok');
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(fetchSpy.mock.calls[0][1].body).toBe(JSON.stringify({ refresh: 'old-refresh' }));
     expect(localStorage.getItem('token')).toBe('new-access');
     expect(localStorage.getItem('refresh')).toBe('new-refresh');
   });
 
-  it('returns false without a network call when expired and no refresh token exists', async () => {
+  it("returns 'rejected' without a network call when expired and no refresh token exists", async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     localStorage.setItem('token', makeToken({ user_id: 1, exp: expiredExp() }));
 
-    await expect(tryRefreshToken()).resolves.toBe(false);
+    await expect(tryRefreshToken()).resolves.toBe('rejected');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@
 import { useCallback } from 'react';
 import { autograderApi } from '../api-client/clients';
 import { message } from 'antd';
+import { isApiUnavailableError } from '../lib/apiError';
 
 export const useTaskPolling = () => {
   const pollTask = useCallback(async (taskId: string): Promise<Record<string, unknown>> => {
@@ -10,10 +11,12 @@ export const useTaskPolling = () => {
 
     let attempts = 0;
     const maxAttempts = 120; // 2 minutes timeout (approx)
+    let unavailableStreak = 0;
 
     while (attempts < maxAttempts) {
       try {
         const statusResponse = await autograderApi.tasksRetrieve({ id: taskId });
+        unavailableStreak = 0;
 
         if (statusResponse.status === 'SUCCESS') {
           return statusResponse.result as Record<string, unknown>;
@@ -28,7 +31,12 @@ export const useTaskPolling = () => {
         await delay(1000);
         attempts++;
       } catch (err) {
-        // If retrieving status fails (network error), we might want to retry or fail
+        // Tolerate a few consecutive outage errors (502/503/504, network) before giving up.
+        if (isApiUnavailableError(err) && ++unavailableStreak <= 3) {
+          await delay(1000);
+          attempts++;
+          continue;
+        }
         console.error('Failed to poll task status:', err);
         throw err;
       }

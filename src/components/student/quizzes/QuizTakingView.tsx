@@ -7,7 +7,7 @@ import CPButton from '../../core/CPButton';
 import Markdown from '../../core/Markdown';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessage, isApiUnavailableError } from '../../../lib/apiError';
 import { studentKeys } from '../../../lib/queryKeys';
 import { parseAccessCode403 } from './accessCode';
 import { bySortKey } from '../../core/questionMeta';
@@ -255,7 +255,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     return () => window.removeEventListener('beforeunload', onUnload);
   }, [submitted]);
 
-  const scheduleSave = (responseId: number, val: AnswerValue) => {
+  const scheduleSave = (responseId: number, val: AnswerValue, delay = 600, retry = 0) => {
     if (!attempt) return;
     if (timers.current[responseId]) clearTimeout(timers.current[responseId]);
     timers.current[responseId] = setTimeout(async () => {
@@ -268,13 +268,16 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         const body = await parseAccessCode403(e);
         if (body?.lockdownRequired) {
           setLockdownBlocked(true);
+        } else if (isApiUnavailableError(e) && retry < 4 && unsavedRef.current[responseId] === val) {
+          // Outage — keep the edit queued (label stays "Saving…") and retry with backoff.
+          scheduleSave(responseId, val, Math.min(15_000, 2000 * 2 ** retry), retry + 1);
         } else {
           message.error(apiErrorMessage(e) ?? 'Failed to save your answer.');
         }
       } finally {
         setSavingCount((c) => c - 1);
       }
-    }, 600);
+    }, delay);
   };
 
   const handleChange = (responseId: number, val: AnswerValue) => {
@@ -579,7 +582,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         </div>
         <Flex align="center" gap={12}>
           <Text type="secondary" role="status" aria-live="polite">
-            {savingCount > 0 ? 'Saving…' : 'Saved'}
+            {savingCount > 0 || Object.keys(unsavedRef.current).length > 0 ? 'Saving…' : 'Saved'}
           </Text>
           {remainingMs !== null && (
             <Tag

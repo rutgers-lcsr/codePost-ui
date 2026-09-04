@@ -54,6 +54,7 @@ export enum PERMISSION_LEVEL {
   READ,
   READ_FILES_ONLY,
   WRITE,
+  UNAVAILABLE,
 }
 
 export enum USER_TYPE {
