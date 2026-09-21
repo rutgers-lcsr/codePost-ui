@@ -16,6 +16,7 @@ import { BrowserRouter } from 'react-router';
 import { queryClient } from './lib/queryClient';
 
 import App from './App';
+import ApiUnavailableBanner from './components/core/ApiUnavailableBanner';
 import MaintenanceBanner from './components/core/MaintenanceBanner';
 import ReportIssueButton from './components/core/ReportIssueButton';
 
@@ -36,6 +37,7 @@ root.render(
       <ConfigProvider theme={themeConfig}>
         <BrowserRouter>
           <MaintenanceBanner />
+          <ApiUnavailableBanner />
           <StrictMode>
             <App />
           </StrictMode>

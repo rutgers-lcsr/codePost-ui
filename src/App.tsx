@@ -26,6 +26,7 @@ import { Assignment } from './types/common';
 import { registrationApi, tokenAuthApi } from './api-client/clients';
 import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 
+import { API_UNAVAILABLE_MESSAGE } from './lib/apiError';
 import { normalizeUser } from './utils/normalizeUser';
 import {
   resolveSafeRedirectPath,
@@ -42,6 +43,7 @@ import RemoteAuthFailed from './components/pre-auth/RemoteAuthFailed';
 
 import Settings from './components/core/settings';
 
+import Loading from './components/core/Loading';
 import RouterLoading from './components/core/RouterLoading';
 
 import { ShowTooltipContext } from './components/core/tooltips';
@@ -126,6 +128,8 @@ const App: React.FC = () => {
   // Refs for mutable values
   const loginCountRef = useRef<number>(0);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Boot-restore retry while the API is unreachable (single chain across callers).
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize localStorage on mount
   useEffect(() => {
@@ -311,8 +315,13 @@ Firefox:
       // reads the current refresh token from storage and coalesces concurrent
       // calls, so it will not resurrect a previous identity after a loginAs.
       tryRefreshToken()
-        .then((ok) => {
-          if (!ok) {
+        .then((result) => {
+          if (result === 'unavailable') {
+            // Server unreachable — the session may still be fine; try again shortly.
+            refreshTimerRef.current = setTimeout(() => refreshToken(currentUser), 15_000);
+            return;
+          }
+          if (result !== 'ok') {
             return;
           }
 
@@ -402,11 +411,17 @@ Firefox:
             Math.max(0, exp - now - 1000),
           );
         })
-        .catch((_error) => {
-          clearTokens();
-          setHasToken(false);
-          setUser(undefined);
-          setError('invalid');
+        .catch((error: unknown) => {
+          const status = error instanceof ResponseError ? error.response.status : undefined;
+          if (status === 400 || status === 401) {
+            clearTokens();
+            setHasToken(false);
+            setUser(undefined);
+            setError('invalid');
+          } else {
+            // Outage / network error — the credentials were never checked.
+            setError(API_UNAVAILABLE_MESSAGE);
+          }
           return Promise.reject();
         });
     },
@@ -415,7 +430,7 @@ Firefox:
 
   // Try to login with existing token
   const tryToLogin = useCallback(() => {
-    if (hasToken && !user && loginCountRef.current < 4) {
+    if (hasToken && !user) {
       let authHeader = `Bearer ${localStorage.getItem('token')}`;
       if (authType === 'Firebase') {
         if (propToken === '') {
@@ -467,10 +482,18 @@ Firefox:
             handleLogout();
             return;
           }
-          setTimeout(() => {
-            loginCountRef.current += 1;
-            tryToLogin();
-          }, 1000);
+          // Outage / network error — keep the token and retry with backoff until the
+          // API is back (the "*" route shows "Connecting…" meanwhile).
+          if (retryTimerRef.current) {
+            clearTimeout(retryTimerRef.current);
+          }
+          retryTimerRef.current = setTimeout(
+            () => {
+              loginCountRef.current += 1;
+              tryToLogin();
+            },
+            Math.min(10_000, 1000 * 2 ** loginCountRef.current),
+          );
         });
     } else {
       setTriedLoading(true);
@@ -565,6 +588,9 @@ Firefox:
       window.removeEventListener('message', messageHandler, false);
       if (refreshTimerRef.current) {
         clearTimeout(refreshTimerRef.current);
+      }
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -950,7 +976,7 @@ Firefox:
       <Route path="/tos" element={<TermsOfService isLoggedIn={false} />} />
       <Route path="/changelog" element={<ChangeLog isLoggedIn={false} />} />
       {renderDemoRoute()}
-      <Route path="*" element={<div />} />
+      <Route path="*" element={<Loading text="Connecting to codePost…" />} />
     </Routes>
   );
 };

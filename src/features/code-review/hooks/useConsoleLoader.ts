@@ -18,7 +18,7 @@ import {
   submissionsApi,
 } from '../../../api-client/clients';
 import { assignmentKeys, submissionKeys } from '../../../lib/queryKeys';
-import { Course, CourseRoster, RubricCategory, SubmissionConsoleData } from '../../../api-client';
+import { Course, CourseRoster, ResponseError, RubricCategory, SubmissionConsoleData } from '../../../api-client';
 import type {
   AssignmentFileType,
   AssignmentType,
@@ -161,7 +161,13 @@ export function useConsoleLoader({
       }
     } catch (error) {
       console.error('Failed to fetch submission permissions', error);
-      permissionLevel = PERMISSION_LEVEL.NOT_FOUND;
+      const status = error instanceof ResponseError ? error.response.status : undefined;
+      permissionLevel =
+        status === 404
+          ? PERMISSION_LEVEL.NOT_FOUND
+          : status === 403
+            ? PERMISSION_LEVEL.NONE
+            : PERMISSION_LEVEL.UNAVAILABLE;
     }
 
     let simulatingStudent = false;
@@ -227,8 +233,9 @@ export function useConsoleLoader({
 
     switch (permissionLevel) {
       case PERMISSION_LEVEL.NOT_FOUND:
-      case PERMISSION_LEVEL.NONE: {
-        // Will trigger 403 or 404 message in render
+      case PERMISSION_LEVEL.NONE:
+      case PERMISSION_LEVEL.UNAVAILABLE: {
+        // Will trigger 403 / 404 / unavailable message in render
         setState((prev) => ({ ...prev, permissionLevel, isLoading: false }));
         break;
       }

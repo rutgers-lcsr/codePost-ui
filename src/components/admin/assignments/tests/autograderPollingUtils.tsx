@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
+import { API_UNAVAILABLE_MESSAGE, UNAVAILABLE_STATUSES } from '../../../../lib/apiError';
 
 const MAX_TRIES_RUN = 150;
 
@@ -12,7 +13,11 @@ export function awaitTestResult(
 ) {
   let tries = 0;
   const interval = setInterval(() => {
-    pollTestResult(id, interval, callback, progressCallback);
+    pollTestResult(id, interval, callback, progressCallback).catch(() => {
+      // fetch threw (API host unreachable) — stop polling and tell the user.
+      clearInterval(interval);
+      message.error(API_UNAVAILABLE_MESSAGE, 25);
+    });
     if (++tries === MAX_TRIES_RUN && !progressCallback) {
       // sendSlack(
       //   `No test result received after polling - infinite loop ${id}`,
@@ -42,6 +47,13 @@ async function pollTestResult(
     },
     method: 'GET',
   });
+
+  if (UNAVAILABLE_STATUSES.has(res.status)) {
+    // Gateway says the API is down — an outage, not an autograder bug.
+    clearInterval(interval);
+    message.error(API_UNAVAILABLE_MESSAGE, 25);
+    return;
+  }
 
   if (res.status !== 200) {
     // Should never hit a non 200 autograder result

@@ -7,6 +7,7 @@ import { Empty, Tag } from 'antd';
 import type { SubmissionFile } from '../../../api-client';
 
 import { PANEL_TYPE, PERMISSION_LEVEL } from '../../../types/CodeConsole.types';
+import { API_UNAVAILABLE_MESSAGE } from '../../../lib/apiError';
 import { useCodeConsoleStore } from '../../../stores/useCodeConsoleStore';
 import { FileWithId } from '../../../utils/file';
 import type { ExecutionResult as ExecutionResultType } from '../../../utils/fileExecution';
@@ -234,8 +235,12 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
     hasTestCategories: testCategories.length > 0,
   };
 
-  // ─── NONE / NOT_FOUND early return ──────────────────────────
-  if (permissionLevel === PERMISSION_LEVEL.NONE || permissionLevel === PERMISSION_LEVEL.NOT_FOUND) {
+  // ─── NONE / NOT_FOUND / UNAVAILABLE early return ────────────
+  if (
+    permissionLevel === PERMISSION_LEVEL.NONE ||
+    permissionLevel === PERMISSION_LEVEL.NOT_FOUND ||
+    permissionLevel === PERMISSION_LEVEL.UNAVAILABLE
+  ) {
     const theme = 'light'; // safe fallback for empty state
     return {
       leftHeader: [],
@@ -246,9 +251,18 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
           styles={{ image: { marginTop: '200px', height: '60px' } }}
           description={
             <span style={{ color: theme === 'light' ? 'black' : 'white', fontSize: 'larger' }}>
-              {permissionLevel === PERMISSION_LEVEL.NOT_FOUND
-                ? "Whoops! This submission doesn't exist...😔"
-                : "Whoops! Looks like you don't have access to this submission...😔, If you submitted this assignment, your submission might still be under review. please check back later after its finalized!"}
+              {permissionLevel === PERMISSION_LEVEL.UNAVAILABLE ? (
+                <>
+                  {API_UNAVAILABLE_MESSAGE}{' '}
+                  <CPButton cpType="primary" small onClick={() => window.location.reload()}>
+                    Retry
+                  </CPButton>
+                </>
+              ) : permissionLevel === PERMISSION_LEVEL.NOT_FOUND ? (
+                "Whoops! This submission doesn't exist...😔"
+              ) : (
+                "Whoops! Looks like you don't have access to this submission...😔, If you submitted this assignment, your submission might still be under review. please check back later after its finalized!"
+              )}
             </span>
           }
         />

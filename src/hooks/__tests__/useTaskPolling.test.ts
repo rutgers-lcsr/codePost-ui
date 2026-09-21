@@ -12,6 +12,9 @@ vi.mock('antd', () => ({
 }));
 
 import { autograderApi } from '../../api-client/clients';
+import { ResponseError } from '../../api-client/runtime';
+
+const unavailable = () => new ResponseError({ status: 503 } as Response);
 
 describe('useTaskPolling', () => {
   beforeEach(() => {
@@ -93,6 +96,49 @@ describe('useTaskPolling', () => {
     });
     expect(error).toBeDefined();
     expect(error!.message).toBe('Network down');
+  });
+
+  it('rides out a short outage and returns the result', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(autograderApi.tasksRetrieve)
+      .mockRejectedValueOnce(unavailable())
+      .mockRejectedValueOnce(unavailable())
+      .mockResolvedValue({ status: 'SUCCESS', result: { ok: true } } as any);
+
+    const { result } = renderHook(() => useTaskPolling());
+
+    let taskResult: any;
+    await act(async () => {
+      const pollPromise = result.current.pollTask('task-outage');
+      for (let i = 0; i < 5; i++) {
+        await vi.advanceTimersByTimeAsync(1000);
+      }
+      taskResult = await pollPromise;
+    });
+
+    expect(taskResult).toEqual({ ok: true });
+    expect(autograderApi.tasksRetrieve).toHaveBeenCalledTimes(3);
+  });
+
+  it('gives up after four consecutive outage errors', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(autograderApi.tasksRetrieve).mockRejectedValue(unavailable());
+
+    const { result } = renderHook(() => useTaskPolling());
+
+    let error: unknown;
+    await act(async () => {
+      const pollPromise = result.current.pollTask('task-dead').catch((e) => {
+        error = e;
+      });
+      for (let i = 0; i < 10; i++) {
+        await vi.advanceTimersByTimeAsync(1000);
+      }
+      await pollPromise;
+    });
+
+    expect(error).toBeInstanceOf(ResponseError);
+    expect(autograderApi.tasksRetrieve).toHaveBeenCalledTimes(4);
   });
 
   it('polls until success after pending status', async () => {

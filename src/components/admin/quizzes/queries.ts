@@ -210,11 +210,17 @@ export const useGeneratedSets = (quizId: number | undefined) =>
         : false,
   });
 
-/** One generated set with its editable questions (`generatedQuestionSets/{id}/`). */
+/** One generated set with its editable questions (`generatedQuestionSets/{id}/`).
+ *  Polls while the set is still pending/generating (e.g. right after Regenerate) so the
+ *  open review view flips to the result without a manual page refresh. */
 export const useGeneratedSetDetail = (setId: number | undefined) =>
   useQuery({
     queryKey: quizKeys.generatedSetDetail(setId ?? -1),
     queryFn: (): Promise<GeneratedQuestionSet> =>
       generatedQuestionSetsApi.retrieve({ id: setId! }),
     enabled: !!setId,
+    refetchInterval: (query) => {
+      const s = query.state.data?.status;
+      return s === 'pending' || s === 'generating' ? 4000 : false;
+    },
   });

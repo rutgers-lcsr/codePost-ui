@@ -3,6 +3,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { Configuration, type Middleware } from './runtime';
 import { getAuthToken, handleUnauthorized, isTokenExpired, tryRefreshToken } from '../utils/auth';
+import { apiStatusMiddleware } from '../stores/useApiStatusStore';
 import {
   AiFeaturesApi,
   AssignmentDataSetsApi,
@@ -100,7 +101,7 @@ export const apiClientConfig = new Configuration({
   basePath: process.env.REACT_APP_API_URL,
   accessToken: () => Promise.resolve(getAuthToken()),
   apiKey: () => `Bearer ${getAuthToken()}`,
-  middleware: [authRefreshMiddleware, unauthorizedMiddleware],
+  middleware: [authRefreshMiddleware, unauthorizedMiddleware, apiStatusMiddleware],
 });
 
 export const aiFeaturesApi = new AiFeaturesApi(apiClientConfig);
