@@ -7,6 +7,23 @@ import { colors } from '../../theme/colors';
 
 const { Text } = Typography;
 
+// materialLight's token colors are ~2-4:1 on white; swap each for a same-hue shade that meets WCAG AA (4.5:1).
+const AA_COLORS: Record<string, string> = {
+  '#90a4ae': '#546e7a', // plain text
+  '#aabfc9': '#5a7482', // comments
+  '#f76d47': '#c2410c', // numbers
+  '#39adb5': '#00796b', // operators, punctuation, builtins
+  '#f6a434': '#a15c00', // strings
+  '#6182b8': '#3d5f99', // class names
+  '#e53935': '#c62828', // variables, tags
+};
+const accessibleMaterialLight = Object.fromEntries(
+  Object.entries(materialLight).map(([selector, style]) => [
+    selector,
+    style.color && AA_COLORS[style.color] ? { ...style, color: AA_COLORS[style.color] } : style,
+  ]),
+);
+
 type ScriptLanguage = {
   key: string;
   label: string;
@@ -338,7 +355,7 @@ const LanguageScriptSelector: React.FC<LanguageScriptSelectorProps> = ({ title =
           </div>
 
           <SyntaxHighlighter
-            style={materialLight}
+            style={accessibleMaterialLight}
             language={selectedLanguage.syntaxLanguage}
             PreTag="div"
             wrapLines={true}

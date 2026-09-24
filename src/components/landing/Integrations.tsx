@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Card, Tooltip } from 'antd';
 
 import { CLIENT_URL, SUPPORT_URL } from '../../config';
+import { colors } from '../../theme/colors';
 
 import { Link } from 'react-router';
 
@@ -319,7 +320,7 @@ const IntegrationCard = (props: IIntegrationCardProps) => {
                 style={{
                   verticalAlign: 'middle',
                   textAlign: 'center',
-                  color: '#7f7f7f',
+                  color: colors.neutralSecondaryText,
                   fontSize: '14px',
                   fontWeight: 600,
                   overflowX: 'hidden',
@@ -375,7 +376,7 @@ interface IIntegrationDescriptionProps {
 export const IntegrationDescription = (props: IIntegrationDescriptionProps) => {
   return (
     <div>
-      <div style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 600, color: '#7f7f7f' }}>
+      <div style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 600, color: colors.neutralSecondaryText }}>
         {props.integration.name}
       </div>
       <div>{props.integration.description}</div>

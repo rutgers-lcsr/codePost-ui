@@ -249,7 +249,7 @@ const SectionRow = (props: IProps) => {
           alignItems: 'center',
           fontSize: 18,
           fontWeight: 300,
-          color: 'grey',
+          color: colors.neutralSecondaryText,
           fontStyle: 'italic',
         }}
       >

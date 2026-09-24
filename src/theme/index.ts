@@ -25,6 +25,9 @@ const themeConfig: ThemeConfig = {
     colorTextHeading: 'rgba(0, 0, 0, 0.9)',
     colorText: colors.neutralTitle,
     colorTextSecondary: colors.neutralSecondaryText,
+    // antd uses this (not colorTextSecondary) for <Text type="secondary">, pending Steps titles, etc.
+    // Its default (0.45 alpha, #8c8c8c) is only 3.4:1 on white; 0.6 alpha clears WCAG AA.
+    colorTextDescription: colors.neutralSecondaryText,
     colorTextPlaceholder: 'rgba(0, 0, 0, 0.45)',
     colorTextDisabled: 'rgba(0, 0, 0, 0.25)',
     fontSize: 14,

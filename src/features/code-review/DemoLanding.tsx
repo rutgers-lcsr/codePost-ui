@@ -20,7 +20,7 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import CPButton from '../../components/core/CPButton';
-import { brandColors, actionColors } from '../../theme/colors';
+import { brandColors, actionColors, greenPalette } from '../../theme/colors';
 import { CODE_DEMO } from '../../routes';
 
 const { Title, Text, Paragraph } = Typography;
@@ -45,7 +45,11 @@ const DemoLanding: React.FC = () => {
           margin: '0 auto',
         }}
       >
-        <Tag color={brandColors.primary} style={{ marginBottom: 16, fontSize: 13, padding: '2px 12px' }}>
+        {/* Darker text than the tag's derived color so it clears 4.5:1 on the light-green fill */}
+        <Tag
+          color={brandColors.primary}
+          style={{ color: greenPalette.green8, marginBottom: 16, fontSize: 13, padding: '2px 12px' }}
+        >
           Interactive Demo
         </Tag>
         <Title level={1} style={{ marginBottom: 12, fontSize: 40, fontWeight: 700 }}>
