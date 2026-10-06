@@ -152,6 +152,29 @@ describe('GradingOverview results', () => {
     expect(screen.getAllByTestId('result-reset-student')).toHaveLength(2);
     expect(screen.getByTestId('results-reset-all')).toBeEnabled();
   });
+
+  it('groups AI-generated questions per student attempt and renders them as Markdown', async () => {
+    const generated = (id: number, text: string) => ({
+      id, sortKey: 0, needsManualGrading: true, isCorrect: null, pointsEarned: null, points: '3',
+      answerText: '', selectedChoices: [], question: { id: null, questionType: QuestionTypeEnum.Code, text, choices: [] },
+    }) as unknown as StaffQuizResponse;
+    const bob = {
+      ...attempt, id: 12, student: 'bob@rutgers.edu', attemptNumber: 1,
+      responses: [generated(201, 'Filter the `baby_names` frame'), generated(202, 'Drop the `rank` column')],
+    } as unknown as StaffQuizAttempt;
+    render(<GradingOverview {...makeProps()} attempts={[attempt, bob]} adminActions={false} />);
+    await userEvent.click(screen.getByRole('tab', { name: 'Item analysis' }));
+    const bucket = screen.getByText('AI-generated questions (per-student)').closest('tr')!;
+    await userEvent.click(bucket.querySelector('.ant-table-row-expand-icon')!);
+    // One collapsed panel per attempt, headed by the student and summary — not a flat row per question.
+    const header = screen.getByRole('button', { name: /bob@rutgers\.edu/ });
+    expect(header).toHaveTextContent('2 questions');
+    expect(header).toHaveTextContent('2 pending');
+    expect(screen.queryByText('baby_names')).not.toBeInTheDocument();
+    await userEvent.click(header);
+    expect(screen.getByText('Q1')).toBeInTheDocument();
+    expect(screen.getByText('baby_names').tagName).toBe('CODE');
+  });
 });
 
 describe('FocusedGrader', () => {

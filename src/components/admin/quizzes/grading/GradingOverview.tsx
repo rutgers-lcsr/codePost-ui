@@ -3,15 +3,45 @@
 // The analytics side of quiz grading, separated from the grading flow: a per-student Results
 // report (with CSV export) and per-question Item analysis. Both respect the section filter.
 import * as React from 'react';
-import { Empty, Flex, Popconfirm, Progress, Space, Spin, Table, Tabs, Tag, Typography } from 'antd';
+import { Collapse, Empty, Flex, Popconfirm, Progress, Space, Spin, Table, Tabs, Tag, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import CPButton from '../../../core/CPButton';
 import { Quiz, QuizResultRow, StaffQuizAttempt, QuestionTypeEnum } from '../../../../api-client';
 import { formatScore } from '../../../core/questionMeta';
 import { GradingStatusTag, PassedTag } from '../quizTags';
 import { CodePostDate } from '../../../utils/CodepostDate';
+import Markdown from '../../../core/Markdown';
 
 const { Text } = Typography;
+
+// Fold the (student, attempt)-sorted generated items into one group per attempt so the
+// item-analysis expansion reads as a list of students rather than a flat list of questions.
+interface GeneratedGroup<T> {
+  key: string; student: string; attemptNumber?: number; items: T[];
+  pending: number; earned: number; points: number; gradedN: number;
+}
+const groupByAttempt = <T extends {
+  student: string; attemptNumber?: number; needsManualGrading: boolean;
+  pointsEarned?: string | number | null; points?: string | number | null;
+}>(items: T[]): GeneratedGroup<T>[] => {
+  const groups: GeneratedGroup<T>[] = [];
+  for (const it of items) {
+    const key = `${it.student}#${it.attemptNumber ?? 0}`;
+    let g = groups[groups.length - 1];
+    if (!g || g.key !== key) {
+      g = { key, student: it.student, attemptNumber: it.attemptNumber, items: [], pending: 0, earned: 0, points: 0, gradedN: 0 };
+      groups.push(g);
+    }
+    g.items.push(it);
+    if (it.needsManualGrading) g.pending += 1;
+    if (it.pointsEarned != null) {
+      g.earned += Number(it.pointsEarned);
+      g.points += Number(it.points ?? 0);
+      g.gradedN += 1;
+    }
+  }
+  return groups;
+};
 
 interface IProps {
   quiz: Quiz;
@@ -323,54 +353,57 @@ const GradingOverview: React.FC<IProps> = ({
         rowExpandable: (s: QuestionStat) => !!s.choices?.length || !!s.items?.length,
         expandedRowRender: (s: QuestionStat) =>
           s.items ? (
-            <Table
-              dataSource={s.items}
-              rowKey="key"
+            // One collapsible panel per student attempt (collapsed by default — the
+            // bucket holds every generated question in the course) with the full
+            // question text rendered as Markdown instead of a clipped raw string.
+            <Collapse
               size="small"
-              pagination={false}
               data-testid="generated-question-items"
-              columns={[
+              items={groupByAttempt(s.items).map((g) => (
                 {
-                  title: 'Student',
-                  key: 'student',
-                  width: 220,
-                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) => (
-                    <Text type="secondary">
-                      {it.student} · #{it.attemptNumber}
-                    </Text>
-                  ),
-                },
-                {
-                  title: 'Question',
-                  key: 'text',
-                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) => (
-                    <Flex align="center" gap={6} style={{ minWidth: 0 }}>
-                      <Typography.Paragraph
-                        style={{ margin: 0 }}
-                        ellipsis={{ rows: 2, expandable: true, symbol: 'more' }}
-                      >
-                        {it.text}
-                      </Typography.Paragraph>
-                      <Tag style={{ flexShrink: 0 }}>{it.qtype.replace(/_/g, ' ')}</Tag>
+                  key: g.key,
+                  label: (
+                    <Flex align="center" gap={8} wrap>
+                      <Text strong>{g.student}</Text>
+                      <Text type="secondary">attempt #{g.attemptNumber}</Text>
+                      <Text type="secondary">
+                        {g.items.length} {g.items.length === 1 ? 'question' : 'questions'}
+                      </Text>
+                      {g.pending > 0 ? (
+                        <Tag color="gold" style={{ margin: 0 }}>{g.pending} pending</Tag>
+                      ) : (
+                        g.gradedN > 0 && <Text>{formatScore(g.earned, g.points)}</Text>
+                      )}
                     </Flex>
                   ),
-                },
-                {
-                  title: 'Result',
-                  key: 'result',
-                  width: 160,
-                  render: (_: unknown, it: NonNullable<QuestionStat['items']>[number]) =>
-                    it.needsManualGrading ? (
-                      <Tag color="gold">pending</Tag>
-                    ) : (
-                      <Space size={6}>
-                        {it.pointsEarned != null && <Text>{formatScore(it.pointsEarned, it.points)}</Text>}
-                        {it.isCorrect === true && <Tag color="success" style={{ margin: 0 }}>correct</Tag>}
-                        {it.isCorrect === false && <Tag color="error" style={{ margin: 0 }}>incorrect</Tag>}
-                      </Space>
-                    ),
-                },
-              ]}
+                  children: (
+                    <Flex vertical gap={8}>
+                      {g.items.map((it, i) => (
+                        <div
+                          key={it.key}
+                          style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: '8px 12px' }}
+                        >
+                          <Flex align="center" gap={6} style={{ marginBottom: 6 }}>
+                            <Text strong>Q{i + 1}</Text>
+                            <Tag style={{ margin: 0 }}>{it.qtype.replace(/_/g, ' ')}</Tag>
+                            <span style={{ flex: 1 }} />
+                            {it.needsManualGrading ? (
+                              <Tag color="gold" style={{ margin: 0 }}>pending</Tag>
+                            ) : (
+                              <Space size={6}>
+                                {it.pointsEarned != null && <Text>{formatScore(it.pointsEarned, it.points)}</Text>}
+                                {it.isCorrect === true && <Tag color="success" style={{ margin: 0 }}>correct</Tag>}
+                                {it.isCorrect === false && <Tag color="error" style={{ margin: 0 }}>incorrect</Tag>}
+                              </Space>
+                            )}
+                          </Flex>
+                          <Markdown>{it.text}</Markdown>
+                        </div>
+                      ))}
+                    </Flex>
+                  ),
+                }
+              ))}
             />
           ) : (
             <Flex vertical gap={6} style={{ padding: '4px 8px' }}>
