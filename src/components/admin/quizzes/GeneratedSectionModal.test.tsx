@@ -85,6 +85,10 @@ const renderModal = () => {
 // The prompt editor (TemplateTextArea) re-measures its autoSize textarea and highlight
 // overlay on each render, which makes these form-heavy tests slow enough to blow the 5s
 // default under a fully loaded parallel run.
+// findBy*/waitFor keep their own 1s default regardless of the test timeout above — give the
+// async queries the same headroom, or a slow render fails the query before the test times out.
+const WAIT = { timeout: 10_000 };
+
 describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -111,8 +115,8 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
         questionTypes: [],
         seed: 'random',
       },
-    }));
-    expect(await screen.findByText('What does your helper return?')).toBeInTheDocument();
+    }), WAIT);
+    expect(await screen.findByText('What does your helper return?', undefined, WAIT)).toBeInTheDocument();
     expect(screen.getByText(/stu@example\.edu/)).toBeInTheDocument();
   });
 
@@ -125,7 +129,7 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
 
     fireEvent.click(screen.getByTestId('section-test-button'));
 
-    expect(await screen.findByText('No student has submitted yet — upload demo files instead.'))
+    expect(await screen.findByText('No student has submitted yet — upload demo files instead.', undefined, WAIT))
       .toBeInTheDocument();
   });
 
@@ -139,7 +143,7 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
 
     fireEvent.click(screen.getByTestId('section-test-button'));
 
-    expect(await screen.findByText('Unknown variable {zap}.')).toBeInTheDocument();
+    expect(await screen.findByText('Unknown variable {zap}.', undefined, WAIT)).toBeInTheDocument();
     expect(quizSuggestionJobsApi.retrieve).not.toHaveBeenCalled();
   });
 });
