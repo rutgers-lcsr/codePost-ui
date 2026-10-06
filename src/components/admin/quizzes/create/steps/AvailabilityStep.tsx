@@ -59,7 +59,9 @@ const AvailabilityStep: React.FC<IProps> = ({ draft, patch, assignments }) => {
     const next = allowed.includes(draft.closeEvent)
       ? draft.closeEvent
       : DEFAULT_CLOSE_BY_TRIGGER[t] ?? QuizCloseEventEnum.None;
-    patch(withCloseOffset({ assignmentTrigger: t, closeEvent: next }, t, next));
+    // Leaving the fixed-date open drops its date so it can't resurface as a stale open time.
+    const clearOpen = t !== QuizAssignmentTriggerEnum.FixedDate ? { availableFrom: null } : {};
+    patch(withCloseOffset({ assignmentTrigger: t, closeEvent: next, ...clearOpen }, t, next));
   };
 
   const handleCloseEventChange = (e: QuizCloseEventEnum) => {
@@ -110,6 +112,30 @@ const AvailabilityStep: React.FC<IProps> = ({ draft, patch, assignments }) => {
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
               {TRIGGER_HELP[draft.assignmentTrigger]}
             </Text>
+            {draft.assignmentTrigger === QuizAssignmentTriggerEnum.FixedDate && (
+              <DatePicker
+                showTime
+                aria-label="Opens at"
+                placeholder="Opens at"
+                style={{ marginTop: 8 }}
+                data-testid="quiz-opens-at"
+                value={draft.availableFrom ? dayjs(draft.availableFrom) : null}
+                onChange={(d) => {
+                  const iso = d ? d.toISOString() : null;
+                  // Keep a fixed-date close after the open.
+                  if (
+                    iso &&
+                    draft.closeEvent === QuizCloseEventEnum.FixedDate &&
+                    draft.availableUntil &&
+                    !dayjs(draft.availableUntil).isAfter(dayjs(iso))
+                  ) {
+                    patch({ availableFrom: iso, availableUntil: null });
+                  } else {
+                    patch({ availableFrom: iso });
+                  }
+                }}
+              />
+            )}
           </div>
           <div>
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>

@@ -357,6 +357,7 @@ docs/RegistrationApi.md
 docs/ReopenQuizResponseRequest.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
+docs/ResetQuizAttemptsRequest.md
 docs/ResetQuizAttemptsResponse.md
 docs/RubricCategoriesApi.md
 docs/RubricCategory.md

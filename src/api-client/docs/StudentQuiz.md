@@ -24,6 +24,7 @@ Summary of a quiz for a student: settings, availability, and the caller\'s attem
 | `attemptsUsed`          | number                                                  |
 | `hasOpenAttempt`        | boolean                                                 |
 | `hasSubmittedAttempt`   | boolean                                                 |
+| `openAt`                | string                                                  |
 | `closeAt`               | string                                                  |
 | `hasAccessCode`         | boolean                                                 |
 | `myScore`               | number                                                  |

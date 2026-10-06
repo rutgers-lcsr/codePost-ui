@@ -37,6 +37,10 @@ export interface CreateRequest {
   startQuizAttemptRequest: StartQuizAttemptRequest;
 }
 
+export interface DestroyRequest {
+  id: number;
+}
+
 export interface GradeResponseCreateRequest {
   id: number;
   gradeQuizResponseRequest: GradeQuizResponseRequest;
@@ -205,6 +209,62 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   ): Promise<StudentQuizAttempt> {
     const response = await this.createRaw(requestParameters, initOverrides);
     return await response.value();
+  }
+
+  /**
+   * Delete one attempt (course admins only). The student\'s answers and any manual grading on it are removed, and they may retake if attempts remain. Irreversible.
+   */
+  async destroyRaw(
+    requestParameters: DestroyRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError('id', 'Required parameter "id" was null or undefined when calling destroy().');
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizAttempts/{id}/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'DELETE',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * Delete one attempt (course admins only). The student\'s answers and any manual grading on it are removed, and they may retake if attempts remain. Irreversible.
+   */
+  async destroy(
+    requestParameters: DestroyRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<void> {
+    await this.destroyRaw(requestParameters, initOverrides);
   }
 
   /**

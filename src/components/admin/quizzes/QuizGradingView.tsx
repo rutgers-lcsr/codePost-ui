@@ -8,12 +8,13 @@
 // here means the viewer lacks the role. Embedded as the quiz page's Grading tab and inline in
 // the grader console; `active` gates the queries.
 import * as React from 'react';
-import { Alert, Drawer, Flex, Select, Spin, Tabs, Typography, message } from 'antd';
+import { Alert, Drawer, Flex, Modal, Select, Spin, Tabs, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
-import { quizAttemptsApi } from '../../../api-client/clients';
+import { quizAttemptsApi, quizzesApi } from '../../../api-client/clients';
 import { Quiz, StaffQuizAttempt } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useApiAction } from '../../../hooks/useApiAction';
+import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 import { useQuizAttempts, useQuizResults, useStaffSections } from './queries';
 import { bySortKey } from '../../core/questionMeta';
 import { buildGradingQueue, nextInQueue, queuePosition } from './grading/gradingQueue';
@@ -49,6 +50,11 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
   // and item analysis; the needs-grading subset is derived from the attempt-level flag.
   const { data: allAttempts = [], isLoading, error } = useQuizAttempts(quiz.id, { enabled: active });
   const { data: results = [], isLoading: resultsLoading } = useQuizResults(quiz.id, active);
+
+  // Resetting/deleting attempts is a course-admin action (the server enforces it; this only
+  // hides the buttons from quiz graders in the grader console). edit_course_settings is the
+  // course-admin capability.
+  const adminActions = !!useCourseCapabilities(quiz.course).edit_course_settings;
 
   // Section filter: a grader picks their section and sees only those students' attempts and
   // results. Filtered client-side from the section rosters (attempt rows carry the student
@@ -177,6 +183,56 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
     );
   };
 
+  // Admin-only destructive actions. Each refreshes attempts + results; deleting the attempt
+  // open in the focused grader closes it first.
+  const { acting: resetting, run: runReset } = useApiAction();
+  const deleteAttempt = (a: StaffQuizAttempt) => {
+    void runReset(
+      async () => {
+        if (current?.id === a.id) exitGrading();
+        await quizAttemptsApi.destroy({ id: a.id });
+        refresh();
+      },
+      `Attempt #${a.attemptNumber} for ${a.student} deleted.`,
+      'Failed to delete the attempt.',
+    );
+  };
+  const resetStudent = (student: string) => {
+    void runReset(
+      async () => {
+        if (current?.student === student) exitGrading();
+        await quizzesApi.resetAttemptsCreate({ id: quiz.id!, resetQuizAttemptsRequest: { student } });
+        refresh();
+      },
+      `Attempts reset for ${student}.`,
+      'Failed to reset attempts.',
+    );
+  };
+  const resetAll = () => {
+    // Counts come from the unfiltered results: the reset spans every section.
+    const attemptCount = results.reduce((n, r) => n + r.attemptsUsed, 0);
+    const gradedCount = results.filter((r) => r.score != null).length;
+    Modal.confirm({
+      title: `Reset all attempts on "${quiz.title}"?`,
+      content:
+        `This deletes ${attemptCount} attempt${attemptCount === 1 ? '' : 's'} from ${results.length} ` +
+        `student${results.length === 1 ? '' : 's'} across all sections, including ${gradedCount} graded ` +
+        'result' + (gradedCount === 1 ? '' : 's') + '. Students can retake from scratch. This cannot be undone.',
+      okText: 'Reset all attempts',
+      okButtonProps: { danger: true },
+      onOk: () =>
+        runReset(
+          async () => {
+            exitGrading();
+            await quizzesApi.resetAttemptsCreate({ id: quiz.id! });
+            refresh();
+          },
+          'All attempts reset.',
+          'Failed to reset attempts.',
+        ),
+    });
+  };
+
   // Open a student's attempt from a Results row: the attempt behind their official score
   // (best for the default highest policy, latest otherwise — average has no single one).
   const openStudentAttempt = (student: string) => {
@@ -221,6 +277,9 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
       onToggleShowGraded={setShowGraded}
       onStartGrading={startGrading}
       onGradeAttempt={openAttempt}
+      adminActions={adminActions}
+      acting={resetting}
+      onDeleteAttempt={deleteAttempt}
     />
   );
 
@@ -252,6 +311,10 @@ const QuizGradingView: React.FC<IProps> = ({ quiz, active }) => {
               sectionFilter={sectionFilter}
               hasSection={sectionEmails != null}
               onOpenAttempt={openStudentAttempt}
+              adminActions={adminActions}
+              acting={resetting}
+              onResetStudent={resetStudent}
+              onResetAll={resetAll}
             />
           ),
         },

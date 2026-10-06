@@ -22,10 +22,11 @@ vi.mock('../../../../api-client/clients', () => ({
 
 import { quizAttemptsApi } from '../../../../api-client/clients';
 import GradingQueue from './GradingQueue';
+import GradingOverview from './GradingOverview';
 import FocusedGrader from './FocusedGrader';
 import RunCodeControls from './RunCodeControls';
 import { GradeControlsHandle } from './GradeControls';
-import { QuestionTypeEnum, StaffQuizAttempt, StaffQuizResponse } from '../../../../api-client';
+import { Quiz, QuestionTypeEnum, QuizResultRow, StaffQuizAttempt, StaffQuizResponse } from '../../../../api-client';
 
 const essay = {
   id: 101, sortKey: 0, needsManualGrading: true, isCorrect: null,
@@ -91,6 +92,65 @@ describe('GradingQueue', () => {
     );
     expect(screen.getByTestId('grading-queue-summary')).toHaveTextContent(/all caught up/i);
     expect(screen.getByTestId('grading-start')).toBeDisabled();
+  });
+
+  it('offers Delete only to course admins', () => {
+    const props = {
+      attempts: [attempt],
+      queue,
+      sectionFilter: null,
+      hasSection: false,
+      showGraded: false,
+      onToggleShowGraded: vi.fn(),
+      onStartGrading: vi.fn(),
+      onGradeAttempt: vi.fn(),
+      onDeleteAttempt: vi.fn(),
+    };
+    const { unmount } = render(<GradingQueue {...props} adminActions={false} />);
+    expect(screen.queryByTestId('grading-delete-attempt')).not.toBeInTheDocument();
+    unmount();
+    render(<GradingQueue {...props} adminActions />);
+    expect(screen.getByTestId('grading-delete-attempt')).toBeEnabled();
+  });
+});
+
+describe('GradingOverview results', () => {
+  const quiz = { id: 9, title: 'Week 1', course: 3 } as unknown as Quiz;
+  const submitted = {
+    student: 'ada@rutgers.edu', attemptsUsed: 2, score: '2', maxScore: '7', passed: false,
+    needsGrading: false, lastSubmittedAt: '2026-09-01T10:00:00Z', hasInProgress: true,
+  } as unknown as QuizResultRow;
+  const stuck = {
+    student: 'bob@rutgers.edu', attemptsUsed: 1, score: null, maxScore: null, passed: null,
+    needsGrading: false, lastSubmittedAt: null, hasInProgress: true,
+  } as unknown as QuizResultRow;
+  const makeProps = () => ({
+    quiz,
+    attempts: [attempt],
+    results: [submitted, stuck],
+    resultsLoading: false,
+    statsLoading: false,
+    sectionFilter: null,
+    hasSection: false,
+    onOpenAttempt: vi.fn(),
+    onResetStudent: vi.fn(),
+    onResetAll: vi.fn(),
+  });
+
+  it('flags in-progress attempts and disables View attempt when nothing was submitted', () => {
+    render(<GradingOverview {...makeProps()} adminActions={false} />);
+    expect(screen.getAllByTestId('result-in-progress')).toHaveLength(2);
+    const [adaView, bobView] = screen.getAllByTestId('result-view-attempt');
+    expect(adaView).toBeEnabled();
+    expect(bobView).toBeDisabled();
+    expect(screen.queryByTestId('result-reset-student')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('results-reset-all')).not.toBeInTheDocument();
+  });
+
+  it('offers per-student Reset and Reset all to course admins', () => {
+    render(<GradingOverview {...makeProps()} adminActions />);
+    expect(screen.getAllByTestId('result-reset-student')).toHaveLength(2);
+    expect(screen.getByTestId('results-reset-all')).toBeEnabled();
   });
 });
 

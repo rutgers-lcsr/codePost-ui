@@ -4,8 +4,8 @@
 // one-click "Start grading" into the focused step-through grader, and lists the attempts
 // (needing grading by default; all attempts when "Show graded too" is on).
 import * as React from 'react';
-import { Empty, Flex, Space, Switch, Table, Tag, Typography } from 'antd';
-import { RightOutlined } from '@ant-design/icons';
+import { Empty, Flex, Popconfirm, Space, Switch, Table, Tag, Typography } from 'antd';
+import { DeleteOutlined, RightOutlined } from '@ant-design/icons';
 import CPButton from '../../../core/CPButton';
 import { StaffQuizAttempt } from '../../../../api-client';
 import { formatScore } from '../../../core/questionMeta';
@@ -25,6 +25,11 @@ interface IProps {
   onToggleShowGraded: (v: boolean) => void;
   onStartGrading: () => void;
   onGradeAttempt: (attempt: StaffQuizAttempt) => void;
+  /** Course-admin viewer: shows the per-attempt Delete action. */
+  adminActions?: boolean;
+  /** A reset/delete is in flight — disables the destructive buttons meanwhile. */
+  acting?: boolean;
+  onDeleteAttempt?: (attempt: StaffQuizAttempt) => void;
 }
 
 const pendingCount = (a: StaffQuizAttempt) => a.responses.filter((r) => r.needsManualGrading).length;
@@ -38,6 +43,9 @@ const GradingQueue: React.FC<IProps> = ({
   onToggleShowGraded,
   onStartGrading,
   onGradeAttempt,
+  adminActions = false,
+  acting = false,
+  onDeleteAttempt,
 }) => {
   const attemptsNeeding = new Set(queue.map((q) => q.attemptId)).size;
 
@@ -80,6 +88,33 @@ const GradingQueue: React.FC<IProps> = ({
         </CPButton>
       ),
     },
+    ...(adminActions && onDeleteAttempt
+      ? [
+          {
+            title: '',
+            key: 'delete',
+            width: 50,
+            render: (_: unknown, a: StaffQuizAttempt) => (
+              <Popconfirm
+                title={`Delete attempt #${a.attemptNumber} for ${a.student}?`}
+                description="Their answers and any grades on it are removed. They can retake if attempts remain."
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => onDeleteAttempt(a)}
+              >
+                <CPButton
+                  cpType="danger"
+                  small
+                  icon={<DeleteOutlined />}
+                  aria-label={`Delete attempt #${a.attemptNumber} for ${a.student}`}
+                  disabled={acting}
+                  data-testid="grading-delete-attempt"
+                />
+              </Popconfirm>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const caughtUp = queue.length === 0;

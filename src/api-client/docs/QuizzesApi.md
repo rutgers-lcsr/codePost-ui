@@ -1115,34 +1115,39 @@ example().catch(console.error);
 
 ## resetAttemptsCreate
 
-> ResetQuizAttemptsResponse resetAttemptsCreate(id)
+> ResetQuizAttemptsResponse resetAttemptsCreate(id, resetQuizAttemptsRequest)
 
-Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+Delete student attempts for this quiz (course admins only). With no body, every student\&#39;s attempts — use after a substantive edit so everyone retakes from scratch. With {student: &lt;email&gt;}, only that student\&#39;s, so one student can start over. All statuses, including in-progress. Irreversible; responses cascade. Returns the number of attempts deleted.
 
 ### Example
 
 ```ts
-import { Configuration, QuizzesApi } from '';
+import {
+  Configuration,
+  QuizzesApi,
+} from '';
 import type { ResetAttemptsCreateRequest } from '';
 
 async function example() {
-  console.log('🚀 Testing  SDK...');
+  console.log("🚀 Testing  SDK...");
   const config = new Configuration({
     // To configure HTTP basic authorization: basicAuth
-    username: 'YOUR USERNAME',
-    password: 'YOUR PASSWORD',
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
     // To configure API key authorization: tokenAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: cookieAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
     // To configure API key authorization: courseKeyAuth
-    apiKey: 'YOUR API KEY',
+    apiKey: "YOUR API KEY",
   });
   const api = new QuizzesApi(config);
 
   const body = {
     // number | A unique integer value identifying this quiz.
     id: 56,
+    // ResetQuizAttemptsRequest (optional)
+    resetQuizAttemptsRequest: ...,
   } satisfies ResetAttemptsCreateRequest;
 
   try {
@@ -1159,9 +1164,10 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name   | Type     | Description                                   | Notes                     |
-| ------ | -------- | --------------------------------------------- | ------------------------- |
-| **id** | `number` | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| Name                         | Type                                                    | Description                                   | Notes                     |
+| ---------------------------- | ------------------------------------------------------- | --------------------------------------------- | ------------------------- |
+| **id**                       | `number`                                                | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| **resetQuizAttemptsRequest** | [ResetQuizAttemptsRequest](ResetQuizAttemptsRequest.md) |                                               | [Optional]                |
 
 ### Return type
 
@@ -1173,7 +1179,7 @@ example().catch(console.error);
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details
@@ -1188,7 +1194,7 @@ example().catch(console.error);
 
 > Array&lt;QuizResultRow&gt; resultsList(id)
 
-Per-student official results (per this quiz\&#39;s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+Per-student official results (per this quiz\&#39;s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt. Students with only an in-progress attempt get a row too (hasInProgress), so a stuck attempt is visible and can be reset; attemptsUsed counts every attempt, matching the student\&#39;s view and the attemptsAllowed check.
 
 ### Example
 

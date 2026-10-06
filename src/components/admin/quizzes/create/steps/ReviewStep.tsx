@@ -2,7 +2,12 @@
 import * as React from 'react';
 import { Alert, Descriptions, Flex, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { QuizCloseEventEnum, QuizPassingScoreUnitEnum, QuizScoringPolicyEnum } from '../../../../../api-client';
+import {
+  QuizAssignmentTriggerEnum,
+  QuizCloseEventEnum,
+  QuizPassingScoreUnitEnum,
+  QuizScoringPolicyEnum,
+} from '../../../../../api-client';
 import { Assignment } from '../../../../../types/common';
 import { quizSettingsWarnings } from '../../quizSettingsWarnings';
 import { CLOSE_LABELS, OFFSET_CLOSE_EVENTS, TRIGGER_LABELS, toWarningInput } from '../quizDraft';
@@ -31,12 +36,14 @@ const ReviewStep: React.FC<IProps> = ({ draft, assignments }) => {
 
   const attachedName = assignments.find((a) => a.id === draft.assignment)?.name;
 
-  const opens =
-    draft.assignment != null
-      ? TRIGGER_LABELS[draft.assignmentTrigger]
-      : draft.availableFrom
-        ? fmtDate(draft.availableFrom)
-        : 'As soon as it’s published';
+  let opens: string;
+  if (draft.assignment == null) {
+    opens = draft.availableFrom ? fmtDate(draft.availableFrom) : 'As soon as it’s published';
+  } else if (draft.assignmentTrigger === QuizAssignmentTriggerEnum.FixedDate) {
+    opens = draft.availableFrom ? fmtDate(draft.availableFrom) : 'At a fixed date (not set)';
+  } else {
+    opens = TRIGGER_LABELS[draft.assignmentTrigger];
+  }
 
   let closes: string;
   if (draft.assignment != null) {

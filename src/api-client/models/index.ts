@@ -9151,12 +9151,13 @@ export interface PatchedQuiz {
    * * `after_submission` - After the student submits
    * * `after_feedback` - After feedback is released (whole assignment)
    * * `after_student_feedback` - After each student's feedback is ready (self-paced)
+   * * `fixed_date` - At a fixed date & time
    * @type {QuizAssignmentTriggerEnum}
    * @memberof PatchedQuiz
    */
   assignmentTrigger?: QuizAssignmentTriggerEnum;
   /**
-   * Standalone quizzes: when the quiz opens.
+   * When the quiz opens — standalone quizzes, or attached quizzes whose assignmentTrigger is 'fixed_date'.
    * @type {string}
    * @memberof PatchedQuiz
    */
@@ -11743,12 +11744,13 @@ export interface Quiz {
    * * `after_submission` - After the student submits
    * * `after_feedback` - After feedback is released (whole assignment)
    * * `after_student_feedback` - After each student's feedback is ready (self-paced)
+   * * `fixed_date` - At a fixed date & time
    * @type {QuizAssignmentTriggerEnum}
    * @memberof Quiz
    */
   assignmentTrigger?: QuizAssignmentTriggerEnum;
   /**
-   * Standalone quizzes: when the quiz opens.
+   * When the quiz opens — standalone quizzes, or attached quizzes whose assignmentTrigger is 'fixed_date'.
    * @type {string}
    * @memberof Quiz
    */
@@ -12017,6 +12019,7 @@ export interface QuizAccommodationRow {
  * * `after_submission` - After the student submits
  * * `after_feedback` - After feedback is released (whole assignment)
  * * `after_student_feedback` - After each student's feedback is ready (self-paced)
+ * * `fixed_date` - At a fixed date & time
  * @export
  * @enum {string}
  */
@@ -12026,6 +12029,7 @@ export enum QuizAssignmentTriggerEnum {
   AfterSubmission = 'after_submission',
   AfterFeedback = 'after_feedback',
   AfterStudentFeedback = 'after_student_feedback',
+  FixedDate = 'fixed_date',
 }
 
 /**
@@ -12527,6 +12531,12 @@ export interface QuizResultRow {
    * @memberof QuizResultRow
    */
   lastSubmittedAt: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizResultRow
+   */
+  hasInProgress: boolean;
 }
 /**
  * * `highest` - Highest attempt counts
@@ -12822,6 +12832,19 @@ export interface ResetPasswordResponse {
    * @memberof ResetPasswordResponse
    */
   success: boolean;
+}
+/**
+ *
+ * @export
+ * @interface ResetQuizAttemptsRequest
+ */
+export interface ResetQuizAttemptsRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof ResetQuizAttemptsRequest
+   */
+  student?: string;
 }
 /**
  *
@@ -13775,6 +13798,12 @@ export interface StudentQuiz {
    * @memberof StudentQuiz
    */
   readonly hasSubmittedAttempt: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof StudentQuiz
+   */
+  readonly openAt: string | null;
   /**
    *
    * @type {string}
