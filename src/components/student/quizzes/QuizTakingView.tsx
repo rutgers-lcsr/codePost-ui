@@ -8,6 +8,7 @@ import Markdown from '../../core/Markdown';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
 import { apiErrorMessage, isApiUnavailableError } from '../../../lib/apiError';
+import { ResponseError } from '../../../api-client/runtime';
 import { studentKeys } from '../../../lib/queryKeys';
 import { parseAccessCode403 } from './accessCode';
 import { bySortKey } from '../../core/questionMeta';
@@ -16,6 +17,9 @@ import QuizQuestions from './QuizQuestions';
 import QuizResults from './QuizResults';
 
 const { Title, Text } = Typography;
+
+/** The attempt no longer exists server-side (an instructor reset or deleted it). */
+const isGone = (e: unknown) => e instanceof ResponseError && e.response.status === 404;
 
 interface IProps {
   quizId: number;
@@ -255,6 +259,14 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
     return () => window.removeEventListener('beforeunload', onUnload);
   }, [submitted]);
 
+  // An instructor reset/deleted this attempt mid-take: every further save/submit 404s. Stop the
+  // student typing into a dead attempt and point them back to the quiz list.
+  const handleAttemptGone = React.useCallback(() => {
+    Object.values(timers.current).forEach(clearTimeout);
+    setError('This attempt was removed by your instructor. Return to the quiz list to start again.');
+    queryClient.invalidateQueries({ queryKey: studentKeys.availableQuizzes(courseId) });
+  }, [queryClient, courseId]);
+
   const scheduleSave = (responseId: number, val: AnswerValue, delay = 600, retry = 0) => {
     if (!attempt) return;
     if (timers.current[responseId]) clearTimeout(timers.current[responseId]);
@@ -268,6 +280,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         const body = await parseAccessCode403(e);
         if (body?.lockdownRequired) {
           setLockdownBlocked(true);
+        } else if (isGone(e)) {
+          handleAttemptGone();
         } else if (isApiUnavailableError(e) && retry < 4 && unsavedRef.current[responseId] === val) {
           // Outage — keep the edit queued (label stays "Saving…") and retry with backoff.
           scheduleSave(responseId, val, Math.min(15_000, 2000 * 2 ** retry), retry + 1);
@@ -306,6 +320,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         const body = await parseAccessCode403(e);
         if (body?.lockdownRequired) {
           setLockdownBlocked(true);
+        } else if (isGone(e)) {
+          handleAttemptGone();
         } else {
           message.error(apiErrorMessage(e) ?? 'Failed to submit your quiz.');
         }
@@ -335,7 +351,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       return;
     }
     await finalize();
-  }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId, onSubmitted]);
+  }, [attempt, submitting, applyAttempt, queryClient, courseId, quizId, onSubmitted, handleAttemptGone]);
 
   // Auto-submit when the timer runs out. The countdown is anchored to the server clock
   // (serverNow at load + locally-measured elapsed) so a skewed device clock can't grant or

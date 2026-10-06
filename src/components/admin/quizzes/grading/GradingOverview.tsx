@@ -3,7 +3,7 @@
 // The analytics side of quiz grading, separated from the grading flow: a per-student Results
 // report (with CSV export) and per-question Item analysis. Both respect the section filter.
 import * as React from 'react';
-import { Empty, Flex, Progress, Space, Spin, Table, Tabs, Tag, Typography } from 'antd';
+import { Empty, Flex, Popconfirm, Progress, Space, Spin, Table, Tabs, Tag, Typography } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import CPButton from '../../../core/CPButton';
 import { Quiz, QuizResultRow, StaffQuizAttempt, QuestionTypeEnum } from '../../../../api-client';
@@ -26,6 +26,12 @@ interface IProps {
   hasSection: boolean;
   /** Open a student's official attempt in the focused grader for review. */
   onOpenAttempt: (student: string) => void;
+  /** Course-admin viewer: shows the per-student Reset and the Reset-all actions. */
+  adminActions?: boolean;
+  /** A reset/delete is in flight — disables the destructive buttons meanwhile. */
+  acting?: boolean;
+  onResetStudent?: (student: string) => void;
+  onResetAll?: () => void;
 }
 
 const GradingOverview: React.FC<IProps> = ({
@@ -37,6 +43,10 @@ const GradingOverview: React.FC<IProps> = ({
   sectionFilter,
   hasSection,
   onOpenAttempt,
+  adminActions = false,
+  acting = false,
+  onResetStudent,
+  onResetAll,
 }) => {
   const [view, setView] = React.useState<'results' | 'items'>('results');
 
@@ -129,7 +139,21 @@ const GradingOverview: React.FC<IProps> = ({
 
   const resultColumns = [
     { title: 'Student', dataIndex: 'student', key: 'student' },
-    { title: 'Attempts', dataIndex: 'attemptsUsed', key: 'attemptsUsed', width: 90 },
+    {
+      title: 'Attempts',
+      key: 'attemptsUsed',
+      width: 150,
+      render: (_: unknown, r: QuizResultRow) => (
+        <Space size={6}>
+          <Text>{r.attemptsUsed}</Text>
+          {r.hasInProgress && (
+            <Tag color="processing" style={{ margin: 0 }} data-testid="result-in-progress">
+              In progress
+            </Tag>
+          )}
+        </Space>
+      ),
+    },
     {
       title: 'Score',
       key: 'score',
@@ -163,20 +187,44 @@ const GradingOverview: React.FC<IProps> = ({
     {
       title: '',
       key: 'open',
-      width: 120,
+      width: adminActions ? 200 : 120,
       render: (_: unknown, r: QuizResultRow) => (
-        <CPButton small onClick={() => onOpenAttempt(r.student)} data-testid="result-view-attempt">
-          View attempt
-        </CPButton>
+        <Space size={6}>
+          {/* A row may hold only an in-progress attempt — nothing submitted to open yet. */}
+          <CPButton
+            small
+            onClick={() => onOpenAttempt(r.student)}
+            disabled={!r.lastSubmittedAt}
+            data-testid="result-view-attempt"
+          >
+            View attempt
+          </CPButton>
+          {adminActions && onResetStudent && (
+            <Popconfirm
+              title={`Reset attempts for ${r.student}?`}
+              description={`Deletes all ${r.attemptsUsed} of their attempt${
+                r.attemptsUsed === 1 ? '' : 's'
+              }, including any in progress. They can start the quiz again from scratch.`}
+              okText="Reset"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => onResetStudent(r.student)}
+            >
+              <CPButton cpType="danger" small disabled={acting} data-testid="result-reset-student">
+                Reset
+              </CPButton>
+            </Popconfirm>
+          )}
+        </Space>
       ),
     },
   ];
 
   const exportCsv = () => {
-    const header = ['student', 'attempts', 'score', 'maxScore', 'passed', 'needsGrading', 'lastSubmittedAt'];
+    const header = ['student', 'attempts', 'inProgress', 'score', 'maxScore', 'passed', 'needsGrading', 'lastSubmittedAt'];
     const rows = results.map((r) => [
       r.student,
       String(r.attemptsUsed),
+      r.hasInProgress ? 'yes' : 'no',
       r.score != null ? String(Number(r.score)) : '',
       r.maxScore != null ? String(Number(r.maxScore)) : '',
       r.passed == null ? '' : r.passed ? 'yes' : 'no',
@@ -198,7 +246,7 @@ const GradingOverview: React.FC<IProps> = ({
     </Flex>
   ) : results.length === 0 ? (
     <Empty
-      description={hasSection ? 'No results in this section.' : 'No submitted attempts yet.'}
+      description={hasSection ? 'No results in this section.' : 'No attempts yet.'}
       image={Empty.PRESENTED_IMAGE_SIMPLE}
     />
   ) : (
@@ -366,6 +414,16 @@ const GradingOverview: React.FC<IProps> = ({
             data-testid="results-export"
           >
             Export CSV
+          </CPButton>
+        )}
+        {view === 'results' && adminActions && onResetAll && (
+          <CPButton
+            cpType="danger"
+            onClick={onResetAll}
+            disabled={acting || results.length === 0}
+            data-testid="results-reset-all"
+          >
+            Reset all attempts
           </CPButton>
         )}
       </Flex>

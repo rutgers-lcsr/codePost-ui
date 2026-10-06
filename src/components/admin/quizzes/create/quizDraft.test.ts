@@ -5,6 +5,7 @@ import {
   DEFAULT_DRAFT,
   QuizCreateDraft,
   buildCreatePayload,
+  closeOptionsFor,
   createBlockers,
 } from './quizDraft';
 
@@ -43,6 +44,40 @@ describe('buildCreatePayload', () => {
     expect(payload.title).toBe('Midterm');
     expect(payload.course).toBe(7);
     expect(payload.isPublished).toBe(true);
+  });
+});
+
+describe('fixed-date open trigger', () => {
+  it('offers every close anchor, defaulting to none', () => {
+    expect(closeOptionsFor(QuizAssignmentTriggerEnum.FixedDate)).toEqual([
+      QuizCloseEventEnum.None,
+      QuizCloseEventEnum.AssignmentDue,
+      QuizCloseEventEnum.Submission,
+      QuizCloseEventEnum.FeedbackReleased,
+      QuizCloseEventEnum.FixedDate,
+    ]);
+  });
+
+  it('sends availableFrom only when it means something', () => {
+    const opens = '2026-09-01T09:00:00Z';
+    // Attached + fixed date: the date is the open time.
+    expect(
+      buildCreatePayload(
+        draft({ assignment: 4, assignmentTrigger: QuizAssignmentTriggerEnum.FixedDate, availableFrom: opens }),
+        3,
+        false,
+      ).availableFrom,
+    ).toBe(opens);
+    // Standalone: the date is the open time.
+    expect(buildCreatePayload(draft({ assignment: null, availableFrom: opens }), 3, false).availableFrom).toBe(opens);
+    // Attached on a lifecycle trigger: a stale date is dropped rather than stored.
+    expect(
+      buildCreatePayload(
+        draft({ assignment: 4, assignmentTrigger: QuizAssignmentTriggerEnum.During, availableFrom: opens }),
+        3,
+        false,
+      ).availableFrom,
+    ).toBeNull();
   });
 });
 

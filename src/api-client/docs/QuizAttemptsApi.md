@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 | ------------------------------------------------------------------------- | ------------------------------------------- | ----------- |
 | [**availableQuizzesList**](QuizAttemptsApi.md#availablequizzeslist)       | **GET** /quizAttempts/availableQuizzes/     |             |
 | [**create**](QuizAttemptsApi.md#create)                                   | **POST** /quizAttempts/                     |             |
+| [**destroy**](QuizAttemptsApi.md#destroy)                                 | **DELETE** /quizAttempts/{id}/              |             |
 | [**gradeResponseCreate**](QuizAttemptsApi.md#graderesponsecreate)         | **POST** /quizAttempts/{id}/gradeResponse/  |             |
 | [**myAttemptsList**](QuizAttemptsApi.md#myattemptslist)                   | **GET** /quizAttempts/myAttempts/           |             |
 | [**reopenResponseCreate**](QuizAttemptsApi.md#reopenresponsecreate)       | **POST** /quizAttempts/{id}/reopenResponse/ |             |
@@ -158,6 +159,77 @@ example().catch(console.error);
 | Status code | Description | Response headers |
 | ----------- | ----------- | ---------------- |
 | **201**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## destroy
+
+> destroy(id)
+
+Delete one attempt (course admins only). The student\&#39;s answers and any manual grading on it are removed, and they may retake if attempts remain. Irreversible.
+
+### Example
+
+```ts
+import { Configuration, QuizAttemptsApi } from '';
+import type { DestroyRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new QuizAttemptsApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz attempt.
+    id: 56,
+  } satisfies DestroyRequest;
+
+  try {
+    const data = await api.destroy(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name   | Type     | Description                                           | Notes                     |
+| ------ | -------- | ----------------------------------------------------- | ------------------------- |
+| **id** | `number` | A unique integer value identifying this quiz attempt. | [Defaults to `undefined`] |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+
+| Status code | Description      | Response headers |
+| ----------- | ---------------- | ---------------- |
+| **204**     | No response body | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

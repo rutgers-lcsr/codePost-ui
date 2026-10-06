@@ -30,6 +30,8 @@ export const TRIGGER_HELP: Record<string, string> = {
   [QuizAssignmentTriggerEnum.AfterFeedback]: 'Opens once grades/feedback are released for the whole assignment.',
   [QuizAssignmentTriggerEnum.AfterStudentFeedback]:
     "Opens for each student once their own feedback is available — under live feedback mode this unlocks per student as each submission is graded (self-paced).",
+  [QuizAssignmentTriggerEnum.FixedDate]:
+    'Opens at the date & time you pick. The assignment must still be released for students to see it.',
 };
 
 // The card inlines these in its Select options; the wizard also needs them on Review.
@@ -39,7 +41,14 @@ export const TRIGGER_LABELS: Record<string, string> = {
   [QuizAssignmentTriggerEnum.AfterSubmission]: 'After the student submits',
   [QuizAssignmentTriggerEnum.AfterFeedback]: 'After feedback is released',
   [QuizAssignmentTriggerEnum.AfterStudentFeedback]: "After each student's feedback (self-paced)",
+  [QuizAssignmentTriggerEnum.FixedDate]: 'At a fixed date & time',
 };
+
+/** Whether `availableFrom` is meaningful for this configuration: standalone quizzes, or
+ *  attached quizzes opening at a fixed date. Elsewhere a stored date is ignored, so it is
+ *  nulled on save rather than left to resurface later. */
+export const opensAtFixedMoment = (assignment: number | null, trigger: string): boolean =>
+  assignment == null || trigger === QuizAssignmentTriggerEnum.FixedDate;
 
 // Close events that take a "+ N minutes/hours/days" offset.
 export const OFFSET_CLOSE_EVENTS = new Set<string>([
@@ -70,6 +79,11 @@ export const CLOSE_OPTIONS_BY_TRIGGER: Record<string, QuizCloseEventEnum[]> = {
   [QuizAssignmentTriggerEnum.AfterFeedback]: [
     QuizCloseEventEnum.None, QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
   ],
+  // A fixed open is independent of the assignment lifecycle, so any close anchor works.
+  [QuizAssignmentTriggerEnum.FixedDate]: [
+    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.Submission,
+    QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
+  ],
 };
 
 // The close event pre-selected when switching to a trigger (submission-based is the natural
@@ -79,6 +93,7 @@ export const DEFAULT_CLOSE_BY_TRIGGER: Record<string, QuizCloseEventEnum> = {
   [QuizAssignmentTriggerEnum.AfterAssignment]: QuizCloseEventEnum.None,
   [QuizAssignmentTriggerEnum.AfterSubmission]: QuizCloseEventEnum.Submission,
   [QuizAssignmentTriggerEnum.AfterFeedback]: QuizCloseEventEnum.None,
+  [QuizAssignmentTriggerEnum.FixedDate]: QuizCloseEventEnum.None,
 };
 
 // A close whose anchor is the same moment the quiz opens — needs a positive offset or it
@@ -143,6 +158,8 @@ export const neverClosesDraft = (draft: QuizCreateDraft): boolean => {
 /** The draft as quizSettingsWarnings input (for the Review step's live warnings). */
 export const toWarningInput = (draft: QuizCreateDraft, isPublished: boolean): QuizWarningInput => ({
   assignment: draft.assignment,
+  assignmentTrigger: draft.assignmentTrigger,
+  availableFrom: draft.availableFrom,
   availableUntil: draft.availableUntil,
   closeEvent: draft.closeEvent,
   attemptsAllowed: draft.attemptsAllowed,
@@ -204,7 +221,7 @@ export const buildCreatePayload = (
   description: draft.description,
   assignment: draft.assignment,
   assignmentTrigger: draft.assignmentTrigger,
-  availableFrom: draft.availableFrom,
+  availableFrom: opensAtFixedMoment(draft.assignment, draft.assignmentTrigger) ? draft.availableFrom : null,
   availableUntil: draft.availableUntil,
   closeEvent: draft.closeEvent,
   closeOffsetMinutes: offsetMinutes(draft),

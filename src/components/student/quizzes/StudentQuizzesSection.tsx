@@ -47,6 +47,11 @@ const QuizCard: React.FC<{
                 <ClockCircleOutlined aria-hidden /> {quiz.timeLimitMinutes} min
               </Text>
             ) : null}
+            {quiz.openAt && quiz.availability?.reason === 'not_yet_open' ? (
+              <Text type="secondary" data-testid="student-quiz-opens-at">
+                <CalendarOutlined aria-hidden /> Opens <CodePostDate datetime={quiz.openAt} />
+              </Text>
+            ) : null}
             {quiz.closeAt ? (
               <Text type="secondary">
                 <CalendarOutlined aria-hidden /> Due <CodePostDate datetime={quiz.closeAt} />

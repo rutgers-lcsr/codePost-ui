@@ -6,6 +6,8 @@ import { quizSettingsWarnings, QuizWarningInput } from './quizSettingsWarnings';
  *  a single attempt, and results released immediately. */
 const base = (): QuizWarningInput => ({
   assignment: null,
+  assignmentTrigger: 'during',
+  availableFrom: null,
   availableUntil: '2026-09-01T00:00:00Z',
   closeEvent: 'none',
   attemptsAllowed: 1,
@@ -39,6 +41,26 @@ describe('quizSettingsWarnings', () => {
 
   it('returns nothing for a clean configuration', () => {
     expect(keys(base())).toEqual([]);
+  });
+
+  describe('open-date-missing', () => {
+    it('warns when an attached quiz opens at a fixed date that is not set', () => {
+      expect(keys({ ...base(), assignment: 5, assignmentTrigger: 'fixed_date', availableFrom: null })).toContain(
+        'open-date-missing',
+      );
+    });
+
+    it('stays quiet with a date, for other triggers, and for standalone quizzes', () => {
+      expect(
+        keys({ ...base(), assignment: 5, assignmentTrigger: 'fixed_date', availableFrom: '2026-09-01T00:00:00Z' }),
+      ).not.toContain('open-date-missing');
+      expect(keys({ ...base(), assignment: 5, assignmentTrigger: 'during', availableFrom: null })).not.toContain(
+        'open-date-missing',
+      );
+      expect(keys({ ...base(), assignment: null, assignmentTrigger: 'fixed_date', availableFrom: null })).not.toContain(
+        'open-date-missing',
+      );
+    });
   });
 
   describe('results-never-released', () => {

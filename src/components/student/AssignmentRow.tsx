@@ -433,6 +433,12 @@ const AssignmentRow: React.FC<AssignmentRowProps> = ({
                   <Typography.Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
                     {quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}
                     {quiz.timeLimitMinutes ? ` · ${quiz.timeLimitMinutes} min` : ''}
+                    {quiz.openAt && quiz.availability?.reason === 'not_yet_open' ? (
+                      <span data-testid="attached-quiz-opens-at">
+                        {' · Opens '}
+                        <CodePostDate datetime={quiz.openAt} />
+                      </span>
+                    ) : null}
                     {quiz.closeAt ? (
                       <>
                         {' · Due '}

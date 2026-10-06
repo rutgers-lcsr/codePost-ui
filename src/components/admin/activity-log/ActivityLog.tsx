@@ -40,6 +40,8 @@ const EVENT_TYPE_OPTIONS = [
   { value: 'quiz_attempt_started', label: 'Quiz Attempt Started' },
   { value: 'quiz_attempt_submitted', label: 'Quiz Attempt Submitted' },
   { value: 'quiz_attempt_autosubmitted', label: 'Quiz Attempt Auto-Submitted' },
+  { value: 'quiz_attempts_reset', label: 'Quiz Attempts Reset' },
+  { value: 'quiz_attempt_deleted', label: 'Quiz Attempt Deleted' },
   { value: 'agent_action_approved', label: 'Agent Action Approved' },
   { value: 'agent_action_denied', label: 'Agent Action Denied' },
 ];
@@ -64,6 +66,8 @@ const EVENT_TYPE_COLORS: Record<string, string> = {
   quiz_attempt_started: 'cyan',
   quiz_attempt_submitted: 'lime',
   quiz_attempt_autosubmitted: 'orange',
+  quiz_attempts_reset: 'red',
+  quiz_attempt_deleted: 'volcano',
   agent_action_approved: 'green',
   agent_action_denied: 'red',
 };

@@ -37,6 +37,8 @@ const TRIGGER_HELP: Record<string, string> = {
   [QuizAssignmentTriggerEnum.AfterFeedback]: 'Opens once grades/feedback are released for the whole assignment.',
   [QuizAssignmentTriggerEnum.AfterStudentFeedback]:
     "Opens for each student once their own feedback is available — under live feedback mode this unlocks per student as each submission is graded (self-paced).",
+  [QuizAssignmentTriggerEnum.FixedDate]:
+    'Opens at the date & time you pick. The assignment must still be released for students to see it.',
 };
 
 // Close events that take a "+ N minutes/hours/days" offset.
@@ -68,6 +70,11 @@ const CLOSE_OPTIONS_BY_TRIGGER: Record<string, QuizCloseEventEnum[]> = {
   [QuizAssignmentTriggerEnum.AfterFeedback]: [
     QuizCloseEventEnum.None, QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
   ],
+  // A fixed open is independent of the assignment lifecycle, so any close anchor works.
+  [QuizAssignmentTriggerEnum.FixedDate]: [
+    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.Submission,
+    QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
+  ],
 };
 
 // The close event pre-selected when switching to a trigger (submission-based is the natural
@@ -77,7 +84,13 @@ const DEFAULT_CLOSE_BY_TRIGGER: Record<string, QuizCloseEventEnum> = {
   [QuizAssignmentTriggerEnum.AfterAssignment]: QuizCloseEventEnum.None,
   [QuizAssignmentTriggerEnum.AfterSubmission]: QuizCloseEventEnum.Submission,
   [QuizAssignmentTriggerEnum.AfterFeedback]: QuizCloseEventEnum.None,
+  [QuizAssignmentTriggerEnum.FixedDate]: QuizCloseEventEnum.None,
 };
+
+// availableFrom only means something for standalone quizzes or a fixed-date open; otherwise
+// a stored date is ignored, so it is nulled on save rather than left to resurface later.
+const opensAtFixedMoment = (assignment: number | null, trigger: string): boolean =>
+  assignment == null || trigger === QuizAssignmentTriggerEnum.FixedDate;
 
 // A close whose anchor is the same moment the quiz opens — needs a positive offset or it
 // would close instantly.
@@ -213,7 +226,9 @@ const QuizSettingsCard: React.FC<IProps> = ({
     const next = allowed.includes(settings.closeEvent)
       ? settings.closeEvent
       : DEFAULT_CLOSE_BY_TRIGGER[t] ?? QuizCloseEventEnum.None;
-    patch({ assignmentTrigger: t, closeEvent: next });
+    // Leaving the fixed-date open drops its date so it can't resurface as a stale open time.
+    const clearOpen = settings.assignment != null && t !== QuizAssignmentTriggerEnum.FixedDate;
+    patch({ assignmentTrigger: t, closeEvent: next, ...(clearOpen ? { availableFrom: null } : {}) });
     ensureCloseOffset(t, next);
   };
   const handleCloseEventChange = (e: QuizCloseEventEnum) => {
@@ -235,7 +250,9 @@ const QuizSettingsCard: React.FC<IProps> = ({
           description: settings.description,
           assignment: settings.assignment,
           assignmentTrigger: settings.assignmentTrigger,
-          availableFrom: settings.availableFrom,
+          availableFrom: opensAtFixedMoment(settings.assignment, settings.assignmentTrigger)
+            ? settings.availableFrom
+            : null,
           availableUntil: settings.availableUntil,
           closeEvent: settings.closeEvent,
           closeOffsetMinutes: settings.closeOffsetMinutes,
@@ -266,7 +283,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
     } catch (err) {
-      message.error(apiErrorMessage(err, 'title') ?? 'Failed to save quiz settings.');
+      message.error(apiErrorMessage(err, 'title', 'availableFrom') ?? 'Failed to save quiz settings.');
     } finally {
       setSaving(false);
     }
@@ -448,11 +465,36 @@ const QuizSettingsCard: React.FC<IProps> = ({
                         value: QuizAssignmentTriggerEnum.AfterStudentFeedback,
                         label: "After each student's feedback (self-paced)",
                       },
+                      { value: QuizAssignmentTriggerEnum.FixedDate, label: 'At a fixed date & time' },
                     ]}
                   />
                   <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
                     {TRIGGER_HELP[settings.assignmentTrigger]}
                   </Text>
+                  {settings.assignmentTrigger === QuizAssignmentTriggerEnum.FixedDate && (
+                    <DatePicker
+                      showTime
+                      aria-label="Opens at"
+                      placeholder="Opens at"
+                      style={{ marginTop: 8 }}
+                      data-testid="quiz-opens-at"
+                      value={settings.availableFrom ? dayjs(settings.availableFrom) : null}
+                      onChange={(d) => {
+                        const iso = d ? d.toISOString() : null;
+                        // Keep a fixed-date close after the open.
+                        if (
+                          iso &&
+                          settings.closeEvent === QuizCloseEventEnum.FixedDate &&
+                          settings.availableUntil &&
+                          !dayjs(settings.availableUntil).isAfter(dayjs(iso))
+                        ) {
+                          patch({ availableFrom: iso, availableUntil: null });
+                        } else {
+                          patch({ availableFrom: iso });
+                        }
+                      }}
+                    />
+                  )}
                 </div>
                 <div>
                   <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
@@ -497,6 +539,12 @@ const QuizSettingsCard: React.FC<IProps> = ({
                         showTime
                         aria-label="Closes at"
                         placeholder="Closes at"
+                        // Can't close before a fixed-date open.
+                        minDate={
+                          settings.assignmentTrigger === QuizAssignmentTriggerEnum.FixedDate && settings.availableFrom
+                            ? dayjs(settings.availableFrom)
+                            : undefined
+                        }
                         value={settings.availableUntil ? dayjs(settings.availableUntil) : null}
                         onChange={(d) => patch({ availableUntil: d ? d.toISOString() : null })}
                       />

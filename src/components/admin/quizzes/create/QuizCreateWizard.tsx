@@ -95,7 +95,7 @@ const QuizCreateWizard: React.FC<IProps> = ({ open, course, onCancel, onCreated 
       onCreated(created);
     } catch (err) {
       message.error(
-        apiErrorMessage(err, 'title', 'sebConfigKey', 'assignmentTrigger', 'closeEvent', 'generationDate', 'assignment') ??
+        apiErrorMessage(err, 'title', 'sebConfigKey', 'assignmentTrigger', 'availableFrom', 'closeEvent', 'generationDate', 'assignment') ??
           'Failed to create quiz.',
       );
     } finally {

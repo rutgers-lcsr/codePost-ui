@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { QuizCloseEventEnum } from '../../../api-client';
+import { QuizAssignmentTriggerEnum, QuizCloseEventEnum } from '../../../api-client';
 
 /** A configuration warning (a likely mistake) or tip (a low-stakes reminder) shown on the
  *  quiz settings card. Computed live from the current (unsaved) settings. */
@@ -13,6 +13,8 @@ export interface QuizWarning {
  *  so the checks stay independently testable with plain objects). */
 export interface QuizWarningInput {
   assignment: number | null;
+  assignmentTrigger: string;
+  availableFrom: string | null;
   availableUntil: string | null;
   closeEvent: string;
   attemptsAllowed: number;
@@ -51,6 +53,15 @@ export function quizSettingsWarnings(s: QuizWarningInput): QuizWarning[] {
         'Safe Exam Browser is required with no Config Key pasted — students will use the ' +
         '“Launch in Safe Exam Browser” button. Paste a Config Key only if you distribute ' +
         'your own SEB configuration file.',
+    });
+  }
+
+  // An attached quiz set to open at a fixed date, with no date → it never opens.
+  if (s.assignment != null && s.assignmentTrigger === QuizAssignmentTriggerEnum.FixedDate && !s.availableFrom) {
+    out.push({
+      key: 'open-date-missing',
+      level: 'warning',
+      text: 'Pick the date & time the quiz opens — until then it stays locked for students.',
     });
   }
 

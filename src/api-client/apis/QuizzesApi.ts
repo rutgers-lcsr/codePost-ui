@@ -31,6 +31,7 @@ import type {
   QuizResultRow,
   QuizSectionTemplate,
   QuizSuggestionJob,
+  ResetQuizAttemptsRequest,
   ResetQuizAttemptsResponse,
   StaffQuizAttempt,
 } from '../models/index';
@@ -120,6 +121,7 @@ export interface QuestionsListRequest {
 
 export interface ResetAttemptsCreateRequest {
   id: number;
+  resetQuizAttemptsRequest?: ResetQuizAttemptsRequest;
 }
 
 export interface ResultsListRequest {
@@ -1067,7 +1069,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+   * Delete student attempts for this quiz (course admins only). With no body, every student\'s attempts — use after a substantive edit so everyone retakes from scratch. With {student: <email>}, only that student\'s, so one student can start over. All statuses, including in-progress. Irreversible; responses cascade. Returns the number of attempts deleted.
    */
   async resetAttemptsCreateRaw(
     requestParameters: ResetAttemptsCreateRequest,
@@ -1083,6 +1085,8 @@ export class QuizzesApi extends runtime.BaseAPI {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
 
     if (
       this.configuration &&
@@ -1108,6 +1112,7 @@ export class QuizzesApi extends runtime.BaseAPI {
         method: 'POST',
         headers: headerParameters,
         query: queryParameters,
+        body: requestParameters['resetQuizAttemptsRequest'],
       },
       initOverrides,
     );
@@ -1116,7 +1121,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Delete ALL student attempts for this quiz (course admins only). Use after a substantive edit so students retake from scratch. Irreversible; responses cascade.
+   * Delete student attempts for this quiz (course admins only). With no body, every student\'s attempts — use after a substantive edit so everyone retakes from scratch. With {student: <email>}, only that student\'s, so one student can start over. All statuses, including in-progress. Irreversible; responses cascade. Returns the number of attempts deleted.
    */
   async resetAttemptsCreate(
     requestParameters: ResetAttemptsCreateRequest,
@@ -1127,7 +1132,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt. Students with only an in-progress attempt get a row too (hasInProgress), so a stuck attempt is visible and can be reset; attemptsUsed counts every attempt, matching the student\'s view and the attemptsAllowed check.
    */
   async resultsListRaw(
     requestParameters: ResultsListRequest,
@@ -1176,7 +1181,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt.
+   * Per-student official results (per this quiz\'s scoringPolicy) — quiz graders and course admins only. Score is null until the student has a fully graded attempt. Students with only an in-progress attempt get a row too (hasInProgress), so a stuck attempt is visible and can be reset; attemptsUsed counts every attempt, matching the student\'s view and the attemptsAllowed check.
    */
   async resultsList(
     requestParameters: ResultsListRequest,
