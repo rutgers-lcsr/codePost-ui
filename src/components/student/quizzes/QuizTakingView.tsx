@@ -7,7 +7,7 @@ import CPButton from '../../core/CPButton';
 import Markdown from '../../core/Markdown';
 import { quizAttemptsApi } from '../../../api-client/clients';
 import { StudentQuizAttempt } from '../../../api-client';
-import { apiErrorMessage, isApiUnavailableError } from '../../../lib/apiError';
+import { apiErrorMessageAsync, isApiUnavailableError } from '../../../lib/apiError';
 import { ResponseError } from '../../../api-client/runtime';
 import { studentKeys } from '../../../lib/queryKeys';
 import { parseAccessCode403 } from './accessCode';
@@ -153,7 +153,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         setCodeError("That access code isn't valid. Check with your instructor and try again.");
       } else {
         // A different refusal (e.g. no attempts remaining) — surface the server's reason.
-        setCodeError(body?.detail ?? apiErrorMessage(e) ?? 'This quiz could not be started.');
+        setCodeError(body?.detail ?? (await apiErrorMessageAsync(e)) ?? 'This quiz could not be started.');
       }
     } finally {
       setStartingWithCode(false);
@@ -173,7 +173,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       // Hand off to SEB; this normal-browser tab stays parked on the gate screen.
       window.location.href = resp.sebUrl;
     } catch (e) {
-      message.error(apiErrorMessage(e) ?? 'Could not prepare the Safe Exam Browser launch.');
+      message.error((await apiErrorMessageAsync(e)) ?? 'Could not prepare the Safe Exam Browser launch.');
     } finally {
       setLaunchingSeb(false);
     }
@@ -193,7 +193,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
       } else {
         // A different refusal (e.g. the quiz closed meanwhile) — surface it as the page error.
         setLockdownBlocked(false);
-        setError(body?.detail ?? apiErrorMessage(e) ?? 'This quiz could not be started.');
+        setError(body?.detail ?? (await apiErrorMessageAsync(e)) ?? 'This quiz could not be started.');
       }
     } finally {
       setRetryingLockdown(false);
@@ -233,7 +233,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         } catch {
           /* fall through to the error below */
         }
-        setError(apiErrorMessage(e) ?? 'This quiz could not be started.');
+        setError(body?.detail ?? (await apiErrorMessageAsync(e)) ?? 'This quiz could not be started.');
       } finally {
         setLoading(false);
       }
@@ -286,7 +286,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
           // Outage — keep the edit queued (label stays "Saving…") and retry with backoff.
           scheduleSave(responseId, val, Math.min(15_000, 2000 * 2 ** retry), retry + 1);
         } else {
-          message.error(apiErrorMessage(e) ?? 'Failed to save your answer.');
+          message.error(body?.detail ?? (await apiErrorMessageAsync(e)) ?? 'Failed to save your answer.');
         }
       } finally {
         setSavingCount((c) => c - 1);
@@ -323,7 +323,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         } else if (isGone(e)) {
           handleAttemptGone();
         } else {
-          message.error(apiErrorMessage(e) ?? 'Failed to submit your quiz.');
+          message.error(body?.detail ?? (await apiErrorMessageAsync(e)) ?? 'Failed to submit your quiz.');
         }
       } finally {
         setSubmitting(false);
@@ -436,12 +436,7 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         extra={
           <Flex vertical gap={12} align="center">
             <Flex gap={8} wrap justify="center">
-              <CPButton
-                cpType="primary"
-                loading={launchingSeb}
-                onClick={launchSeb}
-                data-testid="quiz-seb-launch"
-              >
+              <CPButton cpType="primary" loading={launchingSeb} onClick={launchSeb} data-testid="quiz-seb-launch">
                 Launch in Safe Exam Browser
               </CPButton>
               <CPButton
@@ -464,8 +459,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
             </Flex>
             {sebConfigUrl && (
               <Text type="secondary" style={{ fontSize: 12 }}>
-                SEB didn't open? <a href={sebConfigUrl}>Download the exam configuration</a> and open the
-                file with Safe Exam Browser.
+                SEB didn't open? <a href={sebConfigUrl}>Download the exam configuration</a> and open the file with Safe
+                Exam Browser.
               </Text>
             )}
           </Flex>
@@ -584,9 +579,8 @@ const QuizTakingView: React.FC<IProps> = ({ quizId, courseId, quizTitle, reviewO
         okText="Continue"
         cancelButtonProps={{ style: { display: 'none' } }}
       >
-        Your last action was blocked because this quiz must be taken in Safe Exam Browser. Your
-        saved answers are kept — return to Safe Exam Browser (or ask your instructor for help) and
-        continue from there.
+        Your last action was blocked because this quiz must be taken in Safe Exam Browser. Your saved answers are kept —
+        return to Safe Exam Browser (or ask your instructor for help) and continue from there.
       </Modal>
       <Flex justify="space-between" align="center" wrap gap={12} style={{ marginBottom: 16 }}>
         <div>

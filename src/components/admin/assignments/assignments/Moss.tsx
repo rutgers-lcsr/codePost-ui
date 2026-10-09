@@ -33,6 +33,7 @@ import { useLocation, useNavigate } from 'react-router';
 /* codePost imports */
 /* codePost imports */
 import { Course } from '../../../../api-client';
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 import { assignmentFilesApi } from '../../../../api-client/clients';
 import { Assignment } from '../../../../types/common';
 import { AssignmentFileType, SubmissionInfoType, UserType } from '../../../../types/models';
@@ -256,7 +257,8 @@ const Moss = (props: IMossProps) => {
     if (res['status'] === 200) {
       return await res.json();
     } else {
-      return Promise.reject(await res.json());
+      // Keep the lambda's own reason readable via apiErrorMessage (which reads `.body`).
+      return Promise.reject(Object.assign(new Error('Moss request failed'), { body: await res.json() }));
     }
   };
 
@@ -326,7 +328,9 @@ const Moss = (props: IMossProps) => {
           const resp = await checkMoss();
           message.success(resp, 6);
         } catch (err) {
-          message.info(JSON.stringify(err));
+          // checkMoss rejects with a ready-made sentence; anything else is a real failure.
+          if (typeof err === 'string') message.info(err);
+          else message.error((await apiErrorMessageAsync(err)) ?? 'Could not submit to Moss.');
         }
 
         setLoading(false);
@@ -342,7 +346,7 @@ const Moss = (props: IMossProps) => {
       const data = await processMoss(url);
       setResults(data);
     } catch (err) {
-      message.error(JSON.stringify(err));
+      message.error((await apiErrorMessageAsync(err)) ?? 'Could not load the Moss results.');
     }
     setLoading(false);
   };

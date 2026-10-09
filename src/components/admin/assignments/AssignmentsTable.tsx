@@ -109,6 +109,7 @@ import AssignmentSettingsDialog from './assignments/AssignmentSettingsDialog';
 import DownloadGrades from './assignments/DownloadGrades';
 
 import { Logger } from '../../../utils/logger';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 
 import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
@@ -288,7 +289,8 @@ const FEEDBACK_CONFIRM: Record<AssignmentFeedbackStatusEnum, { title: string; co
   },
   [AssignmentFeedbackStatusEnum.PerStudent]: {
     title: 'Release feedback per student?',
-    content: 'Each student will see their grades, comments, and the rubric as soon as their own submission is finalized.',
+    content:
+      'Each student will see their grades, comments, and the rubric as soon as their own submission is finalized.',
     ok: 'Release per student',
   },
   [AssignmentFeedbackStatusEnum.Released]: {
@@ -580,7 +582,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     (assignment: Assignment): React.ReactElement => {
       const stats = assignmentStats[assignment.id];
       const finalizedRatio = stats.numSubmissions !== 0 ? stats.numGraded / stats.numSubmissions : 1;
-      const gradingInProgress = assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Live && finalizedRatio < FINALIZED_THRESHOLD;
+      const gradingInProgress =
+        assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Live && finalizedRatio < FINALIZED_THRESHOLD;
 
       return (
         <div style={{ maxWidth: '300px' }}>
@@ -589,9 +592,9 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </div>
           {gradingInProgress && (
             <div style={{ paddingBottom: '4px' }}>
-              Grading in progress is not revealed: most existing submissions are still
-              unfinalized, and students can&rsquo;t open a submission until it&rsquo;s finalized.
-              Grades and feedback stay hidden until you release feedback.
+              Grading in progress is not revealed: most existing submissions are still unfinalized, and students
+              can&rsquo;t open a submission until it&rsquo;s finalized. Grades and feedback stay hidden until you
+              release feedback.
             </div>
           )}
         </div>
@@ -605,19 +608,23 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const setAssignmentState = useCallback(
     (assignment: Assignment, state: AssignmentStateEnum) => {
       const apply = () => {
-        if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
-          Logger.info('Assignment published', {
-            text: `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
-              currentCourse ? currentCourse.period : ''
-            }`,
-            color: colors.brandPrimary,
-            channel: '#user_notifications_everything',
-            courseID: currentCourse ? currentCourse.id : 0,
+        return updateAssignmentProp({ id: assignment.id, state })
+          .then(() => {
+            if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
+              Logger.info('Assignment published', {
+                text: `${assignment.name} | ${currentCourse ? currentCourse.name : ''} ${
+                  currentCourse ? currentCourse.period : ''
+                }`,
+                color: colors.brandPrimary,
+                channel: '#user_notifications_everything',
+                courseID: currentCourse ? currentCourse.id : 0,
+              });
+            }
+            message.success(`Assignment moved to ${state}.`);
+          })
+          .catch(async (e) => {
+            message.error((await apiErrorMessageAsync(e, 'state')) ?? 'Could not update the assignment.');
           });
-        }
-        return updateAssignmentProp({ id: assignment.id, state }).then(() => {
-          message.success(`Assignment moved to ${state}.`);
-        });
       };
 
       if (state === AssignmentStateEnum.Published && assignment.state !== AssignmentStateEnum.Published) {
@@ -862,8 +869,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                     {meta.description}
                     <br />
                     <ClockCircleOutlined aria-hidden style={{ marginRight: 4 }} />
-                    Past the due date — students can no longer submit. Extend the due date to
-                    reopen.
+                    Past the due date — students can no longer submit. Extend the due date to reopen.
                   </>
                 );
               } else if (isAutoClosed && s === AssignmentStateEnum.Closed) {
@@ -962,8 +968,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             })}
             {assignment.hideGrades && (
               <Text type="secondary" style={{ fontSize: 12 }}>
-                Numeric grades are hidden for this assignment (Hide grades) — students see
-                comments and the rubric only.
+                Numeric grades are hidden for this assignment (Hide grades) — students see comments and the rubric only.
               </Text>
             )}
           </Flex>
@@ -993,7 +998,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       }
 
       const visibilityValue: VisibilityFilter = assignment.isVisible ? 'visible' : 'hidden';
-      const feedbackValue: FeedbackFilter = fbStatus === AssignmentFeedbackStatusEnum.Released ? 'released' : 'not_released';
+      const feedbackValue: FeedbackFilter =
+        fbStatus === AssignmentFeedbackStatusEnum.Released ? 'released' : 'not_released';
       const dueDateValue: string | null =
         assignment.allowStudentUpload && assignment.uploadDueDate ? assignment.uploadDueDate : null;
 
@@ -1179,11 +1185,12 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 {
                   key: 'grades',
                   icon: assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />,
-                  label: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
-                    ? 'Grades (feedback hidden)'
-                    : assignment.hideGrades
-                      ? 'Grades hidden'
-                      : 'Grades visible',
+                  label:
+                    assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
+                      ? 'Grades (feedback hidden)'
+                      : assignment.hideGrades
+                        ? 'Grades hidden'
+                        : 'Grades visible',
                   disabled: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades,
                   onClick: () => toggleHideGrades(assignment),
                 },
@@ -1364,7 +1371,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const bulkUnpublish = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
   const bulkShow = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Preview }), [bulkUpdate]);
   const bulkHide = useCallback(() => bulkUpdate({ state: AssignmentStateEnum.Draft }), [bulkUpdate]);
-  const bulkReleaseFeedback = useCallback(() => bulkUpdate({ feedbackStatus: AssignmentFeedbackStatusEnum.Released }), [bulkUpdate]);
+  const bulkReleaseFeedback = useCallback(
+    () => bulkUpdate({ feedbackStatus: AssignmentFeedbackStatusEnum.Released }),
+    [bulkUpdate],
+  );
   const clearSelection = useCallback(() => setSelectedRowKeys([]), []);
 
   const hasSelection = selectedRowKeys.length > 0;
@@ -1603,99 +1613,99 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     // only react-dnd consumer, and hoisting the provider would pull react-dnd's
     // redux stack into the entry bundle.
     <DndProvider backend={HTML5Backend}>
-    <div className="manage-assignments">
-      <StatsDrawer
-        type={drawerType || DRAWER_TYPE.None}
-        content={drawerContent}
-        onClose={closeDrawer}
-        isVisible={drawerType !== undefined}
-        uploadSubmission={uploadForStudent}
-        onDeleteSubmission={handleDeleteSubmission}
-        loadComplete={loadComplete}
-      />
+      <div className="manage-assignments">
+        <StatsDrawer
+          type={drawerType || DRAWER_TYPE.None}
+          content={drawerContent}
+          onClose={closeDrawer}
+          isVisible={drawerType !== undefined}
+          uploadSubmission={uploadForStudent}
+          onDeleteSubmission={handleDeleteSubmission}
+          loadComplete={loadComplete}
+        />
 
-      {detailComponent}
-      <TableDetail
-        data={filteredData}
-        title={
-          <>
-            Assignments
-            {isFilterActive && (
-              <span
-                style={{ fontSize: 13, fontWeight: 400, color: colors.neutralSecondaryText, marginLeft: 10 }}
-                aria-live="polite"
-              >
-                ({filteredData.length} of {assignments.length})
-              </span>
-            )}
-          </>
-        }
-        columns={columns}
-        actions={tableActions}
-        loadComplete={loadComplete}
-        isEmpty={assignments.length === 0}
-        emptyNode={
-          <Empty
-            styles={{
-              image: {
-                height: 60,
-              },
-            }}
-            description={<span>No assignments yet</span>}
-          >
-            <NewAssignmentDialog
-              key={1}
-              {...props}
-              currentCourse={currentCourse}
-              timezone={currentCourse.timezone || 'UTC'}
-              assignments={assignments}
-              courses={props.courses}
-              createAssignment={createAssignmentProp}
-            />
-          </Empty>
-        }
-        breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
-        titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
-        hideSearch={true}
-        components={dndComponents}
-        tableProps={{
-          scroll: { x: 'max-content' },
-          rowSelection: canEditAssignment
-            ? {
-                selectedRowKeys,
-                onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
-                type: 'checkbox' as const,
-              }
-            : undefined,
-        }}
-        onRow={dndOnRow}
-        pagination={filteredData.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
-        beforeTable={
-          loadComplete && assignments.length > 0 ? (
+        {detailComponent}
+        <TableDetail
+          data={filteredData}
+          title={
             <>
-              <BulkActionBar
-                selectedCount={selectedRowKeys.length}
-                isLoading={bulkLoading}
-                canEditAssignment={canEditAssignment}
-                canReleaseGrades={canReleaseGrades}
-                onPublish={bulkPublish}
-                onUnpublish={bulkUnpublish}
-                onShow={bulkShow}
-                onHide={bulkHide}
-                onReleaseFeedback={bulkReleaseFeedback}
-                onClearSelection={clearSelection}
-              />
-              <AssignmentsFilterBar
-                filters={filters}
-                onFiltersChange={setFilters}
-                totalCount={assignments.length}
-                filteredCount={filteredData.length}
-              />
+              Assignments
+              {isFilterActive && (
+                <span
+                  style={{ fontSize: 13, fontWeight: 400, color: colors.neutralSecondaryText, marginLeft: 10 }}
+                  aria-live="polite"
+                >
+                  ({filteredData.length} of {assignments.length})
+                </span>
+              )}
             </>
-          ) : undefined
-        }
-      />
-    </div>
+          }
+          columns={columns}
+          actions={tableActions}
+          loadComplete={loadComplete}
+          isEmpty={assignments.length === 0}
+          emptyNode={
+            <Empty
+              styles={{
+                image: {
+                  height: 60,
+                },
+              }}
+              description={<span>No assignments yet</span>}
+            >
+              <NewAssignmentDialog
+                key={1}
+                {...props}
+                currentCourse={currentCourse}
+                timezone={currentCourse.timezone || 'UTC'}
+                assignments={assignments}
+                courses={props.courses}
+                createAssignment={createAssignmentProp}
+              />
+            </Empty>
+          }
+          breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
+          titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
+          hideSearch={true}
+          components={dndComponents}
+          tableProps={{
+            scroll: { x: 'max-content' },
+            rowSelection: canEditAssignment
+              ? {
+                  selectedRowKeys,
+                  onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
+                  type: 'checkbox' as const,
+                }
+              : undefined,
+          }}
+          onRow={dndOnRow}
+          pagination={filteredData.length < DEFAULT_PAGINATION_SIZE ? false : undefined}
+          beforeTable={
+            loadComplete && assignments.length > 0 ? (
+              <>
+                <BulkActionBar
+                  selectedCount={selectedRowKeys.length}
+                  isLoading={bulkLoading}
+                  canEditAssignment={canEditAssignment}
+                  canReleaseGrades={canReleaseGrades}
+                  onPublish={bulkPublish}
+                  onUnpublish={bulkUnpublish}
+                  onShow={bulkShow}
+                  onHide={bulkHide}
+                  onReleaseFeedback={bulkReleaseFeedback}
+                  onClearSelection={clearSelection}
+                />
+                <AssignmentsFilterBar
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  totalCount={assignments.length}
+                  filteredCount={filteredData.length}
+                />
+              </>
+            ) : undefined
+          }
+        />
+      </div>
     </DndProvider>
   );
 };

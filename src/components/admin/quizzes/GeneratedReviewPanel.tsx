@@ -28,19 +28,13 @@ import {
   Typography,
   message,
 } from 'antd';
-import {
-  DeleteOutlined,
-  InfoCircleOutlined,
-  LeftOutlined,
-  ExportOutlined,
-  RobotOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, InfoCircleOutlined, LeftOutlined, ExportOutlined, RobotOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import CPButton from '../../core/CPButton';
 import { generatedQuestionSetsApi, generatedQuizQuestionsApi, quizzesApi } from '../../../api-client/clients';
 import { GeneratedQuestionSetList, GeneratedQuizQuestion, Quiz, QuestionTypeEnum } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { useApiAction } from '../../../hooks/useApiAction';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useBackfillPreview, useGeneratedSetDetail, useGeneratedSets, useStaffSections } from './queries';
@@ -147,7 +141,7 @@ const GeneratedQuestionCard: React.FC<{
       message.success('Question saved.');
       onChanged();
     } catch (e) {
-      message.error(apiErrorMessage(e) ?? 'Failed to save the question.');
+      message.error((await apiErrorMessageAsync(e)) ?? 'Failed to save the question.');
     } finally {
       setSaving(false);
     }
@@ -165,7 +159,7 @@ const GeneratedQuestionCard: React.FC<{
           message.success('Question removed.');
           onChanged();
         } catch (e) {
-          message.error(apiErrorMessage(e) ?? 'Failed to remove the question.');
+          message.error((await apiErrorMessageAsync(e)) ?? 'Failed to remove the question.');
         }
       },
     });

@@ -15,7 +15,6 @@ import { CLIENT_URL } from './config';
 import LogInAs from './components/core/LogInAs';
 import Logout from './components/core/Logout';
 
-
 import Home from './components/core/Home';
 
 import { ADMIN, CODE, CODE_DEMO, GRADER, HEALTH_CHECK, HOME, STUDENT } from './routes';
@@ -26,7 +25,7 @@ import { Assignment } from './types/common';
 import { registrationApi, tokenAuthApi } from './api-client/clients';
 import { ResponseError, type InitOverrideFunction } from './api-client/runtime';
 
-import { API_UNAVAILABLE_MESSAGE } from './lib/apiError';
+import { API_UNAVAILABLE_MESSAGE, apiErrorMessageAsync, isApiUnavailableError } from './lib/apiError';
 import { normalizeUser } from './utils/normalizeUser';
 import {
   resolveSafeRedirectPath,
@@ -411,16 +410,19 @@ Firefox:
             Math.max(0, exp - now - 1000),
           );
         })
-        .catch((error: unknown) => {
+        .catch(async (error: unknown) => {
           const status = error instanceof ResponseError ? error.response.status : undefined;
           if (status === 400 || status === 401) {
             clearTokens();
             setHasToken(false);
             setUser(undefined);
             setError('invalid');
-          } else {
+          } else if (isApiUnavailableError(error)) {
             // Outage / network error — the credentials were never checked.
             setError(API_UNAVAILABLE_MESSAGE);
+          } else {
+            // Anything else (e.g. a 429 "Request was throttled.") — show the server's reason.
+            setError((await apiErrorMessageAsync(error)) ?? API_UNAVAILABLE_MESSAGE);
           }
           return Promise.reject();
         });
@@ -472,7 +474,7 @@ Firefox:
             refreshToken(normalizedUser);
           }
         })
-        .catch((error: unknown) => {
+        .catch(async (error: unknown) => {
           if (error instanceof ResponseError && error.response?.status === 401) {
             setTriedLoading(true);
             // Surface the expiry (announced via the message live region) instead of a
@@ -482,18 +484,26 @@ Firefox:
             handleLogout();
             return;
           }
-          // Outage / network error — keep the token and retry with backoff until the
-          // API is back (the "*" route shows "Connecting…" meanwhile).
-          if (retryTimerRef.current) {
-            clearTimeout(retryTimerRef.current);
+          if (isApiUnavailableError(error)) {
+            // Outage / network error — keep the token and retry with backoff until the
+            // API is back (the "*" route shows "Connecting…" meanwhile).
+            if (retryTimerRef.current) {
+              clearTimeout(retryTimerRef.current);
+            }
+            retryTimerRef.current = setTimeout(
+              () => {
+                loginCountRef.current += 1;
+                tryToLogin();
+              },
+              Math.min(10_000, 1000 * 2 ** loginCountRef.current),
+            );
+            return;
           }
-          retryTimerRef.current = setTimeout(
-            () => {
-              loginCountRef.current += 1;
-              tryToLogin();
-            },
-            Math.min(10_000, 1000 * 2 ** loginCountRef.current),
-          );
+          // Any other failure won't fix itself by retrying — explain and sign out. Resolve the
+          // text before touching state: a state change here re-runs the login effect.
+          const reason = (await apiErrorMessageAsync(error)) ?? 'Could not load your account. Please sign in again.';
+          message.error(reason);
+          handleLogout();
         });
     } else {
       setTriedLoading(true);

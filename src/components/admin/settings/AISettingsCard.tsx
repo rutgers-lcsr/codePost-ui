@@ -8,7 +8,20 @@
  */
 
 import * as React from 'react';
-import { Alert, AutoComplete, Card, Flex, Input, message, Select, Space, Spin, Switch, Tooltip, Typography } from 'antd';
+import {
+  Alert,
+  AutoComplete,
+  Card,
+  Flex,
+  Input,
+  message,
+  Select,
+  Space,
+  Spin,
+  Switch,
+  Tooltip,
+  Typography,
+} from 'antd';
 import { RobotOutlined, BankOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
 import TokenRateEditor from '../../core/TokenRateEditor';
@@ -18,6 +31,7 @@ import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../../
 import { AI_PROVIDERS, DEFAULT_MODELS } from '../../../utils/aiService';
 import type { AIProvider } from '../../../utils/aiService';
 import type { AIModel } from '../../../api-client';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import AIProviderTestModal from '../../core/AIProviderTestModal';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
 
@@ -187,7 +201,7 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
       usePermissionsStore.getState().invalidateCourse(courseId);
       message.success('AI settings saved!');
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Failed to save AI settings');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to save AI settings');
     } finally {
       setIsSaving(false);
     }
@@ -364,8 +378,8 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   />
                   {provider === 'portkey' && (
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      Leave blank to use the official Portkey API (https://api.portkey.ai/v1). Enter a URL only to
-                      route through a self-hosted Portkey gateway.
+                      Leave blank to use the official Portkey API (https://api.portkey.ai/v1). Enter a URL only to route
+                      through a self-hosted Portkey gateway.
                     </Text>
                   )}
                 </Flex>

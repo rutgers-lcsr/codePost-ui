@@ -305,7 +305,7 @@ const BulkUpload: FC<IProps> = (props) => {
           setUploadMap((prev) => {
             const next = { ...prev };
             submission.students.forEach((student) => {
-              next[student] = UPLOAD_STATUS.SUCCESS;
+              next[student] = UPLOAD_STATUS.ERROR;
             });
             return next;
           });

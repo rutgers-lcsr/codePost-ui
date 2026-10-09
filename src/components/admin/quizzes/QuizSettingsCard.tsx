@@ -1,6 +1,19 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, DatePicker, Divider, Flex, Input, InputNumber, Modal, Select, Space, Switch, Typography, message } from 'antd';
+import {
+  Alert,
+  DatePicker,
+  Divider,
+  Flex,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Switch,
+  Typography,
+  message,
+} from 'antd';
 import { CopyOutlined, DeleteOutlined, KeyOutlined, RedoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,7 +26,7 @@ import {
   QuizCloseEventEnum,
   QuizScoringPolicyEnum,
 } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizSettingsWarnings } from './quizSettingsWarnings';
 import { quizKeys } from '../../../lib/queryKeys';
 import MarkdownField from './MarkdownField';
@@ -36,7 +49,7 @@ const TRIGGER_HELP: Record<string, string> = {
   [QuizAssignmentTriggerEnum.AfterSubmission]: 'Opens for each student once they submit the assignment.',
   [QuizAssignmentTriggerEnum.AfterFeedback]: 'Opens once grades/feedback are released for the whole assignment.',
   [QuizAssignmentTriggerEnum.AfterStudentFeedback]:
-    "Opens for each student once their own feedback is available — under live feedback mode this unlocks per student as each submission is graded (self-paced).",
+    'Opens for each student once their own feedback is available — under live feedback mode this unlocks per student as each submission is graded (self-paced).',
   [QuizAssignmentTriggerEnum.FixedDate]:
     'Opens at the date & time you pick. The assignment must still be released for students to see it.',
 };
@@ -59,21 +72,32 @@ const CLOSE_LABELS: Record<string, string> = {
 // Which close events make sense for each open trigger (a fixed date is always allowed).
 const CLOSE_OPTIONS_BY_TRIGGER: Record<string, QuizCloseEventEnum[]> = {
   [QuizAssignmentTriggerEnum.During]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.FixedDate,
+    QuizCloseEventEnum.None,
+    QuizCloseEventEnum.AssignmentDue,
+    QuizCloseEventEnum.FixedDate,
   ],
   [QuizAssignmentTriggerEnum.AfterAssignment]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.FixedDate,
+    QuizCloseEventEnum.None,
+    QuizCloseEventEnum.AssignmentDue,
+    QuizCloseEventEnum.FixedDate,
   ],
   [QuizAssignmentTriggerEnum.AfterSubmission]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.Submission, QuizCloseEventEnum.FixedDate,
+    QuizCloseEventEnum.None,
+    QuizCloseEventEnum.Submission,
+    QuizCloseEventEnum.FixedDate,
   ],
   [QuizAssignmentTriggerEnum.AfterFeedback]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
+    QuizCloseEventEnum.None,
+    QuizCloseEventEnum.FeedbackReleased,
+    QuizCloseEventEnum.FixedDate,
   ],
   // A fixed open is independent of the assignment lifecycle, so any close anchor works.
   [QuizAssignmentTriggerEnum.FixedDate]: [
-    QuizCloseEventEnum.None, QuizCloseEventEnum.AssignmentDue, QuizCloseEventEnum.Submission,
-    QuizCloseEventEnum.FeedbackReleased, QuizCloseEventEnum.FixedDate,
+    QuizCloseEventEnum.None,
+    QuizCloseEventEnum.AssignmentDue,
+    QuizCloseEventEnum.Submission,
+    QuizCloseEventEnum.FeedbackReleased,
+    QuizCloseEventEnum.FixedDate,
   ],
 };
 
@@ -103,13 +127,13 @@ const closeOptionsFor = (trigger: string): QuizCloseEventEnum[] =>
   CLOSE_OPTIONS_BY_TRIGGER[trigger] ?? [QuizCloseEventEnum.None, QuizCloseEventEnum.FixedDate];
 
 /** A titled settings section, so the page scans as setup steps. */
-const Section: React.FC<{ title: string; hint?: string; first?: boolean; testId?: string; children: React.ReactNode }> = ({
-  title,
-  hint,
-  first,
-  testId,
-  children,
-}) => (
+const Section: React.FC<{
+  title: string;
+  hint?: string;
+  first?: boolean;
+  testId?: string;
+  children: React.ReactNode;
+}> = ({ title, hint, first, testId, children }) => (
   <div data-testid={testId}>
     {!first && <Divider style={{ margin: '4px 0 12px' }} />}
     <Text strong style={{ display: 'block', marginBottom: hint ? 2 : 12 }}>
@@ -225,7 +249,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
     const allowed = closeOptionsFor(t);
     const next = allowed.includes(settings.closeEvent)
       ? settings.closeEvent
-      : DEFAULT_CLOSE_BY_TRIGGER[t] ?? QuizCloseEventEnum.None;
+      : (DEFAULT_CLOSE_BY_TRIGGER[t] ?? QuizCloseEventEnum.None);
     // Leaving the fixed-date open drops its date so it can't resurface as a stale open time.
     const clearOpen = settings.assignment != null && t !== QuizAssignmentTriggerEnum.FixedDate;
     patch({ assignmentTrigger: t, closeEvent: next, ...(clearOpen ? { availableFrom: null } : {}) });
@@ -283,7 +307,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: quizKeys.detail(quiz.id!) });
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
     } catch (err) {
-      message.error(apiErrorMessage(err, 'title', 'availableFrom') ?? 'Failed to save quiz settings.');
+      message.error((await apiErrorMessageAsync(err, 'title', 'availableFrom')) ?? 'Failed to save quiz settings.');
     } finally {
       setSaving(false);
     }
@@ -301,7 +325,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
       message.success('Access code generated.');
       invalidateQuiz();
     } catch (err) {
-      message.error(apiErrorMessage(err) ?? 'Could not update the access code.');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Could not update the access code.');
     } finally {
       setRotatingCode(false);
     }
@@ -312,7 +336,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
     if (quiz.accessCode) {
       Modal.confirm({
         title: 'Generate a new access code?',
-        content: 'The current code stops working immediately. Students you already shared it with will need the new one.',
+        content:
+          'The current code stops working immediately. Students you already shared it with will need the new one.',
         okText: 'Generate new code',
         cancelText: 'Cancel',
         onOk: rotateAccessCode,
@@ -332,7 +357,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
       message.success('Access code removed.');
       invalidateQuiz();
     } catch (err) {
-      message.error(apiErrorMessage(err) ?? 'Could not remove the access code.');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Could not remove the access code.');
     } finally {
       setClearingCode(false);
     }
@@ -631,7 +656,12 @@ const QuizSettingsCard: React.FC<IProps> = ({
                 style={{ width: 150, fontFamily: 'monospace', letterSpacing: 2, fontWeight: 600 }}
                 data-testid="quiz-access-code"
               />
-              <CPButton cpType="secondary" icon={<CopyOutlined />} onClick={copyAccessCode} disabled={rotatingCode || clearingCode}>
+              <CPButton
+                cpType="secondary"
+                icon={<CopyOutlined />}
+                onClick={copyAccessCode}
+                disabled={rotatingCode || clearingCode}
+              >
                 Copy
               </CPButton>
               <CPButton
@@ -685,9 +715,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
             {settings.requireSebBrowser && (
               <div style={{ marginLeft: 36 }}>
                 <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
-                  Optional: Config Key of your own SEB configuration (64 hex characters, shown in the
-                  SEB Config Tool) — only needed if you distribute a custom .seb file instead of the
-                  built-in launch
+                  Optional: Config Key of your own SEB configuration (64 hex characters, shown in the SEB Config Tool) —
+                  only needed if you distribute a custom .seb file instead of the built-in launch
                 </Text>
                 <Input
                   aria-label="SEB Config Key"
@@ -809,8 +838,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
             />
             {settings.sealResultsUntilClose && (
               <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 320 }}>
-                Scores, points, and the answer key stay hidden — on the quiz card and on review —
-                until the quiz closes for the student.
+                Scores, points, and the answer key stay hidden — on the quiz card and on review — until the quiz closes
+                for the student.
               </Text>
             )}
           </div>
@@ -825,8 +854,8 @@ const QuizSettingsCard: React.FC<IProps> = ({
           </Space>
           {!settings.allowSubmissionReview && (
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12, maxWidth: 400 }}>
-              Students get a submission confirmation only — they can't reopen a submitted attempt.
-              Their score still appears on the quiz card once results are released.
+              Students get a submission confirmation only — they can't reopen a submitted attempt. Their score still
+              appears on the quiz card once results are released.
             </Text>
           )}
           <Flex gap={16} wrap align="start">
@@ -926,8 +955,11 @@ const QuizSettingsCard: React.FC<IProps> = ({
                   // A grader can only reach the generate button through the review tab, so
                   // revoking review also revokes generate — no hidden-but-active state.
                   onChange={(v) =>
-                    patch(v ? { gradersCanReviewGenerated: true }
-                            : { gradersCanReviewGenerated: false, gradersCanGenerate: false })
+                    patch(
+                      v
+                        ? { gradersCanReviewGenerated: true }
+                        : { gradersCanReviewGenerated: false, gradersCanGenerate: false },
+                    )
                   }
                 />
                 <Text>Graders may review and publish generated questions</Text>
@@ -940,9 +972,7 @@ const QuizSettingsCard: React.FC<IProps> = ({
                     checked={settings.gradersCanGenerate}
                     onChange={(v) => patch({ gradersCanGenerate: v })}
                   />
-                  <Text type="secondary">
-                    Graders may also generate missing question sets (spends AI credits)
-                  </Text>
+                  <Text type="secondary">Graders may also generate missing question sets (spends AI credits)</Text>
                 </Space>
               )}
               <Space>
@@ -967,10 +997,9 @@ const QuizSettingsCard: React.FC<IProps> = ({
                     onChange={(d) => patch({ generationDate: d ? d.toISOString() : null })}
                   />
                   <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4, maxWidth: 440 }}>
-                    Optional one-time run: at this time, question sets are generated for students
-                    who have a submission but no set yet. Students who submit afterwards show up
-                    under Generate missing in the Review tab. Moving the time later re-runs it for
-                    newly missing students.
+                    Optional one-time run: at this time, question sets are generated for students who have a submission
+                    but no set yet. Students who submit afterwards show up under Generate missing in the Review tab.
+                    Moving the time later re-runs it for newly missing students.
                   </Text>
                   {quiz.scheduledGenerationRanAt && (
                     <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 2 }}>
@@ -982,23 +1011,23 @@ const QuizSettingsCard: React.FC<IProps> = ({
               {settings.manualGeneration &&
                 (settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterSubmission ||
                   settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterStudentFeedback) && (
-                // Explicit dark amber (#8a5a00 ≈ 5.9:1 on white) — antd's default warning
-                // color (~#faad14) fails WCAG AA for normal text.
-                <Text style={{ color: '#8a5a00', fontSize: 13 }}>
-                  This quiz opens per student
-                  {settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterSubmission
-                    ? ' after they submit'
-                    : ' after their feedback is ready'}
-                  , but manual generation is on — students won&apos;t get their questions until
-                  you generate and publish them from the Review tab. For a self-paced flow, turn
-                  off manual generation (and consider auto-publish).
-                </Text>
-              )}
+                  // Explicit dark amber (#8a5a00 ≈ 5.9:1 on white) — antd's default warning
+                  // color (~#faad14) fails WCAG AA for normal text.
+                  <Text style={{ color: '#8a5a00', fontSize: 13 }}>
+                    This quiz opens per student
+                    {settings.assignmentTrigger === QuizAssignmentTriggerEnum.AfterSubmission
+                      ? ' after they submit'
+                      : ' after their feedback is ready'}
+                    , but manual generation is on — students won&apos;t get their questions until you generate and
+                    publish them from the Review tab. For a self-paced flow, turn off manual generation (and consider
+                    auto-publish).
+                  </Text>
+                )}
               {settings.closeEvent === QuizCloseEventEnum.Submission && !settings.autoPublishGenerated && (
                 <Text style={{ color: '#8a5a00', fontSize: 13 }}>
-                  This quiz closes relative to each student's submission, but their questions
-                  only open once reviewed — a slow review can eat into (or consume) their
-                  window. Review promptly, extend the close offset, or enable auto-publish.
+                  This quiz closes relative to each student's submission, but their questions only open once reviewed —
+                  a slow review can eat into (or consume) their window. Review promptly, extend the close offset, or
+                  enable auto-publish.
                 </Text>
               )}
             </Flex>

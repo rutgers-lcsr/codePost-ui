@@ -40,7 +40,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { courseFilesApi } from '../../../api-client/clients';
 import { Course, CourseFile } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
+import { formatLimit, getUploadLimits } from '../../../lib/uploadLimits';
 import { courseKeys } from '../../../lib/queryKeys';
 import { ImageExtensions, PDFExtensions, BinaryExtensions } from '../../../utils/file';
 import { dataBytes, dataUriMime, downloadCourseFile, formatBytes } from '../../../utils/courseFiles';
@@ -79,9 +80,9 @@ const MARKDOWN_PREVIEW_EXTS = new Set(['.md', '.markdown', '.rmd', '.qmd']);
 const binaryKindLabel = (mime: string): string =>
   mime.startsWith('image/') ? 'Image' : mime === 'application/pdf' ? 'PDF' : 'Binary file';
 
-// Match the server-side cap (core/constants.py MAX_COURSE_FILE_SIZE): course-file bytes live
-// in the DB as base64 text, so large files are out of scope.
-const MAX_COURSE_FILE_BYTES = 25 * 1024 * 1024;
+// The server-side cap (core/constants.py MAX_COURSE_FILE_SIZE, via /system/uploadLimits/):
+// course-file bytes live in the DB as base64 text, so large files are out of scope.
+const maxCourseFileBytes = () => getUploadLimits().maxCourseFileBytes;
 
 // application/* MIME types that are really text (kept editable + usable as {course_file:name}).
 const TEXTUAL_MIME = new Set([
@@ -191,8 +192,8 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
     onError: (err: Error) => void;
   }) => {
     const { file, onSuccess, onError } = options;
-    if (file.size > MAX_COURSE_FILE_BYTES) {
-      const err = new Error(`${file.name} is larger than 25 MB.`);
+    if (file.size > maxCourseFileBytes()) {
+      const err = new Error(`${file.name} is larger than ${formatLimit(maxCourseFileBytes())}.`);
       message.error(err.message);
       onError(err);
       return;
@@ -267,7 +268,7 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
       setModalOpen(false);
       invalidate();
     } catch (err) {
-      message.error(apiErrorMessage(err, 'name') ?? 'Failed to save the course file.');
+      message.error((await apiErrorMessageAsync(err, 'name', 'data')) ?? 'Failed to save the course file.');
     } finally {
       setSaving(false);
     }
@@ -492,7 +493,7 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
               <Button icon={<UploadOutlined />}>Choose file</Button>
             </Upload>
             <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
-              Any file type, up to 25 MB. Text files can also be edited below.
+              Any file type, up to {formatLimit(maxCourseFileBytes())}. Text files can also be edited below.
             </Text>
           </Form.Item>
           <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please name the file.' }]}>

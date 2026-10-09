@@ -21,14 +21,32 @@ import { Markdown } from '@tiptap/markdown';
 // lowlight v3 via the `lowlight3` alias (the real `lowlight` stays v1 for code-review).
 import { createLowlight, common } from 'lowlight3';
 import { getAuthToken } from '../../../utils/auth';
+import { responseErrorMessage } from '../../../lib/apiError';
+import { formatLimit, getUploadLimits } from '../../../lib/uploadLimits';
 import './MarkdownField.css';
 
 const lowlight = createLowlight(common);
 
 // Languages offered for a code block's fence (drives in-editor + rendered highlighting).
 const CODE_LANGUAGES = [
-  'text', 'json', 'javascript', 'typescript', 'python', 'java', 'c', 'cpp',
-  'bash', 'sql', 'yaml', 'html', 'css', 'xml', 'go', 'rust', 'ruby', 'php',
+  'text',
+  'json',
+  'javascript',
+  'typescript',
+  'python',
+  'java',
+  'c',
+  'cpp',
+  'bash',
+  'sql',
+  'yaml',
+  'html',
+  'css',
+  'xml',
+  'go',
+  'rust',
+  'ruby',
+  'php',
 ];
 
 type TextAreaRef = GetRef<typeof Input.TextArea>;
@@ -170,8 +188,7 @@ const MarkdownField: React.FC<IProps> = ({
   const doBold = () => (rich ? editor?.chain().focus().toggleBold().run() : wrapMd('**', '**', 'bold text'));
   const doItalic = () => (rich ? editor?.chain().focus().toggleItalic().run() : wrapMd('*', '*', 'italic'));
   const doCode = () => (rich ? editor?.chain().focus().toggleCode().run() : wrapMd('`', '`', 'code'));
-  const doHeading = () =>
-    rich ? editor?.chain().focus().toggleHeading({ level: 3 }).run() : prefixLineMd('### ');
+  const doHeading = () => (rich ? editor?.chain().focus().toggleHeading({ level: 3 }).run() : prefixLineMd('### '));
   const doBullet = () => (rich ? editor?.chain().focus().toggleBulletList().run() : prefixLineMd('- '));
   const doOrdered = () => (rich ? editor?.chain().focus().toggleOrderedList().run() : prefixLineMd('1. '));
   const doCodeBlock = () =>
@@ -180,8 +197,7 @@ const MarkdownField: React.FC<IProps> = ({
   // Language picker for the code block the cursor is in (rich mode only).
   const inCodeBlock = rich && !!editor?.isActive('codeBlock');
   const currentLang = (editor?.getAttributes('codeBlock').language as string) || 'text';
-  const setCodeLang = (lang: string) =>
-    editor?.chain().focus().updateAttributes('codeBlock', { language: lang }).run();
+  const setCodeLang = (lang: string) => editor?.chain().focus().updateAttributes('codeBlock', { language: lang }).run();
   const doStrike = () => (rich ? editor?.chain().focus().toggleStrike().run() : wrapMd('~~', '~~', 'strikethrough'));
   const doLink = () => {
     if (rich) {
@@ -204,8 +220,11 @@ const MarkdownField: React.FC<IProps> = ({
         body: form,
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        message.error(body?.error ?? 'Image upload failed.');
+        message.error(
+          await responseErrorMessage(res, {
+            tooLarge: `Image too large (max ${formatLimit(getUploadLimits().maxQuizImageBytes)}).`,
+          }),
+        );
         return null;
       }
       const data = await res.json();
@@ -250,7 +269,8 @@ const MarkdownField: React.FC<IProps> = ({
           {tool('Inline code', <CodeOutlined />, doCode, rich && editor?.isActive('code'))}
           {tool('Strikethrough', <StrikethroughOutlined />, doStrike, rich && editor?.isActive('strike'))}
           {!basic && tool('Code block', <BlockOutlined />, doCodeBlock, rich && editor?.isActive('codeBlock'))}
-          {!basic && tool('Heading', <FontSizeOutlined />, doHeading, rich && editor?.isActive('heading', { level: 3 }))}
+          {!basic &&
+            tool('Heading', <FontSizeOutlined />, doHeading, rich && editor?.isActive('heading', { level: 3 }))}
           {!basic && tool('Bullet list', <UnorderedListOutlined />, doBullet, rich && editor?.isActive('bulletList'))}
           {!basic && tool('Numbered list', <OrderedListOutlined />, doOrdered, rich && editor?.isActive('orderedList'))}
           {tool('Link', <LinkOutlined />, doLink, rich && editor?.isActive('link'))}
@@ -265,7 +285,13 @@ const MarkdownField: React.FC<IProps> = ({
               }}
             >
               <Tooltip title="Upload image">
-                <Button size="small" type="text" icon={<PictureOutlined />} loading={uploading} aria-label="Upload image" />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<PictureOutlined />}
+                  loading={uploading}
+                  aria-label="Upload image"
+                />
               </Tooltip>
             </Upload>
           )}
@@ -296,7 +322,11 @@ const MarkdownField: React.FC<IProps> = ({
         // Mouse-only convenience: clicking the padding around the editor focuses it. The
         // contenteditable inside is the real (keyboard-focusable) interactive element.
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-        <div className="cp-rich-editor" style={{ minHeight: minRows * 24 }} onClick={() => editor?.chain().focus().run()}>
+        <div
+          className="cp-rich-editor"
+          style={{ minHeight: minRows * 24 }}
+          onClick={() => editor?.chain().focus().run()}
+        >
           <EditorContent editor={editor} />
         </div>
       ) : (

@@ -116,6 +116,9 @@ docs/AsyncExecutionRequest.md
 docs/AsyncTaskResponse.md
 docs/AuthApi.md
 docs/AutograderApi.md
+docs/AutogradingAssignmentFailure.md
+docs/AutogradingFailure.md
+docs/AutogradingFailureList.md
 docs/AutogradingLanguageFailure.md
 docs/AutogradingLanguageUsage.md
 docs/AutogradingStats.md
@@ -438,6 +441,7 @@ docs/TokenRefreshApi.md
 docs/TokenVerify.md
 docs/TokenVerifyApi.md
 docs/TypeEnum.md
+docs/UploadLimits.md
 docs/User.md
 docs/UsersApi.md
 docs/ValidateNewAdminUserRequest.md

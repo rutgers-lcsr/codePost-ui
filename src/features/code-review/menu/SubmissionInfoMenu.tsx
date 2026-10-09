@@ -38,6 +38,8 @@ import {
   Badge as AntBadge,
 } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../lib/apiError';
+
 /* other library imports */
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
@@ -190,11 +192,7 @@ const SubmissionInfo = ({ mode }: { mode: SubmissionInfoMode }) => {
                       Uploaded
                     </Text>
                     <Text style={{ color: consoleTheme.text }}>
-                      {submission.dateUploaded ? (
-                        <CodePostDate datetime={submission.dateUploaded} />
-                      ) : (
-                        'Not uploaded'
-                      )}
+                      {submission.dateUploaded ? <CodePostDate datetime={submission.dateUploaded} /> : 'Not uploaded'}
                     </Text>
                   </div>
                 </Space>
@@ -259,9 +257,7 @@ const SubmissionInfo = ({ mode }: { mode: SubmissionInfoMode }) => {
   const readOnlyGrader =
     readOnlySubmission && hasGraderField(readOnlySubmission) ? readOnlySubmission.grader : undefined;
   const readOnlyHasGrader =
-    readOnlySubmission && hasHasGraderField(readOnlySubmission)
-      ? !!readOnlySubmission.hasGrader
-      : false;
+    readOnlySubmission && hasHasGraderField(readOnlySubmission) ? !!readOnlySubmission.hasGrader : false;
 
   const submissionGraderEmail = submission?.grader ?? readOnlyGrader;
   const graderLabel =
@@ -397,15 +393,25 @@ export const GraderInfo = (props: IGraderInfoProps) => {
 
   const handleChange = (grader: string) => {
     toggleModal();
-    props.updateGrader(props.submission, grader).then(() => {
-      message.success(`Successfully assigned to ${grader}`);
-    });
+    props
+      .updateGrader(props.submission, grader)
+      .then(() => {
+        message.success(`Successfully assigned to ${grader}`);
+      })
+      .catch(async (e) => {
+        message.error((await apiErrorMessageAsync(e, 'grader')) ?? 'Could not assign the grader.');
+      });
   };
 
   const unassign = () => {
-    props.updateGrader(props.submission, '').then(() => {
-      message.success('Successfully unassigned submission');
-    });
+    props
+      .updateGrader(props.submission, '')
+      .then(() => {
+        message.success('Successfully unassigned submission');
+      })
+      .catch(async (e) => {
+        message.error((await apiErrorMessageAsync(e, 'grader')) ?? 'Could not unassign the submission.');
+      });
   };
 
   const toggleModal = () => {
@@ -625,6 +631,8 @@ const GraderRegrade = (props: IGraderRegradeProps) => {
         questionIsOpen: true,
       });
       message.success('Regrade claimed.');
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e, 'questionResponder')) ?? 'Could not claim the regrade.');
     } finally {
       setLoading(false);
     }
@@ -640,6 +648,8 @@ const GraderRegrade = (props: IGraderRegradeProps) => {
         questionIsOpen: true,
       });
       message.success('Regrade released.');
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e, 'questionResponder')) ?? 'Could not release the regrade.');
     } finally {
       setLoading(false);
     }
@@ -655,6 +665,8 @@ const GraderRegrade = (props: IGraderRegradeProps) => {
       });
       setIsEditing(false);
       message.success(closeAfter ? 'Response submitted and closed.' : 'Response saved.');
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e, 'questionResponse')) ?? 'Could not save the response.');
     } finally {
       setLoading(false);
     }
@@ -666,6 +678,8 @@ const GraderRegrade = (props: IGraderRegradeProps) => {
     try {
       await props.onUpdateRegrade(props.submission, { questionIsOpen: true });
       message.success('Regrade re-opened.');
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e, 'questionIsOpen')) ?? 'Could not re-open the regrade.');
     } finally {
       setLoading(false);
     }
@@ -857,22 +871,34 @@ const StudentRegrade = (props: IStudentRegradeProps) => {
   const submitQuestion = () => {
     if (props.submitStudentQuestion) {
       setLoading(true);
-      props.submitStudentQuestion(props.submission, questionText, questionIsRegrade).then(() => {
-        setModalVisible(false);
-        setLoading(false);
-        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Submitted!`);
-      });
+      props
+        .submitStudentQuestion(props.submission, questionText, questionIsRegrade)
+        .then(() => {
+          setModalVisible(false);
+          setLoading(false);
+          message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Submitted!`);
+        })
+        .catch(async (e) => {
+          setLoading(false);
+          message.error((await apiErrorMessageAsync(e, 'questionText')) ?? 'Could not submit your request.');
+        });
     }
   };
 
   const deleteQuestion = () => {
     if (props.deleteStudentQuestion) {
       setLoading(true);
-      props.deleteStudentQuestion(props.submission).then(() => {
-        setModalVisible(false);
-        setLoading(false);
-        message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Deleted.`);
-      });
+      props
+        .deleteStudentQuestion(props.submission)
+        .then(() => {
+          setModalVisible(false);
+          setLoading(false);
+          message.success(`${questionIsRegrade ? 'Regrade Request' : 'Question'}  Deleted.`);
+        })
+        .catch(async (e) => {
+          setLoading(false);
+          message.error((await apiErrorMessageAsync(e, 'questionText')) ?? 'Could not delete your request.');
+        });
     }
   };
 

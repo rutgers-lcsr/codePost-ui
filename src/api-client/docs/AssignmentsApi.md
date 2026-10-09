@@ -1558,7 +1558,7 @@ example().catch(console.error);
 
 > StudentSubmission studentUploadCreate(id, assignment)
 
-Upload of submission to an assignment TODO: add file limits to 10mb
+Upload of submission to an assignment Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
 
 ### Example
 
@@ -1635,7 +1635,7 @@ example().catch(console.error);
 
 > StudentSubmission studentUploadPartialUpdate(id, patchedAssignment)
 
-Upload of submission to an assignment TODO: add file limits to 10mb
+Upload of submission to an assignment Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
 
 ### Example
 
@@ -1712,7 +1712,7 @@ example().catch(console.error);
 
 > AssignmentStudentUploadGetResponse studentUploadRetrieve(id)
 
-Upload of submission to an assignment TODO: add file limits to 10mb
+Upload of submission to an assignment Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
 
 ### Example
 

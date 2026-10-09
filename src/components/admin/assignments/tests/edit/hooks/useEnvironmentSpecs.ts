@@ -1,6 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { message, Modal } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../../../../lib/apiError';
 import { autograderApi } from '../../../../../../api-client/clients';
 import { getScanner } from '../utils/scanners';
 import type { ScannedFile } from '../utils/scanners';
@@ -243,7 +245,7 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
           }
         }, 3000);
       } catch (err: unknown) {
-        message.error('Failed to trigger build: ' + String(err));
+        message.error((await apiErrorMessageAsync(err)) ?? 'Failed to trigger the build.');
         setBuildInProgress(false);
       }
     } else {

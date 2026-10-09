@@ -27,6 +27,7 @@ vi.mock('../../../api-client/clients', () => ({
 
 import { quizzesApi, quizSuggestionJobsApi } from '../../../api-client/clients';
 import { QuizGeneratedSection } from '../../../api-client';
+import { ResponseError } from '../../../api-client/runtime';
 import GeneratedSectionModal from './GeneratedSectionModal';
 
 const section = {
@@ -94,9 +95,11 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
     vi.clearAllMocks();
     vi.mocked(quizzesApi.promptVariablesList).mockResolvedValue([] as any);
     vi.mocked(quizzesApi.promptTemplatesList).mockResolvedValue([] as any);
-    vi.mocked(quizzesApi.backfillPreviewRetrieve).mockResolvedValue(
-      { wouldGenerate: 0, missing: 0, needsSubmission: true } as any,
-    );
+    vi.mocked(quizzesApi.backfillPreviewRetrieve).mockResolvedValue({
+      wouldGenerate: 0,
+      missing: 0,
+      needsSubmission: true,
+    } as any);
   });
 
   it('posts the current form values and renders the example questions in the side pane', async () => {
@@ -107,30 +110,37 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
 
     fireEvent.click(screen.getByTestId('section-test-button'));
 
-    await waitFor(() => expect(quizzesApi.previewGeneratedSectionCreate).toHaveBeenCalledWith({
-      id: 9,
-      previewGeneratedSectionRequest: {
-        systemPrompt: 'Ask about {submission_files}.',
-        numQuestions: 2,
-        questionTypes: [],
-        seed: 'random',
-      },
-    }), WAIT);
+    await waitFor(
+      () =>
+        expect(quizzesApi.previewGeneratedSectionCreate).toHaveBeenCalledWith({
+          id: 9,
+          previewGeneratedSectionRequest: {
+            systemPrompt: 'Ask about {submission_files}.',
+            numQuestions: 2,
+            questionTypes: [],
+            seed: 'random',
+          },
+        }),
+      WAIT,
+    );
     expect(await screen.findByText('What does your helper return?', undefined, WAIT)).toBeInTheDocument();
     expect(screen.getByText(/stu@example\.edu/)).toBeInTheDocument();
   });
 
   it('shows the job error when the generation run fails', async () => {
     vi.mocked(quizzesApi.previewGeneratedSectionCreate).mockResolvedValue({ id: 42 } as any);
-    vi.mocked(quizSuggestionJobsApi.retrieve).mockResolvedValue(
-      { id: 42, status: 'failed', errorMessage: 'No student has submitted yet — upload demo files instead.' } as any,
-    );
+    vi.mocked(quizSuggestionJobsApi.retrieve).mockResolvedValue({
+      id: 42,
+      status: 'failed',
+      errorMessage: 'No student has submitted yet — upload demo files instead.',
+    } as any);
     renderModal();
 
     fireEvent.click(screen.getByTestId('section-test-button'));
 
-    expect(await screen.findByText('No student has submitted yet — upload demo files instead.', undefined, WAIT))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByText('No student has submitted yet — upload demo files instead.', undefined, WAIT),
+    ).toBeInTheDocument();
   });
 
   it('maps a 400 systemPrompt error into the prompt field', async () => {
@@ -138,6 +148,18 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
       Object.assign(new Error('bad request'), {
         body: { systemPrompt: ['Unknown variable {zap}.'] },
       }),
+    );
+    renderModal();
+
+    fireEvent.click(screen.getByTestId('section-test-button'));
+
+    expect(await screen.findByText('Unknown variable {zap}.', undefined, WAIT)).toBeInTheDocument();
+    expect(quizSuggestionJobsApi.retrieve).not.toHaveBeenCalled();
+  });
+
+  it('maps a generated-client 400 (body on the Response, not the error) into the prompt field', async () => {
+    vi.mocked(quizzesApi.previewGeneratedSectionCreate).mockRejectedValue(
+      new ResponseError(new Response(JSON.stringify({ systemPrompt: ['Unknown variable {zap}.'] }), { status: 400 })),
     );
     renderModal();
 

@@ -22,6 +22,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { Course } from '../../../services/course';
 import type { CourseAPIKey, CourseAPIKeyCreateResponse, CourseAPIKeyScope } from '../../../services/course';
+import { apiErrorMessage } from '../../../lib/apiError';
 import { assignmentKeys } from '../../../lib/queryKeys';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -63,8 +64,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       message.success('API key created.');
       queryClient.invalidateQueries({ queryKey });
     } catch (err: unknown) {
-      const errObj = err as { body?: { error?: string } };
-      message.error(errObj?.body?.error ?? 'Failed to create API key.');
+      message.error(apiErrorMessage(err, 'name', 'scope') ?? 'Failed to create API key.');
     } finally {
       setIsCreating(false);
     }
@@ -75,8 +75,8 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       await Course.deleteAPIKey(courseId, keyId);
       message.success('API key revoked.');
       queryClient.invalidateQueries({ queryKey });
-    } catch {
-      message.error('Failed to revoke API key.');
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err) ?? 'Failed to revoke API key.');
     }
   };
 
@@ -85,8 +85,8 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       await Course.updateAPIKey(courseId, key.id, { isActive: !key.isActive });
       message.success(key.isActive ? 'API key deactivated.' : 'API key reactivated.');
       queryClient.invalidateQueries({ queryKey });
-    } catch {
-      message.error('Failed to update API key.');
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err) ?? 'Failed to update API key.');
     }
   };
 
@@ -250,11 +250,12 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
           <Text code copyable={{ text: mcpSnippet }}>
             {mcpSnippet}
           </Text>{' '}
-          A <Tag style={{ fontSize: 11 }}>read</Tag> key can only look things up; <Tag style={{ fontSize: 11 }}>write</Tag>{' '}
-          adds course setup (assignments, quizzes, rubrics, autograder); <Tag style={{ fontSize: 11 }}>admin</Tag> also
-          allows deletes, attempt resets and emailing students &mdash; each of those still needs a confirmation code from
-          the <Text strong>Pending agent actions</Text> panel below. Whatever the level, the agent never sees student
-          email addresses: students appear as aliases you can resolve under <Text strong>Student aliases</Text> below.
+          A <Tag style={{ fontSize: 11 }}>read</Tag> key can only look things up;{' '}
+          <Tag style={{ fontSize: 11 }}>write</Tag> adds course setup (assignments, quizzes, rubrics, autograder);{' '}
+          <Tag style={{ fontSize: 11 }}>admin</Tag> also allows deletes, attempt resets and emailing students &mdash;
+          each of those still needs a confirmation code from the <Text strong>Pending agent actions</Text> panel below.
+          Whatever the level, the agent never sees student email addresses: students appear as aliases you can resolve
+          under <Text strong>Student aliases</Text> below.
         </Paragraph>
 
         {isLoading ? (
@@ -299,7 +300,10 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
             maxLength={128}
             count={{ show: true }}
           />
-          <Text>Access level. This is enforced server-side: AI agents connected with this key never even see tools above its level.</Text>
+          <Text>
+            Access level. This is enforced server-side: AI agents connected with this key never even see tools above its
+            level.
+          </Text>
           <Select<CourseAPIKeyScope>
             value={newKeyScope}
             onChange={setNewKeyScope}

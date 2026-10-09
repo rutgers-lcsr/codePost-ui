@@ -1,13 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { message } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import queryString from 'query-string';
-import type {
-  AnonymousSubmissionType,
-  CommentType,
-  StudentSubmissionType,
-  TestCaseType,
-} from '../../../types/models';
+import type { AnonymousSubmissionType, CommentType, StudentSubmissionType, TestCaseType } from '../../../types/models';
 import type { FileWithId } from '../../../utils/file';
 import type { ICodeConsoleState } from '../../../types/CodeConsole.types';
 import type { RubricCategory, RubricComment } from '../../../api-client';
@@ -216,27 +213,24 @@ Days Late (After Credit):  ${daysLateAfterCredit}
         submission: { ...updatedSubmission, files: updatedSubmission.files || [] },
       });
     } catch (error) {
-      message.error(`Error updating submission: ${JSON.stringify(error)}`);
+      message.error((await apiErrorMessageAsync(error, 'isFinalized', 'grader')) ?? 'Could not update the submission.');
     }
   }, [inDemoMode, setState, calculateGradeFromState]);
 
-  const updateGrader = React.useCallback(
-    (sub: AnonymousSubmissionType, graderUsername: string | undefined) => {
-      const payload = {
-        id: sub.id,
-        isFinalized: false,
-        grader: graderUsername,
-      };
+  const updateGrader = React.useCallback((sub: AnonymousSubmissionType, graderUsername: string | undefined) => {
+    const payload = {
+      id: sub.id,
+      isFinalized: false,
+      grader: graderUsername,
+    };
 
-      return SubmissionService.update(payload).then((submission) => {
-        useCodeConsoleStore.getState().setState({
-          submission: { ...submission, files: submission.files || [] },
-        });
-        return { ...submission, files: submission.files || [] };
+    return SubmissionService.update(payload).then((submission) => {
+      useCodeConsoleStore.getState().setState({
+        submission: { ...submission, files: submission.files || [] },
       });
-    },
-    [],
-  );
+      return { ...submission, files: submission.files || [] };
+    });
+  }, []);
 
   const fetchSubmission = React.useCallback(
     async (assignment: { id?: number }): Promise<AnonymousSubmissionType | undefined> => {
@@ -272,8 +266,9 @@ Days Late (After Credit):  ${daysLateAfterCredit}
   const claimSubmission = React.useCallback(async () => {
     const s = useCodeConsoleStore.getState();
     if (s.assignment) {
-      const submissionResult: AnonymousSubmissionType | AnonymousSubmissionType[] | undefined =
-        await fetchSubmission(s.assignment);
+      const submissionResult: AnonymousSubmissionType | AnonymousSubmissionType[] | undefined = await fetchSubmission(
+        s.assignment,
+      );
       const normalizedSubmission = Array.isArray(submissionResult) ? submissionResult[0] : submissionResult;
 
       if (normalizedSubmission !== undefined && normalizedSubmission.id !== undefined) {

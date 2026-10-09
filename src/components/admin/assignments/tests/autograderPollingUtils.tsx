@@ -1,7 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { sendSlack } from '../../../core/slack';
 import { message } from 'antd';
-import { API_UNAVAILABLE_MESSAGE, UNAVAILABLE_STATUSES } from '../../../../lib/apiError';
+import { API_UNAVAILABLE_MESSAGE, responseErrorMessage, UNAVAILABLE_STATUSES } from '../../../../lib/apiError';
 
 const MAX_TRIES_RUN = 150;
 
@@ -56,18 +56,23 @@ async function pollTestResult(
   }
 
   if (res.status !== 200) {
-    // Should never hit a non 200 autograder result
-    sendSlack(
-      `NO RESULT test result: ${id} ${window.location.href}`,
-      `${JSON.stringify(res)}`,
-      '#cc0000',
-      '#autograder_bugs',
-    );
-    message.error(
-      'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
-      25,
-    );
     clearInterval(interval);
+    if (res.status >= 500) {
+      // Should never hit a 5xx autograder result — page the team.
+      sendSlack(
+        `NO RESULT test result: ${id} ${window.location.href}`,
+        `${JSON.stringify(res)}`,
+        '#cc0000',
+        '#autograder_bugs',
+      );
+      message.error(
+        'An error occured. The codePost team has been notified and will be in touch shortly. In the meantime, please try refreshing and running the test again.',
+        25,
+      );
+    } else {
+      // A 4xx is about this request (expired session, unknown task) — show the server's reason.
+      message.error(await responseErrorMessage(res), 25);
+    }
     return;
   }
 

@@ -35,6 +35,7 @@ import { AI_PROVIDERS, DEFAULT_MODELS } from '../../utils/aiService';
 import type { AIProvider } from '../../utils/aiService';
 import { AiCoursePolicyEnum, PatchedOrganizationAISettingsUpdateAiProviderEnum } from '../../api-client';
 import type { AIModel } from '../../api-client';
+import { apiErrorMessageAsync } from '../../lib/apiError';
 import AIProviderTestModal from '../core/AIProviderTestModal';
 import { AIUsageService } from '../../services/aiUsage';
 import type { AIFeatureEntry, AIFeatureConfig, AIFeatureStatus } from '../../services/aiUsage';
@@ -183,7 +184,7 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
       setIsDirty(false);
       message.success('Organization AI settings saved!');
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Failed to save settings');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -319,8 +320,8 @@ const OrgAISettingsCard: React.FC<OrgAISettingsCardProps> = ({ orgId, courses })
               />
               {provider === 'portkey' && (
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  Leave blank to use the official Portkey API (https://api.portkey.ai/v1). Enter a URL only to
-                  route through a self-hosted Portkey gateway.
+                  Leave blank to use the official Portkey API (https://api.portkey.ai/v1). Enter a URL only to route
+                  through a self-hosted Portkey gateway.
                 </Text>
               )}
             </Flex>

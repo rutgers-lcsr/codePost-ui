@@ -78,6 +78,9 @@ import { fileToProtoFileUpload, IBaseFileUpload, IProtoFileUpload, readUploadedF
 
 import { UploadFile } from 'antd/lib/upload/interface';
 import { CIP_COURSE_ID } from '../../../../../config';
+import { apiErrorMessageAsync } from '../../../../../lib/apiError';
+import { ResponseError } from '../../../../../api-client/runtime';
+import { contentSizeBytes, formatFileSize, formatLimit, getUploadLimits } from '../../../../../lib/uploadLimits';
 
 /**********************************************************************************************************************/
 /* Constants
@@ -448,9 +451,7 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
             // once finalized); staff always load.
             const fb2 = propsSelectedAssignment.feedbackStatus;
             const canSeeResults =
-              !isStudent ||
-              fb2 === 'live' ||
-              ((fb2 === 'released' || fb2 === 'per_student') && !!sub.isFinalized);
+              !isStudent || fb2 === 'live' || ((fb2 === 'released' || fb2 === 'per_student') && !!sub.isFinalized);
             if (canSeeResults) {
               loadTestResults(sub, false);
             }
@@ -770,6 +771,23 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
       return;
     }
 
+    // Every file travels in one JSON body, so the API also caps the submission as a whole
+    // (core/constants.py MAX_SUBMISSION_TOTAL_SIZE). Measure the way it does: decoded bytes.
+    const { maxSubmissionTotalBytes } = getUploadLimits();
+    const totalBytes = files.reduce(
+      (sum: number, f: IProtoFileUpload) => sum + (typeof f.data === 'string' ? contentSizeBytes(f.data) : 0),
+      0,
+    );
+    if (totalBytes > maxSubmissionTotalBytes) {
+      message.warning(
+        `Your files add up to ${formatFileSize(totalBytes)}, over the ${formatLimit(
+          maxSubmissionTotalBytes,
+        )} limit for one submission. Remove or compress some files and try again.`,
+        10,
+      );
+      return;
+    }
+
     setStatus(STATUS.SAVING);
 
     uploadSubmission(
@@ -793,19 +811,26 @@ const UploadSubmissionDialog: React.FC<IUploadSubmissionDialogProps> = (props) =
         setSelectedAssignment(propsSelectedAssignment || undefined);
         setActiveTab('1');
       })
-      .catch((error) => {
+      .catch(async (error) => {
         const isDueDateError = error?.toString?.()?.includes('Due date has passed') ?? false;
 
         if (!isDueDateError && error instanceof Error) {
+          // Surface the API's own reason (e.g. "File 'x.pdf' exceeds the 10MB size limit.")
+          // before falling back to the generic apology.
+          const detail = await apiErrorMessageAsync(error, 'error', 'files');
           message.error(
-            'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
+            detail ??
+              'Sorry, something went wrong. Please try uploading again. If the problem persists, contact the codePost team.',
           );
 
-          slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, {
-            error: error.toString(),
-            errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
-            url: window.location.href,
-          });
+          // Only a server fault is worth paging the team; a 4xx is about this upload.
+          if (!(error instanceof ResponseError) || error.response.status >= 500) {
+            slack(`${process.env.REACT_APP_API_URL}/logs/logError/`, {
+              error: error.toString(),
+              errorDetail: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+              url: window.location.href,
+            });
+          }
         }
 
         handleCancel();

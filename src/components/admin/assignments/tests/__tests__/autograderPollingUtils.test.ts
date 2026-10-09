@@ -96,6 +96,21 @@ describe('autograderPollingUtils', () => {
     expect(message.error).toHaveBeenCalled();
   });
 
+  it('shows the server reason, without Slack, on a 4xx', async () => {
+    fetchSpy.mockResolvedValue({
+      status: 404,
+      json: () => Promise.resolve({ detail: 'Not found.' }),
+    });
+
+    const callback = vi.fn();
+    awaitTestResult('task-gone', callback);
+
+    await vi.advanceTimersByTimeAsync(2000);
+
+    expect(message.error).toHaveBeenCalledWith('Not found.', 25);
+    expect(sendSlack).not.toHaveBeenCalled();
+  });
+
   it('stops polling with the outage toast (no Slack) when fetch throws', async () => {
     fetchSpy.mockRejectedValue(new Error('Failed to fetch'));
 

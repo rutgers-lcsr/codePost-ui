@@ -43,6 +43,7 @@ import { EnvironmentShellWidget } from './EnvironmentShellWidget';
 import { assignmentFilesApi, assignmentsApi, promptTypesApi } from '../../../../api-client/clients';
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
 import { getCourseAISettings } from '../../../../utils/aiService';
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 import { RobotOutlined, LockOutlined } from '@ant-design/icons';
 import { Button, Radio, Space } from 'antd';
 
@@ -246,9 +247,12 @@ const AssignmentSettingsDialog: React.FC<IProps> = (props) => {
 
       await updateSettings(values);
     } catch (err: unknown) {
-      // Form validation failed
+      // Either antd form validation failed (no API body → generic text) or an API call
+      // rejected a file (e.g. "File 'x.pdf' exceeds the 10MB size limit…").
       console.error('Form validation error:', err);
-      message.error('Please fix the validation errors before saving.');
+      message.error(
+        (await apiErrorMessageAsync(err, 'data', 'name')) ?? 'Please fix the validation errors before saving.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -385,8 +389,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
       .then((settings) => {
         if (cancelled) return;
         const featureStatus = (settings as unknown as Record<string, unknown>).aiFeatures as
-          | Record<string, boolean>
-          | undefined;
+          Record<string, boolean> | undefined;
         setAiDescriptionEnabled(Boolean(settings.aiEnabled) && featureStatus?.assignment_description !== false);
       })
       .catch(() => {
@@ -627,10 +630,9 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       label="Publish at"
                       extra={
                         <span>
-                          Optional: automatically publish this assignment at this time (checked every
-                          few minutes). Only fires while the assignment is Visible or Preview — a
-                          Draft stays hidden until you move it. Your course&apos;s timezone is{' '}
-                          <b>{timezone}</b>.
+                          Optional: automatically publish this assignment at this time (checked every few minutes). Only
+                          fires while the assignment is Visible or Preview — a Draft stays hidden until you move it.
+                          Your course&apos;s timezone is <b>{timezone}</b>.
                           {assignment.scheduledPublishRanAt ? (
                             <>
                               {' '}
@@ -643,7 +645,12 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       labelCol={{ span: 4 }}
                       wrapperCol={{ span: 20 }}
                     >
-                      <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="Publish at… (optional)" inputReadOnly />
+                      <DatePicker
+                        showTime
+                        format="YYYY-MM-DD HH:mm"
+                        placeholder="Publish at… (optional)"
+                        inputReadOnly
+                      />
                     </Form.Item>
                   ) : null}
                 </div>
@@ -687,10 +694,7 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                               label: 'Student assignments',
                               key: 'datasetAssignments',
                               children: (
-                                <StudentDataSetAssignmentsPanel
-                                  assignmentId={assignment.id}
-                                  datasets={datasets}
-                                />
+                                <StudentDataSetAssignmentsPanel assignmentId={assignment.id} datasets={datasets} />
                               ),
                             },
                           ]
@@ -836,7 +840,6 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                           emptyMessage="Add a late deduction"
                         />
                       </Form.Item>
-
                     </>
                   )}
                 </div>
@@ -1006,8 +1009,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                     label="Feedback flow"
                     extra={
                       <div>
-                        How grading becomes visible to students. Grades can additionally be
-                        masked with &ldquo;Hide grades&rdquo; below in any revealing mode.
+                        How grading becomes visible to students. Grades can additionally be masked with &ldquo;Hide
+                        grades&rdquo; below in any revealing mode.
                       </div>
                     }
                     labelCol={{ span: 6 }}
@@ -1036,8 +1039,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       label="Release at"
                       extra={
                         <span>
-                          Optional: automatically release feedback at this time (checked every few
-                          minutes). Your course&apos;s timezone is <b>{timezone}</b>.
+                          Optional: automatically release feedback at this time (checked every few minutes). Your
+                          course&apos;s timezone is <b>{timezone}</b>.
                           {assignment.scheduledFeedbackReleaseRanAt ? (
                             <>
                               {' '}
@@ -1050,7 +1053,12 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                       labelCol={{ span: 6 }}
                       wrapperCol={{ span: 18 }}
                     >
-                      <DatePicker showTime format="YYYY-MM-DD HH:mm" placeholder="Release feedback at… (optional)" inputReadOnly />
+                      <DatePicker
+                        showTime
+                        format="YYYY-MM-DD HH:mm"
+                        placeholder="Release feedback at… (optional)"
+                        inputReadOnly
+                      />
                     </Form.Item>
                   ) : null}
                   <Form.Item
@@ -1165,8 +1173,8 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
                               extra={
                                 <div>
                                   <p>
-                                    Customize instructions for AI comment generation. Type{' '}
-                                    <code>{'{'}</code> to insert a variable.{' '}
+                                    Customize instructions for AI comment generation. Type <code>{'{'}</code> to insert
+                                    a variable.{' '}
                                     <b>
                                       Variables marked (auto) are added to the User Prompt if omitted. Variables marked
                                       (manual) MUST be included in your custom System Prompt to be available to the AI.

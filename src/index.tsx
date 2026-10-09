@@ -14,6 +14,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 
 import { queryClient } from './lib/queryClient';
+import { installGlobalErrorHandlers } from './lib/globalErrors';
 
 import App from './App';
 import ApiUnavailableBanner from './components/core/ApiUnavailableBanner';
@@ -26,6 +27,8 @@ import themeConfig from './theme';
 
 // If True, show maintenance banner
 // REMOVED: banner is now controlled at runtime via Django admin → /system/banner/
+
+installGlobalErrorHandlers();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Failed to find the root element');

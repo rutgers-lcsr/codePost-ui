@@ -7,6 +7,7 @@ import { CLIENT_URL, SUPPORT_URL } from '../../config';
 
 import { Logger, getDiagnosticConsent, setDiagnosticConsent } from '../../utils/logger';
 import { gatherBrowserContext, getLastScreenshot, recentConsoleLogs } from '../../utils/diagnostics';
+import { isChunkLoadError, UPDATE_AVAILABLE_TEXT, UPDATE_AVAILABLE_TITLE } from '../../lib/globalErrors';
 
 import { Result, Button, Collapse, Typography, Space, Card, theme, Divider, Modal } from 'antd';
 import {
@@ -242,6 +243,10 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
   }
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // A redeploy under this tab, not a bug: render() shows the reload prompt, nothing to report.
+    if (isChunkLoadError(error)) {
+      return;
+    }
     // Prevent infinite loops - only handle the first error
     if (this.hasHandledError) {
       return;
@@ -413,6 +418,23 @@ class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryS
 
   public render() {
     if (this.state.error) {
+      if (isChunkLoadError(this.state.error)) {
+        return (
+          <div style={{ padding: '40px 20px', display: 'flex', justifyContent: 'center' }}>
+            <Result
+              status="info"
+              title={UPDATE_AVAILABLE_TITLE}
+              subTitle={UPDATE_AVAILABLE_TEXT}
+              extra={
+                <Button type="primary" icon={<ReloadOutlined />} onClick={this.handleRefresh} size="large">
+                  Reload
+                </Button>
+              }
+            />
+          </div>
+        );
+      }
+
       const showTroubleshooting = localStorage.getItem('source') !== 'codePost';
 
       // Compact error view for code panel

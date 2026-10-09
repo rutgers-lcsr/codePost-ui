@@ -165,16 +165,14 @@ describe('AssignmentDataSetsForm upload modal', () => {
   });
 
   it('keeps a failed file in the list with its error and leaves the modal open', slow, async () => {
-    fetchMock
-      .mockResolvedValueOnce(okResponse)
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 413,
-        statusText: 'Request Entity Too Large',
-        json: async () => {
-          throw new Error('html body');
-        },
-      });
+    fetchMock.mockResolvedValueOnce(okResponse).mockResolvedValueOnce({
+      ok: false,
+      status: 413,
+      statusText: 'Request Entity Too Large',
+      json: async () => {
+        throw new Error('html body');
+      },
+    });
     render(<AssignmentDataSetsForm assignmentId={9} datasets={[]} onDatasetsChange={onDatasetsChange} />);
     dropFiles([new File(['1'], 'ok.csv'), new File(['2'], 'big.csv')]);
     await screen.findByLabelText('Dataset name for ok.csv');
@@ -260,7 +258,7 @@ describe('AssignmentDataSetsForm download', () => {
     render(<AssignmentDataSetsForm assignmentId={9} datasets={[existing({ id: 4 })]} onDatasetsChange={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /Download/ }));
 
-    await screen.findByText(/Download failed: detail: You do not have permission\./);
+    await screen.findByText(/Download failed: You do not have permission\./);
     expect(clickSpy).not.toHaveBeenCalled();
   });
 });

@@ -52,13 +52,7 @@ import type {
 } from '../../api-client/apis/SubmissionsApi';
 import type { CreateRequest as SubmissionFileCreateRequest } from '../../api-client/apis/SubmissionFilesApi';
 import type { PartialUpdateRequest as SectionPartialUpdateRequest } from '../../api-client/apis/SectionsApi';
-import {
-  coursesApi,
-  sectionsApi,
-  assignmentsApi,
-  submissionsApi,
-  submissionFilesApi,
-} from '../../api-client/clients';
+import { coursesApi, sectionsApi, assignmentsApi, submissionsApi, submissionFilesApi } from '../../api-client/clients';
 import { Assignment, SubmissionInfoType, UploadFile } from '../../types/common';
 
 import {
@@ -72,6 +66,7 @@ import {
 } from './hooks';
 import type { RosterData } from './hooks';
 import { assignmentKeys, courseKeys } from '../../lib/queryKeys';
+import { loadUploadLimits } from '../../lib/uploadLimits';
 
 import { AdminOnboardingSelector } from '../core/OnboardingSelector';
 
@@ -225,6 +220,11 @@ const Admin: React.FC<IComponentProps> = (props) => {
   useEffect(() => {
     document.title = 'codePost - Admin Console';
   }, [navigate]);
+
+  // Upload caps for the pre-checks in file drop zones; one request per sign-in.
+  useEffect(() => {
+    loadUploadLimits();
+  }, []);
 
   /***********************************************************************************
   /* Helper Functions (Business Logic)

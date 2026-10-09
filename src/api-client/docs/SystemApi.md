@@ -2,14 +2,15 @@
 
 All URIs are relative to *http://localhost*
 
-| Method                                                      | HTTP request              | Description |
-| ----------------------------------------------------------- | ------------------------- | ----------- |
-| [**activityRetrieve**](SystemApi.md#activityretrieve)       | **GET** /system/activity/ |             |
-| [**aiModelsRetrieve**](SystemApi.md#aimodelsretrieve)       | **GET** /system/aiModels/ |             |
-| [**aiUsageRetrieve**](SystemApi.md#aiusageretrieve)         | **GET** /system/aiUsage/  |             |
-| [**bannerPartialUpdate**](SystemApi.md#bannerpartialupdate) | **PATCH** /system/banner/ |             |
-| [**bannerRetrieve**](SystemApi.md#bannerretrieve)           | **GET** /system/banner/   |             |
-| [**healthRetrieve**](SystemApi.md#healthretrieve)           | **GET** /system/health/   |             |
+| Method                                                        | HTTP request                  | Description |
+| ------------------------------------------------------------- | ----------------------------- | ----------- |
+| [**activityRetrieve**](SystemApi.md#activityretrieve)         | **GET** /system/activity/     |             |
+| [**aiModelsRetrieve**](SystemApi.md#aimodelsretrieve)         | **GET** /system/aiModels/     |             |
+| [**aiUsageRetrieve**](SystemApi.md#aiusageretrieve)           | **GET** /system/aiUsage/      |             |
+| [**bannerPartialUpdate**](SystemApi.md#bannerpartialupdate)   | **PATCH** /system/banner/     |             |
+| [**bannerRetrieve**](SystemApi.md#bannerretrieve)             | **GET** /system/banner/       |             |
+| [**healthRetrieve**](SystemApi.md#healthretrieve)             | **GET** /system/health/       |             |
+| [**uploadLimitsRetrieve**](SystemApi.md#uploadlimitsretrieve) | **GET** /system/uploadLimits/ |             |
 
 ## activityRetrieve
 
@@ -431,6 +432,70 @@ This endpoint does not need any parameter.
 ### Return type
 
 [**SystemHealthResponse**](SystemHealthResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## uploadLimitsRetrieve
+
+> UploadLimits uploadLimitsRetrieve()
+
+Upload size limits enforced by the server, in bytes. Per-file limits are measured on the decoded file, not the base64 wire form.
+
+### Example
+
+```ts
+import { Configuration, SystemApi } from '';
+import type { UploadLimitsRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new SystemApi(config);
+
+  try {
+    const data = await api.uploadLimitsRetrieve();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**UploadLimits**](UploadLimits.md)
 
 ### Authorization
 

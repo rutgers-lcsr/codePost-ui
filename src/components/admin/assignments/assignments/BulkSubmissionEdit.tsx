@@ -6,6 +6,8 @@ import React, { useCallback, useState } from 'react';
 import type { RadioChangeEvent } from 'antd';
 import { Alert, message, Modal, Radio } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
+
 /* codePost imports */
 /* codePost imports */
 import { Course } from '../../../../api-client';
@@ -109,8 +111,8 @@ const BulkSubmissionEdit: React.FC<IProps> = ({
           .then(() => {
             message.success('Action completed!');
           })
-          .catch((error) => {
-            message.error(`Action failed: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
+          .catch(async (error) => {
+            message.error((await apiErrorMessageAsync(error, 'isFinalized', 'grader')) ?? 'The bulk action failed.');
           })
           .finally(() => {
             setExecuting(false);

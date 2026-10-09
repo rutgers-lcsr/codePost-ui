@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { Course } from '../../../services/course';
 import type { PendingAgentAction } from '../../../services/course';
+import { apiErrorMessage } from '../../../lib/apiError';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -44,8 +45,8 @@ const PendingAgentActionsCard: React.FC<IPendingAgentActionsCardProps> = ({ cour
       await Course.approvePendingAgentAction(courseId, action.id);
       message.success('Approved — the agent will proceed on its next attempt.');
       queryClient.invalidateQueries({ queryKey });
-    } catch {
-      message.error('Failed to approve the action.');
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err) ?? 'Failed to approve the action.');
     }
   };
 
@@ -54,8 +55,8 @@ const PendingAgentActionsCard: React.FC<IPendingAgentActionsCardProps> = ({ cour
       await Course.denyPendingAgentAction(courseId, action.id);
       message.success('Denied — the agent will be told to stop.');
       queryClient.invalidateQueries({ queryKey });
-    } catch {
-      message.error('Failed to deny the action.');
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err) ?? 'Failed to deny the action.');
     }
   };
 

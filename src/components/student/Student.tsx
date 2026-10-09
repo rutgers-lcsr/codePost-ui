@@ -79,6 +79,7 @@ import {
   fetchHistory,
 } from './hooks';
 import { studentKeys } from '../../lib/queryKeys';
+import { loadUploadLimits } from '../../lib/uploadLimits';
 
 /**********************************************************************************************************************/
 
@@ -188,6 +189,11 @@ const StudentComponent: React.FC<StudentProps> = (props) => {
   // Set document title
   useEffect(() => {
     document.title = 'codePost - Student Console';
+  }, []);
+
+  // Upload caps for the submission drop zone's pre-checks; one request per sign-in.
+  useEffect(() => {
+    loadUploadLimits();
   }, []);
 
   // Fetch assignment-level permissions when assignments load

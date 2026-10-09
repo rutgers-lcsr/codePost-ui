@@ -11,6 +11,8 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 /* ant imports */
 import { DatePicker, Form, Input, InputNumber, Modal, Radio, Select, message } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
+
 /* other library imports */
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -110,26 +112,14 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
     return props.createAssignment(name, points, upload, isVisible, uploadDueDate || undefined);
   };
 
-  const cloneAssignment = async (cloneID: number) => {
-    try {
-      // assignmentsApi is imported
-      const data = await assignmentsApi.cloneCreate({
-        id: cloneID,
-        assignmentClone: {
-          course: props.currentCourse.id,
-        },
-      });
-      return Promise.resolve(data);
-    } catch (err: unknown) {
-      if (err instanceof Response) {
-        const data = await err.json();
-        message.error(JSON.stringify(data));
-        return Promise.reject(data);
-      }
-      message.error(err instanceof Error ? err.message : 'Failed to clone assignment');
-      return Promise.reject(err);
-    }
-  };
+  // Failures surface through handleCreate's catch.
+  const cloneAssignment = (cloneID: number) =>
+    assignmentsApi.cloneCreate({
+      id: cloneID,
+      assignmentClone: {
+        course: props.currentCourse.id,
+      },
+    });
 
   const handleCreate = () => {
     form
@@ -174,8 +164,12 @@ const NewAssignmentDialog: React.FC<IProps> = (props) => {
           }
         }
       })
-      .catch((info) => {
-        console.log('Validation Failed:', info);
+      .catch(async (info) => {
+        if (info?.errorFields) return; // antd form validation — errors are shown inline
+        setIsLoading(false);
+        message.error(
+          (await apiErrorMessageAsync(info, 'name', 'points', 'uploadDueDate')) ?? 'Could not create the assignment.',
+        );
       });
   };
 

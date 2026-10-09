@@ -34,15 +34,20 @@ import type { RcFile } from 'antd/es/upload/interface';
 import * as React from 'react';
 import { assignmentDataSetsApi } from '../../../../api-client/clients';
 import { getAuthToken } from '../../../../utils/auth';
-import { apiErrorMessage } from '../../../../lib/apiError';
+import { apiErrorMessageAsync, responseErrorMessage } from '../../../../lib/apiError';
+import { formatLimit, getUploadLimits } from '../../../../lib/uploadLimits';
 import { AssignmentDataSetType } from '../../../../types/models';
 import { useAssignmentCapabilities } from '../../../../stores/usePermissionsStore';
 
-const MAX_DATASET_BYTES = 1024 * 1024 * 1024; // 1 GB — mirrors MAX_DATASET_SIZE on the API
+// MAX_DATASET_SIZE on the API, via /system/uploadLimits/ (1 GB by default).
+const maxDatasetBytes = () => getUploadLimits().maxDatasetBytes;
 
 /** Default mount path for a file name, mirroring AssignmentDataSet.save() on the API. */
 export const defaultMountPath = (name: string): string => {
-  const safe = name.toLowerCase().replace(/ /g, '_').replace(/[^a-z0-9_\-.]/g, '');
+  const safe = name
+    .toLowerCase()
+    .replace(/ /g, '_')
+    .replace(/[^a-z0-9_\-.]/g, '');
   return `shared/${safe}`;
 };
 
@@ -93,21 +98,10 @@ export const mountPathAliases = (mountPath: string | undefined, name: string): s
   return [`/shared/${rest}`, `./shared/${rest}`];
 };
 
-const responseErrorMessage = async (response: Response): Promise<string> => {
-  if (response.status === 413) return 'File too large for the server (limit 1 GB).';
-  try {
-    const body: unknown = await response.json();
-    if (body && typeof body === 'object') {
-      const parts = Object.entries(body as Record<string, unknown>).map(
-        ([k, v]) => `${k}: ${Array.isArray(v) ? v.join(' ') : String(v)}`,
-      );
-      if (parts.length) return parts.join('; ');
-    }
-  } catch {
-    // Not JSON (e.g. an nginx error page) — fall through to the status text.
-  }
-  return response.statusText || `HTTP ${response.status}`;
-};
+const datasetErrorMessage = (response: Response): Promise<string> =>
+  responseErrorMessage(response, {
+    tooLarge: `File too large for the server (limit ${formatLimit(maxDatasetBytes())}).`,
+  });
 
 const formatFileSize = (bytes: number | undefined | null): string => {
   if (!bytes) return 'N/A';
@@ -213,14 +207,17 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
   // ---- queued files -----------------------------------------------------------------------
 
   const enqueue = React.useCallback((file: RcFile) => {
-    if (file.size > MAX_DATASET_BYTES) {
-      message.error(`${file.name} exceeds the 1 GB limit`);
+    if (file.size > maxDatasetBytes()) {
+      message.error(`${file.name} exceeds the ${formatLimit(maxDatasetBytes())} limit`);
       return;
     }
     setQueued((prev) =>
       prev.some((q) => q.uid === file.uid)
         ? prev
-        : [...prev, { uid: file.uid, file, name: file.name, mountPath: defaultMountPath(file.name), status: 'pending' }],
+        : [
+            ...prev,
+            { uid: file.uid, file, name: file.name, mountPath: defaultMountPath(file.name), status: 'pending' },
+          ],
     );
   }, []);
 
@@ -281,7 +278,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
-        if (!response.ok) throw new Error(await responseErrorMessage(response));
+        if (!response.ok) throw new Error(await datasetErrorMessage(response));
         updateQueued(q.uid, { status: 'done' });
       } catch (error: unknown) {
         failures += 1;
@@ -322,7 +319,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       closeModal();
       onDatasetsChange();
     } catch (error: unknown) {
-      message.error(apiErrorMessage(error) ?? 'Failed to update dataset');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to update dataset');
     } finally {
       setUploading(false);
     }
@@ -340,7 +337,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           message.success('Dataset deleted successfully');
           onDatasetsChange();
         } catch (error: unknown) {
-          message.error(apiErrorMessage(error) ?? 'Failed to delete dataset');
+          message.error((await apiErrorMessageAsync(error)) ?? 'Failed to delete dataset');
         }
       },
     });
@@ -354,7 +351,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       const response = await fetch(`${process.env.REACT_APP_API_URL}/assignmentDataSets/${dataset.id}/download/`, {
         headers: { Authorization: `Bearer ${getAuthToken()}` },
       });
-      if (!response.ok) throw new Error(await responseErrorMessage(response));
+      if (!response.ok) throw new Error(await datasetErrorMessage(response));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -375,7 +372,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       message.success(checked ? 'Dataset will be mounted when code runs' : 'Dataset no longer mounted');
       onDatasetsChange();
     } catch (error: unknown) {
-      message.error(apiErrorMessage(error) ?? 'Failed to update dataset');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to update dataset');
     }
   };
 
@@ -401,7 +398,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
       setSplittingDataset(null);
       onDatasetsChange();
     } catch (error: unknown) {
-      message.error(apiErrorMessage(error) ?? 'Failed to split the dataset.');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to split the dataset.');
     } finally {
       setSplitting(false);
     }
@@ -673,7 +670,7 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
           <p className="ant-upload-text">No datasets yet. {dropZoneText}</p>
           <p className="ant-upload-hint">
             Files mount at <code>~/shared/&lt;file name&gt;</code> by default and are bundled into the student download.
-            Up to 1 GB each.
+            Up to {formatLimit(maxDatasetBytes())} each.
           </p>
         </Upload.Dragger>
       )}
@@ -711,7 +708,9 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">{dropZoneText}</p>
-                <p className="ant-upload-hint">Up to 1 GB per file. Drop several at once to upload them together.</p>
+                <p className="ant-upload-hint">
+                  Up to {formatLimit(maxDatasetBytes())} per file. Drop several at once to upload them together.
+                </p>
               </Upload.Dragger>
 
               {queued.length > 0 && (
@@ -753,7 +752,10 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
             <Form.Item name="includeInDownload" valuePropName="checked" style={{ marginBottom: 4 }}>
               <Checkbox>Include in students&apos; assignment download</Checkbox>
             </Form.Item>
-            <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginLeft: 24, marginBottom: 8 }}>
+            <Typography.Text
+              type="secondary"
+              style={{ fontSize: 12, display: 'block', marginLeft: 24, marginBottom: 8 }}
+            >
               Added to the <code>data/</code> folder of the zip students download from the assignment page.
             </Typography.Text>
 
@@ -809,8 +811,8 @@ const AssignmentDataSetsForm: React.FC<IProps> = ({ assignmentId, datasets, onDa
                   Per-student variant pool{editingDataset ? '' : ' — each file is one variant'}
                   <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
                     Each student is assigned exactly one variant (balanced automatically, overridable on the Student
-                    assignments tab). Have one big CSV instead? Upload it as shared, then use <em>Split into variants</em>{' '}
-                    on it.
+                    assignments tab). Have one big CSV instead? Upload it as shared, then use{' '}
+                    <em>Split into variants</em> on it.
                   </Typography.Text>
                 </Radio>
               </Space>

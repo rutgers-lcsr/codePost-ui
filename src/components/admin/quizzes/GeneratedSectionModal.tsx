@@ -20,7 +20,7 @@ import { ExperimentOutlined, UploadOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { quizGeneratedSectionsApi, quizzesApi } from '../../../api-client/clients';
 import { QuizGeneratedSection, QuizSectionTemplate, QuizSuggestionJobStatusEnum, SeedEnum } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import TemplateTextArea from '../../core/TemplateTextArea';
 import PromptTemplatePicker from '../../core/PromptTemplatePicker';
@@ -138,6 +138,19 @@ const GeneratedSectionModal: React.FC<IProps> = ({
     if (basic) form.setFieldsValue({ systemPrompt: basic.text });
   }, [open, section, attached, templates, form]);
 
+  // The server's prompt-validation messages (unknown {variable}, bad file argument, ...) come
+  // back as a `systemPrompt` field error — show those inline under the prompt field, the rest
+  // as a toast. Both save and test run the identical checks.
+  const showSectionError = async (err: unknown, fallback: string) => {
+    const promptError = await apiErrorMessageAsync(err, 'systemPrompt');
+    const generalError = await apiErrorMessageAsync(err);
+    if (promptError && promptError !== generalError) {
+      form.setFields([{ name: 'systemPrompt', errors: [promptError] }]);
+    } else {
+      message.error(generalError ?? fallback);
+    }
+  };
+
   const handleSave = async () => {
     const values = await form.validateFields();
     setSaving(true);
@@ -165,14 +178,7 @@ const GeneratedSectionModal: React.FC<IProps> = ({
       queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
       onClose();
     } catch (err) {
-      // Surface the server's prompt-validation messages (unknown {variable}, bad file
-      // argument, ...) inline under the prompt field.
-      const promptErrors = (err as { body?: { systemPrompt?: string[] } })?.body?.systemPrompt;
-      if (promptErrors?.length) {
-        form.setFields([{ name: 'systemPrompt', errors: promptErrors }]);
-      } else {
-        message.error(apiErrorMessage(err) ?? 'Failed to save the section.');
-      }
+      await showSectionError(err, 'Failed to save the section.');
     } finally {
       setSaving(false);
     }
@@ -208,13 +214,7 @@ const GeneratedSectionModal: React.FC<IProps> = ({
         message.info('Generation is taking longer than expected — try again in a moment.');
       }
     } catch (err) {
-      // Same prompt-validation surfacing as handleSave — the test runs the identical checks.
-      const promptErrors = (err as { body?: { systemPrompt?: string[] } })?.body?.systemPrompt;
-      if (promptErrors?.length) {
-        form.setFields([{ name: 'systemPrompt', errors: promptErrors }]);
-      } else {
-        message.error(apiErrorMessage(err) ?? 'Failed to test the prompt.');
-      }
+      await showSectionError(err, 'Failed to test the prompt.');
     } finally {
       setTesting(false);
     }

@@ -6,13 +6,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
 import { questionBanksApi } from '../../../api-client/clients';
 import { QuestionBank } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useQuestionBanks } from './queries';
 import MarkdownField from './MarkdownField';
 import ImportQuestionsModal from './ImportQuestionsModal';
 import PanelCard from './PanelCard';
-
 
 interface IProps {
   courseId: number;
@@ -67,7 +66,7 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
       setModalOpen(false);
       invalidate();
     } catch (err) {
-      message.error(apiErrorMessage(err, 'name') ?? 'Failed to save question bank.');
+      message.error((await apiErrorMessageAsync(err, 'name')) ?? 'Failed to save question bank.');
     } finally {
       setSaving(false);
     }
@@ -215,11 +214,7 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
             <Spin />
           </Flex>
         ) : banks.length === 0 ? (
-          <Empty
-            description="No question banks yet"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ padding: 32 }}
-          />
+          <Empty description="No question banks yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
         ) : (
           <Table
             dataSource={banks}
@@ -246,15 +241,15 @@ const QuestionBanksPanel: React.FC<IProps> = ({ courseId, selectedBankId, onSele
         destroyOnHidden
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            name="name"
-            label="Name"
-            rules={[{ required: true, message: 'Please name the bank.' }]}
-          >
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please name the bank.' }]}>
             <Input placeholder="e.g., Midterm Pool, Chapter 3" maxLength={128} />
           </Form.Item>
           <Form.Item name="description" label="Description (optional, Markdown)">
-            <MarkdownField courseId={courseId} minRows={3} placeholder="What this bank is for — supports Markdown and images…" />
+            <MarkdownField
+              courseId={courseId}
+              minRows={3}
+              placeholder="What this bank is for — supports Markdown and images…"
+            />
           </Form.Item>
         </Form>
       </Modal>
