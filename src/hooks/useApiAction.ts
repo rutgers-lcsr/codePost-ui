@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { message } from 'antd';
 
-import { apiErrorMessage } from '../lib/apiError';
+import { apiErrorMessageAsync } from '../lib/apiError';
 
 /** Wrap async API actions with a shared busy flag + success/error messaging.
  *
@@ -25,7 +25,7 @@ export function useApiAction(onSuccess?: () => void) {
       onSuccess?.();
       return true;
     } catch (e) {
-      message.error(apiErrorMessage(e) ?? errorFallback);
+      message.error((await apiErrorMessageAsync(e)) ?? errorFallback);
       return false;
     } finally {
       setActing(false);

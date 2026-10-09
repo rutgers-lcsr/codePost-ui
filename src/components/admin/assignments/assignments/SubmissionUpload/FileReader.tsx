@@ -4,6 +4,7 @@ import JSZip from 'jszip';
 import { message } from 'antd';
 
 import { SUPPORT_URL } from '../../../../../config';
+import { formatFileSize, formatLimit, getUploadLimits } from '../../../../../lib/uploadLimits';
 
 import { BinaryExtensions, File as CPFile, ImageExtensions, PDFExtensions } from '../../../../../utils/file';
 
@@ -81,20 +82,18 @@ export const fileToProtoFileUpload = (
   };
 };
 
-const FILE_SIZE_LIMIT_IN_BYTES = 10e6; // 10 megabytes
-
 export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Promise<IProtoFileUpload[]> => {
   const reader = new FileReader();
 
+  // Same per-file cap the API enforces (core/constants.py MAX_FILE_SIZE), on the raw bytes.
+  const fileSizeLimit = getUploadLimits().maxSubmissionFileBytes;
   const size_bytes = inputFile.size;
-  if (size_bytes > FILE_SIZE_LIMIT_IN_BYTES) {
+  if (size_bytes > fileSizeLimit) {
     message.warning(
       // @ts-expect-error: legacy-ts-ignore
-      `${inputFile.name} exceeds file size limit of ${
-        FILE_SIZE_LIMIT_IN_BYTES / 1e6
-      } MB and cannot be uploaded (its size is ${(size_bytes / 1e6).toFixed(
-        1,
-      )} MB). Please try using a compression tool for your file and re-uploading.\nIf you need help, please visit ${SUPPORT_URL}.`,
+      `${inputFile.name} exceeds file size limit of ${formatLimit(fileSizeLimit)} and cannot be uploaded (its size is ${formatFileSize(
+        size_bytes,
+      )}). Please try using a compression tool for your file and re-uploading.\nIf you need help, please visit ${SUPPORT_URL}.`,
       15,
     );
     return Promise.resolve([]);
@@ -142,16 +141,14 @@ export const readUploadedFile = (inputFile: File | Blob, zipSource?: string): Pr
                 return zippedFile.async('blob').then(async (blob: Blob) => {
                   // Recursively read the new files, but we need to cast the
                   // Blob object into a File
-                  if (blob.size < FILE_SIZE_LIMIT_IN_BYTES) {
+                  if (blob.size <= fileSizeLimit) {
                     // @ts-expect-error: legacy-ts-ignore
                     blob.name = zippedFile.name;
                     const unzippedFile = await readUploadedFile(blob, outputFile.longname);
                     return unzippedFile;
                   } else {
                     message.warning(
-                      `${zippedFile.name} exceeds file size limit of ${
-                        FILE_SIZE_LIMIT_IN_BYTES / 1e6
-                      } MB and cannot be uploaded (its size is ${(blob.size / 1e6).toFixed(1)} MB).
+                      `${zippedFile.name} exceeds file size limit of ${formatLimit(fileSizeLimit)} and cannot be uploaded (its size is ${formatFileSize(blob.size)}).
                         The rest of the zip contents will attempt to be uploaded (see details below).`,
                       10,
                     );

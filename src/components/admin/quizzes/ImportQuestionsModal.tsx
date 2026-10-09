@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { quizImportJobsApi } from '../../../api-client/clients';
 import { quizKeys } from '../../../lib/queryKeys';
 import { getAuthToken } from '../../../utils/auth';
+import { responseErrorMessage } from '../../../lib/apiError';
 import { useQuestionBanks } from './queries';
 
 const { Text, Paragraph } = Typography;
@@ -90,7 +91,7 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
         body: form,
       });
       if (!res.ok) {
-        throw new Error((await res.text()) || res.statusText);
+        throw new Error(await responseErrorMessage(res, { fieldNames: ['file'] }));
       }
       let job = await res.json();
 
@@ -165,9 +166,9 @@ const ImportQuestionsModal: React.FC<IProps> = ({ open, courseId, onClose }) => 
       ) : (
         <Flex vertical gap={16} style={{ marginTop: 12 }}>
           <Paragraph type="secondary" style={{ marginBottom: 0, fontSize: 13 }}>
-            Upload a QTI / IMS Common Cartridge export (<Text code>.imscc</Text>/<Text code>.zip</Text>{' '}
-            or QTI <Text code>.xml</Text>) — e.g. exported from Canvas or another LMS. Supported question types are
-            imported; unsupported ones are listed and skipped.
+            Upload a QTI / IMS Common Cartridge export (<Text code>.imscc</Text>/<Text code>.zip</Text> or QTI{' '}
+            <Text code>.xml</Text>) — e.g. exported from Canvas or another LMS. Supported question types are imported;
+            unsupported ones are listed and skipped.
           </Paragraph>
 
           <Upload.Dragger

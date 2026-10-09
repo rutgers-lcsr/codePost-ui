@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { PlusCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Form, Input, Modal, Radio, Select } from 'antd';
+import { Form, Input, message, Modal, Radio, Select } from 'antd';
 
 /* codePost imports */
 import CPButton from '../../core/CPButton';
@@ -18,6 +18,7 @@ import CPTooltip from '../../core/CPTooltip';
 import { tooltips } from '../../core/tooltips';
 
 import { Course } from '../../../api-client';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 
 /**********************************************************************************************************************/
 
@@ -49,9 +50,9 @@ const NewCourseDialog: React.FC<IProps> = (props) => {
           // Reload the page to show the new course
           window.location.reload();
         })
-        .catch((error) => {
-          console.error('Error creating course:', error);
+        .catch(async (error) => {
           setLoading(false);
+          message.error((await apiErrorMessageAsync(error, 'name', 'period')) ?? 'Could not create the course.');
         });
     }
   };
@@ -100,8 +101,9 @@ const CollectionCreateFormModal: React.FC<IFormModalProps> = ({ open, onCreate, 
       .then((values) => {
         onCreate(values.name, values.period, values.cloneID ? parseInt(values.cloneID, 10) : undefined);
       })
-      .catch((info) => {
-        console.log('Validate Failed:', info);
+      .catch(async (info) => {
+        if (info?.errorFields) return; // antd form validation — errors are shown inline
+        message.error((await apiErrorMessageAsync(info)) ?? 'Could not create the course.');
       });
   };
 

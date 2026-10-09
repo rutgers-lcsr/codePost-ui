@@ -2206,6 +2206,208 @@ export interface AsyncTaskResponse {
 /**
  *
  * @export
+ * @interface AutogradingAssignmentFailure
+ */
+export interface AutogradingAssignmentFailure {
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingAssignmentFailure
+   */
+  courseId: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingAssignmentFailure
+   */
+  courseName: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingAssignmentFailure
+   */
+  coursePeriod: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingAssignmentFailure
+   */
+  assignmentId: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingAssignmentFailure
+   */
+  assignmentName: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingAssignmentFailure
+   */
+  failures: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingAssignmentFailure
+   */
+  topCategory: string;
+}
+/**
+ * One failed autograder execution with everything needed to isolate it.
+ * Plain Serializer (not ModelSerializer) so no enum lands in the schema.
+ * @export
+ * @interface AutogradingFailure
+ */
+export interface AutogradingFailure {
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  id: number;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  created: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  trigger: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  language: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  category: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  errorMessage: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  errorDetail: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  courseId: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  readonly courseName: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  readonly coursePeriod: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  assignmentId: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  readonly assignmentName: string | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  submissionId: number | null;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  fileId: number | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  fileName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  readonly triggeredBy: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  imageName: string;
+  /**
+   *
+   * @type {string}
+   * @memberof AutogradingFailure
+   */
+  taskId: string;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailure
+   */
+  executionTime: number | null;
+}
+/**
+ *
+ * @export
+ * @interface AutogradingFailureList
+ */
+export interface AutogradingFailureList {
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailureList
+   */
+  count: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailureList
+   */
+  page: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AutogradingFailureList
+   */
+  pageSize: number;
+  /**
+   *
+   * @type {Array<AutogradingFailure>}
+   * @memberof AutogradingFailureList
+   */
+  results: Array<AutogradingFailure>;
+}
+/**
+ *
+ * @export
  * @interface AutogradingLanguageFailure
  */
 export interface AutogradingLanguageFailure {
@@ -2319,6 +2521,12 @@ export interface AutogradingStats {
    * @memberof AutogradingStats
    */
   topErrors: Array<AutogradingTopError>;
+  /**
+   *
+   * @type {Array<AutogradingAssignmentFailure>}
+   * @memberof AutogradingStats
+   */
+  failuresByAssignment: Array<AutogradingAssignmentFailure>;
 }
 /**
  *
@@ -15926,6 +16134,55 @@ export enum TypeEnum {
   Script = 'script',
 }
 
+/**
+ * Server-side upload caps (bytes) so clients pre-check with the same numbers.
+ * @export
+ * @interface UploadLimits
+ */
+export interface UploadLimits {
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxSubmissionFileBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxSubmissionTotalBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxAssignmentFileBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxCourseFileBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxDatasetBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxQuizImageBytes: number;
+  /**
+   *
+   * @type {number}
+   * @memberof UploadLimits
+   */
+  maxRequestBodyBytes: number;
+}
 /**
  *
  * @export

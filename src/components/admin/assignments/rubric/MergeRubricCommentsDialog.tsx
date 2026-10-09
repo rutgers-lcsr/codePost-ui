@@ -1,7 +1,9 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC, useState, useMemo, useCallback } from 'react';
 import { ArrowRightOutlined, BranchesOutlined } from '@ant-design/icons';
-import { Modal, Spin } from 'antd';
+import { message, Modal, Spin } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 import Select from 'react-select';
 
 import { commentsApi, rubricCommentsApi } from '../../../../api-client/clients';
@@ -84,15 +86,15 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
     });
 
     Promise.all(relinkCommentPromises)
-      .then(() => {
-        rubricCommentsApi.destroy({ id: fromComment.id }).then(() => {
+      .then(() =>
+        rubricCommentsApi.destroy({ id: fromComment.id }).then(() =>
           reloadRubric(assignment, false, false).then(() => {
             closeDialog();
             setIsLoading(false);
-          });
-        });
-      })
-      .catch(() => {
+          }),
+        ),
+      )
+      .catch(async (e) => {
         const undoLinkCommentPromises = fromCommentInstances.map((commentID: number) => {
           return commentsApi.partialUpdate({
             id: commentID,
@@ -103,6 +105,7 @@ const MergeRubricCommentsDialog: FC<IMergeRubricCommentsDialogProps> = ({
         });
 
         Promise.all(undoLinkCommentPromises);
+        message.error((await apiErrorMessageAsync(e)) ?? 'Could not merge the rubric comments.');
         closeDialog();
         setIsLoading(false);
       });

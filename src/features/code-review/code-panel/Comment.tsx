@@ -57,6 +57,7 @@ import {
 import CommentToRubric from './CommentToRubric';
 
 import { generateComment } from '../../../utils/aiService';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { usePermissionsStore, selectCaps } from '../../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
@@ -268,7 +269,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
       setText(generatedText);
       edited(); // Mark as edited so it can be saved
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Failed to generate comment');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to generate comment');
     } finally {
       setIsGenerating(false);
     }
@@ -497,7 +498,9 @@ const Comment: React.FC<ICommentProps> = (props) => {
         setCommentPlacementsRef.current();
       } catch (error) {
         setStatus('error');
-        message.error(`Error saving comment: ${JSON.stringify(error)}`);
+        message.error(
+          (await apiErrorMessageAsync(error, 'text', 'pointDelta', 'rubricComment')) ?? 'Could not save the comment.',
+        );
       }
     },
     [text, points, props, unhighlightRelatedComment, fadeSavedState, idle, focusNextCommentBlock],
@@ -511,7 +514,7 @@ const Comment: React.FC<ICommentProps> = (props) => {
         await props.onDelete(props.comment);
         setCommentPlacementsRef.current();
       } catch (error) {
-        message.error(`Error deleting comment: ${JSON.stringify(error)}`);
+        message.error((await apiErrorMessageAsync(error)) ?? 'Could not delete the comment.');
       }
     },
     [props],

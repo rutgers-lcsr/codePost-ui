@@ -1,5 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { Alert, Button, Spin } from 'antd';
+
+import { responseErrorMessage } from '../../lib/apiError';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import type { UserType } from '../../types/models';
@@ -40,8 +42,7 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(await responseErrorMessage(response));
       }
 
       const user: UserType = await response.json();

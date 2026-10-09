@@ -12,6 +12,8 @@ import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDe
 /* style imports */
 import { Breadcrumb, Button, Checkbox, Empty, Flex, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../lib/apiError';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { coursesApi } from '../../../api-client/clients';
@@ -160,7 +162,11 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
         title: `Are you sure you want to remove this student (${toRemove}) from your course?`,
         content: `All the student's work will be saved, but they won't be able to access the course. You can always add them back from this page.`,
         onOk: async () => {
-          await props.updateRoster([], [toRemove], USER_APP.Student);
+          try {
+            await props.updateRoster([], [toRemove], USER_APP.Student);
+          } catch (e) {
+            message.error((await apiErrorMessageAsync(e, 'students')) ?? 'Could not remove the student.');
+          }
         },
         okText: 'Remove',
       });
@@ -170,8 +176,12 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
 
   const updateStudentSection = useCallback(
     async (student: string, section: number) => {
-      await props.updateStudentSection(student, section);
-      message.success(`Updated ${student}'s section.`);
+      try {
+        await props.updateStudentSection(student, section);
+        message.success(`Updated ${student}'s section.`);
+      } catch (e) {
+        message.error((await apiErrorMessageAsync(e, 'section')) ?? `Could not update ${student}'s section.`);
+      }
     },
     [props],
   );

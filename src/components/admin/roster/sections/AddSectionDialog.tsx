@@ -13,6 +13,8 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import { Form, Input, message, Modal } from 'antd';
 import type { FormInstance } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
+
 /* codePost imports */
 import CPButton from '../../../../components/core/CPButton';
 
@@ -43,7 +45,7 @@ const AddSectionDialog: React.FC<IProps> = ({ sections, addSection }) => {
       .then((values) => {
         // show saving animation in modal ok button
         setSaving(true);
-        addSection(values.section).then(() => {
+        return addSection(values.section).then(() => {
           // notify user via message
           message.success(`Added section ${values.section}.`);
 
@@ -53,8 +55,10 @@ const AddSectionDialog: React.FC<IProps> = ({ sections, addSection }) => {
           form.resetFields();
         });
       })
-      .catch((info) => {
-        console.log('Validate Failed:', info);
+      .catch(async (info) => {
+        if (info?.errorFields) return; // antd form validation — errors are shown inline
+        setSaving(false);
+        message.error((await apiErrorMessageAsync(info, 'name')) ?? 'Could not add the section.');
       });
   };
 

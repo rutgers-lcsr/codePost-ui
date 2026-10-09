@@ -4,6 +4,7 @@ import { Card, Empty, Input, message, Space, Table, Tag, Typography } from 'antd
 import { UserSwitchOutlined } from '@ant-design/icons';
 import { Course } from '../../../services/course';
 import type { AgentAliasMatch } from '../../../services/course';
+import { apiErrorMessage } from '../../../lib/apiError';
 
 const { Text, Paragraph } = Typography;
 
@@ -32,8 +33,8 @@ const StudentAliasLookupCard: React.FC<IStudentAliasLookupCardProps> = ({ course
     try {
       const result = await Course.lookupAgentAlias(courseId, q);
       setMatches(result.matches);
-    } catch {
-      message.error('Failed to look up that alias.');
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err) ?? 'Failed to look up that alias.');
     } finally {
       setLoading(false);
     }
@@ -68,8 +69,8 @@ const StudentAliasLookupCard: React.FC<IStudentAliasLookupCardProps> = ({ course
     >
       <Paragraph type="secondary">
         AI agents connected to this course see students as stable aliases like <Text code>student-3f9a1c2d40</Text>{' '}
-        instead of email addresses, so no student identity leaves codePost. Paste an alias from a chat to see who it
-        is, or enter an email or NetID to see their alias. Aliases are specific to this course.
+        instead of email addresses, so no student identity leaves codePost. Paste an alias from a chat to see who it is,
+        or enter an email or NetID to see their alias. Aliases are specific to this course.
       </Paragraph>
       <Input.Search
         placeholder="student-3f9a1c2d40, an email, or a NetID"

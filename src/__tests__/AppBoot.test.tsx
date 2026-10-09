@@ -103,6 +103,22 @@ describe('App boot with a stored token while the API is unavailable', () => {
     expect(screen.queryByText('Connecting to codePost…')).toBeNull();
     expect(localStorage.getItem('token')).toBeTruthy();
   });
+
+  it('signs out with a message instead of retrying when the session check fails for another reason', async () => {
+    store['token'] = validJwt();
+    store['refresh'] = 'refresh-token';
+    vi.mocked(registrationApi.currentUserRetrieve).mockRejectedValue(responseError(500));
+
+    renderApp();
+    await tick(0);
+    // Both mount effects call tryToLogin; what matters is that nothing retries afterwards.
+    const callsAtMount = vi.mocked(registrationApi.currentUserRetrieve).mock.calls.length;
+    await tick(60_000);
+
+    expect(vi.mocked(registrationApi.currentUserRetrieve).mock.calls.length).toBe(callsAtMount);
+    expect(screen.queryByText('Connecting to codePost…')).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
+  });
 });
 
 describe('App login failures', () => {
@@ -122,5 +138,12 @@ describe('App login failures', () => {
 
   it('shows "invalid" on rejected credentials', async () => {
     expect(await loginWith(responseError(401))).toBe('invalid');
+  });
+
+  it('surfaces the server detail on any other failure (e.g. throttling)', async () => {
+    const throttled = new ResponseError(
+      new Response(JSON.stringify({ detail: 'Request was throttled.' }), { status: 429 }),
+    );
+    expect(await loginWith(throttled)).toBe('Request was throttled.');
   });
 });

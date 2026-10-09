@@ -16,6 +16,13 @@ import {
 } from '@ant-design/icons';
 import Editor from '../../../../lib/monaco';
 import {
+  contentSizeBytes,
+  DATASET_HINT,
+  formatFileSize,
+  formatLimit,
+  getUploadLimits,
+} from '../../../../lib/uploadLimits';
+import {
   Alert,
   Button,
   Checkbox,
@@ -222,8 +229,21 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
   const handleToggleRequired = (id: number) =>
     updateFiles(filesRef.current.map((file) => (file.id === id ? { ...file, required: !file.required } : file)));
 
+  // Per-file cap the API enforces on /assignmentFiles/ (MAX_ASSIGNMENT_FILE_SIZE); anything
+  // bigger belongs in a dataset, which streams as multipart and allows up to 1 GB.
+  const tooLarge = (name: string, bytes: number): boolean => {
+    const limit = getUploadLimits().maxAssignmentFileBytes;
+    if (bytes <= limit) return false;
+    message.warning(
+      `${name} is ${formatFileSize(bytes)}, over the ${formatLimit(limit)} per-file limit. ${DATASET_HINT}`,
+      8,
+    );
+    return true;
+  };
+
   // Replace the content of an existing row with an uploaded file.
   const handleUploadCode = async (id: number, file: File) => {
+    if (tooLarge(file.name, file.size)) return;
     try {
       const content = await readFileContent(file);
       updateFiles(filesRef.current.map((f) => (f.id === id ? { ...f, data: content } : f)));
@@ -248,6 +268,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       if (isBinaryContent(fileName, content)) {
         content = `data:${mimeForFileName(fileName)};base64,${await zipEntry.async('base64')}`;
       }
+      if (tooLarge(relativePath, contentSizeBytes(content))) continue;
       out.push(makeFile(fileName, directory, content));
     }
     return out;
@@ -273,6 +294,7 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
       message.warning(`A file named ${file.name} already exists`);
       return;
     }
+    if (tooLarge(file.name, file.size)) return;
     try {
       const content = await readFileContent(file);
       updateFiles([...filesRef.current, makeFile(file.name, '', content)]);
@@ -395,7 +417,9 @@ const AssignmentFilesForm: React.FC<AssignmentFilesFormProps> = ({ value = [], o
         {visibleFiles.length === 0 ? 'No files yet. ' : ''}Click or drag files here. A <code>.zip</code> is expanded
         into its folder structure.
       </p>
-      <p className="ant-upload-hint">Up to 3 MB per file.</p>
+      <p className="ant-upload-hint">
+        Up to {formatLimit(getUploadLimits().maxAssignmentFileBytes)} per file. {DATASET_HINT}
+      </p>
     </Upload.Dragger>
   );
 

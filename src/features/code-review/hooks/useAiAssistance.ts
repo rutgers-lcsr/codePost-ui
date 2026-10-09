@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { submissionsApi, suggestedCommentsApi } from '../../../api-client/clients';
 import type { RubricComment } from '../../../api-client';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import type { CommentType, SuggestedCommentType, SubmissionSummaryType } from '../../../types/models';
 import type { IRubricCategoryToRubricCommentsMap } from '../../../types/common';
 import type { FileWithId } from '../../../utils/file';
@@ -41,12 +42,7 @@ interface UseAiAssistanceOptions {
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
-export function useAiAssistance({
-  submissionId,
-  canGenerate,
-  aiEnabled,
-  aiFeatureStatus,
-}: UseAiAssistanceOptions) {
+export function useAiAssistance({ submissionId, canGenerate, aiEnabled, aiFeatureStatus }: UseAiAssistanceOptions) {
   // --- Suggested comments ---
   const [suggestedComments, setSuggestedComments] = useState<SuggestedCommentType[]>([]);
   const [isGeneratingFileSuggestions, setIsGeneratingFileSuggestions] = useState(false);
@@ -77,7 +73,9 @@ export function useAiAssistance({
             setSuggestionsMeta((prev) => ({ ...prev, promptVariantId: meta.variant_id as number }));
           }
         })
-        .catch(() => { /* best-effort */ });
+        .catch(() => {
+          /* best-effort */
+        });
     }
 
     if (aiFeatureStatus.submission_summary !== false) {
@@ -87,16 +85,19 @@ export function useAiAssistance({
           if (cancelled) return;
           setSubmissionSummary(data as unknown as SubmissionSummaryType);
           const meta = (data as unknown as Record<string, unknown>)?.generationMetadata as
-            | Record<string, unknown>
-            | undefined;
+            Record<string, unknown> | undefined;
           if (meta?.variant_id) {
             setSummaryMeta((prev) => ({ ...prev, promptVariantId: meta.variant_id as number }));
           }
         })
-        .catch(() => { /* summary may not exist yet */ });
+        .catch(() => {
+          /* summary may not exist yet */
+        });
     }
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [canGenerate, submissionId, aiEnabled, aiFeatureStatus]);
 
   // ── Accept a suggestion → real comment ────────────────────────────────
@@ -177,17 +178,7 @@ export function useAiAssistance({
         });
       }
     } catch (err: unknown) {
-      let detail = 'Failed to generate AI suggestions for this file.';
-      if (err instanceof Response) {
-        try {
-          const body = await err.json();
-          if (body?.error) detail = body.error;
-        } catch { /* ignore parse failure */ }
-      } else if (err && typeof err === 'object' && 'body' in err) {
-        const body = (err as { body?: { error?: string } }).body;
-        if (body?.error) detail = body.error;
-      }
-      throw new Error(detail);
+      throw new Error((await apiErrorMessageAsync(err)) ?? 'Failed to generate AI suggestions for this file.');
     } finally {
       setIsGeneratingFileSuggestions(false);
     }

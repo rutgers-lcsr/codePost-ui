@@ -12,6 +12,8 @@ import { DisconnectOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined }
 /* style imports */
 import { Alert, Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../lib/apiError';
+
 /* other library imports */
 import Highlighter from 'react-highlight-words';
 import { Link, useLocation } from 'react-router';
@@ -85,58 +87,75 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
         title: `Are you sure you want to remove this grader (${toRemove}) from your course?`,
         content: `All of their work (graded submissions) won't be impacted, but the
       grader won't be able to access this course any longer. You can always add them back from this page.`,
-        onOk: () => {
-          return updateRoster([], [toRemove], USER_APP.Grader);
-        },
+        onOk: () =>
+          updateRoster([], [toRemove], USER_APP.Grader).catch(async (e) => {
+            message.error((await apiErrorMessageAsync(e, 'graders')) ?? 'Could not remove the grader.');
+          }),
         okText: 'Remove',
       });
     },
     [updateRoster],
   );
 
+  const showRoleError = useCallback(async (e: unknown) => {
+    message.error((await apiErrorMessageAsync(e)) ?? "Could not update the grader's roles.");
+  }, []);
+
   const toggleSuperGrader = useCallback(
     (grader: string, include: boolean) => {
       if (include) {
-        updateRoster([grader], [], USER_APP.SuperGrader).then(() => {
-          message.success(`${grader} is now a supergrader`);
-        });
+        updateRoster([grader], [], USER_APP.SuperGrader)
+          .then(() => {
+            message.success(`${grader} is now a supergrader`);
+          })
+          .catch(showRoleError);
       } else {
-        updateRoster([], [grader], USER_APP.SuperGrader).then(() => {
-          message.success(`${grader} is no longer a supergrader`);
-        });
+        updateRoster([], [grader], USER_APP.SuperGrader)
+          .then(() => {
+            message.success(`${grader} is no longer a supergrader`);
+          })
+          .catch(showRoleError);
       }
     },
-    [updateRoster],
+    [updateRoster, showRoleError],
   );
 
   const toggleRubricEditor = useCallback(
     (grader: string, include: boolean) => {
       if (include) {
-        updateRoster([grader], [], USER_APP.RubricEditor).then(() => {
-          message.success(`${grader} is now a rubric editor`);
-        });
+        updateRoster([grader], [], USER_APP.RubricEditor)
+          .then(() => {
+            message.success(`${grader} is now a rubric editor`);
+          })
+          .catch(showRoleError);
       } else {
-        updateRoster([], [grader], USER_APP.RubricEditor).then(() => {
-          message.success(`${grader} is no longer a rubric editor`);
-        });
+        updateRoster([], [grader], USER_APP.RubricEditor)
+          .then(() => {
+            message.success(`${grader} is no longer a rubric editor`);
+          })
+          .catch(showRoleError);
       }
     },
-    [updateRoster],
+    [updateRoster, showRoleError],
   );
 
   const toggleQuizGrader = useCallback(
     (grader: string, include: boolean) => {
       if (include) {
-        updateRoster([grader], [], USER_APP.QuizGrader).then(() => {
-          message.success(`${grader} can now grade quizzes`);
-        });
+        updateRoster([grader], [], USER_APP.QuizGrader)
+          .then(() => {
+            message.success(`${grader} can now grade quizzes`);
+          })
+          .catch(showRoleError);
       } else {
-        updateRoster([], [grader], USER_APP.QuizGrader).then(() => {
-          message.success(`${grader} can no longer grade quizzes`);
-        });
+        updateRoster([], [grader], USER_APP.QuizGrader)
+          .then(() => {
+            message.success(`${grader} can no longer grade quizzes`);
+          })
+          .catch(showRoleError);
       }
     },
-    [updateRoster],
+    [updateRoster, showRoleError],
   );
 
   const inactiveEmails = useMemo(() => {
@@ -412,8 +431,8 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
             style={{ marginBottom: 12 }}
             message={
               <span>
-                All graders in this course can grade quizzes. To restrict quiz grading to specific
-                graders, turn off &quot;Graders Can Grade Quizzes&quot; in{' '}
+                All graders in this course can grade quizzes. To restrict quiz grading to specific graders, turn off
+                &quot;Graders Can Grade Quizzes&quot; in{' '}
                 <Link to={location.pathname.replace('roster/graders', 'settings')}>Course Settings</Link>.
               </span>
             }

@@ -11,6 +11,8 @@ import { CodeOutlined, MailOutlined, MenuOutlined, MinusCircleTwoTone } from '@a
 import { Dropdown, message, Spin, Table } from 'antd';
 import type { MenuProps, TableColumnsType, TableProps } from 'antd';
 
+import { responseErrorMessage } from '../../lib/apiError';
+
 /* codePost imports */
 import { formatSub, getViewIcon, ISubDataBasic, sortByGrade } from './GraderUtils';
 
@@ -153,8 +155,7 @@ const SectionSubmissionsTable = (props: ISubmissionsTableProps) => {
               message.success('Email sent to student notifying them that their submission is ready.');
               return;
             } else {
-              const json = await res.json();
-              message.error(json);
+              message.error(await responseErrorMessage(res));
               return;
             }
           })

@@ -9,7 +9,9 @@ import * as React from 'react';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Alert, Checkbox, Input, Space, Spin, Tooltip, Typography } from 'antd';
+import { Alert, Checkbox, Input, message, Space, Spin, Tooltip, Typography } from 'antd';
+
+import { API_UNAVAILABLE_MESSAGE, responseErrorMessage } from '../../lib/apiError';
 
 /* other library imports */
 import { Link, useLocation } from 'react-router';
@@ -61,14 +63,16 @@ const JoinSignup = (props: { email?: string }) => {
       method: 'POST',
       body: JSON.stringify(payload),
     })
-      .then((res) => {
+      .then(async (res) => {
         if (res.status === 200 || res.status === 403) {
           return res.json();
-        } else {
-          return Promise.reject(res.status);
         }
+        setHasSubmitted(false);
+        message.error(await responseErrorMessage(res, { fieldNames: ['email', 'token'] }));
+        return null;
       })
       .then((res) => {
+        if (!res) return;
         if (res.success) {
           setConfirmEmailSent(res.success);
         } else if (!res.code_valid) {
@@ -80,8 +84,9 @@ const JoinSignup = (props: { email?: string }) => {
           setInvalidEmail(true);
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        setHasSubmitted(false);
+        message.error(API_UNAVAILABLE_MESSAGE);
       });
   };
 
@@ -127,7 +132,9 @@ const JoinSignup = (props: { email?: string }) => {
             onChange={(e) => setInviteCode(e.target.value)}
           />
           <Tooltip title="If you don't have one of these, ask your instructor.">
-            <QuestionCircleOutlined style={{ cursor: 'pointer', padding: '0 11px', display: 'flex', alignItems: 'center' }} />
+            <QuestionCircleOutlined
+              style={{ cursor: 'pointer', padding: '0 11px', display: 'flex', alignItems: 'center' }}
+            />
           </Tooltip>
         </Space.Compact>
         {invalidCode && <span style={{ color: 'red' }}>Your invite code is invalid.</span>}

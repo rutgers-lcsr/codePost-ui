@@ -9,6 +9,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 /* antd imports */
 import { message, notification, Badge as AntBadge } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { osControlKey } from '../operatingSystem';
 
 /* other library imports */
@@ -519,16 +521,24 @@ const RubricManager: React.FC<IRubricManagerProps> = (props) => {
         return;
       }
 
-      const savedRubric = await saveRubric(
-        stateAfterLoad.rubricCategories,
-        stateAfterLoad.rubricComments,
-        stateAfterLoad.unsavedComments,
-        stateAfterLoad.deletedComments,
-        stateAfterLoad.unsavedCategories,
-        stateAfterLoad.deletedCategories,
-        stateAfterLoad.resolutions,
-        demoMode,
-      );
+      let savedRubric: Awaited<ReturnType<typeof saveRubric>>;
+      try {
+        savedRubric = await saveRubric(
+          stateAfterLoad.rubricCategories,
+          stateAfterLoad.rubricComments,
+          stateAfterLoad.unsavedComments,
+          stateAfterLoad.deletedComments,
+          stateAfterLoad.unsavedCategories,
+          stateAfterLoad.deletedCategories,
+          stateAfterLoad.resolutions,
+          demoMode,
+        );
+      } catch (e) {
+        message.error((await apiErrorMessageAsync(e, 'text', 'name', 'pointDelta')) ?? 'Could not save the rubric.');
+        return;
+      } finally {
+        useRubricStore.getState().setIsSaving(false);
+      }
 
       message.success('Rubric saved!');
       useRubricStore.getState().afterSave(savedRubric.rubricCategories, savedRubric.rubricComments);

@@ -9,7 +9,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 /* style imports */
 import { UserAddOutlined } from '@ant-design/icons';
-import { Alert, Button, Divider, Modal, Result, Steps, Table } from 'antd';
+import { Alert, Button, Divider, message, Modal, Result, Steps, Table } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 
 import { colors } from '../../../../theme/colors';
 
@@ -358,10 +360,16 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
     }
 
     /* update status */
-    Promise.all(promises).then(() => {
-      setUpdatingRoster(false);
-      setStatus(UPLOAD_STATUS.SAVE);
-    });
+    Promise.all(promises)
+      .then(() => {
+        setStatus(UPLOAD_STATUS.SAVE);
+      })
+      .catch(async (e) => {
+        message.error(
+          (await apiErrorMessageAsync(e, 'students', 'graders', 'courseAdmins')) ?? 'Could not update the roster.',
+        );
+      })
+      .finally(() => setUpdatingRoster(false));
   }, [updates, props]);
 
   const rosterDiff = useCallback(
@@ -718,10 +726,7 @@ const RosterFileUpload: React.FC<IProps> = (props) => {
       } else {
         content = (
           <div>
-            <Alert
-              title="Your roster contains some errors. Check out the area below to get them fixed."
-              type="error"
-            />
+            <Alert title="Your roster contains some errors. Check out the area below to get them fixed." type="error" />
             <br />
             <b>Errors:</b>
             <ul>

@@ -1,6 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
 import { message, Modal } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { commentTemplatesApi } from '../../../api-client/clients';
 import type { CommentTemplateType, CommentType } from '../../../types/models';
 import type { FileWithId } from '../../../utils/file';
@@ -79,28 +81,15 @@ export function useTemplateActions({
         message.success('Comment pinned');
         setTemplateRefresh((prev) => prev + 1);
       } catch (error) {
-        const detail =
-          typeof error === 'object' && error !== null && 'data' in error
-            ? (error as { data?: { detail?: string } }).data?.detail
-            : undefined;
-        if (detail) {
-          message.error(`Failed to pin: ${detail}`);
-        } else {
-          message.error('Failed to pin comment.');
-        }
+        const detail = await apiErrorMessageAsync(error, 'text');
+        message.error(detail ? `Failed to pin: ${detail}` : 'Failed to pin comment.');
       }
     },
     [setTemplateRefresh],
   );
 
   const handleUpdateCommentLocation = React.useCallback(
-    async (
-      commentId: number,
-      newStartLine: number,
-      newEndLine: number,
-      newStartChar: number,
-      newEndChar: number,
-    ) => {
+    async (commentId: number, newStartLine: number, newEndLine: number, newStartChar: number, newEndChar: number) => {
       const s = useCodeConsoleStore.getState();
       const fileId = (s.selectedFile as FileWithId | undefined)?.id;
       if (!fileId) return;

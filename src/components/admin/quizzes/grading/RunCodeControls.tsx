@@ -7,7 +7,7 @@ import CPButton from '../../../core/CPButton';
 import { quizAttemptsApi } from '../../../../api-client/clients';
 import { StaffQuizAttempt, StaffQuizResponse } from '../../../../api-client';
 import { useApiAction } from '../../../../hooks/useApiAction';
-import { apiErrorMessage } from '../../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 import { copyTextToClipboard } from '../../../utils/Browser';
 
 interface CodeExecutionResult {
@@ -63,7 +63,7 @@ const RunCodeControls: React.FC<{
           message.error('The sandbox run failed — see the output below.');
         }
       } catch (e) {
-        setLocalError(apiErrorMessage(e) ?? 'Lost connection to the server while waiting for the run.');
+        setLocalError((await apiErrorMessageAsync(e)) ?? 'Lost connection to the server while waiting for the run.');
         message.error('Lost connection to the sandbox while waiting for the run.');
       }
     };
@@ -77,13 +77,17 @@ const RunCodeControls: React.FC<{
 
   const trigger = async () => {
     setLocalError(null);
-    const ok = await run(async () => {
-      const updated = await quizAttemptsApi.runCodeCreate({
-        id: attemptId,
-        runQuizResponseCodeRequest: { response: response.id },
-      });
-      onUpdate(updated);
-    }, 'Running the code…', 'Failed to run the code.');
+    const ok = await run(
+      async () => {
+        const updated = await quizAttemptsApi.runCodeCreate({
+          id: attemptId,
+          runQuizResponseCodeRequest: { response: response.id },
+        });
+        onUpdate(updated);
+      },
+      'Running the code…',
+      'Failed to run the code.',
+    );
     // The toast already fired; mirror it in the terminal so the failure stays visible.
     if (!ok) setLocalError('Could not start the run — the request to the server failed.');
   };
@@ -184,7 +188,11 @@ const RunCodeControls: React.FC<{
           }}
         >
           {localError && (
-            <div style={{ color: '#ff8383', whiteSpace: 'pre-wrap', marginBottom: 8 }} role="alert" data-testid="run-code-error">
+            <div
+              style={{ color: '#ff8383', whiteSpace: 'pre-wrap', marginBottom: 8 }}
+              role="alert"
+              data-testid="run-code-error"
+            >
               {localError}
             </div>
           )}
@@ -201,9 +209,7 @@ const RunCodeControls: React.FC<{
                   {exec.stderr}
                 </div>
               )}
-              {!exec.error && !exec.stdout && !exec.stderr && (
-                <span style={{ color: GREY }}>(no output)</span>
-              )}
+              {!exec.error && !exec.stdout && !exec.stderr && <span style={{ color: GREY }}>(no output)</span>}
               {(exec.images ?? []).map((img, idx) => (
                 <img
                   key={idx}

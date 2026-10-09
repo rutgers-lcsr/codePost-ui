@@ -2,6 +2,8 @@
 import React, { useContext, useState } from 'react';
 import { FileTextOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 import { message, Typography } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import ReactMarkdown from 'react-markdown';
 import CPButton from '../../../components/core/CPButton';
 import AIFeedbackWidget from '../../../components/core/AIFeedbackWidget';
@@ -53,11 +55,7 @@ const SubmissionSummaryPanel: React.FC<SubmissionSummaryPanelProps> = ({
       await onGenerateSummary();
       message.success('Summary generated');
     } catch (err: unknown) {
-      const apiMessage =
-        err && typeof err === 'object' && 'body' in err
-          ? ((err as { body?: { error?: string } }).body?.error ?? null)
-          : null;
-      message.error(apiMessage || 'Failed to generate summary. Check AI configuration.');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Failed to generate summary. Check AI configuration.');
     } finally {
       setLocalLoading(false);
     }

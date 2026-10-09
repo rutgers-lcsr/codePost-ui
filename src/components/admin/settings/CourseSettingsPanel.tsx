@@ -22,6 +22,8 @@ import {
 /* style imports */
 import { Descriptions, Flex, Form, Input, message, Select, Switch, Typography } from 'antd';
 
+import { apiErrorMessageAsync } from '../../../lib/apiError';
+
 import CPButton from '../../../components/core/CPButton';
 
 /* codePost imports */
@@ -216,11 +218,11 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
   const handleSave = () => {
     form
       .validateFields()
-      .then((values) => {
-        updateSettings(values);
-      })
-      .catch((info) => {
-        console.log('Validation Failed:', info);
+      .then((values) => updateSettings(values))
+      .catch(async (info) => {
+        if (info?.errorFields) return; // antd form validation — errors are shown inline
+        setIsLoading(false);
+        message.error((await apiErrorMessageAsync(info, 'name', 'period')) ?? 'Could not save the course settings.');
       });
   };
 
@@ -244,7 +246,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       archived: values.archived,
     };
 
-    props.updateSettings(payload).then(() => {
+    return props.updateSettings(payload).then(() => {
       message.success('Your settings were saved!');
 
       setTimeout(() => {

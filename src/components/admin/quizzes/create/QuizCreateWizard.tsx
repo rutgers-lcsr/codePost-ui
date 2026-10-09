@@ -5,7 +5,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import CPButton from '../../../core/CPButton';
 import { quizzesApi } from '../../../../api-client/clients';
 import { Course, Quiz } from '../../../../api-client';
-import { apiErrorMessage } from '../../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../../lib/apiError';
 import { useAssignmentsQuery } from '../../hooks/useAssignmentsQuery';
 import {
   DEFAULT_DRAFT,
@@ -95,8 +95,16 @@ const QuizCreateWizard: React.FC<IProps> = ({ open, course, onCancel, onCreated 
       onCreated(created);
     } catch (err) {
       message.error(
-        apiErrorMessage(err, 'title', 'sebConfigKey', 'assignmentTrigger', 'availableFrom', 'closeEvent', 'generationDate', 'assignment') ??
-          'Failed to create quiz.',
+        (await apiErrorMessageAsync(
+          err,
+          'title',
+          'sebConfigKey',
+          'assignmentTrigger',
+          'availableFrom',
+          'closeEvent',
+          'generationDate',
+          'assignment',
+        )) ?? 'Failed to create quiz.',
       );
     } finally {
       setCreating(false);
@@ -181,12 +189,7 @@ const QuizCreateWizard: React.FC<IProps> = ({ open, course, onCancel, onCreated 
         </Button>
       </Flex>
       {helpOpen && (
-        <Alert
-          type="info"
-          message={STEP_HELP[stepKey]}
-          style={{ marginBottom: 16 }}
-          data-testid="quiz-wizard-help"
-        />
+        <Alert type="info" message={STEP_HELP[stepKey]} style={{ marginBottom: 16 }} data-testid="quiz-wizard-help" />
       )}
       {stepKey === 'basics' && <BasicsStep {...stepProps} />}
       {stepKey === 'availability' && <AvailabilityStep {...stepProps} assignments={assignments} />}

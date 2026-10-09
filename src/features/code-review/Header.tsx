@@ -26,6 +26,8 @@ import {
 /* antd imports */
 import { Col, Dropdown, Modal, Popover, Row, Space, Statistic, Switch, Table, Tag, message } from 'antd';
 
+import { responseErrorMessage } from '../../lib/apiError';
+
 import { trackFeature } from '../../components/utils/Fullstory';
 
 /* codePost imports */
@@ -369,8 +371,7 @@ export const FinalizeButton = (props: IFinalizeButtonProps) => {
           message.success(json);
           return;
         } else {
-          const json = await res.json();
-          message.error(json);
+          message.error(await responseErrorMessage(res));
           return;
         }
       })

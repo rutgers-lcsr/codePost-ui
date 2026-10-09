@@ -21,6 +21,7 @@ import type {
   PatchedMaintenanceBanner,
   SystemActivityResponse,
   SystemHealthResponse,
+  UploadLimits,
 } from '../models/index';
 
 export interface ActivityRetrieveRequest {
@@ -400,6 +401,54 @@ export class SystemApi extends runtime.BaseAPI {
    */
   async healthRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SystemHealthResponse> {
     const response = await this.healthRetrieveRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Upload size limits enforced by the server, in bytes. Per-file limits are measured on the decoded file, not the base64 wire form.
+   */
+  async uploadLimitsRetrieveRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<UploadLimits>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/system/uploadLimits/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Upload size limits enforced by the server, in bytes. Per-file limits are measured on the decoded file, not the base64 wire form.
+   */
+  async uploadLimitsRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UploadLimits> {
+    const response = await this.uploadLimitsRetrieveRaw(initOverrides);
     return await response.value();
   }
 }

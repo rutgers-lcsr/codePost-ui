@@ -10,7 +10,9 @@ import { useCallback, useMemo } from 'react';
 import { DisconnectOutlined, MailOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Modal, Space, Tooltip } from 'antd';
+import { Breadcrumb, Button, message, Modal, Space, Tooltip } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 
 /* other library imports */
 import Highlighter from 'react-highlight-words';
@@ -74,9 +76,10 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
         title: `Are you sure you want to remove this admin ${toRemove} from your course?`,
         content: `Once removed, they won't be able to access the course.
         You can always add them back from this page.`,
-        onOk: () => {
-          return updateRoster([], [toRemove], USER_APP.CourseAdmin);
-        },
+        onOk: () =>
+          updateRoster([], [toRemove], USER_APP.CourseAdmin).catch(async (e) => {
+            message.error((await apiErrorMessageAsync(e, 'courseAdmins')) ?? 'Could not remove the admin.');
+          }),
         okText: 'Remove',
       });
     },

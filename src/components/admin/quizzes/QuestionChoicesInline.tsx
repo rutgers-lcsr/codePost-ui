@@ -4,7 +4,7 @@ import { Button, Divider, Flex, Input, Space, Typography, message } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import ChoicesEditor from './ChoicesEditor';
 import Markdown from '../../core/Markdown';
@@ -50,7 +50,7 @@ const QuestionChoicesInline: React.FC<IProps> = ({ question, courseId, bankId })
       queryClient.invalidateQueries({ queryKey: quizKeys.bankQuestions(bankId) });
       queryClient.invalidateQueries({ queryKey: quizKeys.courseQuestions(courseId) });
     } catch (err) {
-      message.error(apiErrorMessage(err) ?? 'Failed to update answers.');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Failed to update answers.');
     } finally {
       setSaving(false);
     }
@@ -101,7 +101,11 @@ const QuestionChoicesInline: React.FC<IProps> = ({ question, courseId, bankId })
           <ChoicesEditor questionType={qType} value={choices} onChange={setChoices} />
           <Flex justify="flex-end" style={{ marginTop: 12 }}>
             <Space>
-              <Button size="small" disabled={!dirty || saving} onClick={() => setChoices(toLocalChoices(question.choices))}>
+              <Button
+                size="small"
+                disabled={!dirty || saving}
+                onClick={() => setChoices(toLocalChoices(question.choices))}
+              >
                 Reset
               </Button>
               <Button type="primary" size="small" loading={saving} disabled={!dirty} onClick={handleSave}>
@@ -111,11 +115,11 @@ const QuestionChoicesInline: React.FC<IProps> = ({ question, courseId, bankId })
           </Flex>
         </>
       ) : (
-        entryPreview() ?? (
+        (entryPreview() ?? (
           <Text type="secondary" style={{ fontSize: 13 }}>
             No answer choices for this question type.
           </Text>
-        )
+        ))
       )}
     </div>
   );

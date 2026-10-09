@@ -5,7 +5,7 @@ import CodeQuestionEditor from './CodeQuestionEditor';
 import { useQueryClient } from '@tanstack/react-query';
 import { questionsApi } from '../../../api-client/clients';
 import { Question, QuestionTypeEnum } from '../../../api-client';
-import { apiErrorMessage } from '../../../lib/apiError';
+import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
 import ChoicesEditor from './ChoicesEditor';
 import MarkdownField from './MarkdownField';
@@ -131,8 +131,7 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
       generalFeedback: values.generalFeedback,
       // Grading settings only apply to their question type; clear them on type changes.
       partialCredit: values.questionType === QuestionTypeEnum.MultipleAnswers && !!values.partialCredit,
-      numericTolerance:
-        values.questionType === QuestionTypeEnum.Numerical ? (values.numericTolerance ?? null) : null,
+      numericTolerance: values.questionType === QuestionTypeEnum.Numerical ? (values.numericTolerance ?? null) : null,
     };
 
     if (isCode(values.questionType)) {
@@ -160,7 +159,7 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
       queryClient.invalidateQueries({ queryKey: quizKeys.banks(courseId) });
       onClose();
     } catch (err) {
-      message.error(apiErrorMessage(err, 'text') ?? 'Failed to save question.');
+      message.error((await apiErrorMessageAsync(err, 'text')) ?? 'Failed to save question.');
     } finally {
       setSaving(false);
     }
@@ -245,12 +244,7 @@ const QuestionEditorModal: React.FC<IProps> = ({ open, courseId, bankId, questio
         {isCode(qType) && (
           <>
             <Form.Item label="Starter code (optional)">
-              <CodeQuestionEditor
-                height={160}
-                language={language}
-                value={starterCode}
-                onChange={setStarterCode}
-              />
+              <CodeQuestionEditor height={160} language={language} value={starterCode} onChange={setStarterCode} />
             </Form.Item>
             <Form.Item label="Reference solution (optional, authoring-only — not auto-graded yet)">
               <CodeQuestionEditor

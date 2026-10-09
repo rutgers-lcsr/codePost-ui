@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   AssignmentDeadline,
+  AutogradingFailureList,
   AutogradingStats,
   DashboardStats,
   PendingAdminActionRequest,
@@ -25,6 +26,19 @@ import type {
 
 export interface ApprovePendingAdminCreateRequest {
   pendingAdminActionRequest: PendingAdminActionRequest;
+}
+
+export interface AutogradingFailuresRetrieveRequest {
+  assignmentId?: number;
+  category?: string;
+  courseId?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  language?: string;
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  trigger?: string;
 }
 
 export interface AutogradingStatsRetrieveRequest {
@@ -103,7 +117,99 @@ export class DashboardApi extends runtime.BaseAPI {
   }
 
   /**
-   * Returns platform-wide autograder execution statistics: cache-hit rate, failure counts, language usage, failures per language, and top errors.
+   * Returns failed autograder executions, newest first, with the course, assignment, submission, file, image, Celery task id and full error output needed to isolate each failure.
+   */
+  async autogradingFailuresRetrieveRaw(
+    requestParameters: AutogradingFailuresRetrieveRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<AutogradingFailureList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters['assignmentId'] != null) {
+      queryParameters['assignmentId'] = requestParameters['assignmentId'];
+    }
+
+    if (requestParameters['category'] != null) {
+      queryParameters['category'] = requestParameters['category'];
+    }
+
+    if (requestParameters['courseId'] != null) {
+      queryParameters['courseId'] = requestParameters['courseId'];
+    }
+
+    if (requestParameters['dateFrom'] != null) {
+      queryParameters['dateFrom'] = requestParameters['dateFrom'];
+    }
+
+    if (requestParameters['dateTo'] != null) {
+      queryParameters['dateTo'] = requestParameters['dateTo'];
+    }
+
+    if (requestParameters['language'] != null) {
+      queryParameters['language'] = requestParameters['language'];
+    }
+
+    if (requestParameters['page'] != null) {
+      queryParameters['page'] = requestParameters['page'];
+    }
+
+    if (requestParameters['pageSize'] != null) {
+      queryParameters['pageSize'] = requestParameters['pageSize'];
+    }
+
+    if (requestParameters['q'] != null) {
+      queryParameters['q'] = requestParameters['q'];
+    }
+
+    if (requestParameters['trigger'] != null) {
+      queryParameters['trigger'] = requestParameters['trigger'];
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/dashboard/autograding_failures/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Returns failed autograder executions, newest first, with the course, assignment, submission, file, image, Celery task id and full error output needed to isolate each failure.
+   */
+  async autogradingFailuresRetrieve(
+    requestParameters: AutogradingFailuresRetrieveRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<AutogradingFailureList> {
+    const response = await this.autogradingFailuresRetrieveRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Returns platform-wide autograder execution statistics: cache-hit rate, failure counts, language usage, failures per language, top errors, and the assignments with the most failures.
    */
   async autogradingStatsRetrieveRaw(
     requestParameters: AutogradingStatsRetrieveRequest,
@@ -152,7 +258,7 @@ export class DashboardApi extends runtime.BaseAPI {
   }
 
   /**
-   * Returns platform-wide autograder execution statistics: cache-hit rate, failure counts, language usage, failures per language, and top errors.
+   * Returns platform-wide autograder execution statistics: cache-hit rate, failure counts, language usage, failures per language, top errors, and the assignments with the most failures.
    */
   async autogradingStatsRetrieve(
     requestParameters: AutogradingStatsRetrieveRequest = {},

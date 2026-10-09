@@ -84,7 +84,10 @@ const FocusedGrader: React.FC<IProps> = ({
   const [sideWidth, setSideWidth] = React.useState(() => LOCAL_SETTINGS.quizGradeSideWidth.getter());
   const [bottomHeight, setBottomHeight] = React.useState(() => LOCAL_SETTINGS.quizGradeBottomHeight.getter());
   const responses = [...attempt.responses].sort(bySortKey);
-  const index = Math.max(0, responses.findIndex((r) => r.id === focusResponseId));
+  const index = Math.max(
+    0,
+    responses.findIndex((r) => r.id === focusResponseId),
+  );
   const current = responses[index];
 
   const headingRef = React.useRef<HTMLDivElement>(null);
@@ -170,7 +173,7 @@ const FocusedGrader: React.FC<IProps> = ({
           items={[
             {
               key: 'answer-key',
-              label: 'Answer key (graders only)',
+              label: 'Answer key',
               children: (
                 <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>
                   {current.referenceSolution}
@@ -242,7 +245,12 @@ const FocusedGrader: React.FC<IProps> = ({
               />
             )}
             {attempt.isOfficialOverride ? (
-              <CPButton small loading={pinning} onClick={() => onSetOfficial(false)} data-testid="grading-unpin-official">
+              <CPButton
+                small
+                loading={pinning}
+                onClick={() => onSetOfficial(false)}
+                data-testid="grading-unpin-official"
+              >
                 Unpin official grade
               </CPButton>
             ) : (
@@ -269,10 +277,7 @@ const FocusedGrader: React.FC<IProps> = ({
               data-testid="grading-nav-chip"
             >
               <span aria-hidden>{i + 1}</span>
-              <Tag
-                color={chipColor(r)}
-                style={{ marginLeft: 6, marginRight: 0, padding: '0 4px', lineHeight: '16px' }}
-              >
+              <Tag color={chipColor(r)} style={{ marginLeft: 6, marginRight: 0, padding: '0 4px', lineHeight: '16px' }}>
                 {r.needsManualGrading ? '●' : '✓'}
               </Tag>
             </CPButton>
@@ -282,9 +287,7 @@ const FocusedGrader: React.FC<IProps> = ({
 
       {effectiveDock === 'side' ? (
         <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-          <section style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '16px 24px' }}>
-            {questionColumn}
-          </section>
+          <section style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '16px 24px' }}>{questionColumn}</section>
           {/* Drag the left edge to resize; the width persists. */}
           <Resizable
             size={{ width: sideWidth, height: '100%' }}
@@ -315,9 +318,7 @@ const FocusedGrader: React.FC<IProps> = ({
         </div>
       ) : (
         <>
-          <section style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 24px' }}>
-            {questionColumn}
-          </section>
+          <section style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 24px' }}>{questionColumn}</section>
           {manual ? (
             // Drag the top edge to resize; the extra room goes to the feedback box.
             <Resizable

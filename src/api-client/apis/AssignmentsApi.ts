@@ -1555,7 +1555,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadCreateRaw(
     requestParameters: StudentUploadCreateRequest,
@@ -1614,7 +1614,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadCreate(
     requestParameters: StudentUploadCreateRequest,
@@ -1625,7 +1625,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadPartialUpdateRaw(
     requestParameters: StudentUploadPartialUpdateRequest,
@@ -1677,7 +1677,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadPartialUpdate(
     requestParameters: StudentUploadPartialUpdateRequest,
@@ -1688,7 +1688,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadRetrieveRaw(
     requestParameters: StudentUploadRetrieveRequest,
@@ -1737,7 +1737,7 @@ export class AssignmentsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Upload of submission to an assignment   TODO: add file limits to 10mb
+   * Upload of submission to an assignment  Files travel inline in the JSON body. Each file is capped at MAX_FILE_SIZE and the whole submission at MAX_SUBMISSION_TOTAL_SIZE (decoded bytes, see core/constants.py).
    */
   async studentUploadRetrieve(
     requestParameters: StudentUploadRetrieveRequest,

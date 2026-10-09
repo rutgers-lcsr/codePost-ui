@@ -9,10 +9,25 @@
  */
 
 import * as React from 'react';
-import { AutoComplete, Badge, Collapse, Divider, Empty, Flex, Input, Modal, Space, Spin, Tag, Typography, message } from 'antd';
+import {
+  AutoComplete,
+  Badge,
+  Collapse,
+  Divider,
+  Empty,
+  Flex,
+  Input,
+  Modal,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+  message,
+} from 'antd';
 import { ExperimentOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import CPButton from './CPButton';
 import type { AIProviderTestResult } from '../../api-client';
+import { apiErrorMessageAsync } from '../../lib/apiError';
 
 const { Text } = Typography;
 
@@ -73,7 +88,7 @@ const AIProviderTestModal: React.FC<IAIProviderTestModalProps> = ({
     try {
       setResult(await runTest(prompt.trim() || undefined, model.trim() || undefined));
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Connection test failed');
+      message.error((await apiErrorMessageAsync(err)) ?? 'Connection test failed');
     } finally {
       setRunning(false);
     }

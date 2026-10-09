@@ -1,6 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { useEffect, useState } from 'react';
 import { Button, Empty, message, Select, Spin, Typography, Tooltip } from 'antd';
+
+import { apiErrorMessageAsync } from '../../../../../lib/apiError';
 import { assignmentsApi, autograderApi, testCasesApi, testCategoriesApi } from '../../../../../api-client/clients';
 import { RubricCategory, RubricComment, TypeEnum } from '../../../../../api-client';
 import { RubricFullData } from '../../../../../types/rubric';
@@ -217,8 +219,10 @@ export const TestDefinitions = (props: IProps) => {
       });
       setCategories((prev) => [...prev, newCat]);
       return newCat.id;
-    } catch {
-      message.error(`Failed to create category for ${name}`);
+    } catch (err) {
+      message.error(
+        (await apiErrorMessageAsync(err, 'name', 'testCategory')) ?? `Failed to create category for ${name}`,
+      );
       return null;
     }
   };
@@ -254,8 +258,8 @@ export const TestDefinitions = (props: IProps) => {
       // Auto-switch view to this file
       setActiveFile(values.fileName);
       setActiveTestId(newTest.id);
-    } catch {
-      message.error('Failed to create test');
+    } catch (err) {
+      message.error((await apiErrorMessageAsync(err, 'testCode', 'name', 'testCategory')) ?? 'Failed to create test');
     }
   };
 
@@ -263,8 +267,8 @@ export const TestDefinitions = (props: IProps) => {
     try {
       await testCasesApi.destroy({ id: testCtx.id });
       setTestCases(testCases.filter((t) => t.id !== testCtx.id));
-    } catch {
-      message.error('Failed to delete test');
+    } catch (err) {
+      message.error((await apiErrorMessageAsync(err)) ?? 'Failed to delete test');
     }
   };
 
@@ -276,8 +280,8 @@ export const TestDefinitions = (props: IProps) => {
       });
       setTestCases(testCases.map((t) => (t.id === updated.id ? updated : t)));
       return updated;
-    } catch {
-      message.error('Failed to save test');
+    } catch (err) {
+      message.error((await apiErrorMessageAsync(err, 'testCode', 'name', 'testCategory')) ?? 'Failed to save test');
       return testCtx;
     }
   };

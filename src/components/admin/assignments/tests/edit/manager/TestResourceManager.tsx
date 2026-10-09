@@ -31,6 +31,8 @@ import {
   testCategoryResourcesApi,
 } from '../../../../../../api-client/clients';
 import { getAuthToken } from '../../../../../../utils/auth';
+import { apiErrorMessageAsync, responseErrorMessage } from '../../../../../../lib/apiError';
+import { formatLimit, getUploadLimits } from '../../../../../../lib/uploadLimits';
 import { loadIDList } from '../../../../../../utils/generics';
 import { AssignmentDataSetType, AssignmentFileType, TestCategoryResourceType } from '../../../../../../types/models';
 import { File as CodePostFile } from '../../../../../../utils/file';
@@ -229,8 +231,11 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to create dataset: ${response.statusText} - ${errorText}`);
+          const reason = await responseErrorMessage(response, {
+            fieldNames: ['file'],
+            tooLarge: `File too large for the server (limit ${formatLimit(getUploadLimits().maxDatasetBytes)}).`,
+          });
+          throw new Error(`Failed to create dataset: ${reason}`);
         }
 
         const newDataset = await response.json();
@@ -256,7 +261,7 @@ export const TestResourceManager: React.FC<IProps> = ({ assignmentId, categoryId
       console.error(e);
       // Try to get message from error response
       let errorMsg = 'Failed to upload/create resource';
-      const details = getErrorMessage(e);
+      const details = (await apiErrorMessageAsync(e, 'data', 'name')) ?? getErrorMessage(e);
       if (details) errorMsg += `: ${details}`;
       message.error(errorMsg);
     } finally {
