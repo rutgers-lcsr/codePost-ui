@@ -18,6 +18,7 @@ A student\'s generated question set with its questions — the review payload. S
 | `errorMessage`       | string                                                              |
 | `generationMetadata` | string                                                              |
 | `questions`          | [Array&lt;GeneratedQuizQuestion&gt;](GeneratedQuizQuestion.md)      |
+| `usedFallback`       | boolean                                                             |
 | `created`            | string                                                              |
 | `modified`           | string                                                              |
 

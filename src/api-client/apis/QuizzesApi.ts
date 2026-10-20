@@ -222,7 +222,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).  ``missingWithoutSubmission`` / ``missingWithoutSubmissionStudents``: enrolled students with no submission and no set. They are part of ``missing`` (what Generate missing queues) only when ``fallbackCovers`` — every submission-seeded section has a fallback prompt; otherwise they are skipped. Never part of ``wouldGenerate``.
    */
   async backfillPreviewRetrieveRaw(
     requestParameters: BackfillPreviewRetrieveRequest,
@@ -271,7 +271,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).
+   * How many students a backfill would touch — shown to the instructor before they save a new AI section (``wouldGenerate``: the section-create backfill) and on the review drawer\'s Generate-missing button (``missing``: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (``needsSubmission`` says which applies).  ``missingWithoutSubmission`` / ``missingWithoutSubmissionStudents``: enrolled students with no submission and no set. They are part of ``missing`` (what Generate missing queues) only when ``fallbackCovers`` — every submission-seeded section has a fallback prompt; otherwise they are skipped. Never part of ``wouldGenerate``.
    */
   async backfillPreviewRetrieve(
     requestParameters: BackfillPreviewRetrieveRequest,
@@ -460,7 +460,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
+   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — or, if they have none, from the sections\' fallback prompts — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
    */
   async generateForStudentCreateRaw(
     requestParameters: GenerateForStudentCreateRequest,
@@ -519,7 +519,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
+   * Generate (or regenerate) this quiz\'s AI questions for one student from their latest submission — or, if they have none, from the sections\' fallback prompts — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force=true (it becomes un-published until re-approved).
    */
   async generateForStudentCreate(
     requestParameters: GenerateForStudentCreateRequest,
@@ -530,7 +530,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time. When every submission-seeded section has a fallback prompt, students with no submission are included too (generated from the fallback).
    */
   async generateMissingCreateRaw(
     requestParameters: GenerateMissingCreateRequest,
@@ -579,7 +579,7 @@ export class QuizzesApi extends runtime.BaseAPI {
   }
 
   /**
-   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+   * Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time. When every submission-seeded section has a fallback prompt, students with no submission are included too (generated from the fallback).
    */
   async generateMissingCreate(
     requestParameters: GenerateMissingCreateRequest,

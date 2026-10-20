@@ -15,6 +15,7 @@ Summary row for the per-quiz review table (no question payload).
 | `approvedAt`    | string                                                              |
 | `errorMessage`  | string                                                              |
 | `questionCount` | number                                                              |
+| `usedFallback`  | boolean                                                             |
 | `created`       | string                                                              |
 | `modified`      | string                                                              |
 

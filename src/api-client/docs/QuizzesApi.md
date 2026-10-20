@@ -103,7 +103,7 @@ example().catch(console.error);
 
 > BackfillPreviewResponse backfillPreviewRetrieve(id)
 
-How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (&#x60;&#x60;needsSubmission&#x60;&#x60; says which applies).
+How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (&#x60;&#x60;needsSubmission&#x60;&#x60; says which applies). &#x60;&#x60;missingWithoutSubmission&#x60;&#x60; / &#x60;&#x60;missingWithoutSubmissionStudents&#x60;&#x60;: enrolled students with no submission and no set. They are part of &#x60;&#x60;missing&#x60;&#x60; (what Generate missing queues) only when &#x60;&#x60;fallbackCovers&#x60;&#x60; — every submission-seeded section has a fallback prompt; otherwise they are skipped. Never part of &#x60;&#x60;wouldGenerate&#x60;&#x60;.
 
 ### Example
 
@@ -396,7 +396,7 @@ example().catch(console.error);
 
 > GeneratedQuestionSet generateForStudentCreate(id, generateForStudentRequest)
 
-Generate (or regenerate) this quiz\&#39;s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force&#x3D;true (it becomes un-published until re-approved).
+Generate (or regenerate) this quiz\&#39;s AI questions for one student from their latest submission — or, if they have none, from the sections\&#39; fallback prompts — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force&#x3D;true (it becomes un-published until re-approved).
 
 ### Example
 
@@ -473,7 +473,7 @@ example().catch(console.error);
 
 > GenerateMissingResponse generateMissingCreate(id)
 
-Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time. When every submission-seeded section has a fallback prompt, students with no submission are included too (generated from the fallback).
 
 ### Example
 

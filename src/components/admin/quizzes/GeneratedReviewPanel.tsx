@@ -68,6 +68,12 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   failed: { label: 'Failed', color: 'red' },
 };
 
+const FallbackTag: React.FC = () => (
+  <Tooltip title="Generated from the section's fallback prompt — the student had no submission.">
+    <Tag>Fallback</Tag>
+  </Tooltip>
+);
+
 interface IProps {
   quiz: Quiz;
   courseId: number;
@@ -291,6 +297,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
   // Submission-free quizzes generate eagerly for enrolled students; undefined (e.g. the
   // preview isn't fetched for graders) falls back to the submission-seeded copy.
   const needsSubmission = backfillPreview?.needsSubmission !== false;
+  // Students with no submission at all. They get a set only when every submission-seeded
+  // section carries a fallback prompt (fallbackCovers) — through Generate missing, the
+  // scheduled run, or Generate — and are otherwise skipped; either way the instructor
+  // should see who they are.
+  const fallbackCovers = backfillPreview?.fallbackCovers === true;
+  const withoutSubmissionAll = backfillPreview?.missingWithoutSubmissionStudents ?? [];
 
   // Section filter: a grader picks their section and reviews only those students' sets.
   const [sectionId, setSectionId] = React.useState<number | null>(null);
@@ -301,6 +313,9 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
     return section ? new Set((section.students ?? []).map(String)) : null;
   }, [sectionId, courseSections]);
   const visibleSets = sectionEmails ? sets.filter((s) => s.studentEmail && sectionEmails.has(s.studentEmail)) : sets;
+  const withoutSubmission = sectionEmails
+    ? withoutSubmissionAll.filter((email) => sectionEmails.has(email))
+    : withoutSubmissionAll;
   const { data: current } = useGeneratedSetDetail(currentId ?? undefined);
   // Roster emails feed the generate-for-student picker (admin-only); if the viewer can't
   // read the roster (403) the field simply falls back to free typing.
@@ -359,21 +374,42 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
       title: "Regenerate this student's questions?",
       content:
         'The current questions are discarded and new ones are generated from their ' +
-        'submission. If the set was published, it is un-published until you re-approve it.',
+        'submission (or from the fallback prompt if they have none). If the set was ' +
+        'published, it is un-published until you re-approve it.',
       okText: 'Regenerate',
       onOk: () => act(() => generatedQuestionSetsApi.regenerateCreate({ id }), 'Regenerating…'),
     });
   };
 
-  const generateMissing = () =>
+  const runGenerateMissing = () =>
     act(async () => {
       const res = await quizzesApi.generateMissingCreate({ id: quiz.id! });
       message.info(
         res.queued > 0
           ? `Queued generation for ${res.queued} student${res.queued === 1 ? '' : 's'}.`
-          : 'Everyone with a submission already has a question set.',
+          : fallbackCovers
+            ? 'Everyone already has a question set.'
+            : 'Everyone with a submission already has a question set.',
       );
     }, 'Generate-missing complete.');
+
+  const generateMissing = () => {
+    const n = withoutSubmissionAll.length;
+    if (!(fallbackCovers && n > 0)) {
+      runGenerateMissing();
+      return;
+    }
+    // Fallback sets are a deliberate choice — confirm before spending on them.
+    Modal.confirm({
+      title: `Generate for ${missingCount} student${missingCount === 1 ? '' : 's'}?`,
+      content:
+        `This includes ${n} student${n === 1 ? ' who hasn\'t' : 's who haven\'t'} submitted; their questions ` +
+        'come from the fallback prompt. If they submit later, a set that isn\'t approved yet is ' +
+        'regenerated from their submission.',
+      okText: 'Generate',
+      onOk: runGenerateMissing,
+    });
+  };
 
   const publishAll = () => {
     const readyCount = sets.filter((s) => s.status === 'ready').length;
@@ -399,7 +435,12 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
       width: 130,
       render: (_: unknown, s: GeneratedQuestionSetList) => {
         const meta = STATUS_META[s.status ?? ''] ?? { label: s.status, color: 'default' };
-        return <Tag color={meta.color}>{meta.label}</Tag>;
+        return (
+          <>
+            <Tag color={meta.color}>{meta.label}</Tag>
+            {s.usedFallback && <FallbackTag />}
+          </>
+        );
       },
     },
     { title: 'Questions', dataIndex: 'questionCount', key: 'questionCount', width: 90 },
@@ -563,7 +604,10 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
               <Tooltip
                 title={
                   needsSubmission
-                    ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).'
+                    ? 'Generate for every student who has a submission but no question set yet (e.g. they submitted before this section existed).' +
+                      (fallbackCovers && withoutSubmissionAll.length > 0
+                        ? ` Includes ${withoutSubmissionAll.length} student${withoutSubmissionAll.length === 1 ? '' : 's'} without a submission (fallback prompt).`
+                        : '')
                     : 'Generate for every enrolled student who has no question set yet (e.g. they enrolled after the section was created).'
                 }
               >
@@ -611,6 +655,40 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
             data-testid="generated-sets-table"
           />
         ))}
+      {!current && error == null && !isLoading && withoutSubmission.length > 0 && (
+        <div style={{ marginTop: 16 }} data-testid="without-submission-table">
+          <Text strong>Students without a submission ({withoutSubmission.length})</Text>
+          <div>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {fallbackCovers
+                ? 'Generate missing (or Generate) creates their questions from the fallback prompt.'
+                : 'Skipped — add a fallback prompt to each AI section that uses submission variables to generate for them.'}
+            </Text>
+          </div>
+          <Table
+            rowKey={(email: string) => email}
+            size="small"
+            style={{ marginTop: 8 }}
+            showHeader={false}
+            pagination={false}
+            dataSource={withoutSubmission}
+            columns={[
+              { key: 'email', render: (email: string) => email },
+              { key: 'tag', width: 130, render: () => <Tag>No submission</Tag> },
+              {
+                key: 'actions',
+                width: 120,
+                render: (email: string) =>
+                  adminActions && fallbackCovers ? (
+                    <CPButton size="small" icon={<RobotOutlined />} loading={acting} onClick={() => generateFor(email)}>
+                      Generate
+                    </CPButton>
+                  ) : null,
+              },
+            ]}
+          />
+        </div>
+      )}
       {current && (
         <Flex vertical gap={16}>
           {/* Header: who's being reviewed and the set-level actions, so nothing about the
@@ -627,6 +705,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
                 const s = STATUS_META[current.status ?? ''] ?? { label: current.status, color: 'default' };
                 return <Tag color={s.color}>{s.label}</Tag>;
               })()}
+              {current.usedFallback && <FallbackTag />}
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {detailQuestions.length} question{detailQuestions.length === 1 ? '' : 's'} · {detailPoints} pts
               </Text>
@@ -641,7 +720,7 @@ const GeneratedReviewPanel: React.FC<IProps> = ({ quiz, courseId, active, adminA
                   View submission
                 </CPButton>
               )}
-              {adminActions && current.submission != null && (
+              {adminActions && (current.submission != null || current.usedFallback) && (
                 <CPButton size="small" loading={acting} onClick={() => regenerate(current.id!)}>
                   Regenerate
                 </CPButton>

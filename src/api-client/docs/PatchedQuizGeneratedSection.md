@@ -10,6 +10,7 @@ A per-student generation config on a quiz: an instructor-authored prompt templat
 | `quiz`                     | number |
 | `name`                     | string |
 | `systemPrompt`             | string |
+| `fallbackPrompt`           | string |
 | `numQuestions`             | number |
 | `pointsPerQuestion`        | number |
 | `questionTypes`            | any    |

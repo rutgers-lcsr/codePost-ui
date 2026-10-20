@@ -25,7 +25,7 @@ vi.mock('../../../api-client/clients', () => ({
   quizSuggestionJobsApi: { retrieve: vi.fn() },
 }));
 
-import { quizzesApi, quizSuggestionJobsApi } from '../../../api-client/clients';
+import { quizGeneratedSectionsApi, quizzesApi, quizSuggestionJobsApi } from '../../../api-client/clients';
 import { QuizGeneratedSection } from '../../../api-client';
 import { ResponseError } from '../../../api-client/runtime';
 import GeneratedSectionModal from './GeneratedSectionModal';
@@ -65,7 +65,7 @@ const completedJob = {
   },
 };
 
-const renderModal = () => {
+const renderModal = (overrides: Partial<QuizGeneratedSection> = {}) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
@@ -75,13 +75,35 @@ const renderModal = () => {
         quizId={9}
         attached
         manualGeneration={false}
-        section={section}
+        section={{ ...section, ...overrides } as QuizGeneratedSection}
         nextSortKey={1}
         onClose={vi.fn()}
       />
     </QueryClientProvider>,
   );
 };
+
+// What the server's promptVariables endpoint reports: which tokens draw on the submission.
+const variables = [
+  {
+    token: '{submission_files}',
+    name: 'submission_files',
+    argument: null,
+    label: 'Submission files',
+    description: '',
+    kind: 'static',
+    requiresSubmission: true,
+  },
+  {
+    token: '{assignment_name}',
+    name: 'assignment_name',
+    argument: null,
+    label: 'Assignment name',
+    description: '',
+    kind: 'static',
+    requiresSubmission: false,
+  },
+];
 
 // The prompt editor (TemplateTextArea) re-measures its autoSize textarea and highlight
 // overlay on each render, which makes these form-heavy tests slow enough to blow the 5s
@@ -167,5 +189,72 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
 
     expect(await screen.findByText('Unknown variable {zap}.', undefined, WAIT)).toBeInTheDocument();
     expect(quizSuggestionJobsApi.retrieve).not.toHaveBeenCalled();
+  });
+});
+
+describe('GeneratedSectionModal — fallback prompt', { timeout: 15_000 }, () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(quizzesApi.promptVariablesList).mockResolvedValue(variables as any);
+    vi.mocked(quizzesApi.promptTemplatesList).mockResolvedValue([] as any);
+    vi.mocked(quizzesApi.backfillPreviewRetrieve).mockResolvedValue({
+      wouldGenerate: 0,
+      missing: 0,
+      needsSubmission: true,
+      missingWithoutSubmission: 0,
+      missingWithoutSubmissionStudents: [],
+      fallbackCovers: false,
+    } as any);
+  });
+
+  it('offers the fallback field only when the prompt draws on the submission', async () => {
+    renderModal();
+    expect(await screen.findByTestId('section-fallback-prompt', undefined, WAIT)).toBeInTheDocument();
+  });
+
+  it('hides the fallback field for a submission-free prompt', async () => {
+    renderModal({ systemPrompt: 'Ask about {assignment_name}.' });
+    // Wait for the variables query to settle, then confirm the field never appeared.
+    await waitFor(() => expect(quizzesApi.promptVariablesList).toHaveBeenCalled(), WAIT);
+    await waitFor(() => expect(screen.getByTestId('section-prompt')).toBeInTheDocument(), WAIT);
+    expect(screen.queryByTestId('section-fallback-prompt')).not.toBeInTheDocument();
+  });
+
+  it('saves the fallback prompt with the section', async () => {
+    vi.mocked(quizGeneratedSectionsApi.partialUpdate).mockResolvedValue({} as any);
+    renderModal({ fallbackPrompt: 'Ask about {assignment_name}.' });
+    await screen.findByTestId('section-fallback-prompt', undefined, WAIT);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(
+      () =>
+        expect(quizGeneratedSectionsApi.partialUpdate).toHaveBeenCalledWith({
+          id: 5,
+          patchedQuizGeneratedSection: expect.objectContaining({
+            systemPrompt: 'Ask about {submission_files}.',
+            fallbackPrompt: 'Ask about {assignment_name}.',
+          }),
+        }),
+      WAIT,
+    );
+  });
+
+  it('maps a 400 fallbackPrompt error into the fallback field', async () => {
+    vi.mocked(quizGeneratedSectionsApi.partialUpdate).mockRejectedValue(
+      new ResponseError(
+        new Response(JSON.stringify({ fallbackPrompt: ["The fallback prompt can't use {submission_files}."] }), {
+          status: 400,
+        }),
+      ),
+    );
+    renderModal({ fallbackPrompt: 'Ask about {submission_files}.' });
+    await screen.findByTestId('section-fallback-prompt', undefined, WAIT);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      await screen.findByText("The fallback prompt can't use {submission_files}.", undefined, WAIT),
+    ).toBeInTheDocument();
   });
 });

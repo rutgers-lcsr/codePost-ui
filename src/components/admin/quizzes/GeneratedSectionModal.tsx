@@ -22,7 +22,7 @@ import { quizGeneratedSectionsApi, quizzesApi } from '../../../api-client/client
 import { QuizGeneratedSection, QuizSectionTemplate, QuizSuggestionJobStatusEnum, SeedEnum } from '../../../api-client';
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
-import TemplateTextArea from '../../core/TemplateTextArea';
+import TemplateTextArea, { templateNeedsSubmission } from '../../core/TemplateTextArea';
 import PromptTemplatePicker from '../../core/PromptTemplatePicker';
 import { pollSuggestionJob, useBackfillPreview, usePromptTemplates, usePromptVariables } from './queries';
 import { TYPE_META } from '../../core/questionMeta';
@@ -53,6 +53,7 @@ interface IProps {
 interface ISectionForm {
   name?: string;
   systemPrompt: string;
+  fallbackPrompt?: string;
   numQuestions: number;
   pointsPerQuestion: number;
   questionTypes?: string[];
@@ -92,6 +93,13 @@ const GeneratedSectionModal: React.FC<IProps> = ({
   const [demoFiles, setDemoFiles] = React.useState<{ name: string; content: string }[]>([]);
   const [preview, setPreview] = React.useState<PreviewResult | null>(null);
   const pointsPerQuestion = Form.useWatch('pointsPerQuestion', form);
+  // A prompt that draws on the submission waits for one, so students who never submit get
+  // nothing — unless the section carries a fallback prompt (assignment/course variables
+  // only). The field only shows when it would ever be used.
+  const systemPromptValue = Form.useWatch('systemPrompt', form);
+  const fallbackValue = Form.useWatch('fallbackPrompt', form);
+  const needsSubmission = attached && templateNeedsSubmission(systemPromptValue ?? '', variables);
+  const fallbackTemplate = templates.find((t) => t.forFallback) ?? null;
 
   const applyTemplate = (template: QuizSectionTemplate, rows: number) => {
     form.setFieldsValue({
@@ -102,9 +110,10 @@ const GeneratedSectionModal: React.FC<IProps> = ({
 
   // Saving a NEW section backfills students who already submitted — make that visible
   // (and its AI cost) before the instructor commits. In manual mode nothing is queued,
-  // so skip the preview fetch and the promise entirely.
-  const { data: backfillPreview } = useBackfillPreview(quizId, open && !section && !manualGeneration);
+  // so the promise is skipped; the preview is still fetched for the no-submission count.
+  const { data: backfillPreview } = useBackfillPreview(quizId, open && !section);
   const backfillCount = !section && !manualGeneration ? (backfillPreview?.wouldGenerate ?? 0) : 0;
+  const withoutSubmissionCount = !section && needsSubmission ? (backfillPreview?.missingWithoutSubmission ?? 0) : 0;
 
   React.useEffect(() => {
     if (!open) return;
@@ -117,13 +126,14 @@ const GeneratedSectionModal: React.FC<IProps> = ({
       form.setFieldsValue({
         name: section.name,
         systemPrompt: section.systemPrompt,
+        fallbackPrompt: section.fallbackPrompt ?? '',
         numQuestions: section.numQuestions ?? 3,
         pointsPerQuestion: section.pointsPerQuestion ?? 1,
         questionTypes: (section.questionTypes as string[] | null) ?? [],
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
+      form.setFieldsValue({ fallbackPrompt: '', numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
       setPresetKey(null);
       setSampleRows(DEFAULT_SAMPLE_ROWS);
     }
@@ -143,9 +153,12 @@ const GeneratedSectionModal: React.FC<IProps> = ({
   // as a toast. Both save and test run the identical checks.
   const showSectionError = async (err: unknown, fallback: string) => {
     const promptError = await apiErrorMessageAsync(err, 'systemPrompt');
+    const fallbackPromptError = await apiErrorMessageAsync(err, 'fallbackPrompt');
     const generalError = await apiErrorMessageAsync(err);
     if (promptError && promptError !== generalError) {
       form.setFields([{ name: 'systemPrompt', errors: [promptError] }]);
+    } else if (fallbackPromptError && fallbackPromptError !== generalError) {
+      form.setFields([{ name: 'fallbackPrompt', errors: [fallbackPromptError] }]);
     } else {
       message.error(generalError ?? fallback);
     }
@@ -158,6 +171,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({
       const payload = {
         name: values.name,
         systemPrompt: values.systemPrompt,
+        // Only meaningful alongside a submission-seeded prompt; cleared otherwise.
+        fallbackPrompt: needsSubmission ? (values.fallbackPrompt ?? '').trim() : '',
         numQuestions: values.numQuestions,
         pointsPerQuestion: values.pointsPerQuestion,
         questionTypes: values.questionTypes ?? [],
@@ -243,8 +258,9 @@ const GeneratedSectionModal: React.FC<IProps> = ({
             <Text type="secondary" style={{ fontSize: 13 }}>
               Each student gets their own questions generated from your prompt. Reference the student's submission with{' '}
               {'{'}variables{'}'} and generation waits for each student to submit; a prompt without submission variables
-              generates for everyone right away. You review and approve each student's questions before their quiz opens
-              (unless auto-publish is on).
+              generates for everyone right away. Students who never submit are skipped unless the section has a fallback
+              prompt. You review and approve each student's questions before their quiz opens (unless auto-publish is
+              on).
             </Text>
           ) : (
             <Text type="secondary" style={{ fontSize: 13 }}>
@@ -284,6 +300,16 @@ const GeneratedSectionModal: React.FC<IProps> = ({
               data-testid="backfill-notice"
             />
           )}
+          {withoutSubmissionCount > 0 && !(fallbackValue ?? '').trim() && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginTop: 12 }}
+              title={`${withoutSubmissionCount} enrolled student${withoutSubmissionCount === 1 ? ' has' : 's have'} no
+            submission and will be skipped. Add a fallback prompt below to include them when you run Generate missing.`}
+              data-testid="no-submission-notice"
+            />
+          )}
           {section?.datasetTruncationWarning && (
             <Alert
               type="warning"
@@ -302,7 +328,7 @@ const GeneratedSectionModal: React.FC<IProps> = ({
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                   <div style={{ minWidth: 280, flex: '1 1 280px' }}>
                     <PromptTemplatePicker
-                      templates={templates.filter((t) => attached || !t.attachedOnly)}
+                      templates={templates.filter((t) => (attached || !t.attachedOnly) && !t.forFallback)}
                       value={presetKey}
                       onSelect={(t) => {
                         setPresetKey(t.key);
@@ -356,6 +382,47 @@ const GeneratedSectionModal: React.FC<IProps> = ({
                 }
               />
             </Form.Item>
+            {needsSubmission && (
+              <Form.Item
+                name="fallbackPrompt"
+                label={
+                  <span>
+                    Fallback prompt for students without a submission&nbsp;
+                    <Text type="secondary" style={{ fontWeight: 'normal' }}>
+                      — optional
+                    </Text>
+                  </span>
+                }
+                extra={
+                  <span>
+                    Used instead of the prompt above for students who have no submission when you run Generate
+                    missing, a scheduled generation, or Generate for a student. It can&apos;t use submission variables.
+                    Leave it empty to skip those students.
+                    {fallbackTemplate && !(fallbackValue ?? '').trim() && (
+                      <>
+                        {' '}
+                        <Button
+                          type="link"
+                          size="small"
+                          style={{ padding: 0, height: 'auto' }}
+                          onClick={() => form.setFieldsValue({ fallbackPrompt: fallbackTemplate.text })}
+                          data-testid="section-fallback-starter"
+                        >
+                          Insert starter text
+                        </Button>
+                      </>
+                    )}
+                  </span>
+                }
+              >
+                <TemplateTextArea
+                  variables={variables.filter((v) => !v.requiresSubmission)}
+                  label="Fallback prompt"
+                  testId="section-fallback-prompt"
+                  placeholder="e.g., Ask questions about what the assignment asks for, based on {assignment_description} and {assignment_files}."
+                />
+              </Form.Item>
+            )}
             <Form.Item
               name="numQuestions"
               label="Questions per student"
