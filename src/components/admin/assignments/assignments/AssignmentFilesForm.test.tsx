@@ -38,6 +38,10 @@ const openViewer = (file: AssignmentFileType) => {
 // Each viewer test mounts the full antd modal: 1-2s locally, over the default 5s cap on a
 // loaded CI runner.
 const slow = { timeout: 15000 };
+// waitFor keeps its own 1s default regardless of the test timeout above — the async
+// FileReader round-trips (one per dropped file, chained) need the same headroom on a
+// starved runner (seen failing inside the Docker deploy job while the plain test job passed).
+const WAIT = { timeout: 10_000 };
 
 describe('AssignmentFilesForm file viewer', () => {
   it('opens images in Preview mode as a rendered image, not the data URI', slow, () => {
@@ -80,7 +84,7 @@ describe('AssignmentFilesForm uploads', () => {
       type: 'image/jpeg',
     });
     const onChange = upload(jpeg);
-    await waitFor(() => expect(onChange).toHaveBeenCalled());
+    await waitFor(() => expect(onChange).toHaveBeenCalled(), WAIT);
     const [added] = onChange.mock.calls[0][0] as AssignmentFileType[];
     expect(added.name).toBe('covariance.jpg');
     expect(added.data).toMatch(/^data:image\/jpeg;base64,/);
@@ -89,7 +93,7 @@ describe('AssignmentFilesForm uploads', () => {
 
   it('still stores source files as plain text', async () => {
     const onChange = upload(new File(['print(1)\n'], 'main.py', { type: 'text/x-python' }));
-    await waitFor(() => expect(onChange).toHaveBeenCalled());
+    await waitFor(() => expect(onChange).toHaveBeenCalled(), WAIT);
     const [added] = onChange.mock.calls[0][0] as AssignmentFileType[];
     expect(added.data).toBe('print(1)\n');
   });
@@ -111,7 +115,7 @@ describe('AssignmentFilesForm drop zone', () => {
       new File(['b'], 'b.py', { type: 'text/x-python' }),
       new File(['c'], 'c.py', { type: 'text/x-python' }),
     ]);
-    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(3), WAIT);
     const last = onChange.mock.calls[2][0] as AssignmentFileType[];
     expect(last.map((f) => f.name)).toEqual(['a.py', 'b.py', 'c.py']);
   });
@@ -124,7 +128,7 @@ describe('AssignmentFilesForm drop zone', () => {
     zip.file('__MACOSX/._junk', 'x');
     const blob = await zip.generateAsync({ type: 'blob' });
     const onChange = dropAll([new File([blob], 'project.zip', { type: 'application/zip' })]);
-    await waitFor(() => expect(onChange).toHaveBeenCalled());
+    await waitFor(() => expect(onChange).toHaveBeenCalled(), WAIT);
     const added = onChange.mock.calls[0][0] as AssignmentFileType[];
     expect(added.map((f) => `${f.path ? f.path + '/' : ''}${f.name}`).sort()).toEqual(['README.md', 'src/main.py']);
     expect(added.find((f) => f.name === 'main.py')?.data).toBe('print(1)');
