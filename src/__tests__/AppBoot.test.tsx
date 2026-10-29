@@ -113,12 +113,15 @@ describe('App boot with a stored token while the API is unavailable', () => {
     await tick(0);
     // Both mount effects call tryToLogin; what matters is that nothing retries afterwards.
     const callsAtMount = vi.mocked(registrationApi.currentUserRetrieve).mock.calls.length;
-    await tick(60_000);
+    // The outage backoff caps at 10s, so 15s of fake time is enough to catch a stray retry.
+    // (60s used to time out here on a starved CI runner — the deploy and test workflows run
+    // this suite concurrently.)
+    await tick(15_000);
 
     expect(vi.mocked(registrationApi.currentUserRetrieve).mock.calls.length).toBe(callsAtMount);
     expect(screen.queryByText('Connecting to codePost…')).toBeNull();
     expect(localStorage.getItem('token')).toBeNull();
-  });
+  }, 15_000);
 });
 
 describe('App login failures', () => {
