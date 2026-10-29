@@ -334,6 +334,20 @@ export const jupyterToMarkdown = (content: unknown): string | null => {
       cellMarkdown += '\n\n</div>\n\n';
     }
 
+    if (cell.cell_type === 'raw') {
+      // Raw cells are unrendered text (students do type answers in them) — show them
+      // verbatim in a plain fenced block so they're visible and keep their cell index.
+      cellMarkdown += `<div data-cell-index="${cellIndex}" data-cell-type="${cell.cell_type}"${idAttr}>\n\n`;
+      cellMarkdown += '```text\n';
+      if (Array.isArray(cell.source)) {
+        cellMarkdown += cell.source.join('');
+      } else {
+        cellMarkdown += cell.source;
+      }
+      cellMarkdown += '\n```';
+      cellMarkdown += '\n\n</div>\n\n';
+    }
+
     // Cache the result
     cellMarkdownCache.set(cell, { index: cellIndex, markdown: cellMarkdown, images: cellImages });
 

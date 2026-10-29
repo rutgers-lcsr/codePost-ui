@@ -20,6 +20,8 @@ interface IProps {
 const ChoicesEditor: React.FC<IProps> = ({ questionType, value, onChange }) => {
   const single = isSingleCorrect(questionType);
   const accepted = isAcceptedAnswers(questionType);
+  // A sentence-length key means the author wanted an explanation, which exact match can't grade.
+  const longAcceptedAnswer = accepted && value.some((c) => c.text.trim().split(/\s+/).length > 6);
   const fixed = questionType === QuestionTypeEnum.TrueFalse;
   const minRows = accepted ? 1 : 2;
 
@@ -87,6 +89,18 @@ const ChoicesEditor: React.FC<IProps> = ({ questionType, value, onChange }) => {
       {single && (
         <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
           Select the radio next to the correct choice.
+        </Text>
+      )}
+      {questionType === QuestionTypeEnum.ShortAnswer && (
+        <Text
+          type={longAcceptedAnswer ? 'warning' : 'secondary'}
+          style={{ fontSize: 12, display: 'block', marginTop: 4 }}
+          data-testid="short-answer-exact-match-hint"
+        >
+          {longAcceptedAnswer
+            ? 'An accepted answer this long will almost never be matched: short answers are graded by exact ' +
+              'text match (ignoring case). For an explanation in the student’s own words, use an Essay question.'
+            : 'Graded by exact text match (ignoring case) — list every accepted spelling.'}
         </Text>
       )}
     </div>

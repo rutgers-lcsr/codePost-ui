@@ -31,6 +31,8 @@ import type {
   QuizResultRow,
   QuizSectionTemplate,
   QuizSuggestionJob,
+  RequeueQuizQuestionRequest,
+  RequeueQuizQuestionResponse,
   ResetQuizAttemptsRequest,
   ResetQuizAttemptsResponse,
   StaffQuizAttempt,
@@ -117,6 +119,11 @@ export interface PublishAllGeneratedCreateRequest {
 
 export interface QuestionsListRequest {
   id: number;
+}
+
+export interface RequeueQuestionCreateRequest {
+  id: number;
+  requeueQuizQuestionRequest: RequeueQuizQuestionRequest;
 }
 
 export interface ResetAttemptsCreateRequest {
@@ -1065,6 +1072,76 @@ export class QuizzesApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<QuizQuestion>> {
     const response = await this.questionsListRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Send every submitted response to one question back to the manual grading queue (course admins only). The recovery when an auto-graded answer key was wrong for the question — e.g. an exact-match short answer that asked for an explanation, so every paraphrase scored 0. Auto-graded points are removed and graders award them by hand; responses already awaiting a grade are untouched. Returns the number of responses requeued.
+   */
+  async requeueQuestionCreateRaw(
+    requestParameters: RequeueQuestionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<RequeueQuizQuestionResponse>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling requeueQuestionCreate().',
+      );
+    }
+
+    if (requestParameters['requeueQuizQuestionRequest'] == null) {
+      throw new runtime.RequiredError(
+        'requeueQuizQuestionRequest',
+        'Required parameter "requeueQuizQuestionRequest" was null or undefined when calling requeueQuestionCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/quizzes/{id}/requeueQuestion/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['requeueQuizQuestionRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Send every submitted response to one question back to the manual grading queue (course admins only). The recovery when an auto-graded answer key was wrong for the question — e.g. an exact-match short answer that asked for an explanation, so every paraphrase scored 0. Auto-graded points are removed and graders award them by hand; responses already awaiting a grade are untouched. Returns the number of responses requeued.
+   */
+  async requeueQuestionCreate(
+    requestParameters: RequeueQuestionCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<RequeueQuizQuestionResponse> {
+    const response = await this.requeueQuestionCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

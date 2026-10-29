@@ -13054,6 +13054,32 @@ export interface ReopenQuizResponseRequest {
 /**
  *
  * @export
+ * @interface RequeueQuizQuestionRequest
+ */
+export interface RequeueQuizQuestionRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof RequeueQuizQuestionRequest
+   */
+  question: number;
+}
+/**
+ *
+ * @export
+ * @interface RequeueQuizQuestionResponse
+ */
+export interface RequeueQuizQuestionResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof RequeueQuizQuestionResponse
+   */
+  requeued: number;
+}
+/**
+ *
+ * @export
  * @interface ResetPasswordRequest
  */
 export interface ResetPasswordRequest {
