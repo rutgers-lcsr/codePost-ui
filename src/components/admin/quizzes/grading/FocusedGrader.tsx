@@ -131,9 +131,17 @@ const FocusedGrader: React.FC<IProps> = ({
       LOCAL_SETTINGS.quizGradeDock.setter(next);
     });
 
-  const manual = isManuallyGraded(current.question.questionType);
-  const renderGradePanel = (fill: boolean) =>
-    manual ? (
+  // Auto-graded responses get the same editor: changing the points overrides the key's
+  // verdict (an exact-match short answer can reject a correct paraphrase), and Reopen
+  // hands the answer to the manual queue. Untouched, Next just moves on.
+  const autoGraded = !isManuallyGraded(current.question.questionType) && !current.needsManualGrading;
+  const renderGradePanel = (fill: boolean) => (
+    <Flex vertical gap={8} style={fill ? { height: '100%' } : undefined}>
+      {autoGraded && (
+        <Tag style={{ alignSelf: 'flex-start' }} data-testid="grade-auto-note">
+          Auto-graded — change the points to override
+        </Tag>
+      )}
       <GradeControls
         ref={gradeRef}
         attemptId={attempt.id}
@@ -144,14 +152,8 @@ const FocusedGrader: React.FC<IProps> = ({
         advanceLabel={hasNext ? 'Next' : 'Finish'}
         fill={fill}
       />
-    ) : (
-      <Flex align="center" justify="space-between" wrap gap={8}>
-        <Tag>Auto-graded — nothing to enter</Tag>
-        <CPButton cpType="primary" onClick={onNext} data-testid="grade-save">
-          {hasNext ? 'Next' : 'Finish'}
-        </CPButton>
-      </Flex>
-    );
+    </Flex>
+  );
 
   const questionColumn = (
     <div style={COLUMN}>
@@ -319,43 +321,30 @@ const FocusedGrader: React.FC<IProps> = ({
       ) : (
         <>
           <section style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 24px' }}>{questionColumn}</section>
-          {manual ? (
-            // Drag the top edge to resize; the extra room goes to the feedback box.
-            <Resizable
-              size={{ width: '100%', height: bottomHeight }}
-              minHeight={150}
-              maxHeight={Math.max(180, Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.6))}
-              enable={{ top: true }}
-              onResizeStop={(_e, _dir, _el, delta) => {
-                const next = Math.round(bottomHeight + delta.height);
-                setBottomHeight(next);
-                LOCAL_SETTINGS.quizGradeBottomHeight.setter(next);
-              }}
-              style={{ flex: 'none' }}
-            >
-              <footer
-                style={{
-                  height: '100%',
-                  padding: '12px 16px',
-                  background: token.colorBgElevated,
-                  borderTop: `1px solid ${token.colorSplit}`,
-                }}
-              >
-                <div style={{ ...COLUMN, height: '100%' }}>{renderGradePanel(true)}</div>
-              </footer>
-            </Resizable>
-          ) : (
+          {/* Drag the top edge to resize; the extra room goes to the feedback box. */}
+          <Resizable
+            size={{ width: '100%', height: bottomHeight }}
+            minHeight={150}
+            maxHeight={Math.max(180, Math.round((typeof window !== 'undefined' ? window.innerHeight : 800) * 0.6))}
+            enable={{ top: true }}
+            onResizeStop={(_e, _dir, _el, delta) => {
+              const next = Math.round(bottomHeight + delta.height);
+              setBottomHeight(next);
+              LOCAL_SETTINGS.quizGradeBottomHeight.setter(next);
+            }}
+            style={{ flex: 'none' }}
+          >
             <footer
               style={{
-                flex: 'none',
+                height: '100%',
                 padding: '12px 16px',
                 background: token.colorBgElevated,
                 borderTop: `1px solid ${token.colorSplit}`,
               }}
             >
-              <div style={COLUMN}>{renderGradePanel(false)}</div>
+              <div style={{ ...COLUMN, height: '100%' }}>{renderGradePanel(true)}</div>
             </footer>
-          )}
+          </Resizable>
         </>
       )}
     </div>

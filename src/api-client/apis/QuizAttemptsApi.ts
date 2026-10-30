@@ -268,7 +268,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Manually grade one essay/code response (quiz graders and course admins only — gated by QuizAttemptPermissions). Recomputes the attempt\'s score and pass state.
+   * Manually grade one response (quiz graders and course admins only — gated by QuizAttemptPermissions): the essay/code grading path, and the override for an auto-graded answer. Recomputes the attempt\'s score and pass state.
    */
   async gradeResponseCreateRaw(
     requestParameters: GradeResponseCreateRequest,
@@ -327,7 +327,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Manually grade one essay/code response (quiz graders and course admins only — gated by QuizAttemptPermissions). Recomputes the attempt\'s score and pass state.
+   * Manually grade one response (quiz graders and course admins only — gated by QuizAttemptPermissions): the essay/code grading path, and the override for an auto-graded answer. Recomputes the attempt\'s score and pass state.
    */
   async gradeResponseCreate(
     requestParameters: GradeResponseCreateRequest,
@@ -401,7 +401,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Send a manually graded essay/code response back to the grading queue (undo the grade). The feedback text is kept as a draft; the attempt\'s totals are refreshed.
+   * Send a graded response back to the manual grading queue (undo the grade). For an auto-graded response this is how a grader takes over an individual answer. The feedback text is kept as a draft; the attempt\'s totals are refreshed.
    */
   async reopenResponseCreateRaw(
     requestParameters: ReopenResponseCreateRequest,
@@ -460,7 +460,7 @@ export class QuizAttemptsApi extends runtime.BaseAPI {
   }
 
   /**
-   * Send a manually graded essay/code response back to the grading queue (undo the grade). The feedback text is kept as a draft; the attempt\'s totals are refreshed.
+   * Send a graded response back to the manual grading queue (undo the grade). For an auto-graded response this is how a grader takes over an individual answer. The feedback text is kept as a draft; the attempt\'s totals are refreshed.
    */
   async reopenResponseCreate(
     requestParameters: ReopenResponseCreateRequest,

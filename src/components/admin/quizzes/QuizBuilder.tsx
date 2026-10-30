@@ -25,13 +25,19 @@ import {
   DownOutlined,
   EditOutlined,
   EyeOutlined,
+  FormOutlined,
   PlusOutlined,
   RetweetOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
-import { quizQuestionsApi, quizQuestionGroupsApi, quizGeneratedSectionsApi } from '../../../api-client/clients';
+import {
+  quizzesApi,
+  quizQuestionsApi,
+  quizQuestionGroupsApi,
+  quizGeneratedSectionsApi,
+} from '../../../api-client/clients';
 import { Course, Quiz, QuizGeneratedSection, QuizQuestion, QuizQuestionGroup } from '../../../api-client';
 import { quizKeys } from '../../../lib/queryKeys';
 import { useAssignmentsQuery } from '../hooks/useAssignmentsQuery';
@@ -41,6 +47,7 @@ import {
 } from './queries';
 import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 import { typeMeta } from '../../core/questionMeta';
+import { isManuallyGraded } from './choiceUtils';
 import AddQuestionsModal from './AddQuestionsModal';
 import GroupEditorModal from './GroupEditorModal';
 import GeneratedSectionModal from './GeneratedSectionModal';
@@ -192,6 +199,33 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
           invalidateMembership();
         } catch {
           message.error('Failed to remove question.');
+        }
+      },
+    });
+  };
+
+  // Recovery for a mis-keyed auto-graded question (an exact-match short answer that asked
+  // for an explanation): every submitted response goes to the manual grading queue.
+  const handleRequeueQuestion = (qq: QuizQuestion) => {
+    Modal.confirm({
+      title: 'Send this question to manual grading?',
+      content:
+        'Every submitted answer to it loses its auto-graded points and waits for a grader in the grading queue. ' +
+        'Students see their quiz as awaiting grades until then. This cannot be undone.',
+      okText: 'Send to manual grading',
+      onOk: async () => {
+        try {
+          const { requeued } = await quizzesApi.requeueQuestionCreate({
+            id: quiz.id!,
+            requeueQuizQuestionRequest: { question: qq.question },
+          });
+          message.success(
+            requeued === 0 ? 'No auto-graded answers to send.' : `${requeued} answer${requeued === 1 ? '' : 's'} sent to manual grading.`,
+          );
+          queryClient.invalidateQueries({ queryKey: quizKeys.attempts(quiz.id!) });
+          queryClient.invalidateQueries({ queryKey: quizKeys.results(quiz.id!) });
+        } catch {
+          message.error('Failed to send the question to manual grading.');
         }
       },
     });
@@ -440,6 +474,15 @@ const QuizBuilder: React.FC<IProps> = ({ course, quiz }) => {
               disabled={row.position === orderedQuestions.length - 1}
               onClick={() => handleMove(row.position, 1)}
             />
+            {!isManuallyGraded(questionsById.get(row.qq.question)?.questionType) && (
+              <Button
+                size="small"
+                aria-label="Send answers to manual grading"
+                title="Send answers to manual grading"
+                icon={<FormOutlined />}
+                onClick={() => handleRequeueQuestion(row.qq)}
+              />
+            )}
             <Button
               size="small"
               danger

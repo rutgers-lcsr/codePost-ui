@@ -358,6 +358,8 @@ docs/RegisterAndSetPasswordRequest.md
 docs/RegisterAndSetPasswordResponse.md
 docs/RegistrationApi.md
 docs/ReopenQuizResponseRequest.md
+docs/RequeueQuizQuestionRequest.md
+docs/RequeueQuizQuestionResponse.md
 docs/ResetPasswordRequest.md
 docs/ResetPasswordResponse.md
 docs/ResetQuizAttemptsRequest.md

@@ -215,6 +215,27 @@ describe('FocusedGrader', () => {
     expect(screen.getByTestId('grade-save')).toBeEnabled();
   });
 
+  it('lets a grader override an auto-graded response, and leaves it alone on a clean Next', async () => {
+    const user = userEvent.setup();
+    const props = makeProps();
+    renderWithClient(<FocusedGrader {...props} focusResponseId={102} />);
+    // The auto-graded MC gets the same editor, flagged as an override, prefilled with the key's points.
+    expect(screen.getByTestId('grade-auto-note')).toHaveTextContent(/auto-graded/i);
+    expect(screen.getByLabelText('Points awarded')).toHaveValue('2.0');
+
+    await user.click(screen.getByTestId('grade-save'));
+    expect(gradeResponseCreate).not.toHaveBeenCalled();
+    expect(props.onNext).toHaveBeenCalledTimes(1);
+
+    await user.clear(screen.getByLabelText('Points awarded'));
+    await user.type(screen.getByLabelText('Points awarded'), '1');
+    await user.click(screen.getByTestId('grade-save'));
+    expect(gradeResponseCreate).toHaveBeenCalledWith({
+      id: 11,
+      gradeQuizResponseRequest: { response: 102, pointsEarned: 1, graderFeedback: '' },
+    });
+  });
+
   it('saves a dirty grade before navigating via a question chip', async () => {
     const user = userEvent.setup();
     const props = makeProps();

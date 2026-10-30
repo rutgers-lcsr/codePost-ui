@@ -22,7 +22,7 @@ import { quizGeneratedSectionsApi, quizzesApi } from '../../../api-client/client
 import { QuizGeneratedSection, QuizSectionTemplate, QuizSuggestionJobStatusEnum, SeedEnum } from '../../../api-client';
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 import { quizKeys } from '../../../lib/queryKeys';
-import TemplateTextArea from '../../core/TemplateTextArea';
+import TemplateTextArea, { templateNeedsSubmission } from '../../core/TemplateTextArea';
 import PromptTemplatePicker from '../../core/PromptTemplatePicker';
 import { pollSuggestionJob, useBackfillPreview, usePromptTemplates, usePromptVariables } from './queries';
 import { TYPE_META } from '../../core/questionMeta';
@@ -53,6 +53,7 @@ interface IProps {
 interface ISectionForm {
   name?: string;
   systemPrompt: string;
+  fallbackPrompt?: string;
   numQuestions: number;
   pointsPerQuestion: number;
   questionTypes?: string[];
@@ -92,6 +93,13 @@ const GeneratedSectionModal: React.FC<IProps> = ({
   const [demoFiles, setDemoFiles] = React.useState<{ name: string; content: string }[]>([]);
   const [preview, setPreview] = React.useState<PreviewResult | null>(null);
   const pointsPerQuestion = Form.useWatch('pointsPerQuestion', form);
+  // A prompt that draws on the submission waits for one, so students who never submit get
+  // nothing — unless the section carries a fallback prompt (assignment/course variables
+  // only). The field only shows when it would ever be used.
+  const systemPromptValue = Form.useWatch('systemPrompt', form);
+  const fallbackValue = Form.useWatch('fallbackPrompt', form);
+  const needsSubmission = attached && templateNeedsSubmission(systemPromptValue ?? '', variables);
+  const fallbackTemplate = templates.find((t) => t.forFallback) ?? null;
 
   const applyTemplate = (template: QuizSectionTemplate, rows: number) => {
     form.setFieldsValue({
@@ -102,9 +110,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({
 
   // Saving a NEW section backfills students who already submitted — make that visible
   // (and its AI cost) before the instructor commits. In manual mode nothing is queued,
-  // so skip the preview fetch and the promise entirely.
-  const { data: backfillPreview } = useBackfillPreview(quizId, open && !section && !manualGeneration);
+  // so the promise is skipped; the preview is still fetched for the no-submission count.
+  const { data: backfillPreview } = useBackfillPreview(quizId, open && !section);
   const backfillCount = !section && !manualGeneration ? (backfillPreview?.wouldGenerate ?? 0) : 0;
+  const withoutSubmissionCount = !section && needsSubmission ? (backfillPreview?.missingWithoutSubmission ?? 0) : 0;
+  const showNoSubmissionNotice = withoutSubmissionCount > 0 && !(fallbackValue ?? '').trim();
 
   React.useEffect(() => {
     if (!open) return;
@@ -117,13 +127,14 @@ const GeneratedSectionModal: React.FC<IProps> = ({
       form.setFieldsValue({
         name: section.name,
         systemPrompt: section.systemPrompt,
+        fallbackPrompt: section.fallbackPrompt ?? '',
         numQuestions: section.numQuestions ?? 3,
         pointsPerQuestion: section.pointsPerQuestion ?? 1,
         questionTypes: (section.questionTypes as string[] | null) ?? [],
       });
     } else {
       form.resetFields();
-      form.setFieldsValue({ numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
+      form.setFieldsValue({ fallbackPrompt: '', numQuestions: 3, pointsPerQuestion: 1, questionTypes: [] });
       setPresetKey(null);
       setSampleRows(DEFAULT_SAMPLE_ROWS);
     }
@@ -143,9 +154,12 @@ const GeneratedSectionModal: React.FC<IProps> = ({
   // as a toast. Both save and test run the identical checks.
   const showSectionError = async (err: unknown, fallback: string) => {
     const promptError = await apiErrorMessageAsync(err, 'systemPrompt');
+    const fallbackPromptError = await apiErrorMessageAsync(err, 'fallbackPrompt');
     const generalError = await apiErrorMessageAsync(err);
     if (promptError && promptError !== generalError) {
       form.setFields([{ name: 'systemPrompt', errors: [promptError] }]);
+    } else if (fallbackPromptError && fallbackPromptError !== generalError) {
+      form.setFields([{ name: 'fallbackPrompt', errors: [fallbackPromptError] }]);
     } else {
       message.error(generalError ?? fallback);
     }
@@ -158,6 +172,8 @@ const GeneratedSectionModal: React.FC<IProps> = ({
       const payload = {
         name: values.name,
         systemPrompt: values.systemPrompt,
+        // Only meaningful alongside a submission-seeded prompt; cleared otherwise.
+        fallbackPrompt: needsSubmission ? (values.fallbackPrompt ?? '').trim() : '',
         numQuestions: values.numQuestions,
         pointsPerQuestion: values.pointsPerQuestion,
         questionTypes: values.questionTypes ?? [],
@@ -239,22 +255,11 @@ const GeneratedSectionModal: React.FC<IProps> = ({
     >
       <Row gutter={24}>
         <Col span={previewOpen ? 10 : 24}>
-          {attached ? (
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              Each student gets their own questions generated from your prompt. Reference the student's submission with{' '}
-              {'{'}variables{'}'} and generation waits for each student to submit; a prompt without submission variables
-              generates for everyone right away. You review and approve each student's questions before their quiz opens
-              (unless auto-publish is on).
-            </Text>
-          ) : (
-            <Text type="secondary" style={{ fontSize: 13 }}>
-              Each student gets their own questions generated from your prompt. This quiz isn't attached to an
-              assignment, so the prompt can't reference assignment or submission
-              {' {'}variables{'}'} — but it can use course files ({'{'}course_file:name{'}'}). Questions generate for
-              every enrolled student as soon as you save. You review and approve each student's questions before their
-              quiz opens (unless auto-publish is on).
-            </Text>
-          )}
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            {attached
+              ? 'Each student gets their own questions from your prompt — generated when they submit if it references their submission, otherwise right away. You approve each set before the quiz opens (unless auto-publish is on).'
+              : 'Each student gets their own questions from your prompt, generated for everyone as soon as you save (course files via {course_file:name}; no assignment or submission variables). You approve each set before the quiz opens (unless auto-publish is on).'}
+          </Text>
           {!section && manualGeneration && (
             <Alert
               type="info"
@@ -274,14 +279,28 @@ const GeneratedSectionModal: React.FC<IProps> = ({
               data-testid="backfill-notice"
             />
           )}
-          {backfillCount > 0 && attached && (
+          {attached && (backfillCount > 0 || showNoSubmissionNotice) && (
+            // One compact notice for both roster facts — the modal is long enough already.
             <Alert
               type="info"
               showIcon
               style={{ marginTop: 12 }}
-              title={`${backfillCount} student${backfillCount === 1 ? ' has' : 's have'} already submitted — saving this
-            section queues question generation for them right away (one AI call per student group).`}
-              data-testid="backfill-notice"
+              title={
+                <>
+                  {backfillCount > 0 && (
+                    <div data-testid="backfill-notice">
+                      {backfillCount} student{backfillCount === 1 ? ' has' : 's have'} already submitted — saving queues
+                      their generation now (one AI call per student group).
+                    </div>
+                  )}
+                  {showNoSubmissionNotice && (
+                    <div data-testid="no-submission-notice">
+                      {withoutSubmissionCount} enrolled student{withoutSubmissionCount === 1 ? ' has' : 's have'} no
+                      submission — add a fallback prompt below, or they are skipped.
+                    </div>
+                  )}
+                </>
+              }
             />
           )}
           {section?.datasetTruncationWarning && (
@@ -294,43 +313,49 @@ const GeneratedSectionModal: React.FC<IProps> = ({
             />
           )}
           <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-            <Form.Item name="name" label="Label (optional)" extra="Shown to students on each generated question.">
-              <Input placeholder="e.g., About your solution" maxLength={128} />
-            </Form.Item>
-            {!section && (
-              <Form.Item label="Start from a template (optional)">
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                  <div style={{ minWidth: 280, flex: '1 1 280px' }}>
-                    <PromptTemplatePicker
-                      templates={templates.filter((t) => attached || !t.attachedOnly)}
-                      value={presetKey}
-                      onSelect={(t) => {
-                        setPresetKey(t.key);
-                        applyTemplate(t, sampleRows);
-                      }}
-                      onClear={() => setPresetKey(null)}
-                      testId="section-prompt-preset"
-                    />
-                  </div>
-                  {showSampleRows && (
-                    <InputNumber
-                      min={3}
-                      max={10}
-                      step={1}
-                      value={sampleRows}
-                      aria-label="Sample size (rows/values)"
-                      addonBefore="Sample size"
-                      onChange={(v) => {
-                        const rows = v ?? DEFAULT_SAMPLE_ROWS;
-                        setSampleRows(rows);
-                        if (selectedTemplate) applyTemplate(selectedTemplate, rows);
-                      }}
-                      data-testid="section-prompt-sample-rows"
-                    />
-                  )}
-                </div>
-              </Form.Item>
-            )}
+            <Row gutter={12}>
+              <Col xs={24} sm={section ? 24 : 10}>
+                <Form.Item name="name" label="Label (optional)">
+                  <Input placeholder="Shown to students, e.g. About your solution" maxLength={128} />
+                </Form.Item>
+              </Col>
+              {!section && (
+                <Col xs={24} sm={14}>
+                  <Form.Item label="Start from a template (optional)">
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                      <div style={{ minWidth: 200, flex: '1 1 200px' }}>
+                        <PromptTemplatePicker
+                          templates={templates.filter((t) => (attached || !t.attachedOnly) && !t.forFallback)}
+                          value={presetKey}
+                          onSelect={(t) => {
+                            setPresetKey(t.key);
+                            applyTemplate(t, sampleRows);
+                          }}
+                          onClear={() => setPresetKey(null)}
+                          testId="section-prompt-preset"
+                        />
+                      </div>
+                      {showSampleRows && (
+                        <InputNumber
+                          min={3}
+                          max={10}
+                          step={1}
+                          value={sampleRows}
+                          aria-label="Sample size (rows/values)"
+                          addonBefore="Sample size"
+                          onChange={(v) => {
+                            const rows = v ?? DEFAULT_SAMPLE_ROWS;
+                            setSampleRows(rows);
+                            if (selectedTemplate) applyTemplate(selectedTemplate, rows);
+                          }}
+                          data-testid="section-prompt-sample-rows"
+                        />
+                      )}
+                    </div>
+                  </Form.Item>
+                </Col>
+              )}
+            </Row>
             <Form.Item
               name="systemPrompt"
               label={
@@ -356,28 +381,77 @@ const GeneratedSectionModal: React.FC<IProps> = ({
                 }
               />
             </Form.Item>
-            <Form.Item
-              name="numQuestions"
-              label="Questions per student"
-              rules={[{ required: true, type: 'number', min: 1, message: 'Generate at least one question.' }]}
-            >
-              <InputNumber min={1} step={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item
-              name="pointsPerQuestion"
-              label="Points per question"
-              rules={[{ required: true, type: 'number', min: 0 }]}
-            >
-              <InputNumber min={0} step={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="questionTypes" label="Question types (optional — empty lets the model choose)">
-              <Select
-                mode="multiple"
-                allowClear
-                placeholder="Any type"
-                options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))}
-              />
-            </Form.Item>
+            {needsSubmission && (
+              <Form.Item
+                name="fallbackPrompt"
+                label={
+                  <span>
+                    Fallback prompt for students without a submission&nbsp;
+                    <Text type="secondary" style={{ fontWeight: 'normal' }}>
+                      — optional
+                    </Text>
+                  </span>
+                }
+                extra={
+                  <span>
+                    Used for students with no submission (Generate missing, scheduled or per-student runs); no
+                    submission variables. Empty = those students are skipped.
+                    {fallbackTemplate && !(fallbackValue ?? '').trim() && (
+                      <>
+                        {' '}
+                        <Button
+                          type="link"
+                          size="small"
+                          style={{ padding: 0, height: 'auto' }}
+                          onClick={() => form.setFieldsValue({ fallbackPrompt: fallbackTemplate.text })}
+                          data-testid="section-fallback-starter"
+                        >
+                          Insert starter text
+                        </Button>
+                      </>
+                    )}
+                  </span>
+                }
+              >
+                <TemplateTextArea
+                  variables={variables.filter((v) => !v.requiresSubmission)}
+                  label="Fallback prompt"
+                  rows={3}
+                  testId="section-fallback-prompt"
+                  placeholder="e.g., Ask questions about what the assignment asks for, based on {assignment_description} and {assignment_files}."
+                />
+              </Form.Item>
+            )}
+            <Row gutter={12}>
+              <Col xs={12} sm={6}>
+                <Form.Item
+                  name="numQuestions"
+                  label="Questions per student"
+                  rules={[{ required: true, type: 'number', min: 1, message: 'Generate at least one question.' }]}
+                >
+                  <InputNumber min={1} step={1} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col xs={12} sm={6}>
+                <Form.Item
+                  name="pointsPerQuestion"
+                  label="Points per question"
+                  rules={[{ required: true, type: 'number', min: 0 }]}
+                >
+                  <InputNumber min={0} step={1} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item name="questionTypes" label="Question types (optional)">
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Any type — the model chooses"
+                    options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
           <Divider style={{ margin: '12px 0' }} />
           <div

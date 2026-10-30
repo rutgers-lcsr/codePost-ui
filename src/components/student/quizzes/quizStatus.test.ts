@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { StudentQuiz } from '../../../api-client';
-import { canEnterAccessCode, quizAction } from './quizStatus';
+import { canEnterAccessCode, quizAction, quizLockText } from './quizStatus';
 
 const mkQuiz = (overrides: Partial<StudentQuiz> = {}): StudentQuiz =>
   ({
@@ -51,5 +51,13 @@ describe('canEnterAccessCode', () => {
   it('applies to a closed quiz whose primary action is locked', () => {
     // The card only offers the code button in the locked branch of QuizActions.
     expect(quizAction(mkQuiz())).toBe('locked');
+  });
+});
+
+describe('quizLockText', () => {
+  it('distinguishes "being prepared" from "nothing will be prepared without a submission"', () => {
+    expect(quizLockText('questions_not_ready')).toBe('Your quiz is being prepared');
+    expect(quizLockText('submission_required')).toBe('Requires an assignment submission');
+    expect(quizLockText('no_submission_yet')).toBe('Opens after you submit');
   });
 });

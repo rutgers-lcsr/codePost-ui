@@ -19,6 +19,7 @@ All URIs are relative to *http://localhost*
 | [**promptVariablesList**](QuizzesApi.md#promptvariableslist)                         | **GET** /quizzes/{id}/promptVariables/          |             |
 | [**publishAllGeneratedCreate**](QuizzesApi.md#publishallgeneratedcreate)             | **POST** /quizzes/{id}/publishAllGenerated/     |             |
 | [**questionsList**](QuizzesApi.md#questionslist)                                     | **GET** /quizzes/{id}/questions/                |             |
+| [**requeueQuestionCreate**](QuizzesApi.md#requeuequestioncreate)                     | **POST** /quizzes/{id}/requeueQuestion/         |             |
 | [**resetAttemptsCreate**](QuizzesApi.md#resetattemptscreate)                         | **POST** /quizzes/{id}/resetAttempts/           |             |
 | [**resultsList**](QuizzesApi.md#resultslist)                                         | **GET** /quizzes/{id}/results/                  |             |
 | [**retrieve**](QuizzesApi.md#retrieve)                                               | **GET** /quizzes/{id}/                          |             |
@@ -103,7 +104,7 @@ example().catch(console.error);
 
 > BackfillPreviewResponse backfillPreviewRetrieve(id)
 
-How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (&#x60;&#x60;needsSubmission&#x60;&#x60; says which applies).
+How many students a backfill would touch — shown to the instructor before they save a new AI section (&#x60;&#x60;wouldGenerate&#x60;&#x60;: the section-create backfill) and on the review drawer\&#39;s Generate-missing button (&#x60;&#x60;missing&#x60;&#x60;: targets without any set). Submission-seeded quizzes count submitters; submission-free ones count every enrolled student (&#x60;&#x60;needsSubmission&#x60;&#x60; says which applies). &#x60;&#x60;missingWithoutSubmission&#x60;&#x60; / &#x60;&#x60;missingWithoutSubmissionStudents&#x60;&#x60;: enrolled students with no submission and no set. They are part of &#x60;&#x60;missing&#x60;&#x60; (what Generate missing queues) only when &#x60;&#x60;fallbackCovers&#x60;&#x60; — every submission-seeded section has a fallback prompt; otherwise they are skipped. Never part of &#x60;&#x60;wouldGenerate&#x60;&#x60;.
 
 ### Example
 
@@ -396,7 +397,7 @@ example().catch(console.error);
 
 > GeneratedQuestionSet generateForStudentCreate(id, generateForStudentRequest)
 
-Generate (or regenerate) this quiz\&#39;s AI questions for one student from their latest submission — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force&#x3D;true (it becomes un-published until re-approved).
+Generate (or regenerate) this quiz\&#39;s AI questions for one student from their latest submission — or, if they have none, from the sections\&#39; fallback prompts — useful for testing a prompt or backfilling after enabling the feature. An approved set is only regenerated with force&#x3D;true (it becomes un-published until re-approved).
 
 ### Example
 
@@ -473,7 +474,7 @@ example().catch(console.error);
 
 > GenerateMissingResponse generateMissingCreate(id)
 
-Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time.
+Queue question generation for every student who has a submission on the attached assignment but no question set yet — e.g. they submitted before the AI section existed, or the feature was off / generation failed at the time. When every submission-seeded section has a fallback prompt, students with no submission are included too (generated from the fallback).
 
 ### Example
 
@@ -1103,6 +1104,83 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## requeueQuestionCreate
+
+> RequeueQuizQuestionResponse requeueQuestionCreate(id, requeueQuizQuestionRequest)
+
+Send every submitted response to one question back to the manual grading queue (course admins only). The recovery when an auto-graded answer key was wrong for the question — e.g. an exact-match short answer that asked for an explanation, so every paraphrase scored 0. Auto-graded points are removed and graders award them by hand; responses already awaiting a grade are untouched. Returns the number of responses requeued.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  QuizzesApi,
+} from '';
+import type { RequeueQuestionCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new QuizzesApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this quiz.
+    id: 56,
+    // RequeueQuizQuestionRequest
+    requeueQuizQuestionRequest: ...,
+  } satisfies RequeueQuestionCreateRequest;
+
+  try {
+    const data = await api.requeueQuestionCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                           | Type                                                        | Description                                   | Notes                     |
+| ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- | ------------------------- |
+| **id**                         | `number`                                                    | A unique integer value identifying this quiz. | [Defaults to `undefined`] |
+| **requeueQuizQuestionRequest** | [RequeueQuizQuestionRequest](RequeueQuizQuestionRequest.md) |                                               |                           |
+
+### Return type
+
+[**RequeueQuizQuestionResponse**](RequeueQuizQuestionResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
 - **Accept**: `application/json`
 
 ### HTTP response details

@@ -2577,6 +2577,24 @@ export interface BackfillPreviewResponse {
    * @memberof BackfillPreviewResponse
    */
   needsSubmission: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof BackfillPreviewResponse
+   */
+  missingWithoutSubmission: number;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof BackfillPreviewResponse
+   */
+  missingWithoutSubmissionStudents: Array<string>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BackfillPreviewResponse
+   */
+  fallbackCovers: boolean;
 }
 /**
  *
@@ -5632,7 +5650,7 @@ export interface GeneratedQuestionSet {
    */
   readonly studentEmail: string;
   /**
-   * The submission this set was generated from (seed). Null if the submission was later deleted; regeneration then requires a new submission.
+   * The submission this set was generated from (seed). Null if the submission was later deleted, or when the set was generated from a section's fallbackPrompt (generationMetadata['fallback'] is then true).
    * @type {number}
    * @memberof GeneratedQuestionSet
    */
@@ -5687,6 +5705,12 @@ export interface GeneratedQuestionSet {
   readonly questions: Array<GeneratedQuizQuestion>;
   /**
    *
+   * @type {boolean}
+   * @memberof GeneratedQuestionSet
+   */
+  readonly usedFallback: boolean;
+  /**
+   *
    * @type {string}
    * @memberof GeneratedQuestionSet
    */
@@ -5730,7 +5754,7 @@ export interface GeneratedQuestionSetList {
    */
   readonly studentEmail: string;
   /**
-   * The submission this set was generated from (seed). Null if the submission was later deleted; regeneration then requires a new submission.
+   * The submission this set was generated from (seed). Null if the submission was later deleted, or when the set was generated from a section's fallbackPrompt (generationMetadata['fallback'] is then true).
    * @type {number}
    * @memberof GeneratedQuestionSetList
    */
@@ -5765,6 +5789,12 @@ export interface GeneratedQuestionSetList {
    * @memberof GeneratedQuestionSetList
    */
   readonly questionCount: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof GeneratedQuestionSetList
+   */
+  readonly usedFallback: boolean;
   /**
    *
    * @type {string}
@@ -9648,6 +9678,12 @@ export interface PatchedQuizGeneratedSection {
    */
   systemPrompt?: string;
   /**
+   *
+   * @type {string}
+   * @memberof PatchedQuizGeneratedSection
+   */
+  fallbackPrompt?: string | null;
+  /**
    * How many questions to generate per student.
    * @type {number}
    * @memberof PatchedQuizGeneratedSection
@@ -11645,6 +11681,12 @@ export interface PromptVariable {
    * @memberof PromptVariable
    */
   kind: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PromptVariable
+   */
+  requiresSubmission?: boolean;
 }
 /**
  *
@@ -12320,6 +12362,12 @@ export interface QuizGeneratedSection {
    */
   systemPrompt: string;
   /**
+   *
+   * @type {string}
+   * @memberof QuizGeneratedSection
+   */
+  fallbackPrompt?: string | null;
+  /**
    * How many questions to generate per student.
    * @type {number}
    * @memberof QuizGeneratedSection
@@ -12801,6 +12849,12 @@ export interface QuizSectionTemplate {
    * @memberof QuizSectionTemplate
    */
   text: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof QuizSectionTemplate
+   */
+  forFallback: boolean;
 }
 /**
  * * `manual` - Manually authored
@@ -12996,6 +13050,32 @@ export interface ReopenQuizResponseRequest {
    * @memberof ReopenQuizResponseRequest
    */
   response: number;
+}
+/**
+ *
+ * @export
+ * @interface RequeueQuizQuestionRequest
+ */
+export interface RequeueQuizQuestionRequest {
+  /**
+   *
+   * @type {number}
+   * @memberof RequeueQuizQuestionRequest
+   */
+  question: number;
+}
+/**
+ *
+ * @export
+ * @interface RequeueQuizQuestionResponse
+ */
+export interface RequeueQuizQuestionResponse {
+  /**
+   *
+   * @type {number}
+   * @memberof RequeueQuizQuestionResponse
+   */
+  requeued: number;
 }
 /**
  *

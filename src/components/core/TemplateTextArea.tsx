@@ -13,6 +13,17 @@ type MentionsRef = GetRef<typeof Mentions>;
 // with what the server will substitute: {name} or {name:argument}.
 const TOKEN_RE = /\{([a-z][a-z0-9_]*)(?::([^{}\n]+))?\}/g;
 
+/** Whether `text` references a variable that draws on the student's submission (per the
+ *  server's `requiresSubmission` flag) — such a prompt waits for a submission, so the
+ *  section editor offers a fallback prompt for students who never submit. */
+export const templateNeedsSubmission = (text: string, variables: PromptVariable[]): boolean => {
+  const submissionNames = new Set(variables.filter((v) => v.requiresSubmission).map((v) => v.name));
+  for (const m of text.matchAll(TOKEN_RE)) {
+    if (submissionNames.has(m[1])) return true;
+  }
+  return false;
+};
+
 // The computed styles copied from the live textarea onto the highlight overlay so both
 // lay out text identically — the same property list rc-textarea's own height measurement
 // uses, plus the wrapping rules a textarea gets from the UA stylesheet.
