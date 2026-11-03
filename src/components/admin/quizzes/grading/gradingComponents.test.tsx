@@ -174,7 +174,9 @@ describe('GradingOverview results', () => {
     await userEvent.click(header);
     expect(screen.getByText('Q1')).toBeInTheDocument();
     expect(screen.getByText('baby_names').tagName).toBe('CODE');
-  });
+    // ~0.5s alone, but three userEvent clicks through Tabs/Table/Collapse blow past the 5s
+    // default when the full suite saturates every worker.
+  }, 15000);
 });
 
 describe('FocusedGrader', () => {
