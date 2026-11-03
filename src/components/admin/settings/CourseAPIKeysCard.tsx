@@ -90,6 +90,32 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
     }
   };
 
+  const handleChangeScope = async (key: CourseAPIKey, scope: CourseAPIKeyScope) => {
+    try {
+      await Course.updateAPIKey(courseId, key.id, { scope });
+      message.success(`API key scope changed to ${scope}.`);
+      queryClient.invalidateQueries({ queryKey });
+    } catch (err: unknown) {
+      message.error(apiErrorMessage(err, 'scope') ?? 'Failed to change API key scope.');
+    }
+  };
+
+  const confirmChangeScope = (key: CourseAPIKey, scope: CourseAPIKeyScope) => {
+    if (scope !== 'admin') {
+      handleChangeScope(key, scope);
+      return;
+    }
+    Modal.confirm({
+      title: 'Give this key full admin access?',
+      content:
+        'It will be able to delete course content, reset quiz attempts, email students, and sign in to codePost as ' +
+        'any member of this course, instructors included.',
+      okText: 'Make admin',
+      okButtonProps: { danger: true },
+      onOk: () => handleChangeScope(key, scope),
+    });
+  };
+
   const apiBase = (process.env.REACT_APP_API_URL || 'http://localhost:8000').replace(/\/$/, '');
   const mcpSnippet = `claude mcp add --transport http codepost ${apiBase}/mcp --header "Authorization: CourseKey <your-key>"`;
 
@@ -137,14 +163,27 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       title: 'Scope',
       dataIndex: 'scope',
       key: 'scope',
-      width: 90,
-      render: (scope: CourseAPIKeyScope) => {
+      width: 115,
+      render: (scope: CourseAPIKeyScope, record: CourseAPIKey) => {
         const colors: Record<CourseAPIKeyScope, string> = {
           read: 'green',
           write: 'orange',
           admin: 'red',
         };
-        return <Tag color={colors[scope] ?? 'default'}>{scope ?? 'read'}</Tag>;
+        return (
+          <Select<CourseAPIKeyScope>
+            size="small"
+            variant="borderless"
+            aria-label={`Scope for ${record.name}`}
+            value={scope ?? 'read'}
+            onChange={(next) => confirmChangeScope(record, next)}
+            popupMatchSelectWidth={false}
+            options={(['read', 'write', 'admin'] as const).map((s) => ({
+              value: s,
+              label: <Tag color={colors[s]}>{s}</Tag>,
+            }))}
+          />
+        );
       },
     },
     {

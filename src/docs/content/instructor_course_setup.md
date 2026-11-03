@@ -95,6 +95,8 @@ Authorization: CourseKey cpk_<course_id>_<secret>
 
 The table lists each key with its scope, status, and creation date.
 
+- The **scope** dropdown changes a key's scope in place; the key itself stays the same, so nothing
+  using it needs reconfiguring. Raising a key to **admin** asks you to confirm first.
 - **Disable** switches a key off without deleting it — useful while you track down what is using it.
   **Enable** turns it back on.
 - The **trash** icon permanently revokes a key. Anything using it stops working immediately, and the

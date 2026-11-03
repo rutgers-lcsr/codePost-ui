@@ -107,7 +107,11 @@ export class Course {
       body: JSON.stringify({ name, scope }),
     });
 
-  public static updateAPIKey = (courseId: number, keyId: number, payload: { name?: string; isActive?: boolean }) =>
+  public static updateAPIKey = (
+    courseId: number,
+    keyId: number,
+    payload: { name?: string; isActive?: boolean; scope?: CourseAPIKeyScope },
+  ) =>
     apiFetch<CourseAPIKey>(`/courses/${courseId}/apiKeys/${keyId}/`, {
       method: 'PATCH',
       body: JSON.stringify(payload),

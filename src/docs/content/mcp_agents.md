@@ -54,7 +54,7 @@ What the assistant is allowed to do is governed by scope. Tools the credential's
 | **Write** | Also create and edit assignments, rubrics, files, test cases, and quizzes; manage sections and the roster; move assignments through their lifecycle; release feedback; run the autograder. |
 | **Admin** | Also the most destructive actions, such as removing people from the roster. |
 
-A course API key carries the scope you chose when creating it. A personal token connects at full scope (your own permissions still bound every call). Either way, you can **narrow** a connection by adding `?scope=read` or `?scope=write` to the endpoint URL — narrowing only; a read key asking for more stays read:
+A course API key carries the scope you chose when creating it; you can change it later from the key's row in Course Settings → Course API Keys. A personal token connects at full scope (your own permissions still bound every call). Either way, you can **narrow** a connection by adding `?scope=read` or `?scope=write` to the endpoint URL — narrowing only; a read key asking for more stays read:
 
 ```
 https://codepost-api.cs.rutgers.edu/mcp?scope=read
