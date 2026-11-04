@@ -12,6 +12,7 @@ import {
   ClockCircleOutlined,
   CompassOutlined,
   DeleteOutlined,
+  DownOutlined,
   DownloadOutlined,
   EditOutlined,
   EyeOutlined,
@@ -37,7 +38,7 @@ import {
 
 /* ant imports */
 import {
-  Breadcrumb,
+  Alert,
   Button,
   Dropdown,
   Empty,
@@ -125,6 +126,7 @@ import {
 import SendEmailModal from '../other/SendEmailModal';
 
 import { encodeForLink } from '../../core/URLutils';
+import { encodedCourseLink } from '../../core/CourseMenu';
 
 import { openSubmission } from '../other/AdminUtils';
 import BulkSubmissionEdit from './assignments/BulkSubmissionEdit';
@@ -368,7 +370,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     return assignments.sort((a, b) => (a.sortKey || 0) - (b.sortKey || 0));
   };
   const windowSize = useWindowSize();
-  const isCompact = windowSize.width < layoutVars.breakpoints.smallScreen.admin;
+  // Seven inline row actions need the room of a wide screen; laptops get the single actions menu.
+  const isCompact = windowSize.width < layoutVars.breakpoints.smallScreen.assignmentActionsCompact;
   const courseCaps = useCourseCapabilities(props.currentCourse?.id);
   const canCreateAssignment = courseCaps.create_assignment !== false;
   const canEditAssignment = courseCaps.edit_assignment ?? canCreateAssignment; // fall back to create_assignment if edit_assignment not yet loaded
@@ -396,11 +399,20 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
     updateSubmission,
     bulkUpdateSubmissions,
     loadComplete,
-    breadcrumbs,
     refreshCourseData,
   } = props;
 
   const navigate = useNavigate();
+  // One tab stop per link-like action: a Button with href keeps open-in-new-tab and the context
+  // menu, and onClick keeps in-app routing. An anchor wrapping a button is two stops.
+  const linkButtonProps = (to: string) => ({
+    href: to,
+    onClick: (e: React.MouseEvent<HTMLElement>) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      navigate(to);
+    },
+  });
 
   // State management with hooks
   const [drawerType, setDrawerType] = useState<DRAWER_TYPE | undefined>(undefined);
@@ -710,35 +722,47 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       title: 'Assignment',
       dataIndex: 'assignment',
       key: 'assignment',
-      width: '30%',
+      width: '28%',
       className: 'draggable',
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      width: isCompact ? 100 : 140,
+      width: isCompact ? 100 : 130,
     },
     {
       title: 'Feedback',
       dataIndex: 'feedback',
       key: 'feedback',
-      width: isCompact ? 90 : 130,
+      width: isCompact ? 90 : 120,
     },
     {
       title: 'Progress',
       dataIndex: 'progress',
       key: 'progress',
-      width: isCompact ? '25%' : '30%',
+      // No width: the counts stack, so the column fits at 1440 and takes the slack on wider screens.
     },
     {
       title: '',
       dataIndex: 'actions',
       key: 'actions',
       align: 'right' as alignType,
-      width: isCompact ? 48 : undefined,
+      // Fixed to what the icons need, so a wide screen does not strand them far from the row.
+      width: isCompact ? 48 : 300,
     },
   ];
+
+  // What needs attention in this course right now: submissions nobody has claimed to grade.
+  // Same counts the mobile console's banner uses (they arrive with each assignment).
+  const unclaimedCount = useMemo(
+    () => assignments.reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0),
+    [assignments],
+  );
+  const unclaimedAssignments = useMemo(
+    () => assignments.filter((a) => (a.submissions_unclaimed_count ?? 0) > 0).length,
+    [assignments],
+  );
 
   /* ... data mapping ... */
 
@@ -855,7 +879,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const isAutoClosed = effState === AssignmentStateEnum.Closed && storedState === AssignmentStateEnum.Published;
 
       const statusContent = (
-        <div style={{ width: 340 }}>
+        <div className="cp-scroll-shade" style={{ width: 340, maxHeight: 'calc(50vh - 56px)', overflowY: 'auto' }}>
           <Flex vertical gap="small">
             {STATE_ORDER.map((s) => {
               const meta = STATE_META[s];
@@ -932,7 +956,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const fbMeta = FEEDBACK_META[fbStatus] ?? FEEDBACK_META[AssignmentFeedbackStatusEnum.Hidden];
 
       const feedbackContent = (
-        <div style={{ width: 340 }}>
+        <div className="cp-scroll-shade" style={{ width: 340, maxHeight: 'calc(50vh - 56px)', overflowY: 'auto' }}>
           <Flex vertical gap="small">
             {FEEDBACK_ORDER.map((s) => {
               const meta = FEEDBACK_META[s];
@@ -1035,60 +1059,73 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Space>
         ),
         status: (
-          <Popover content={statusContent} trigger="click" title="Assignment status" styles={{ root: { width: 360 } }}>
-            <button
-              type="button"
-              aria-haspopup="dialog"
-              aria-label={`Assignment status: ${effMeta.label}${
-                isAutoClosed ? ', closed automatically because the due date passed (setting: Published)' : ''
-              }. Open status options.`}
-              className={styles.cellTrigger}
+          <div>
+            <Popover
+              content={statusContent}
+              trigger="click"
+              placement="rightTop"
+              title="Assignment status"
+              // The list never grows past half the window (it scrolls inside, under a shade), so the popover
+              // always fits beside the chip.
+              styles={{ root: { width: 360 } }}
             >
-              <Tag
-                icon={effMeta.icon}
-                style={{ marginRight: 0, background: effMeta.bg, borderColor: effMeta.border, color: effMeta.text }}
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`Assignment status: ${effMeta.label}${
+                  isAutoClosed ? ', closed automatically because the due date passed (setting: Published)' : ''
+                }. Open status options.`}
+                className={styles.cellTrigger}
               >
-                {effMeta.label}
-              </Tag>
-              {isAutoClosed && (
-                <Tooltip title="Closed automatically — the due date has passed. The setting is still Published; click for options.">
-                  <ClockCircleOutlined
-                    aria-hidden
-                    style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }}
-                  />
-                </Tooltip>
-              )}
-              <SettingOutlined aria-hidden style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
-            </button>
-          </Popover>
+                <Tag
+                  icon={effMeta.icon}
+                  style={{ marginRight: 0, background: effMeta.bg, borderColor: effMeta.border, color: effMeta.text }}
+                >
+                  {effMeta.label}
+                </Tag>
+                <DownOutlined aria-hidden style={{ fontSize: 9, color: colors.neutralSecondaryText, marginLeft: 4 }} />
+              </button>
+            </Popover>
+            {/* Words under the chip, not a glyph: the setting is Published, the due date closed it. */}
+            {isAutoClosed && (
+              <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>
+                Past due date
+              </Text>
+            )}
+          </div>
         ),
         feedback: (
-          <Popover content={feedbackContent} trigger="click" title="Feedback" styles={{ root: { width: 360 } }}>
-            <button
-              type="button"
-              aria-haspopup="dialog"
-              aria-label={`Feedback: ${fbMeta.label}${
-                assignment.hideGrades ? ', numeric grades hidden' : ''
-              }. Open feedback options.`}
-              className={styles.cellTrigger}
+          <div>
+            <Popover
+              content={feedbackContent}
+              trigger="click"
+              placement="rightTop"
+              title="Feedback"
+              styles={{ root: { width: 360 } }}
             >
-              <Tag
-                icon={fbMeta.icon}
-                style={{ marginRight: 0, background: fbMeta.bg, borderColor: fbMeta.border, color: fbMeta.text }}
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`Feedback: ${fbMeta.label}${
+                  assignment.hideGrades ? ', numeric grades hidden' : ''
+                }. Open feedback options.`}
+                className={styles.cellTrigger}
               >
-                {fbMeta.label}
-              </Tag>
-              {assignment.hideGrades && (
-                <Tooltip title="Numeric grades are hidden — students see comments and the rubric only.">
-                  <NumberOutlined
-                    aria-hidden
-                    style={{ fontSize: 11, color: colors.neutralSecondaryText, marginLeft: 4 }}
-                  />
-                </Tooltip>
-              )}
-              <SettingOutlined aria-hidden style={{ fontSize: '10px', color: colors.neutralMainText, marginLeft: 4 }} />
-            </button>
-          </Popover>
+                <Tag
+                  icon={fbMeta.icon}
+                  style={{ marginRight: 0, background: fbMeta.bg, borderColor: fbMeta.border, color: fbMeta.text }}
+                >
+                  {fbMeta.label}
+                </Tag>
+                <DownOutlined aria-hidden style={{ fontSize: 9, color: colors.neutralSecondaryText, marginLeft: 4 }} />
+              </button>
+            </Popover>
+            {assignment.hideGrades && (
+              <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>
+                Grades hidden
+              </Text>
+            )}
+          </div>
         ),
         progress: (
           <Tooltip
@@ -1099,7 +1136,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             }
           >
             <div onClick={() => openDrawer(assignment, DRAWER_TYPE.Graded)} style={{ cursor: 'pointer' }}>
-              <div style={{ whiteSpace: 'nowrap', fontSize: '12px', marginBottom: 4 }}>
+              {/* Labelled counts, one per line: "2 / 222 0%" read as one broken figure. */}
+              <div style={{ fontSize: '12px', marginBottom: 4, display: 'flex', flexDirection: 'column' }}>
                 <Text
                   type={totalSubmissions === 0 ? 'secondary' : undefined}
                   className={totalSubmissions > 0 ? 'text-link' : ''}
@@ -1107,11 +1145,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                     e.stopPropagation();
                     if (totalSubmissions > 0) openDrawer(assignment, DRAWER_TYPE.Submitted);
                   }}
-                  style={{ fontSize: '12px' }}
+                  style={{ fontSize: '12px', whiteSpace: 'nowrap' }}
                 >
-                  {totalSubmissions}
+                  {totalSubmissions} submitted
                 </Text>
-                <span style={{ color: colors.neutralBorder, margin: '0 3px' }}>/</span>
                 <Text
                   type="secondary"
                   className={missing > 0 ? 'text-link' : ''}
@@ -1119,20 +1156,20 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                     e.stopPropagation();
                     openDrawer(assignment, DRAWER_TYPE.Missing);
                   }}
-                  style={{ fontSize: '12px', color: missing > 0 ? colors.actionRed : undefined }}
+                  // red-8: 7:1 on white; the brand action red is 3.5:1 at this size.
+                  style={{ fontSize: '12px', whiteSpace: 'nowrap', color: missing > 0 ? '#a8071a' : undefined }}
                 >
-                  {missing}
-                </Text>
-                <Text type="secondary" style={{ fontSize: '12px', marginLeft: 6 }}>
-                  {percent}%
+                  {missing} missing
                 </Text>
               </div>
               <Progress
                 percent={percent}
-                showInfo={false}
+                format={() => `${percent}% graded`}
                 strokeColor={colors.brandPrimary}
-                railColor={colors.brandLight}
+                // A visible track: the brand-light tint was indistinguishable from the white row.
+                railColor="rgba(0, 0, 0, 0.08)"
                 size="small"
+                style={{ fontSize: 12 }}
               />
             </div>
           </Tooltip>
@@ -1214,34 +1251,44 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             }}
             trigger={['click']}
           >
-            <Button shape="circle" icon={<MoreOutlined />} />
+            <Button shape="circle" icon={<MoreOutlined />} aria-label={`Actions for ${assignment.name}`} />
           </Dropdown>
         ) : (
-          <Space>
+          <Space size={6}>
             {canEditAssignment && (
               <Tooltip title="Configure assignment">
                 <Dropdown menu={{ items: configItems }} trigger={['click']}>
-                  <Button shape="circle" icon={<SettingOutlined />} />
+                  <Button shape="circle" icon={<SettingOutlined />} aria-label={`Configure ${assignment.name}`} />
                 </Dropdown>
               </Tooltip>
             )}
             {canEditRubric && (
               <Tooltip title="Edit rubric">
-                <Link to={`${baseURL}/rubrics/${encodedName}`}>
-                  <Button shape="circle" icon={<OrderedListOutlined />} />
-                </Link>
+                <Button
+                  shape="circle"
+                  icon={<OrderedListOutlined />}
+                  aria-label={`Edit rubric for ${assignment.name}`}
+                  {...linkButtonProps(`${baseURL}/rubrics/${encodedName}`)}
+                />
               </Tooltip>
             )}
             {canEditAssignment && (
               <Tooltip title="Environment & Tests">
-                <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-                  <Button shape="circle" icon={<FileDoneOutlined />} />
-                </Link>
+                <Button
+                  shape="circle"
+                  icon={<FileDoneOutlined />}
+                  aria-label={`Environment and tests for ${assignment.name}`}
+                  {...linkButtonProps(`${baseURL}/environment/${encodedName}/edit`)}
+                />
               </Tooltip>
             )}
             <Tooltip title="Manage submissions">
               <Dropdown menu={{ items: uploadItems }} trigger={['click']}>
-                <Button shape="circle" icon={<UploadOutlined />} />
+                <Button
+                  shape="circle"
+                  icon={<UploadOutlined />}
+                  aria-label={`Manage submissions for ${assignment.name}`}
+                />
               </Dropdown>
             </Tooltip>
             <Tooltip
@@ -1256,9 +1303,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               <Button
                 shape="circle"
                 aria-label={
-                  assignment.hideGrades
-                    ? `Grades hidden for ${assignment.name} — show numeric grades`
-                    : `Grades visible for ${assignment.name} — hide numeric grades`
+                  assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
+                    ? `Grades for ${assignment.name}: feedback is hidden, so grades are not shown`
+                    : assignment.hideGrades
+                      ? `Grades hidden for ${assignment.name} — show numeric grades`
+                      : `Grades visible for ${assignment.name} — hide numeric grades`
                 }
                 aria-pressed={!assignment.hideGrades}
                 disabled={assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades}
@@ -1274,15 +1323,24 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             {canViewStats && (
               <Tooltip title="Analyze grades & stats">
                 <Dropdown menu={{ items: dataItems }} trigger={['click']}>
-                  <Button shape="circle" icon={<BarChartOutlined />} />
+                  <Button
+                    shape="circle"
+                    icon={<BarChartOutlined />}
+                    aria-label={`Analyze grades and stats for ${assignment.name}`}
+                  />
                 </Dropdown>
               </Tooltip>
             )}
             {canEditAssignment && (
               <Tooltip title="Delete assignment">
-                <Link to={`${baseURL}/${encodedName}/delete`}>
-                  <Button shape="circle" danger icon={<DeleteOutlined />} />
-                </Link>
+                <Button
+                  shape="circle"
+                  danger
+                  className="cp-quiet-delete"
+                  icon={<DeleteOutlined />}
+                  aria-label={`Delete ${assignment.name}`}
+                  {...linkButtonProps(`${baseURL}/${encodedName}/delete`)}
+                />
               </Tooltip>
             )}
           </Space>
@@ -1391,11 +1449,15 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         timezone={currentCourse.timezone || 'UTC'}
       />
     ) : null,
-    <Link key={2} to={`${baseURL}/download/grades`}>
-      <CPButton cpType="secondary" icon={<DownloadOutlined />} disabled={Object.keys(submissions).length === 0}>
-        Download grades
-      </CPButton>
-    </Link>,
+    <CPButton
+      key={2}
+      cpType="secondary"
+      icon={<DownloadOutlined />}
+      disabled={Object.keys(submissions).length === 0}
+      {...linkButtonProps(`${baseURL}/download/grades`)}
+    >
+      Download grades
+    </CPButton>,
   ];
 
   const handleDeleteSubmission = useCallback(
@@ -1630,6 +1692,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           title={
             <>
               Assignments
+              {currentCourse.archived && <Tag style={{ marginLeft: 10 }}>Archived</Tag>}
               {isFilterActive && (
                 <span
                   style={{ fontSize: 13, fontWeight: 400, color: colors.neutralSecondaryText, marginLeft: 10 }}
@@ -1664,7 +1727,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               />
             </Empty>
           }
-          breadcrumbs={<Breadcrumb items={[...(breadcrumbs || []), { title: 'Overview' }]} />}
           titleInfo={'Use this space to add assignments to your course, and edit existing ones.'}
           hideSearch={true}
           components={dndComponents}
@@ -1683,6 +1745,28 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           beforeTable={
             loadComplete && assignments.length > 0 ? (
               <>
+                {unclaimedCount > 0 && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                    title={
+                      <>
+                        <Text strong>{unclaimedCount}</Text> unclaimed submission{unclaimedCount === 1 ? '' : 's'}{' '}
+                        across {unclaimedAssignments} assignment{unclaimedAssignments === 1 ? '' : 's'} need a grader.
+                      </>
+                    }
+                    action={
+                      // A button that navigates, not a link wrapping a button: one tab stop.
+                      <Button
+                        size="small"
+                        onClick={() => navigate(encodedCourseLink('admin', currentCourse, 'submissions/by_grader'))}
+                      >
+                        Assign graders
+                      </Button>
+                    }
+                  />
+                )}
                 <BulkActionBar
                   selectedCount={selectedRowKeys.length}
                   isLoading={bulkLoading}

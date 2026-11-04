@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Card,
+  Collapse,
   Empty,
   Flex,
   Input,
@@ -15,6 +16,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import { CopyOutlined, DeleteOutlined, KeyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -29,7 +31,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 interface ICourseAPIKeysCardProps {
   courseId: number;
@@ -131,6 +133,8 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       key: 'name',
       ellipsis: true,
       width: 130,
+      // Pinned with the actions: in a narrow card the middle scrolls, the key's name never leaves.
+      fixed: 'left' as const,
       render: (name: string, record: CourseAPIKey) => (
         <Space>
           <KeyOutlined style={{ color: record.isActive ? '#198665' : '#bfbfbf' }} />
@@ -228,25 +232,31 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
       title: '',
       key: 'actions',
       width: 120,
+      // Pinned: the card is narrower than the columns, so the middle scrolls and the actions stay put.
+      fixed: 'right' as const,
       render: (_: unknown, record: CourseAPIKey) => (
         <Space.Compact size="small">
           <Button size="small" onClick={() => handleToggleActive(record)}>
             {record.isActive ? 'Disable' : 'Enable'}
           </Button>
-          <Button
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              Modal.confirm({
-                title: 'Permanently revoke this key?',
-                content: 'Any integrations using this key will stop working.',
-                okText: 'Revoke',
-                okButtonProps: { danger: true },
-                onOk: () => handleDelete(record.id),
-              });
-            }}
-          />
+          <Tooltip title="Revoke key">
+            <Button
+              size="small"
+              danger
+              className="cp-quiet-delete"
+              aria-label={`Revoke key ${record.name}`}
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Permanently revoke this key?',
+                  content: 'Any integrations using this key will stop working.',
+                  okText: 'Revoke',
+                  okButtonProps: { danger: true },
+                  onOk: () => handleDelete(record.id),
+                });
+              }}
+            />
+          </Tooltip>
         </Space.Compact>
       ),
     },
@@ -275,28 +285,6 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
         style={{ marginBottom: 24, borderRadius: 8, border: '1px solid rgba(0, 0, 0, 0.06)' }}
         styles={{ header: { borderBottom: '1px solid rgba(0, 0, 0, 0.05)' } }}
       >
-        <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
-          API keys allow external tools (scripts, Jupyter integrations, etc.) to access this course&#39;s data. Each key
-          is scoped to this course only &mdash; it cannot access other courses. When used to impersonate a student, the
-          resulting token is also restricted to this course.
-        </Paragraph>
-        <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
-          Usage example: to use the API key with a Jupyter integration or an AI agent, send the{' '}
-          <Text code>Authorization: CourseKey {'<token>'}</Text> header with each request.
-        </Paragraph>
-        <Paragraph type="secondary" style={{ marginBottom: 16, fontSize: 13 }}>
-          To let an AI agent manage this course over MCP, connect Claude Code with:{' '}
-          <Text code copyable={{ text: mcpSnippet }}>
-            {mcpSnippet}
-          </Text>{' '}
-          A <Tag style={{ fontSize: 11 }}>read</Tag> key can only look things up;{' '}
-          <Tag style={{ fontSize: 11 }}>write</Tag> adds course setup (assignments, quizzes, rubrics, autograder);{' '}
-          <Tag style={{ fontSize: 11 }}>admin</Tag> also allows deletes, attempt resets and emailing students &mdash;
-          each of those still needs a confirmation code from the <Text strong>Pending agent actions</Text> panel below.
-          Whatever the level, the agent never sees student email addresses: students appear as aliases you can resolve
-          under <Text strong>Student aliases</Text> below.
-        </Paragraph>
-
         {isLoading ? (
           <Flex justify="center" style={{ padding: 40 }}>
             <Spin />
@@ -305,6 +293,7 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
           <Empty description="No API keys yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <Table
+            scroll={{ x: 'max-content' }}
             dataSource={keys}
             columns={columns}
             rowKey="id"
@@ -313,6 +302,70 @@ const CourseAPIKeysCard: React.FC<ICourseAPIKeysCardProps> = ({ courseId }) => {
             style={{ borderRadius: 6, overflow: 'hidden' }}
           />
         )}
+
+        {/* The facts behind the table, one per labelled row, folded: the task is to see or make a key. */}
+        <Collapse
+          ghost
+          size="small"
+          style={{ marginTop: 12 }}
+          items={[
+            {
+              key: 'how',
+              label: 'How course API keys work',
+              children: (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(80px, max-content) 1fr',
+                    columnGap: 16,
+                    rowGap: 10,
+                    fontSize: 13,
+                  }}
+                >
+                  <Text strong style={{ fontSize: 13 }}>
+                    Scope
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    A key reaches this course only. A token minted with it to act as a student is limited to this course
+                    too.
+                  </Text>
+                  <Text strong style={{ fontSize: 13 }}>
+                    Use it
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    Send <Text code>Authorization: CourseKey {'<token>'}</Text> with each request, from a script, a
+                    Jupyter integration or an AI agent.
+                  </Text>
+                  <Text strong style={{ fontSize: 13 }}>
+                    Claude Code
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    Let an agent manage the course over MCP:{' '}
+                    <Text code copyable={{ text: mcpSnippet }}>
+                      {mcpSnippet}
+                    </Text>
+                  </Text>
+                  <Text strong style={{ fontSize: 13 }}>
+                    Levels
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    <Tag style={{ fontSize: 12 }}>read</Tag> looks things up. <Tag style={{ fontSize: 12 }}>write</Tag>{' '}
+                    adds course setup: assignments, quizzes, rubrics, autograder.{' '}
+                    <Tag style={{ fontSize: 12 }}>admin</Tag> also allows deletes, attempt resets and emailing students,
+                    each of which still needs a confirmation code from <Text strong>Pending agent actions</Text> below.
+                  </Text>
+                  <Text strong style={{ fontSize: 13 }}>
+                    Privacy
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    At every level the agent never sees student email addresses: students appear as aliases you can
+                    resolve under <Text strong>Student aliases</Text> below.
+                  </Text>
+                </div>
+              ),
+            },
+          ]}
+        />
       </Card>
 
       {/* Create Key Modal */}

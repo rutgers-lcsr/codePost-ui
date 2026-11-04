@@ -10,7 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { DisconnectOutlined, EditOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, Checkbox, Empty, Flex, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
+import { Button, Checkbox, Empty, Flex, message, Modal, Select, Space, Spin, Tooltip } from 'antd';
 
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 
@@ -355,17 +355,27 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
           <Space>
             {!hasActivated && (
               <Tooltip title="Send activation email">
-                <Button shape="circle" icon={<MailOutlined />} onClick={() => sendActivationEmail(studentEmail)} />
+                <Button
+                  shape="circle"
+                  icon={<MailOutlined />}
+                  aria-label={`Send activation email to ${studentEmail}`}
+                  onClick={() => sendActivationEmail(studentEmail)}
+                />
               </Tooltip>
             )}
             <Tooltip title="Open profile">
               <Link to={location.pathname.replace('roster/students', `submissions/by_student/${studentEmail}`) || ''}>
-                <Button shape="circle" icon={<ProfileOutlined />} />
+                <Button shape="circle" icon={<ProfileOutlined />} aria-label={`Open profile for ${studentEmail}`} />
               </Link>
             </Tooltip>
             {canManageRoster && (
               <Tooltip title="Unenroll">
-                <Button shape="circle" icon={<UserDeleteOutlined />} onClick={() => removeStudent(studentEmail)} />
+                <Button
+                  shape="circle"
+                  icon={<UserDeleteOutlined />}
+                  aria-label={`Unenroll ${studentEmail}`}
+                  onClick={() => removeStudent(studentEmail)}
+                />
               </Tooltip>
             )}
           </Space>
@@ -476,16 +486,6 @@ const ManageStudents: React.FC<IManageStudentsProps> = (props) => {
       columns={columns}
       data={data}
       actions={actions}
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            { title: 'Roster' },
-            {
-              title: <a>Students</a>,
-            },
-          ]}
-        />
-      }
       titleInfo={tooltips.admin.studentRoster.title}
     />
   );

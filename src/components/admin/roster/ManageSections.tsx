@@ -21,7 +21,6 @@ import {
 
 /* style imports */
 import {
-  Breadcrumb,
   Button,
   Checkbox,
   Drawer,
@@ -303,9 +302,7 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
   const parseCSV = (text: string) => {
     const parsed = parseSectionsCsv(text);
     if (parsed.length === 0) {
-      message.error(
-        'No valid rows found. Expected columns: section, email, and an optional role (student/leader)',
-      );
+      message.error('No valid rows found. Expected columns: section, email, and an optional role (student/leader)');
       return;
     }
     setCsvData(parsed);
@@ -491,9 +488,9 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
             >
               {`section,email,role\nSection A,student1@university.edu\nSection A,student2@university.edu\nSection A,ta1@university.edu,leader\nSection B,student3@university.edu`}
             </pre>
-            Supports CSV, TSV, or tab-separated files. Headers are auto-detected and optional. The
-            role column is optional — omit it (or use &quot;student&quot;) for students; &quot;leader&quot;
-            marks a grader as the section&apos;s leader.
+            Supports CSV, TSV, or tab-separated files. Headers are auto-detected and optional. The role column is
+            optional — omit it (or use &quot;student&quot;) for students; &quot;leader&quot; marks a grader as the
+            section&apos;s leader.
           </Typography.Paragraph>
         </div>
       ) : (
@@ -972,7 +969,6 @@ const ManageSections: React.FC<IManageSectionsProps> = (props) => {
         columns={columns}
         data={data}
         actions={actions}
-        breadcrumbs={<Breadcrumb items={[{ title: 'Roster' }, { title: 'Sections' }]} />}
         titleInfo={tooltips.admin.sectionRoster.title}
       />
     </>

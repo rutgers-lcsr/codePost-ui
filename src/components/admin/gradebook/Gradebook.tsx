@@ -1,10 +1,18 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Alert, Card, Empty, Flex, Input, Progress, Select, Spin, Table, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Empty, Flex, Input, Progress, Select, Spin, Table, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { ORANGE_TAG } from '../../../theme/tagStyles';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import CPButton from '../../core/CPButton';
-import { Course, GradebookAssignmentCell, GradebookQuizCell, GradebookResponse, ResponseError } from '../../../api-client';
+import CPAdminDetail from '../other/CPAdminDetail';
+import {
+  Course,
+  GradebookAssignmentCell,
+  GradebookQuizCell,
+  GradebookResponse,
+  ResponseError,
+} from '../../../api-client';
 import ExportModal from './ExportModal';
 import {
   IGradebookRow,
@@ -19,21 +27,19 @@ import { useGradebook } from './queries';
 import { PAGE_SIZE_OPTIONS } from '../../utils/LocalSettings';
 import useDefaultPageSize from '../../utils/useDefaultPageSize';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
-const Muted: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Text type="secondary">{children}</Text>
-);
+const Muted: React.FC<{ children: React.ReactNode }> = ({ children }) => <Text type="secondary">{children}</Text>;
 
 const renderAssignmentCell = (cell?: GradebookAssignmentCell) => {
   if (cell?.grade != null) return Number(cell.grade);
-  if (cell?.hasSubmission && !cell.isFinalized) return <Tag color="orange">Pending</Tag>;
+  if (cell?.hasSubmission && !cell.isFinalized) return <Tag style={ORANGE_TAG}>Pending</Tag>;
   return <Muted>—</Muted>;
 };
 
 const renderQuizCell = (cell?: GradebookQuizCell) => {
   if (cell?.score != null) return `${Number(cell.score)} / ${Number(cell.maxScore)}`;
-  if (cell?.needsGrading) return <Tag color="orange">Pending</Tag>;
+  if (cell?.needsGrading) return <Tag style={ORANGE_TAG}>Pending</Tag>;
   return <Muted>—</Muted>;
 };
 
@@ -125,14 +131,18 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
         ? [
             {
               title: 'Assignments',
+              // One line per header with the full name on hover: long names used to wrap to four lines.
               children: data.assignments.map((a) => ({
                 title: (
-                  <>
-                    {a.name} <Muted>/{Number(a.points)}</Muted>
-                  </>
+                  <Tooltip title={`${a.name} · ${Number(a.points)} points`}>
+                    <span>
+                      {a.name} <Muted>/{Number(a.points)}</Muted>
+                    </span>
+                  </Tooltip>
                 ),
                 key: `a-${a.id}`,
                 width: 130,
+                ellipsis: { showTitle: false },
                 align: 'right' as const,
                 sorter: (x: IGradebookRow, y: IGradebookRow) => gradeOf(x, a.id) - gradeOf(y, a.id),
                 render: (_: unknown, row: IGradebookRow) => renderAssignmentCell(row.byAssignment[a.id]),
@@ -145,9 +155,14 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
             {
               title: 'Quizzes',
               children: data.quizzes.map((q) => ({
-                title: q.title,
+                title: (
+                  <Tooltip title={q.title}>
+                    <span>{q.title}</span>
+                  </Tooltip>
+                ),
                 key: `q-${q.id}`,
                 width: 140,
+                ellipsis: { showTitle: false },
                 align: 'right' as const,
                 sorter: (x: IGradebookRow, y: IGradebookRow) => quizRatioOf(x, q.id) - quizRatioOf(y, q.id),
                 render: (_: unknown, row: IGradebookRow) => renderQuizCell(row.byQuiz[q.id]),
@@ -221,7 +236,9 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
   const summary = () => summaryNode;
 
   if (rows.length === 0) {
-    return <Empty description="No students enrolled yet." image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />;
+    return (
+      <Empty description="No students enrolled yet." image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
+    );
   }
 
   return (
@@ -260,9 +277,17 @@ export const GradebookTable: React.FC<ITableProps> = ({ data }) => {
           showTotal: (total) => `${total} student${total === 1 ? '' : 's'}`,
         }}
         scroll={{ x: 'max-content' }}
+        // The header stays while 224 rows scroll; the summary row is already pinned.
+        sticky
         summary={summary}
-        locale={{ emptyText: <Empty description="No students match your filters." image={Empty.PRESENTED_IMAGE_SIMPLE} /> }}
+        locale={{
+          emptyText: <Empty description="No students match your filters." image={Empty.PRESENTED_IMAGE_SIMPLE} />,
+        }}
       />
+      {/* The two non-numeric cells, explained once instead of guessed at 224 times. */}
+      <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>
+        Pending: submitted, not graded yet · —: no submission
+      </Text>
     </>
   );
 };
@@ -287,60 +312,65 @@ const Gradebook: React.FC<IProps> = ({ course }) => {
       `${data.quizzes.length} quiz${data.quizzes.length === 1 ? '' : 'zes'}`,
     ].join(' · ');
 
+  // Same page frame as the other sections (breadcrumb, title, actions on the right).
   return (
-    <Card
-      title={
-        <Flex vertical gap={2}>
-          <Title level={2} style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-            Gradebook
-          </Title>
-          <Text type="secondary" style={{ fontSize: 13, fontWeight: 400 }}>
-            {stats ?? 'Finalized assignment grades and official quiz scores.'}
-          </Text>
-        </Flex>
-      }
-      extra={
-        <Flex gap={8}>
-          <Tooltip title="Reload the latest grades">
-            <CPButton icon={<ReloadOutlined />} loading={isRefetching} onClick={() => refetch()} aria-label="Reload gradebook" />
-          </Tooltip>
-          <Tooltip title="Choose columns and download a spreadsheet-ready CSV">
-            <CPButton icon={<DownloadOutlined />} onClick={() => setExportOpen(true)} disabled={!data}>
-              Export CSV
-            </CPButton>
-          </Tooltip>
-        </Flex>
-      }
-    >
-      {isLoading ? (
-        <Flex justify="center" style={{ padding: 48 }}>
-          <Spin size="large" />
-        </Flex>
-      ) : isError ? (
-        forbidden ? (
-          <Alert
-            type="warning"
-            showIcon
-            message="Only course admins can view the gradebook."
-            description="Ask a course admin for access, or use your per-assignment and per-quiz grading views."
+    <CPAdminDetail
+      goBack={null}
+      title="Gradebook"
+      titleInfo="Finalized assignment grades and official quiz scores."
+      actions={[
+        <Tooltip key="reload" title="Reload the latest grades">
+          <CPButton
+            icon={<ReloadOutlined />}
+            loading={isRefetching}
+            onClick={() => refetch()}
+            aria-label="Reload gradebook"
           />
-        ) : (
-          <Alert
-            type="error"
-            showIcon
-            message="The gradebook could not be loaded."
-            action={
-              <CPButton size="small" onClick={() => refetch()}>
-                Try again
-              </CPButton>
-            }
-          />
-        )
-      ) : data ? (
-        <GradebookTable data={data} />
-      ) : null}
-      {data && <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} course={course} data={data} />}
-    </Card>
+        </Tooltip>,
+        <Tooltip key="export" title="Choose columns and download a spreadsheet-ready CSV">
+          <CPButton icon={<DownloadOutlined />} onClick={() => setExportOpen(true)} disabled={!data}>
+            Export CSV
+          </CPButton>
+        </Tooltip>,
+      ]}
+      content={
+        <>
+          {stats && (
+            <Text type="secondary" style={{ display: 'block', fontSize: 13, marginBottom: 12 }}>
+              {stats}
+            </Text>
+          )}
+          {isLoading ? (
+            <Flex justify="center" style={{ padding: 48 }}>
+              <Spin size="large" />
+            </Flex>
+          ) : isError ? (
+            forbidden ? (
+              <Alert
+                type="warning"
+                showIcon
+                title="Only course admins can view the gradebook."
+                description="Ask a course admin for access, or use your per-assignment and per-quiz grading views."
+              />
+            ) : (
+              <Alert
+                type="error"
+                showIcon
+                title="The gradebook could not be loaded."
+                action={
+                  <CPButton size="small" onClick={() => refetch()}>
+                    Try again
+                  </CPButton>
+                }
+              />
+            )
+          ) : data ? (
+            <GradebookTable data={data} />
+          ) : null}
+          {data && <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} course={course} data={data} />}
+        </>
+      }
+    />
   );
 };
 

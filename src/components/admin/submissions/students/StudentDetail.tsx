@@ -490,7 +490,7 @@ const StudentDetail: React.FC<IProps> = (props) => {
             </Tooltip>
           )}
           <Dropdown menu={{ items: menuItems }} trigger={['click']} placement={'bottomRight'}>
-            <Button shape="circle" icon={<MenuOutlined />} />
+            <Button shape="circle" icon={<MenuOutlined />} aria-label="More actions" />
           </Dropdown>
         </div>
       ),

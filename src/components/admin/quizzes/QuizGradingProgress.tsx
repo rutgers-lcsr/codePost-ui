@@ -5,7 +5,7 @@
  * responses; powered by GET /courses/{id}/quizGradingProgress/ (admin-only).
  */
 import * as React from 'react';
-import { Alert, Breadcrumb, Button, Empty, Progress, Tooltip, Typography } from 'antd';
+import { Alert, Button, Empty, Progress, Tooltip, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Link, useLocation } from 'react-router';
 
@@ -27,10 +27,7 @@ const QuizGradingProgress: React.FC<IProps> = ({ course, graders, quizGraders })
   const { data, isLoading } = useQuizGradingProgress(course.id);
 
   const graderUniverse = (course.gradersCanGradeQuizzes ?? true) ? graders : quizGraders;
-  const rows = React.useMemo(
-    () => (data ? buildQuizProgressRows(data, graderUniverse) : []),
-    [data, graderUniverse],
-  );
+  const rows = React.useMemo(() => (data ? buildQuizProgressRows(data, graderUniverse) : []), [data, graderUniverse]);
   // Only quizzes with manual responses get a column — all-auto quizzes have nothing to track.
   const quizzes = React.useMemo(() => (data?.quizzes ?? []).filter((q) => q.totalManual > 0), [data]);
   const totalManual = quizzes.reduce((sum, q) => sum + q.totalManual, 0);
@@ -178,7 +175,6 @@ const QuizGradingProgress: React.FC<IProps> = ({ course, graders, quizGraders })
         />
       }
       tableProps={{ scroll: { x: 'max-content' } }}
-      breadcrumbs={<Breadcrumb items={[{ title: 'Quizzes' }, { title: 'Grading Progress' }]} />}
     />
   );
 };

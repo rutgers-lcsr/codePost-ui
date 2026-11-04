@@ -10,6 +10,7 @@ import {
   HistoryOutlined,
   InboxOutlined,
   PushpinOutlined,
+  QuestionCircleOutlined,
   SettingOutlined,
   TableOutlined,
   TeamOutlined,
@@ -21,16 +22,15 @@ import { Menu } from 'antd';
 import { Link, useLocation } from 'react-router';
 
 import { CLIENT_URL } from '../../../config';
-import withWindowWatcher, { IWithWindowWatcherProps } from '../../core/withWindowWatcher';
 import { useCourseCapabilities } from '../../../stores/usePermissionsStore';
 
-interface IAdminNavProps extends IWithWindowWatcherProps {
+interface IAdminNavProps {
   collapsed: boolean;
   baseURL: string;
   courseId?: number;
 }
 
-const DEFAULT_OPEN_KEYS = ['assignments', 'course-settings'];
+const DEFAULT_OPEN_KEYS = ['assignments'];
 
 const AdminNav: React.FC<IAdminNavProps> = (props) => {
   const location = useLocation();
@@ -51,6 +51,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
       setOpenKeys(DEFAULT_OPEN_KEYS);
     }
   }, [props.collapsed]);
+
   // Extract the base URL (up to /admin/courseName/period) by removing any nested paths
   const getCourseBaseURL = () => {
     // baseURL might be something like /admin/CourseName/Period/assignments/overview
@@ -81,9 +82,7 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     if (/\/roster\/sections(?:\/|$)/.test(pathname)) return 'roster/sections';
     if (/\/roster(?:\/|$)/.test(pathname)) return 'roster/students';
 
-    if (/\/settings\/webhooks(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname))
-      return 'course-settings/webhooks';
-    if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings/general';
+    if (/\/settings(?:\/|$)/.test(pathname) && !/\/assignments\//.test(pathname)) return 'course-settings';
 
     if (/\/course-files(?:\/|$)/.test(pathname)) return 'course-files';
 
@@ -100,6 +99,36 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     return 'assignments/overview';
   };
 
+  // The group that holds the current page always opens, so the sider shows where you are
+  // (Roster, Quizzes and Submissions used to stay shut on their own pages). User toggles are kept.
+  const selectedKey = getDefaultSelectedKey();
+  const activeGroup = selectedKey.includes('/') ? selectedKey.split('/')[0] : null;
+  React.useEffect(() => {
+    if (props.collapsed || !activeGroup) return;
+    setOpenKeys((keys) => (keys.includes(activeGroup) ? keys : [...keys, activeGroup]));
+  }, [activeGroup, props.collapsed]);
+
+  // The selected item is announced, not only tinted: the current page's link carries aria-current.
+  const navLink = (key: string, to: string, label: string) => (
+    <Link to={to} aria-current={selectedKey === key ? 'page' : undefined}>
+      {label}
+    </Link>
+  );
+
+  // A group opened near the bottom (Roster, Help) can land under the collapse trigger on short screens:
+  // after antd's ~200ms open motion, bring its last page into view.
+  const revealGroup = (keys: string[]) => {
+    const opened = keys.find((k) => !openKeys.includes(k));
+    if (!opened) return;
+    window.setTimeout(() => {
+      document
+        .querySelector(`.layout--admin__sider [data-menu-id$="-${opened}"]`)
+        ?.closest('.ant-menu-submenu')
+        ?.querySelector('.ant-menu-sub > li:last-child')
+        ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 350);
+  };
+
   const openLink = (url: string) => {
     const w = window.open(url, '_blank');
     if (w) {
@@ -108,142 +137,146 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
   };
 
   const main = (
-    <Menu
-      theme="dark"
-      openKeys={openKeys}
-      onOpenChange={(keys) => setOpenKeys(keys as string[])}
-      selectedKeys={[getDefaultSelectedKey()]}
-      mode="inline"
-      items={[
-        {
-          key: 'assignments',
-          icon: <FileTextOutlined />,
-          label: 'Assignments',
-          children: [
-            {
-              key: 'assignments/overview',
-              label: <Link to={`${courseBaseURL}/assignments/overview`}>Overview</Link>,
-            },
-            {
-              key: 'assignments/rubrics',
-              label: <Link to={`${courseBaseURL}/assignments/rubrics`}>Rubrics</Link>,
-            },
-            {
-              key: 'assignments/environment',
-              label: <Link to={`${courseBaseURL}/assignments/environment`}>Environment & Tests</Link>,
-            },
-            // TODO: Re-enable plagiarism at some point
-            // {
-            //   key: 'assignments/plagiarism',
-            //   label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
-            // },
-          ],
-        },
-        {
-          key: 'quizzes',
-          icon: <FormOutlined />,
-          label: 'Quizzes',
-          children: [
-            {
-              key: 'quizzes/overview',
-              label: <Link to={`${courseBaseURL}/quizzes`}>Overview</Link>,
-            },
-            {
-              key: 'quizzes/grading-progress',
-              label: <Link to={`${courseBaseURL}/quizzes/grading-progress`}>Grading Progress</Link>,
-            },
-          ],
-        },
-        ...(canEditSettings
-          ? [
+    <nav aria-label="Course pages">
+      <Menu
+        theme="dark"
+        openKeys={openKeys}
+        onOpenChange={(keys) => {
+          setOpenKeys(keys as string[]);
+          revealGroup(keys as string[]);
+        }}
+        selectedKeys={[selectedKey]}
+        mode="inline"
+        items={[
+          {
+            key: 'assignments',
+            icon: <FileTextOutlined />,
+            label: 'Assignments',
+            children: [
               {
-                key: 'course-files',
-                icon: <FolderOpenOutlined />,
-                label: <Link to={`${courseBaseURL}/course-files`}>Course Files</Link>,
+                key: 'assignments/overview',
+                label: navLink('assignments/overview', `${courseBaseURL}/assignments/overview`, 'All assignments'),
               },
-            ]
-          : []),
-        ...(canViewGradebook
-          ? [
               {
-                key: 'gradebook',
-                icon: <TableOutlined />,
-                label: <Link to={`${courseBaseURL}/gradebook`}>Gradebook</Link>,
+                key: 'assignments/rubrics',
+                label: navLink('assignments/rubrics', `${courseBaseURL}/assignments/rubrics`, 'Rubrics'),
               },
-            ]
-          : []),
-        {
-          key: 'submissions',
-          icon: <InboxOutlined />,
-          label: 'Submissions',
-          children: [
-            {
-              key: 'submissions/by_student',
-              label: <Link to={`${courseBaseURL}/submissions/by_student`}>By Student</Link>,
-            },
-            {
-              key: 'submissions/by_grader',
-              label: <Link to={`${courseBaseURL}/submissions/by_grader`}>By Grader</Link>,
-            },
-          ],
-        },
-        {
-          key: 'roster',
-          icon: <TeamOutlined />,
-          label: 'Roster',
-          children: [
-            {
-              key: 'roster/students',
-              label: <Link to={`${courseBaseURL}/roster/students`}>Students</Link>,
-            },
-            {
-              key: 'roster/graders',
-              label: <Link to={`${courseBaseURL}/roster/graders`}>Graders</Link>,
-            },
-            {
-              key: 'roster/admins',
-              label: <Link to={`${courseBaseURL}/roster/admins`}>Admins</Link>,
-            },
-            ...(canManageSections
-              ? [
-                  {
-                    key: 'roster/sections',
-                    label: <Link to={`${courseBaseURL}/roster/sections`}>Sections</Link>,
-                  },
-                ]
-              : []),
-          ],
-        },
-        ...(canViewAuditLog
-          ? [
               {
-                key: 'activity-log',
-                icon: <AuditOutlined />,
-                label: <Link to={`${courseBaseURL}/activity-log`}>Activity Log</Link>,
+                key: 'assignments/environment',
+                label: navLink(
+                  'assignments/environment',
+                  `${courseBaseURL}/assignments/environment`,
+                  'Environment & Tests',
+                ),
               },
-            ]
-          : []),
-        ...(canEditSettings
-          ? [
+              // TODO: Re-enable plagiarism at some point
+              // {
+              //   key: 'assignments/plagiarism',
+              //   label: <Link to={`${courseBaseURL}/assignments/plagiarism`}>Plagiarism</Link>,
+              // },
+            ],
+          },
+          {
+            key: 'quizzes',
+            icon: <FormOutlined />,
+            label: 'Quizzes',
+            children: [
               {
-                key: 'course-settings',
-                icon: <SettingOutlined />,
-                label: 'Course Settings',
-                children: [
-                  {
-                    key: 'course-settings/general',
-                    label: <Link to={`${courseBaseURL}/settings`}>General</Link>,
-                  },
-                  {
-                    key: 'course-settings/webhooks',
-                    label: <Link to={`${courseBaseURL}/settings/webhooks`}>Webhooks</Link>,
-                  },
-                ],
+                key: 'quizzes/overview',
+                label: navLink('quizzes/overview', `${courseBaseURL}/quizzes`, 'All quizzes'),
               },
-            ]
-          : []),
-      ]}
-    />
+              {
+                key: 'quizzes/grading-progress',
+                label: navLink(
+                  'quizzes/grading-progress',
+                  `${courseBaseURL}/quizzes/grading-progress`,
+                  'Grading Progress',
+                ),
+              },
+            ],
+          },
+          ...(canEditSettings
+            ? [
+                {
+                  key: 'course-files',
+                  icon: <FolderOpenOutlined />,
+                  label: navLink('course-files', `${courseBaseURL}/course-files`, 'Course Files'),
+                },
+              ]
+            : []),
+          ...(canViewGradebook
+            ? [
+                {
+                  key: 'gradebook',
+                  icon: <TableOutlined />,
+                  label: navLink('gradebook', `${courseBaseURL}/gradebook`, 'Gradebook'),
+                },
+              ]
+            : []),
+          {
+            key: 'submissions',
+            icon: <InboxOutlined />,
+            label: 'Submissions',
+            children: [
+              {
+                key: 'submissions/by_student',
+                label: navLink('submissions/by_student', `${courseBaseURL}/submissions/by_student`, 'By Student'),
+              },
+              {
+                key: 'submissions/by_grader',
+                label: navLink('submissions/by_grader', `${courseBaseURL}/submissions/by_grader`, 'By Grader'),
+              },
+            ],
+          },
+          {
+            key: 'roster',
+            icon: <TeamOutlined />,
+            label: 'Roster',
+            children: [
+              {
+                key: 'roster/students',
+                label: navLink('roster/students', `${courseBaseURL}/roster/students`, 'Students'),
+              },
+              {
+                key: 'roster/graders',
+                label: navLink('roster/graders', `${courseBaseURL}/roster/graders`, 'Graders'),
+              },
+              {
+                key: 'roster/admins',
+                label: navLink('roster/admins', `${courseBaseURL}/roster/admins`, 'Admins'),
+              },
+              ...(canManageSections
+                ? [
+                    {
+                      key: 'roster/sections',
+                      label: navLink('roster/sections', `${courseBaseURL}/roster/sections`, 'Sections'),
+                    },
+                  ]
+                : []),
+            ],
+          },
+          ...(canViewAuditLog
+            ? [
+                {
+                  key: 'activity-log',
+                  icon: <AuditOutlined />,
+                  label: navLink('activity-log', `${courseBaseURL}/activity-log`, 'Activity Log'),
+                },
+              ]
+            : []),
+          ...(canEditSettings
+            ? [
+                // One destination: the settings page carries its own section rail (Webhooks included).
+                {
+                  key: 'course-settings',
+                  icon: <SettingOutlined />,
+                  label: navLink('course-settings', `${courseBaseURL}/settings`, 'Course Settings'),
+                },
+              ]
+            : []),
+        ]}
+      />
+    </nav>
   );
 
   const footer = (
@@ -255,45 +288,47 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
           margin: '8px 16px',
         }}
       />
+      {/* Four reference links behind one Help entry, so the course navigation stays the sider's subject. */}
       <Menu
         theme="dark"
         mode="inline"
         selectedKeys={[]}
+        onOpenChange={(keys) => revealGroup(keys as string[])}
         items={[
           {
-            key: 'docs',
-            icon: <PushpinOutlined />,
-            label: <Link to="/docs">Docs</Link>,
-          },
-          {
-            key: 'api-reference',
-            icon: <ApiOutlined />,
-            label: 'API Reference',
-            onClick: () => openLink('https://codepost-api.cs.rutgers.edu/api/schema/elements/'),
-          },
-          {
-            key: 'changelog',
-            icon: <HistoryOutlined />,
-            label: <Link to="/docs/changelog">Changelog</Link>,
-          },
-          {
-            key: 'scholarship',
-            icon: <TrophyOutlined />,
-            label: 'Scholarship',
-            style: {
-              whiteSpace: 'normal',
-              height: 'auto',
-              lineHeight: 1.4,
-              display: 'flex',
-              alignItems: 'center',
-            },
-            onClick: () => openLink(`${CLIENT_URL}/scholarships/computer-science-education`),
+            key: 'help',
+            icon: <QuestionCircleOutlined />,
+            label: 'Help',
+            children: [
+              {
+                key: 'docs',
+                icon: <PushpinOutlined />,
+                label: <Link to="/docs">Docs</Link>,
+              },
+              {
+                key: 'api-reference',
+                icon: <ApiOutlined />,
+                label: 'API Reference',
+                onClick: () => openLink('https://codepost-api.cs.rutgers.edu/api/schema/elements/'),
+              },
+              {
+                key: 'changelog',
+                icon: <HistoryOutlined />,
+                label: <Link to="/docs/changelog">Changelog</Link>,
+              },
+              {
+                key: 'scholarship',
+                icon: <TrophyOutlined />,
+                label: 'Scholarship',
+                onClick: () => openLink(`${CLIENT_URL}/scholarships/computer-science-education`),
+              },
+            ],
           },
         ]}
       />
       <div
         style={{
-          color: 'rgba(255, 255, 255, 0.25)',
+          color: 'rgba(255, 255, 255, 0.55)',
           paddingLeft: 24,
           paddingBottom: 16,
           fontSize: 11,
@@ -305,13 +340,16 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
     </div>
   );
 
+  // Fills the sider below its header (flex column, see _layout.scss) and scrolls on its own,
+  // so the footer links are always reachable above the collapse trigger.
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        height: props.windowheight - 90 - 48,
+        flex: 1,
+        minHeight: 0,
         paddingTop: 8,
         overflow: 'auto',
       }}
@@ -323,4 +361,4 @@ const AdminNav: React.FC<IAdminNavProps> = (props) => {
   );
 };
 
-export default withWindowWatcher(AdminNav);
+export default AdminNav;

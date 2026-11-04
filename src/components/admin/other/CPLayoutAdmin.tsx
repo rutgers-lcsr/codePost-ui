@@ -68,21 +68,39 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
   // FIXME: Hardcoded height variables
   return (
     <Layout id="Admin" className="layout--admin" style={{ overflowX: 'auto' }}>
+      {/* Lands on the page title, past the sider and the header row, when the page has one. */}
+      <a
+        className="cp-skip-link"
+        href="#admin-main"
+        onClick={(e) => {
+          const title = document.querySelector<HTMLElement>('#admin-main h1');
+          if (!title) return;
+          e.preventDefault();
+          title.tabIndex = -1;
+          title.focus();
+        }}
+      >
+        Skip to content
+      </a>
       {hasSider && (
         <Sider
+          className="layout--admin__sider"
+          aria-label="Course navigation"
           collapsible={props.collapsible ? props.collapsible : false}
           width={siderWidth}
           collapsed={collapsed}
           onCollapse={onCollapse}
           style={{
             height: '100%',
-            overflow: 'hidden auto',
+            // The nav itself scrolls (see _layout.scss) so the footer links stay reachable
+            // above the collapse trigger instead of being clipped on short screens.
+            overflow: 'hidden',
             zIndex: 10,
             position: 'relative',
             borderRight: '1px solid rgba(255, 255, 255, 0.04)',
           }}
         >
-          <Header className="layout--admin__sider__header" style={{ height: 'fit-content' }}>
+          <Header className="layout--admin__sider__header" style={{ height: 'fit-content', flex: 'none' }}>
             {collapsed ? (
               <Link to="/">
                 <CPLogo cpType="icon" onClick={openHome} />
@@ -95,7 +113,7 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
                 <div
                   style={{
                     textAlign: 'center',
-                    color: 'rgba(255, 255, 255, 0.35)',
+                    color: 'rgba(255, 255, 255, 0.6)',
                     lineHeight: 1,
                     paddingTop: 12,
                     fontSize: 11,
@@ -111,6 +129,8 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
         </Sider>
       )}
       <Layout
+        id="admin-main"
+        tabIndex={-1}
         style={{
           minWidth: layoutVars.minWidths.admin,
           height: '100%',
@@ -119,7 +139,9 @@ const CPLayoutAdmin = (props: ICPLayoutAdminProps) => {
           background: '#f4f5f7',
         }}
       >
-        <Header className="layout--admin__header">{props.header}</Header>
+        <Header className="layout--admin__header" aria-label="Course and account">
+          {props.header}
+        </Header>
         {props.banner && windowSize.width > layoutVars.breakpoints.smallScreen.admin && (
           <Header className="layout--admin__banner">{props.banner}</Header>
         )}

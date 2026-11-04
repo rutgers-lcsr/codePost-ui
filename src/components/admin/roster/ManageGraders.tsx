@@ -10,7 +10,7 @@ import { useMemo, useCallback } from 'react';
 import { DisconnectOutlined, MailOutlined, ProfileOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Alert, Breadcrumb, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
+import { Alert, Button, Empty, message, Modal, Space, Popconfirm, Tooltip } from 'antd';
 
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 
@@ -398,18 +398,24 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
           <Space>
             {!hasActivated && (
               <Tooltip title="Send activation email">
-                <Button shape="circle" icon={<MailOutlined />} onClick={() => sendActivationEmail(graderEmail)} />
+                <Button
+                  shape="circle"
+                  icon={<MailOutlined />}
+                  aria-label={`Send activation email to ${graderEmail}`}
+                  onClick={() => sendActivationEmail(graderEmail)}
+                />
               </Tooltip>
             )}
             <Tooltip title="Open profile">
               <Link to={location.pathname.replace('roster/graders', `submissions/by_grader/${graderEmail}`)}>
-                <Button shape="circle" icon={<ProfileOutlined />} />
+                <Button shape="circle" icon={<ProfileOutlined />} aria-label={`Open profile for ${graderEmail}`} />
               </Link>
             </Tooltip>
             <Tooltip title="Unenroll">
               <Button
                 shape="circle"
                 icon={<UserDeleteOutlined />}
+                aria-label={`Unenroll ${graderEmail}`}
                 disabled={!canManageRoster}
                 onClick={() => removeGrader(graderEmail)}
               />
@@ -471,16 +477,6 @@ const ManageGraders: React.FC<IManageGradersProps> = (props) => {
       columns={columns}
       data={data}
       actions={actions}
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            { title: 'Roster' },
-            {
-              title: <a>Graders</a>,
-            },
-          ]}
-        />
-      }
       titleInfo={tooltips.admin.graderRoster.title}
     />
   );

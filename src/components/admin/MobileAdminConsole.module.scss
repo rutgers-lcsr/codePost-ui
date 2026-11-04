@@ -2,6 +2,8 @@
 
 /* Mobile Admin Console — Shell layout only. Components use Ant Design. */
 
+@use '../../styles/abstracts/colors';
+
 .mobileShell {
   position: fixed;
   inset: 0;
@@ -88,7 +90,7 @@
   transition: color 0.2s;
 
   &[data-active='true'] {
-    color: #722ed1;
+    color: colors.$brandPrimary;
   }
 }
 

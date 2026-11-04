@@ -7,6 +7,7 @@
 import * as React from 'react';
 
 import {
+  ApiOutlined,
   BookOutlined,
   KeyOutlined,
   SafetyOutlined,
@@ -20,14 +21,17 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Descriptions, Flex, Form, Input, message, Select, Switch, Typography } from 'antd';
+import { Descriptions, Flex, Form, Input, message, Select, Skeleton, Switch, Typography } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 
 import CPButton from '../../../components/core/CPButton';
 
 /* codePost imports */
-import { Course } from '../../../api-client';
+import { Course, Webhook } from '../../../api-client';
+import { webhooksApi } from '../../../api-client/clients';
+import WebhooksTable from './WebhooksTable';
 import InputNumberOrNull from './InputNumberOrNull';
 import AISettingsCard from './AISettingsCard';
 import CourseAIUsageCard from './CourseAIUsageCard';
@@ -81,6 +85,7 @@ const ALL_SECTIONS: SectionDef[] = [
     description: 'Course-scoped keys',
     capability: 'manage_course_api_keys',
   },
+  { key: 'webhooks', label: 'Webhooks', icon: <ApiOutlined />, description: 'Event notifications' },
   {
     key: 'pending-agent-actions',
     label: 'Pending Agent Actions',
@@ -97,6 +102,18 @@ const ALL_SECTIONS: SectionDef[] = [
   },
   { key: 'info', label: 'Info', icon: <InfoCircleOutlined />, description: 'IDs and metadata' },
 ];
+
+/** Scroll `el` to the top and keep it there while the cards above it finish loading and grow;
+ *  a single scroll on mount ends up thousands of pixels off once AI usage and API keys arrive. */
+const followDeepLink = (el: HTMLElement) => {
+  const pin = () => el.scrollIntoView({ block: 'start' });
+  requestAnimationFrame(pin);
+  const grower = el.parentElement;
+  if (!grower || typeof ResizeObserver === 'undefined') return;
+  const observer = new ResizeObserver(pin);
+  observer.observe(grower);
+  window.setTimeout(() => observer.disconnect(), 3000);
+};
 
 /**********************************************************************************************************************/
 /* Main component
@@ -197,18 +214,11 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
     }
   };
 
-  // Deep link: /settings?section=<key> scrolls to that section once its
-  // capability-gated ref exists (agents hand instructors this link to reach
-  // Pending agent actions with ?section=pending-agent-actions).
+  // Deep link: /settings?section=<key> scrolls to that section the moment its element mounts
+  // (agents hand instructors this link to reach Pending agent actions; the sidebar's old
+  // Webhooks link lands on ?section=webhooks). The sections mount inside a child that renders
+  // after this panel, so the hook lives in the ref callback rather than a parent effect.
   const deepLinkedSection = React.useRef(false);
-  React.useEffect(() => {
-    if (deepLinkedSection.current) return;
-    const wanted = new URLSearchParams(window.location.search).get('section');
-    if (wanted && sections.some((s) => s.key === wanted) && sectionRefs.current[wanted]) {
-      deepLinkedSection.current = true;
-      scrollToSection(wanted);
-    }
-  }, [sections]);
 
   const resetForm = () => {
     form.resetFields();
@@ -264,6 +274,10 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
 
   const setSectionRef = (key: string) => (el: HTMLDivElement | null) => {
     sectionRefs.current[key] = el;
+    if (el && !deepLinkedSection.current && key === new URLSearchParams(window.location.search).get('section')) {
+      deepLinkedSection.current = true;
+      followDeepLink(el);
+    }
   };
 
   return (
@@ -271,7 +285,15 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
       {/* ── Sticky top bar ── */}
       <div style={styles.topBar}>
         <Flex align="center" justify="space-between" style={{ width: '100%' }}>
-          <Text style={styles.topBarTitle}>Settings</Text>
+          {/* Same title treatment as the other sections' page frames; the rail is the breadcrumb. */}
+          <div>
+            <h1
+              className="cp-label cp-label--large cp-label--bold"
+              style={{ margin: 0, color: 'inherit', letterSpacing: '-0.3px', lineHeight: 1.2 }}
+            >
+              Course Settings
+            </h1>
+          </div>
           <Flex gap={8}>
             {isDirty && (
               <div style={styles.unsavedPill}>
@@ -306,7 +328,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
         <nav style={styles.rail} aria-label="Settings sections">
           <div style={styles.railSticky}>
             <div style={styles.railHeader}>
-              <Text style={styles.railHeaderText}>SETTINGS</Text>
+              <Text style={styles.railHeaderText}>Sections</Text>
             </div>
             <div ref={railInnerRef} style={styles.railInner}>
               {/* sliding indicator */}
@@ -331,7 +353,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
                     <span
                       style={{
                         ...styles.navIconBadge,
-                        color: isActive ? colors.brandPrimary : 'rgba(0, 0, 0, 0.3)',
+                        color: isActive ? colors.brandPrimary : 'rgba(0, 0, 0, 0.5)',
                       }}
                     >
                       {section.icon}
@@ -381,6 +403,14 @@ interface IFormProps {
 
 const SettingsForm: React.FC<IFormProps> = (props) => {
   const { form, thisCourse, makeDirty, setSectionRef, visibleSectionKeys } = props;
+
+  // Webhooks are their own resources; the course only lists their ids.
+  const { data: webhooks = [], isLoading: webhooksLoading } = useQuery({
+    queryKey: ['webhooks', thisCourse.id] as const,
+    queryFn: async (): Promise<Webhook[]> =>
+      Promise.all((thisCourse.webhooks ?? []).map((id: number) => webhooksApi.retrieve({ id }))),
+    enabled: (thisCourse.webhooks?.length ?? 0) > 0,
+  });
 
   // Watch form values for visual feedback
   const showStudentsStatistics = Form.useWatch('showStudentsStatistics', form);
@@ -535,7 +565,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                       >
                         {setting.title}
                       </Text>
-                      <Text style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(0, 0, 0, 0.4)' }}>
+                      <Text style={{ fontSize: 13, lineHeight: '20px', color: 'rgba(0, 0, 0, 0.6)' }}>
                         {setting.description}
                       </Text>
                     </Flex>
@@ -565,7 +595,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                     <Text strong style={{ fontSize: 14, color: 'rgba(0, 0, 0, 0.78)' }}>
                       Late Day Credits
                     </Text>
-                    <Text style={{ fontSize: 13, color: 'rgba(0, 0, 0, 0.4)' }}>
+                    <Text style={{ fontSize: 13, color: 'rgba(0, 0, 0, 0.6)' }}>
                       Maximum late day credits a student can use per assignment.
                     </Text>
                   </Flex>
@@ -584,7 +614,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                     <Text strong style={{ fontSize: 14, color: 'rgba(0, 0, 0, 0.78)' }}>
                       Course Timezone
                     </Text>
-                    <Text style={{ fontSize: 13, color: 'rgba(0, 0, 0, 0.4)' }}>
+                    <Text style={{ fontSize: 13, color: 'rgba(0, 0, 0, 0.6)' }}>
                       All dates and times are displayed in this timezone.
                     </Text>
                   </Flex>
@@ -629,6 +659,16 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
         </div>
       )}
 
+      {/* ━━━ Webhooks ━━━ */}
+      {visibleSectionKeys.includes('webhooks') && (
+        <div ref={setSectionRef('webhooks')} style={styles.section}>
+          <SectionHeader icon={<ApiOutlined />} title="Webhooks" subtitle="Send course events to your own services" />
+          <div style={styles.sectionCard}>
+            {webhooksLoading ? <Skeleton active /> : <WebhooksTable webhooks={webhooks} course={thisCourse} />}
+          </div>
+        </div>
+      )}
+
       {/* ━━━ Pending Agent Actions ━━━ */}
       {visibleSectionKeys.includes('pending-agent-actions') && (
         <div ref={setSectionRef('pending-agent-actions')} style={styles.section}>
@@ -652,7 +692,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
             size="small"
             styles={{
               label: {
-                color: 'rgba(0, 0, 0, 0.45)',
+                color: 'rgba(0, 0, 0, 0.6)',
                 fontWeight: 500,
                 fontSize: 13,
                 padding: '12px 24px',
@@ -692,7 +732,10 @@ const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; subtitle: 
       <span style={{ fontSize: 16, color: colors.brandPrimary, lineHeight: 1 }}>{icon}</span>
     </div>
     <Flex vertical gap={1}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      {/* Real section headings under the page's h1, so the card titles (h3) keep a valid order. */}
+      <Text role="heading" aria-level={2} style={styles.sectionTitle}>
+        {title}
+      </Text>
       <Text style={styles.sectionSubtitle}>{subtitle}</Text>
     </Flex>
   </Flex>
@@ -703,9 +746,12 @@ const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; subtitle: 
 /***********************************************************************************/
 
 const styles: Record<string, React.CSSProperties> = {
+  // Same frame as CPAdminDetail: a white card with the console's margins and shadow.
   shell: {
-    background: '#f5f6f8',
-    minHeight: '100%',
+    margin: '24px 48px',
+    background: '#fff',
+    borderRadius: 8,
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
   },
 
   // ── Top bar ──
@@ -713,21 +759,15 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 32px',
-    height: 56,
+    // Same title line as the other sections' page frames (28px above the h1 in CPAdminDetail).
+    padding: '28px 36px 16px',
+    minHeight: 56,
     background: '#fff',
     borderBottom: '1px solid rgba(0, 0, 0, 0.07)',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+    borderRadius: '8px 8px 0 0',
     position: 'sticky' as const,
     top: 0,
     zIndex: 10,
-  },
-  topBarTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: 'rgba(0, 0, 0, 0.45)',
-    letterSpacing: '0.3px',
-    textTransform: 'uppercase' as const,
   },
   unsavedPill: {
     display: 'inline-flex',
@@ -754,7 +794,6 @@ const styles: Record<string, React.CSSProperties> = {
   // ── Body layout ──
   body: {
     display: 'flex',
-    minHeight: 'calc(100dvh - 56px)',
   },
 
   // ── Left rail ──
@@ -773,10 +812,10 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '20px 20px 12px 20px',
   },
   railHeaderText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: '1.2px',
-    color: 'rgba(0, 0, 0, 0.25)',
+    color: 'rgba(0, 0, 0, 0.55)',
     textTransform: 'uppercase' as const,
   },
   railInner: {
@@ -831,14 +870,15 @@ const styles: Record<string, React.CSSProperties> = {
   // ── Content ──
   content: {
     flex: 1,
-    padding: '36px 48px 0 48px',
+    padding: '36px 48px 24px 48px',
     minWidth: 0,
   },
 
   // ── Sections ──
   section: {
     marginBottom: 40,
-    scrollMarginTop: 20,
+    // Clears the sticky title bar (56px) when a rail click or deep link scrolls a section into view.
+    scrollMarginTop: 76,
     maxWidth: 780,
   },
   sectionIconBadge: {
@@ -861,7 +901,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: 'rgba(0, 0, 0, 0.38)',
+    color: 'rgba(0, 0, 0, 0.6)',
     lineHeight: '18px',
   },
   sectionCard: {

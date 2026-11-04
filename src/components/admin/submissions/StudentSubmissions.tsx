@@ -9,7 +9,7 @@ import React, { useMemo, useState } from 'react';
 import { PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Empty, Typography, Button, Tooltip } from 'antd';
+import { Empty, Typography, Button, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 
 /* other library imports */
@@ -313,11 +313,7 @@ const StudentIndexRoute: React.FC<{
   return (
     <TableDetail
       loadComplete={loadComplete}
-      title={
-        <Typography.Text strong style={{ fontSize: '16px' }}>
-          Submissions by Student
-        </Typography.Text>
-      }
+      title="Submissions by Student"
       isEmpty={assignments.length === 0 || numStudents === 0}
       emptyNode={
         <Empty
@@ -368,7 +364,6 @@ const StudentIndexRoute: React.FC<{
           />
         </Tooltip>,
       ]}
-      breadcrumbs={<Breadcrumb items={[{ title: 'Submissions' }, { title: 'By Student' }]} />}
       titleInfo={tooltips.admin.studentSubmissions.title}
     />
   );

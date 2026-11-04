@@ -3,9 +3,9 @@
 /* Imports
 /**********************************************************************************************************************/
 
-import React, { useCallback } from 'react';
-import { DatePicker, Input, Select, Tag, Tooltip, Typography } from 'antd';
-import { CloseCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import React, { useCallback, useState } from 'react';
+import { Badge, DatePicker, Input, Popover, Select, Tag, Tooltip, Typography } from 'antd';
+import { CloseCircleOutlined, FilterOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 
 const { Text } = Typography;
@@ -51,8 +51,12 @@ interface IProps {
 /* Constants
 /**********************************************************************************************************************/
 
-const SEARCH_INPUT_WIDTH = 220;
-const FILTER_SELECT_WIDTH = 330;
+const SEARCH_INPUT_WIDTH = 240;
+const STATUS_SELECT_WIDTH = 330;
+const MORE_FILTERS_WIDTH = 360;
+
+// The filters that live behind the "More filters" button (search and status stay inline).
+const MORE_FILTER_KEYS: (keyof AssignmentFilters)[] = ['progress', 'visibility', 'feedback', 'dateRange'];
 
 const STATUS_OPTIONS = [
   { label: 'All statuses', value: 'all' },
@@ -106,7 +110,8 @@ const FILTER_TOOLTIPS = {
     'Draft = hidden from students entirely. Visible = students see the name and due date only. Preview = students can also read the assignment files but not submit. Published = students can start work. Closed = submissions are no longer accepted (automatic once the deadline passes, or set manually). Archived = retired and hidden from students. Grade/feedback visibility is a separate setting controlled by the Feedback filter.',
   progress: 'Filters by grading progress across all submissions. Complete means every submission has been finalized.',
   visibility: 'Filters by whether the assignment appears in the Student Console.',
-  feedback: 'Filters by whether feedback is fully released. Live and per-student flows count as not released here — they reveal continuously rather than globally.',
+  feedback:
+    'Filters by whether feedback is fully released. Live and per-student flows count as not released here — they reveal continuously rather than globally.',
   dateRange: 'Show only assignments whose student upload due date falls within this range.',
 };
 
@@ -114,16 +119,14 @@ const FILTER_TOOLTIPS = {
 /* Helpers
 /**********************************************************************************************************************/
 
-const countActiveFilters = (filters: AssignmentFilters): number => {
-  let count = 0;
-  if (filters.searchText !== '') count++;
-  if (filters.status !== 'all') count++;
-  if (filters.progress !== 'all') count++;
-  if (filters.visibility !== 'all') count++;
-  if (filters.feedback !== 'all') count++;
-  if (filters.dateRange !== null) count++;
-  return count;
+const isDefault = (key: keyof AssignmentFilters, value: unknown): boolean => {
+  if (key === 'dateRange') return value === null;
+  if (key === 'searchText') return value === '';
+  return value === DEFAULT_FILTERS[key];
 };
+
+const countActiveFilters = (filters: AssignmentFilters, keys: (keyof AssignmentFilters)[]): number =>
+  keys.filter((key) => !isDefault(key, filters[key])).length;
 
 /** Return a human-readable label for a filter value, used in active filter tags. */
 const getFilterLabel = (key: keyof AssignmentFilters, value: unknown): string => {
@@ -186,7 +189,9 @@ const FilterField: React.FC<{ label: string; tooltip?: string; children: React.R
 /**********************************************************************************************************************/
 
 const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, totalCount, filteredCount }) => {
-  const activeFilterCount = countActiveFilters(filters);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const activeFilterCount = countActiveFilters(filters, Object.keys(DEFAULT_FILTERS) as (keyof AssignmentFilters)[]);
+  const moreActiveCount = countActiveFilters(filters, MORE_FILTER_KEYS);
   const isFiltered = activeFilterCount > 0;
 
   const update = useCallback(
@@ -211,66 +216,89 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
   const activeTags: { key: keyof AssignmentFilters; label: string }[] = [];
   (Object.keys(DEFAULT_FILTERS) as (keyof AssignmentFilters)[]).forEach((key) => {
     const value = filters[key];
-    const defaultValue = DEFAULT_FILTERS[key];
-    const isDefault =
-      key === 'dateRange' ? value === null : key === 'searchText' ? value === '' : value === defaultValue;
-    if (!isDefault) {
+    if (!isDefault(key, value)) {
       activeTags.push({ key, label: getFilterLabel(key, value) });
     }
   });
+
+  // The four less-used filters, stacked in a popover so the bar stays one row above the table.
+  const moreFilters = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: MORE_FILTERS_WIDTH, maxWidth: '80vw' }}>
+      <FilterField label="Grading progress" tooltip={FILTER_TOOLTIPS.progress}>
+        <Select<ProgressFilter>
+          value={filters.progress}
+          onChange={(val) => update({ progress: val })}
+          options={PROGRESS_OPTIONS}
+          style={{ width: '100%' }}
+          aria-label="Filter by grading progress"
+        />
+      </FilterField>
+
+      <FilterField label="Student visibility" tooltip={FILTER_TOOLTIPS.visibility}>
+        <Select<VisibilityFilter>
+          value={filters.visibility}
+          onChange={(val) => update({ visibility: val })}
+          options={VISIBILITY_OPTIONS}
+          style={{ width: '100%' }}
+          aria-label="Filter by student visibility"
+        />
+      </FilterField>
+
+      <FilterField label="Feedback" tooltip={FILTER_TOOLTIPS.feedback}>
+        <Select<FeedbackFilter>
+          value={filters.feedback}
+          onChange={(val) => update({ feedback: val })}
+          options={FEEDBACK_OPTIONS}
+          style={{ width: '100%' }}
+          aria-label="Filter by feedback released state"
+        />
+      </FilterField>
+
+      <FilterField label="Due date range" tooltip={FILTER_TOOLTIPS.dateRange}>
+        <DatePicker.RangePicker
+          value={filters.dateRange as [Dayjs, Dayjs] | null}
+          onChange={(range) => update({ dateRange: range ? [range[0] ?? null, range[1] ?? null] : null })}
+          placeholder={['Start date', 'End date']}
+          allowEmpty={[true, true]}
+          format="MMM D, YYYY"
+          style={{ width: '100%' }}
+          aria-label="Filter by student upload due date range"
+        />
+      </FilterField>
+
+      {moreActiveCount > 0 && (
+        <CPButton
+          cpType="secondary"
+          size="small"
+          icon={<CloseCircleOutlined />}
+          onClick={() => {
+            const reset: Partial<AssignmentFilters> = {};
+            MORE_FILTER_KEYS.forEach((key) => {
+              (reset as Record<string, unknown>)[key] = DEFAULT_FILTERS[key];
+            });
+            update(reset);
+          }}
+        >
+          Reset these filters
+        </CPButton>
+      )}
+    </div>
+  );
 
   return (
     <div
       style={{
         background: colors.neutralBackground,
         borderRadius: 8,
-        padding: '8px 16px',
+        padding: '10px 16px',
         marginBottom: 16,
         border: `1px solid ${colors.neutralDivider}`,
       }}
       role="search"
       aria-label="Assignment filters"
     >
-      {/* Header row */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 10,
-        }}
-      >
-        {/* Result count + clear all */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {isFiltered && (
-            <span
-              style={{ fontSize: 12, color: colors.neutralSecondaryText, whiteSpace: 'nowrap' }}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              Showing{' '}
-              <strong style={{ color: filteredCount === 0 ? '#f5222d' : colors.neutralMainText }}>
-                {filteredCount}
-              </strong>{' '}
-              of <strong style={{ color: colors.neutralMainText }}>{totalCount}</strong> assignments
-            </span>
-          )}
-          {isFiltered && (
-            <CPButton
-              cpType="secondary"
-              size="small"
-              icon={<CloseCircleOutlined />}
-              onClick={clearAll}
-              aria-label="Clear all filters"
-            >
-              Clear all
-            </CPButton>
-          )}
-        </div>
-      </div>
-
-      {/* Filter controls row — each with a descriptive label */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', marginBottom: 4 }}>
+      {/* Filter controls row: search and status inline, everything else behind one button */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
         <FilterField label="Search">
           <Input.Search
             value={filters.searchText}
@@ -288,57 +316,62 @@ const AssignmentsFilterBar: React.FC<IProps> = ({ filters, onFiltersChange, tota
             value={filters.status}
             onChange={(val) => update({ status: val })}
             options={STATUS_OPTIONS}
-            style={{ width: FILTER_SELECT_WIDTH }}
+            style={{ width: STATUS_SELECT_WIDTH, maxWidth: '100%' }}
             aria-label="Filter by publishing status"
           />
         </FilterField>
 
-        <FilterField label="Grading progress" tooltip={FILTER_TOOLTIPS.progress}>
-          <Select<ProgressFilter>
-            value={filters.progress}
-            onChange={(val) => update({ progress: val })}
-            options={PROGRESS_OPTIONS}
-            style={{ width: FILTER_SELECT_WIDTH }}
-            aria-label="Filter by grading progress"
-          />
-        </FilterField>
+        <Popover
+          trigger="click"
+          placement="bottomLeft"
+          open={moreOpen}
+          onOpenChange={setMoreOpen}
+          title="More filters"
+          content={moreFilters}
+        >
+          <Badge count={moreActiveCount} size="small" offset={[-4, 4]}>
+            <CPButton
+              cpType="secondary"
+              icon={<FilterOutlined />}
+              aria-expanded={moreOpen}
+              aria-haspopup="dialog"
+              aria-label={moreActiveCount > 0 ? `More filters, ${moreActiveCount} active` : 'More filters'}
+            >
+              More filters
+            </CPButton>
+          </Badge>
+        </Popover>
 
-        <FilterField label="Student visibility" tooltip={FILTER_TOOLTIPS.visibility}>
-          <Select<VisibilityFilter>
-            value={filters.visibility}
-            onChange={(val) => update({ visibility: val })}
-            options={VISIBILITY_OPTIONS}
-            style={{ width: FILTER_SELECT_WIDTH }}
-            aria-label="Filter by student visibility"
-          />
-        </FilterField>
-
-        <FilterField label="Feedback" tooltip={FILTER_TOOLTIPS.feedback}>
-          <Select<FeedbackFilter>
-            value={filters.feedback}
-            onChange={(val) => update({ feedback: val })}
-            options={FEEDBACK_OPTIONS}
-            style={{ width: FILTER_SELECT_WIDTH }}
-            aria-label="Filter by feedback released state"
-          />
-        </FilterField>
-
-        <FilterField label="Due date range" tooltip={FILTER_TOOLTIPS.dateRange}>
-          <DatePicker.RangePicker
-            value={filters.dateRange as [Dayjs, Dayjs] | null}
-            onChange={(range) => update({ dateRange: range ? [range[0] ?? null, range[1] ?? null] : null })}
-            placeholder={['Start date', 'End date']}
-            allowEmpty={[true, true]}
-            format="MMM D, YYYY"
-            aria-label="Filter by student upload due date range"
-          />
-        </FilterField>
+        {isFiltered && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto', paddingBottom: 4 }}>
+            <span
+              style={{ fontSize: 12, color: colors.neutralSecondaryText, whiteSpace: 'nowrap' }}
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              Showing{' '}
+              <strong style={{ color: filteredCount === 0 ? colors.actionRed : colors.neutralMainText }}>
+                {filteredCount}
+              </strong>{' '}
+              of <strong style={{ color: colors.neutralMainText }}>{totalCount}</strong> assignments
+            </span>
+            <CPButton
+              cpType="secondary"
+              size="small"
+              icon={<CloseCircleOutlined />}
+              onClick={clearAll}
+              aria-label="Clear all filters"
+            >
+              Clear all
+            </CPButton>
+          </div>
+        )}
       </div>
 
       {/* Row 2: active filter tags (only when any active) */}
       {activeTags.length > 0 && (
         <div
-          style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}
+          style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}
           role="list"
           aria-label="Active filters"
         >

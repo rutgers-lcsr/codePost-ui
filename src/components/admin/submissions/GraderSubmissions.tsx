@@ -9,7 +9,7 @@ import * as React from 'react';
 import { PlusCircleOutlined, UserAddOutlined } from '@ant-design/icons';
 
 /* ant imports */
-import { Breadcrumb, Checkbox, Empty, Progress, Space, Typography, Tooltip } from 'antd';
+import { Checkbox, Empty, Progress, Space, Typography, Tooltip } from 'antd';
 
 /* other library imports */
 import dayjs from 'dayjs';
@@ -423,11 +423,7 @@ const GraderIndexRoute: React.FC<{
   return (
     <TableDetail
       loadComplete={loadComplete}
-      title={
-        <Typography.Title level={4} style={{ margin: 0 }}>
-          Submissions by Grader
-        </Typography.Title>
-      }
+      title="Submissions by Grader"
       isEmpty={numGraders === 0 || assignments.length === 0}
       emptyNode={
         <Empty
@@ -465,14 +461,6 @@ const GraderIndexRoute: React.FC<{
       data={data}
       actions={[toggleInactiveGraders]}
       tableProps={{ scroll: { x: 'max-content' } }}
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            { title: <Link to={currentBaseURL}>Submissions</Link> },
-            { title: <Link to={currentBaseURL}>By Grader</Link> },
-          ]}
-        />
-      }
       titleInfo={tooltips.admin.graderSubmissions.title}
     />
   );

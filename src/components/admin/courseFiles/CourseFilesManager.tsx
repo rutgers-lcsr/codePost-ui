@@ -8,7 +8,6 @@
 // binary as a base64 `data:` URI.
 import * as React from 'react';
 import {
-  Card,
   Empty,
   Flex,
   Form,
@@ -38,6 +37,7 @@ import {
 } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
+import CPAdminDetail from '../other/CPAdminDetail';
 import { courseFilesApi } from '../../../api-client/clients';
 import { Course, CourseFile } from '../../../api-client';
 import { apiErrorMessageAsync } from '../../../lib/apiError';
@@ -428,171 +428,168 @@ const CourseFilesManager: React.FC<IProps> = ({ course }) => {
     },
   ];
 
+  // Same page frame as the other sections (breadcrumb, title, primary action on the right).
   return (
-    <div style={{ padding: 24 }}>
-      <Typography.Title level={1} style={{ fontSize: 22, marginBottom: 4 }}>
-        Course Files
-      </Typography.Title>
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-        Upload course materials of any type (syllabi, slides, PDFs, images, datasets, or notes). Flip a file to{' '}
-        <Text strong>Students</Text> to show it in the course file directory on the student course page, or to{' '}
-        <Text strong>Public</Text> to share it with a link that needs no login. Text files can also be referenced in an
-        AI-generated question section's prompt as <Text code>{'{course_file:name}'}</Text>.
-      </Typography.Paragraph>
+    <CPAdminDetail
+      goBack={null}
+      title="Course Files"
+      actions={[
+        <CPButton key="add" cpType="primary" icon={<PlusOutlined />} onClick={openCreate}>
+          Add file
+        </CPButton>,
+      ]}
+      content={
+        <>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
+            Upload course materials of any type (syllabi, slides, PDFs, images, datasets, or notes). Flip a file to{' '}
+            <Text strong>Students</Text> to show it in the course file directory on the student course page, or to{' '}
+            <Text strong>Public</Text> to share it with a link that needs no login. Text files can also be referenced in
+            an AI-generated question section's prompt as <Text code>{'{course_file:name}'}</Text>.
+          </Typography.Paragraph>
 
-      <Card
-        title={
-          <Flex align="center" gap={8}>
-            <Typography.Title level={2} style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
-              Files
-            </Typography.Title>
-            <Tag color="blue">{files.length}</Tag>
-          </Flex>
-        }
-        extra={
-          <CPButton cpType="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            Add file
-          </CPButton>
-        }
-        styles={{ body: { padding: 0 } }}
-      >
-        {isLoading ? (
-          <Flex justify="center" style={{ padding: 40 }}>
-            <Spin />
-          </Flex>
-        ) : files.length === 0 ? (
-          <Empty description="No course files yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
-        ) : (
-          <Table dataSource={files} columns={columns} rowKey="id" size="small" pagination={false} />
-        )}
-      </Card>
-
-      <Modal
-        title={editing ? 'Edit Course File' : 'Add Course File'}
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onOk={handleSave}
-        okText={editing ? 'Save' : 'Add'}
-        confirmLoading={saving}
-        destroyOnHidden
-        width={640}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{ isPublic: false, studentVisible: false }}
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item label="Upload a file (optional)">
-            <Upload
-              showUploadList={false}
-              onChange={onUploadChange}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              customRequest={readFile as any}
-            >
-              <Button icon={<UploadOutlined />}>Choose file</Button>
-            </Upload>
-            <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
-              Any file type, up to {formatLimit(maxCourseFileBytes())}. Text files can also be edited below.
-            </Text>
-          </Form.Item>
-          <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please name the file.' }]}>
-            <Input placeholder="e.g., syllabus.pdf" maxLength={250} />
-          </Form.Item>
-          {binarySummary ? (
-            <Form.Item label="Contents">
-              {binarySummary.mime.startsWith('image/') ? (
-                <Image
-                  src={dataValue}
-                  alt={`Preview of ${nameValue || 'the uploaded image'}`}
-                  style={{ maxHeight: 240, maxWidth: '100%', objectFit: 'contain' }}
-                />
-              ) : null}
-              {binarySummary.mime === 'application/pdf' ? (
-                <div style={{ maxHeight: 400, overflow: 'auto', marginBottom: 8 }}>
-                  <React.Suspense fallback={lazyFallback}>
-                    <CourseFilePdfPreviewLazy dataUri={dataValue} />
-                  </React.Suspense>
-                </div>
-              ) : null}
-              <Text type="secondary" style={{ display: 'block' }}>
-                {binaryKindLabel(binarySummary.mime)} — {formatBytes(binarySummary.size)} ({binarySummary.mime}). Stored
-                as uploaded; upload a new file above to replace it.
+          {isLoading ? (
+            <Flex justify="center" style={{ padding: 40 }}>
+              <Spin />
+            </Flex>
+          ) : files.length === 0 ? (
+            <Empty description="No course files yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
+          ) : (
+            <>
+              <Text type="secondary" style={{ display: 'block', fontSize: 13, marginBottom: 8 }}>
+                {files.length} file{files.length === 1 ? '' : 's'}
               </Text>
-            </Form.Item>
-          ) : isMarkdownFile ? (
-            <Tabs
-              size="small"
-              items={[
-                {
-                  key: 'edit',
-                  label: 'Edit contents',
-                  children: (
-                    <Form.Item
-                      name="data"
-                      rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
-                    >
-                      <LazyContentsEditor name={nameValue} />
-                    </Form.Item>
-                  ),
-                },
-                {
-                  key: 'preview',
-                  label: 'Preview',
-                  children: (
-                    <div
-                      style={{
-                        maxHeight: 384,
-                        overflow: 'auto',
-                        border: '1px solid #d9d9d9',
-                        borderRadius: 6,
-                        padding: 12,
-                        marginBottom: 24,
-                      }}
-                    >
+              <Table dataSource={files} columns={columns} rowKey="id" size="small" pagination={false} />
+            </>
+          )}
+
+          <Modal
+            title={editing ? 'Edit Course File' : 'Add Course File'}
+            open={modalOpen}
+            onCancel={() => setModalOpen(false)}
+            onOk={handleSave}
+            okText={editing ? 'Save' : 'Add'}
+            confirmLoading={saving}
+            destroyOnHidden
+            width={640}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={{ isPublic: false, studentVisible: false }}
+              style={{ marginTop: 16 }}
+            >
+              <Form.Item label="Upload a file (optional)">
+                <Upload
+                  showUploadList={false}
+                  onChange={onUploadChange}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  customRequest={readFile as any}
+                >
+                  <Button icon={<UploadOutlined />}>Choose file</Button>
+                </Upload>
+                <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
+                  Any file type, up to {formatLimit(maxCourseFileBytes())}. Text files can also be edited below.
+                </Text>
+              </Form.Item>
+              <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please name the file.' }]}>
+                <Input placeholder="e.g., syllabus.pdf" maxLength={250} />
+              </Form.Item>
+              {binarySummary ? (
+                <Form.Item label="Contents">
+                  {binarySummary.mime.startsWith('image/') ? (
+                    <Image
+                      src={dataValue}
+                      alt={`Preview of ${nameValue || 'the uploaded image'}`}
+                      style={{ maxHeight: 240, maxWidth: '100%', objectFit: 'contain' }}
+                    />
+                  ) : null}
+                  {binarySummary.mime === 'application/pdf' ? (
+                    <div style={{ maxHeight: 400, overflow: 'auto', marginBottom: 8 }}>
                       <React.Suspense fallback={lazyFallback}>
-                        <MarkdownLazy>{dataValue}</MarkdownLazy>
+                        <CourseFilePdfPreviewLazy dataUri={dataValue} />
                       </React.Suspense>
                     </div>
-                  ),
-                },
-              ]}
-            />
-          ) : (
-            <Form.Item
-              name="data"
-              label="Contents"
-              rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
-            >
-              <LazyContentsEditor name={nameValue} />
-            </Form.Item>
-          )}
-          <Form.Item name="description" label="Description">
-            <Input.TextArea
-              autoSize={{ minRows: 2, maxRows: 4 }}
-              maxLength={2000}
-              placeholder="Optional description shown to students in the course file directory."
-            />
-          </Form.Item>
-          <Form.Item
-            name="studentVisible"
-            label="Visible to students"
-            valuePropName="checked"
-            extra="Students in this course can see and download the file from their course page."
-          >
-            <Switch />
-          </Form.Item>
-          <Form.Item
-            name="isPublic"
-            label="Public link"
-            valuePropName="checked"
-            extra="Anyone with the link can download this file — no login required."
-          >
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+                  ) : null}
+                  <Text type="secondary" style={{ display: 'block' }}>
+                    {binaryKindLabel(binarySummary.mime)} — {formatBytes(binarySummary.size)} ({binarySummary.mime}).
+                    Stored as uploaded; upload a new file above to replace it.
+                  </Text>
+                </Form.Item>
+              ) : isMarkdownFile ? (
+                <Tabs
+                  size="small"
+                  items={[
+                    {
+                      key: 'edit',
+                      label: 'Edit contents',
+                      children: (
+                        <Form.Item
+                          name="data"
+                          rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
+                        >
+                          <LazyContentsEditor name={nameValue} />
+                        </Form.Item>
+                      ),
+                    },
+                    {
+                      key: 'preview',
+                      label: 'Preview',
+                      children: (
+                        <div
+                          style={{
+                            maxHeight: 384,
+                            overflow: 'auto',
+                            border: '1px solid #d9d9d9',
+                            borderRadius: 6,
+                            padding: 12,
+                            marginBottom: 24,
+                          }}
+                        >
+                          <React.Suspense fallback={lazyFallback}>
+                            <MarkdownLazy>{dataValue}</MarkdownLazy>
+                          </React.Suspense>
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
+              ) : (
+                <Form.Item
+                  name="data"
+                  label="Contents"
+                  rules={[{ required: true, message: 'Add the file contents (upload or paste).' }]}
+                >
+                  <LazyContentsEditor name={nameValue} />
+                </Form.Item>
+              )}
+              <Form.Item name="description" label="Description">
+                <Input.TextArea
+                  autoSize={{ minRows: 2, maxRows: 4 }}
+                  maxLength={2000}
+                  placeholder="Optional description shown to students in the course file directory."
+                />
+              </Form.Item>
+              <Form.Item
+                name="studentVisible"
+                label="Visible to students"
+                valuePropName="checked"
+                extra="Students in this course can see and download the file from their course page."
+              >
+                <Switch />
+              </Form.Item>
+              <Form.Item
+                name="isPublic"
+                label="Public link"
+                valuePropName="checked"
+                extra="Anyone with the link can download this file — no login required."
+              >
+                <Switch />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </>
+      }
+    />
   );
 };
 

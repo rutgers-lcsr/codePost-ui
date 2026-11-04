@@ -1,6 +1,7 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import { Button, Empty, Flex, Modal, Space, Spin, Table, Tag, Typography, message } from 'antd';
+import { Button, Empty, Flex, Input, Modal, Space, Spin, Table, Tag, Tooltip, Typography, message } from 'antd';
+import { GREEN_TAG } from '../../../theme/tagStyles';
 import { DeleteOutlined, EditOutlined, FileDoneOutlined, PlusOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import CPButton from '../../core/CPButton';
@@ -39,6 +40,12 @@ const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }
   // Quizzes are created through the wizard (all settings up front, or Skip & create);
   // everything remains editable in the builder's Quiz Settings.
   const [wizardOpen, setWizardOpen] = React.useState(false);
+  // Twenty quizzes with near-identical names need a filter; a short list does not.
+  const [search, setSearch] = React.useState('');
+  const visibleQuizzes = React.useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? quizzes.filter((quiz) => quiz.title.toLowerCase().includes(q)) : quizzes;
+  }, [quizzes, search]);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: quizKeys.list(courseId) });
 
@@ -69,13 +76,16 @@ const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }
       dataIndex: 'title',
       key: 'title',
       render: (title: string, record: Quiz) => (
-        <Space>
-          <FileDoneOutlined aria-hidden style={{ color: '#198665' }} />
+        // Wrapping: in a narrow list the state tags drop under the title instead of
+        // squeezing it to one character per line.
+        <Space wrap size={[8, 4]}>
           {/* Focusable control gives keyboard/SR users a path to select the quiz; the
-              row-wide onClick below stays as a mouse convenience. */}
+              row-wide onClick below stays as a mouse convenience. The icon rides inside
+              the button so a wrapping title never strands it on its own line. */}
           <Button
             type="text"
             size="small"
+            icon={<FileDoneOutlined aria-hidden style={{ color: '#198665' }} />}
             onClick={() => onSelect(record)}
             aria-current={record.id === selectedQuizId ? 'true' : undefined}
             // Buttons are nowrap by default, which lets a long quiz title push the table
@@ -94,11 +104,15 @@ const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }
           {/* Same grey Draft chip idiom as the assignments table — unpublished quizzes are
               invisible to students, which instructors kept missing. */}
           {!record.isPublished && (
-            <Tag icon={<EditOutlined />} title="Hidden from students until you publish it (Settings → Published)" data-testid="quiz-draft-tag">
+            <Tag
+              icon={<EditOutlined />}
+              title="Hidden from students until you publish it (Settings → Published)"
+              data-testid="quiz-draft-tag"
+            >
               Draft
             </Tag>
           )}
-          {record.assignment != null && <Tag color="green">Attached</Tag>}
+          {record.assignment != null && <Tag style={GREEN_TAG}>Attached</Tag>}
           {(record.generatedSections ?? []).length > 0 && <MissingSetsTag quizId={record.id!} />}
         </Space>
       ),
@@ -121,17 +135,19 @@ const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }
       key: 'actions',
       width: 48,
       render: (_: unknown, record: Quiz) => (
-        <Button
-          size="small"
-          danger
-          icon={<DeleteOutlined />}
-          aria-label={`Delete quiz: ${record.title}`}
-          title="Delete quiz"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDelete(record);
-          }}
-        />
+        <Tooltip title="Delete quiz">
+          <Button
+            size="small"
+            danger
+            className="cp-quiet-delete"
+            icon={<DeleteOutlined />}
+            aria-label={`Delete quiz: ${record.title}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(record);
+            }}
+          />
+        </Tooltip>
       ),
     },
   ];
@@ -154,15 +170,37 @@ const QuizzesListPanel: React.FC<IProps> = ({ course, selectedQuizId, onSelect }
         }
         styles={{ body: { padding: 0 } }}
       >
+        {/* The same filter idiom as the assignments page: a full-width search above the list. */}
+        {quizzes.length > 5 && (
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>
+            <Input.Search
+              allowClear
+              placeholder={`Search ${quizzes.length} quizzes by title`}
+              aria-label="Search quizzes by title"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        )}
         {isLoading ? (
           <Flex justify="center" style={{ padding: 40 }}>
             <Spin />
           </Flex>
         ) : quizzes.length === 0 ? (
           <Empty description="No quizzes yet" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
+        ) : visibleQuizzes.length === 0 ? (
+          <Empty
+            description={`No quizzes match “${search.trim()}”`}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            style={{ padding: 32 }}
+          >
+            <Button size="small" onClick={() => setSearch('')}>
+              Clear search
+            </Button>
+          </Empty>
         ) : (
           <Table
-            dataSource={quizzes}
+            dataSource={visibleQuizzes}
             columns={columns}
             rowKey="id"
             size="small"

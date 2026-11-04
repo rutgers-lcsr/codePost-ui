@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useMemo, useState } from 'react';
-import { Breadcrumb, Button, DatePicker, Select, Table, Tag, Empty, Skeleton } from 'antd';
+import { Button, DatePicker, Select, Table, Tag, Empty, Skeleton } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -115,10 +115,34 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
   // Reset to page 1 when filters change
   const resetPage = useCallback(() => setPage(1), []);
 
-  const handleStudentFilter = useCallback((v: string | undefined) => { setStudentFilter(v); resetPage(); }, [resetPage]);
-  const handleAssignmentFilter = useCallback((v: number | undefined) => { setAssignmentFilter(v); resetPage(); }, [resetPage]);
-  const handleEventTypeFilter = useCallback((v: string | undefined) => { setEventTypeFilter(v); resetPage(); }, [resetPage]);
-  const handleDateRange = useCallback((dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => { setDateRange(dates); resetPage(); }, [resetPage]);
+  const handleStudentFilter = useCallback(
+    (v: string | undefined) => {
+      setStudentFilter(v);
+      resetPage();
+    },
+    [resetPage],
+  );
+  const handleAssignmentFilter = useCallback(
+    (v: number | undefined) => {
+      setAssignmentFilter(v);
+      resetPage();
+    },
+    [resetPage],
+  );
+  const handleEventTypeFilter = useCallback(
+    (v: string | undefined) => {
+      setEventTypeFilter(v);
+      resetPage();
+    },
+    [resetPage],
+  );
+  const handleDateRange = useCallback(
+    (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+      setDateRange(dates);
+      resetPage();
+    },
+    [resetPage],
+  );
 
   const handleExport = async () => {
     setExporting(true);
@@ -195,10 +219,6 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
     },
   ];
 
-  const breadcrumbs = (
-    <Breadcrumb items={[{ title: currentCourse.name }, { title: currentCourse.period }, { title: 'Activity Log' }]} />
-  );
-
   const filters = (
     <div
       style={{
@@ -247,7 +267,6 @@ const ActivityLog: React.FC<IProps> = ({ currentCourse, assignments, students })
   return (
     <CPAdminDetail
       goBack={null}
-      breadcrumbs={breadcrumbs}
       title="Activity Log"
       actions={[
         <Button key="export" icon={<DownloadOutlined />} onClick={handleExport} loading={exporting}>

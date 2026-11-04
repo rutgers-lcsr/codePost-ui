@@ -2,13 +2,22 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { BookOutlined, FolderOutlined, InboxOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons';
-import { Button, Card, Empty, Flex, Input, Statistic, Tag, Typography } from 'antd';
+import {
+  BookOutlined,
+  CheckCircleOutlined,
+  FolderOutlined,
+  InboxOutlined,
+  SearchOutlined,
+  TeamOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
+import { Button, Card, Empty, Flex, Input, Tag, Typography } from 'antd';
 import { motion } from 'motion/react';
 
 import { Course } from '../../api-client';
 import { encodedCourseLink } from '../core/CourseMenu';
 import { useAdminDashboardData } from './useAdminDashboardData';
+import { useAssignmentsQuery } from './hooks/useAssignmentsQuery';
 import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import styles from './AdminDashboard.module.scss';
@@ -21,7 +30,6 @@ const { Title, Text } = Typography;
 
 interface AdminDashboardProps {
   courses: Course[];
-  userEmail: string;
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -36,10 +44,45 @@ function getGreeting(): string {
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
+/* CourseAttention                                                           */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/** One line per active course answering "does anything here need me?" — unclaimed
+ *  submissions are the one thing only an admin can resolve. One aggregate request per
+ *  course, shared with the course's own pages through the query cache. */
+const CourseAttention: React.FC<{ course: Course }> = ({ course }) => {
+  const { data: assignments, isPending } = useAssignmentsQuery(course);
+  const unclaimed = (assignments ?? []).reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0);
+  const lineStyle: React.CSSProperties = { fontSize: 12, display: 'block', height: 20, marginTop: 8 };
+
+  if (isPending) return <div style={lineStyle} aria-hidden />;
+  if (!assignments?.length) {
+    return (
+      <Text type="secondary" style={lineStyle}>
+        No assignments yet
+      </Text>
+    );
+  }
+  if (unclaimed > 0) {
+    return (
+      <Text strong style={lineStyle}>
+        {/* orange-7: 3.9:1, fine for an icon; the words carry the message in default text. */}
+        <WarningOutlined style={{ color: '#d46b08' }} /> {unclaimed} unclaimed submission{unclaimed === 1 ? '' : 's'}
+      </Text>
+    );
+  }
+  return (
+    <Text type="secondary" style={lineStyle}>
+      <CheckCircleOutlined /> Nothing waiting for a grader
+    </Text>
+  );
+};
+
+/* ────────────────────────────────────────────────────────────────────────── */
 /* Component                                                                 */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses }) => {
   const { stats, activeCourses, archivedCourses } = useAdminDashboardData(courses);
   const prefetchCourse = usePrefetchCourse();
   const [searchText, setSearchText] = useState('');
@@ -49,9 +92,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
   useEffect(() => {
     LOCAL_SETTINGS.defaultCourse.setter(0);
   }, []);
-
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   /* ── Unique periods, sorted newest-first ────────────────────────────── */
 
@@ -103,7 +143,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
 
   if (courses.length === 0) {
     return (
-      <div className={styles.dashboard}>
+      <main className={styles.dashboard}>
         <Empty
           image={<InboxOutlined style={{ fontSize: 48, color: '#bbb' }} />}
           description={
@@ -117,40 +157,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
           }
           style={{ padding: '80px 0' }}
         />
-      </div>
+      </main>
     );
   }
 
   /* ── Render ──────────────────────────────────────────────────────────── */
 
   return (
-    <div className={styles.dashboard}>
+    // The same landmarks as the course pages: a main region with one h1 and h2 sections.
+    <main className={styles.dashboard}>
       {/* ── Greeting ────────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 36 }}>
-        <Title level={2} style={{ margin: 0, fontSize: 28 }}>
-          {getGreeting()}, {displayName}
+        {/* No name: the API only knows the email, and a title-cased login is not a name. */}
+        <Title level={1} style={{ margin: 0, fontSize: 28 }}>
+          {getGreeting()}
         </Title>
+        {/* The counts live here once, in a sentence, instead of a row of number tiles. */}
         <Text type="secondary" style={{ fontSize: 15 }}>
-          {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'}
-          {stats.archivedCourses > 0 && `, ${stats.archivedCourses} archived`}
+          {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'} ·{' '}
+          {stats.totalStudents.toLocaleString()} student{stats.totalStudents === 1 ? '' : 's'} ·{' '}
+          {stats.totalAssignments.toLocaleString()} assignment{stats.totalAssignments === 1 ? '' : 's'}
+          {stats.archivedCourses > 0 && ` · ${stats.archivedCourses} archived`}
         </Text>
       </div>
-
-      {/* ── Summary stats ───────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <Card style={{ marginBottom: 32, padding: '8px 0' }}>
-          <Flex justify="space-around" wrap="wrap" gap={24}>
-            <Statistic title="Active courses" value={stats.activeCourses} valueStyle={{ color: '#198665' }} />
-            <Statistic title="Total students" value={stats.totalStudents} valueStyle={{ color: '#1677ff' }} />
-            <Statistic title="Assignments" value={stats.totalAssignments} valueStyle={{ color: '#fa8c16' }} />
-            <Statistic title="Archived" value={stats.archivedCourses} />
-          </Flex>
-        </Card>
-      </motion.div>
 
       {/* ── Filter bar ────────────────────────────────────────────────── */}
       {(courses.length > 5 || sortedPeriods.length > 1) && (
@@ -198,7 +227,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
         >
           <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <Title level={3} style={{ margin: 0, fontSize: 16 }}>
+            <Title level={2} style={{ margin: 0, fontSize: 16 }}>
               Your Courses
             </Title>
             <Tag>{filteredActive.length}</Tag>
@@ -232,6 +261,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
                         <TeamOutlined /> {course.studentCount ?? 0} student{(course.studentCount ?? 0) === 1 ? '' : 's'}
                       </Text>
                     </Flex>
+                    <CourseAttention course={course} />
                   </Card>
                 </Link>
               </motion.div>
@@ -250,7 +280,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
         >
           <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
             <FolderOutlined style={{ color: '#999' }} />
-            <Title level={3} style={{ margin: 0, fontSize: 16 }}>
+            <Title level={2} style={{ margin: 0, fontSize: 16 }}>
               Archived
             </Title>
             <Tag>{filteredArchived.length}</Tag>
@@ -309,7 +339,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses, userEmail }) =
           style={{ padding: '48px 0' }}
         />
       )}
-    </div>
+    </main>
   );
 };
 

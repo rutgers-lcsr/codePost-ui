@@ -78,14 +78,13 @@ const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
   const subheaderLeft = useMemo(
     () => [
       <div key="title" style={{ display: 'flex', alignItems: 'center' }}>
-        <div
-          role="heading"
-          aria-level={1}
+        {/* A real h1 (not role=heading) so heading navigation and the skip link find it. */}
+        <h1
           className="cp-label cp-label--large cp-label--bold"
-          style={{ letterSpacing: '-0.3px' }}
+          style={{ margin: 0, color: 'inherit', letterSpacing: '-0.3px' }}
         >
           {title}
-        </div>
+        </h1>
         {titleTooltip}
       </div>,
     ],
@@ -116,7 +115,13 @@ const CPAdminDetail: React.FC<ICPAdminDetailProps> = ({
       <Layout>
         <Header className="layout--admin__subheader">
           {goBackElement}
-          <CPFlex left={[<div key="breadcrumbs">{breadcrumbs}</div>]} right={[]} gutterSize={BREADCRUMB_GUTTER_SIZE} />
+          {breadcrumbs && (
+            <CPFlex
+              left={[<div key="breadcrumbs">{breadcrumbs}</div>]}
+              right={[]}
+              gutterSize={BREADCRUMB_GUTTER_SIZE}
+            />
+          )}
           <CPFlex left={subheaderLeft} right={actions} gutterSize={gutterSize} />
         </Header>
         <div className="layout--admin__content">{content}</div>

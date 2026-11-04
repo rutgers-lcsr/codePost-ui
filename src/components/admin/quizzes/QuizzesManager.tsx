@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Col, Empty, Row, Tabs, Typography } from 'antd';
 import { Course, QuestionBank, Quiz } from '../../../api-client';
+import CPAdminDetail from '../other/CPAdminDetail';
 import QuestionBanksPanel from './QuestionBanksPanel';
 import QuestionsPanel from './QuestionsPanel';
 import QuizzesListPanel from './QuizzesListPanel';
@@ -56,24 +57,29 @@ const QuizzesManager: React.FC<IProps> = ({ course }) => {
     </Row>
   );
 
+  // Same page frame as the other sections (breadcrumb, title, white card).
   return (
-    <div style={{ padding: 24 }}>
-      <Typography.Title level={1} style={{ fontSize: 22, marginBottom: 4 }}>
-        Quizzes
-      </Typography.Title>
-      <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-        Author reusable question banks, then assemble questions into quizzes and attach them to assignments. A question
-        can live in several banks and be reused across quizzes.
-      </Typography.Paragraph>
+    <CPAdminDetail
+      goBack={null}
+      title="Quizzes"
+      actions={[]}
+      content={
+        <>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
+            Author reusable question banks, then assemble questions into quizzes and attach them to assignments. A
+            question can live in several banks and be reused across quizzes.
+          </Typography.Paragraph>
 
-      <Tabs
-        defaultActiveKey="quizzes"
-        items={[
-          { key: 'quizzes', label: 'Quizzes', children: quizzesTab },
-          { key: 'banks', label: 'Question Banks', children: banksTab },
-        ]}
-      />
-    </div>
+          <Tabs
+            defaultActiveKey="quizzes"
+            items={[
+              { key: 'quizzes', label: 'Quizzes', children: quizzesTab },
+              { key: 'banks', label: 'Question Banks', children: banksTab },
+            ]}
+          />
+        </>
+      }
+    />
   );
 };
 

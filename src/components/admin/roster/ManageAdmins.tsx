@@ -10,7 +10,7 @@ import { useCallback, useMemo } from 'react';
 import { DisconnectOutlined, MailOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 /* style imports */
-import { Breadcrumb, Button, message, Modal, Space, Tooltip } from 'antd';
+import { Button, message, Modal, Space, Tooltip } from 'antd';
 
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 
@@ -209,13 +209,19 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
           <Space>
             {!hasActivated && !isSelf && (
               <Tooltip title="Send activation email">
-                <Button shape="circle" icon={<MailOutlined />} onClick={() => sendActivationEmail(adminEmail)} />
+                <Button
+                  shape="circle"
+                  icon={<MailOutlined />}
+                  aria-label={`Send activation email to ${adminEmail}`}
+                  onClick={() => sendActivationEmail(adminEmail)}
+                />
               </Tooltip>
             )}
             <Tooltip title={isSelf ? tooltips.admin.adminRoster.removeSelf : 'Unenroll'}>
               <Button
                 shape="circle"
                 icon={<UserDeleteOutlined />}
+                aria-label={`Unenroll ${adminEmail}`}
                 disabled={isSelf || !canManageRoster}
                 onClick={isSelf || !canManageRoster ? undefined : () => removeAdmin(adminEmail)}
               />
@@ -235,16 +241,6 @@ const ManageAdmins: React.FC<IManageAdminsProps> = (props) => {
       columns={columns}
       data={data}
       actions={actions}
-      breadcrumbs={
-        <Breadcrumb
-          items={[
-            { title: 'Roster' },
-            {
-              title: <a>Admins</a>,
-            },
-          ]}
-        />
-      }
       titleInfo={tooltips.admin.adminRoster.title}
     />
   );

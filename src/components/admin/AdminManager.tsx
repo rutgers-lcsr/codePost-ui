@@ -87,7 +87,7 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
         </span>,
         <Referral key="referral" user={user} theme="light" />,
         <RoleMenu key="header-roles" user={user} thisApp={USER_TYPE.ADMIN} theme="light" />,
-        <Link className="internal-link" key="settings" to="/settings">
+        <Link className="internal-link" key="settings" to="/settings" aria-label="Account settings">
           <SettingOutlined />
         </Link>,
         <Button key="header-logout" onClick={handleLogout}>
@@ -102,7 +102,7 @@ const AdminDashboardOrRedirect: React.FC<IAdminManagerProps> = (props) => {
     <div id="Admin">
       <CPLayoutAdmin
         header={header}
-        detail={<AdminDashboard courses={initialCourses} userEmail={user.email!} />}
+        detail={<AdminDashboard courses={initialCourses} />}
         navigation={() => null}
         hasSider={false}
         role={USER_TYPE.ADMIN}

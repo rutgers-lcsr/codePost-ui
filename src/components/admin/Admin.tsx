@@ -740,7 +740,7 @@ const Admin: React.FC<IComponentProps> = (props) => {
     <Referral key="referral" user={props.user} theme="light" />,
     <RoleMenu key="header-roles" user={props.user} thisApp={USER_TYPE.ADMIN} theme="light" />,
     <CPTooltip key="settings" title={tooltips.management.header.settings} hideThisOnHideTips={true}>
-      <Link className="internal-link" to="/settings">
+      <Link className="internal-link" to="/settings" aria-label="Account settings">
         <SettingOutlined />
       </Link>
     </CPTooltip>,

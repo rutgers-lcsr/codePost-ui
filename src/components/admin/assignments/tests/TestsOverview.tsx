@@ -6,7 +6,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router';
 
-import { Breadcrumb, Button, Empty } from 'antd';
+import { Button, Empty } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 
 import { TableDetail } from '../../other/TableDetail';
@@ -76,7 +76,11 @@ const TestsOverview = (props: IProps) => {
       assignment: assignment.name,
       edit: (
         <Link to={`${location.pathname}/${encodeForLink(assignment.name)}/edit`}>
-          <Button loading={assignment.environment ? envBuildStatuses[assignment.environment] === 1 : false}>
+          {/* Same convention as the Rubrics page: "Create" is the primary call to action, "Edit" is quiet. */}
+          <Button
+            type={assignment.environment ? 'default' : 'primary'}
+            loading={assignment.environment ? envBuildStatuses[assignment.environment] === 1 : false}
+          >
             {assignment.environment ? (envBuildStatuses[assignment.environment] === 1 ? 'Building' : 'Edit') : 'Create'}
           </Button>
         </Link>
@@ -103,7 +107,6 @@ const TestsOverview = (props: IProps) => {
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={<Breadcrumb items={[{ title: 'Assignments' }, { title: 'Environment & Tests' }]} />}
     />
   );
 };

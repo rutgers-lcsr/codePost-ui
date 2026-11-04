@@ -250,7 +250,7 @@ const TableDetail: React.FC<IProps> = ({
     return {
       showSizeChanger: true,
       pageSizeOptions: PAGE_SIZE_OPTIONS,
-      position: ['bottomRight' as const],
+      placement: ['bottomEnd' as const],
       pageSize,
       onShowSizeChange: (_current: number, size: number) => setPageSize(size),
       onChange: (_page: number, size: number) => setPageSize(size),
@@ -324,6 +324,7 @@ const TableDetail: React.FC<IProps> = ({
             placeholder={SEARCH_PLACEHOLDER}
             style={{ width: SEARCH_INPUT_WIDTH }}
             allowClear
+            aria-label="Search this table"
           />
         </div>
       )}

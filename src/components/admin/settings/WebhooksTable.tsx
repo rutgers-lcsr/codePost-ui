@@ -258,15 +258,16 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
       editable: true,
     },
     {
-      title: 'Last Triggered',
+      title: 'Last run',
       dataIndex: 'lastTriggered',
     },
     {
-      title: 'Latest Status',
+      title: 'Status',
       dataIndex: 'status',
     },
     {
-      title: '',
+      // A header with text: screen readers announce the column, and axe's empty-table-header passes.
+      title: 'Remove',
       dataIndex: 'delete',
       render: (_, record) =>
         dataSource.length >= 1 ? (
@@ -318,6 +319,7 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
         </Button>
       </Dropdown>
       <Table
+        scroll={{ x: 'max-content' }}
         components={components}
         rowClassName={() => 'editable-row'}
         bordered

@@ -34,7 +34,6 @@ import {
   Input,
   message,
   Progress,
-  Segmented,
   Spin,
   Statistic,
   Select,
@@ -47,7 +46,7 @@ import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 
-import { AssignmentFeedbackStatusEnum, Course, CourseAuditEvent, User } from '../../api-client';
+import { AssignmentFeedbackStatusEnum, AssignmentStateEnum, Course, CourseAuditEvent, User } from '../../api-client';
 import { assignmentsApi } from '../../api-client/clients';
 import { Assignment } from '../../types/common';
 import { assignmentKeys } from '../../lib/queryKeys';
@@ -56,6 +55,7 @@ import { useAssignmentsQuery } from './hooks/useAssignmentsQuery';
 import { CourseAuditLogService } from '../../services/courseAuditLog';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import { clickableProps } from '../core/clickable';
+import { colors } from '../../theme/colors';
 import styles from './MobileAdminConsole.module.scss';
 
 const { Title, Text } = Typography;
@@ -105,6 +105,20 @@ function getGradingProgress(a: Assignment): number {
   return Math.round(((a.submissions_finalized_count ?? 0) / total) * 100);
 }
 
+/** Lifecycle labels and tag colours — the same words the desktop assignments table uses. */
+const STATE_TAG: Record<AssignmentStateEnum, { label: string; color: string }> = {
+  [AssignmentStateEnum.Draft]: { label: 'Draft', color: 'default' },
+  [AssignmentStateEnum.Visible]: { label: 'Visible', color: 'gold' },
+  [AssignmentStateEnum.Preview]: { label: 'Preview', color: 'blue' },
+  [AssignmentStateEnum.Published]: { label: 'Published', color: 'green' },
+  [AssignmentStateEnum.Closed]: { label: 'Closed', color: 'volcano' },
+  [AssignmentStateEnum.Archived]: { label: 'Archived', color: 'default' },
+};
+const STATE_ORDER = Object.keys(STATE_TAG) as AssignmentStateEnum[];
+
+/** What students experience right now (a past deadline closes a published assignment). */
+const stateOf = (a: Assignment): AssignmentStateEnum => a.effectiveState ?? a.state ?? AssignmentStateEnum.Draft;
+
 function formatEventType(eventType: string): string {
   return eventType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -130,7 +144,7 @@ function timeAgo(dateStr: string): string {
 const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course, onBack }) => {
   const queryClient = useQueryClient();
   const { data: assignments = [], isLoading } = useAssignmentsQuery(course);
-  const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [assignmentFilter, setAssignmentFilter] = useState<AssignmentStateEnum | 'all'>('all');
   const [assignmentSearch, setAssignmentSearch] = useState('');
   const [savingField, setSavingField] = useState<string | null>(null);
 
@@ -152,8 +166,7 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
 
   const filteredAssignments = useMemo(() => {
     let list = assignments;
-    if (assignmentFilter === 'published') list = list.filter((a) => a.isReleased);
-    else if (assignmentFilter === 'draft') list = list.filter((a) => !a.isReleased);
+    if (assignmentFilter !== 'all') list = list.filter((a) => stateOf(a) === assignmentFilter);
     if (assignmentSearch) {
       const q = assignmentSearch.toLowerCase();
       list = list.filter((a) => a.name.toLowerCase().includes(q));
@@ -232,17 +245,19 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
         </Flex>
       </Card>
 
-      {/* Assignment filter + search */}
-      <Segmented
-        block
+      {/* Assignment filter + search — the same six statuses as the desktop table */}
+      <Select<AssignmentStateEnum | 'all'>
         value={assignmentFilter}
-        onChange={(val) => setAssignmentFilter(val as 'all' | 'published' | 'draft')}
+        onChange={setAssignmentFilter}
+        aria-label="Filter assignments by status"
+        style={{ width: '100%', marginBottom: 8 }}
         options={[
-          { label: `All (${assignments.length})`, value: 'all' },
-          { label: 'Published', value: 'published' },
-          { label: 'Drafts', value: 'draft' },
+          { value: 'all', label: `All statuses (${assignments.length})` },
+          ...STATE_ORDER.map((s) => ({
+            value: s,
+            label: `${STATE_TAG[s].label} (${assignments.filter((a) => stateOf(a) === s).length})`,
+          })),
         ]}
-        style={{ marginBottom: 8 }}
       />
       {assignments.length > 4 && (
         <Input
@@ -292,9 +307,7 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                               <Text strong style={{ fontSize: 14 }}>
                                 {a.name}
                               </Text>
-                              <Tag color={a.isReleased ? 'success' : 'default'}>
-                                {a.isReleased ? 'Published' : 'Draft'}
-                              </Tag>
+                              <Tag color={STATE_TAG[stateOf(a)].color}>{STATE_TAG[stateOf(a)].label}</Tag>
                             </Flex>
                             <Flex gap={12} wrap style={{ marginTop: 4 }}>
                               <Text type="secondary" style={{ fontSize: 12 }}>
@@ -351,33 +364,21 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
                               </div>
                             )}
 
-                            {/* Visibility */}
+                            {/* Status — the stored lifecycle state; the API retired the old
+                                published/visible switches, so this is the one control. */}
                             <div>
                               <Text strong style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
-                                <EyeOutlined /> Visibility
+                                <EyeOutlined /> Status
                               </Text>
-                              <Flex vertical gap={8}>
-                                <Flex justify="space-between" align="center">
-                                  <Text style={{ fontSize: 13 }}>Published</Text>
-                                  <Switch
-                                    size="small"
-                                    checked={!!a.isReleased}
-                                    loading={isSaving(a.id, 'isReleased,isVisible')}
-                                    onChange={(checked) =>
-                                      handleUpdateAssignment(a.id, { isReleased: checked, isVisible: checked })
-                                    }
-                                  />
-                                </Flex>
-                                <Flex justify="space-between" align="center">
-                                  <Text style={{ fontSize: 13 }}>Visible to students</Text>
-                                  <Switch
-                                    size="small"
-                                    checked={!!a.isVisible}
-                                    loading={isSaving(a.id, 'isVisible')}
-                                    onChange={(checked) => handleUpdateAssignment(a.id, { isVisible: checked })}
-                                  />
-                                </Flex>
-                              </Flex>
+                              <Select<AssignmentStateEnum>
+                                size="small"
+                                style={{ width: '100%' }}
+                                value={a.state ?? stateOf(a)}
+                                loading={isSaving(a.id, 'state')}
+                                onChange={(state) => handleUpdateAssignment(a.id, { state })}
+                                aria-label={`Status of ${a.name}`}
+                                options={STATE_ORDER.map((s) => ({ value: s, label: STATE_TAG[s].label }))}
+                              />
                             </div>
 
                             {/* Grades & Feedback */}
@@ -517,7 +518,7 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
               ? 'No assignments match your search'
               : assignmentFilter === 'all'
                 ? 'No assignments yet'
-                : `No ${assignmentFilter} assignments`
+                : `No ${STATE_TAG[assignmentFilter].label.toLowerCase()} assignments`
           }
         />
       )}
@@ -645,7 +646,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
       {uniqueEventTypes.length > 1 && (
         <Flex wrap gap={6} style={{ marginBottom: 16 }}>
           <Tag
-            color={selectedEventType === null ? 'purple' : undefined}
+            color={selectedEventType === null ? 'green' : undefined}
             style={{ cursor: 'pointer' }}
             {...clickableProps(() => setSelectedEventType(null))}
           >
@@ -654,7 +655,7 @@ const ActivityFeed: React.FC<{ courses: Course[] }> = ({ courses }) => {
           {uniqueEventTypes.map((type) => (
             <Tag
               key={type}
-              color={selectedEventType === type ? 'purple' : undefined}
+              color={selectedEventType === type ? 'green' : undefined}
               style={{ cursor: 'pointer' }}
               {...clickableProps(() => setSelectedEventType(selectedEventType === type ? null : type))}
             >
@@ -788,7 +789,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
       <div className={styles.scrollContent}>
         {/* Greeting */}
         <div style={{ marginBottom: 20 }}>
-          <Tag color="purple" style={{ marginBottom: 8 }}>
+          <Tag color="green" style={{ marginBottom: 8 }}>
             Admin
           </Tag>
           <Title level={3} style={{ margin: 0 }}>
@@ -796,21 +797,21 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
             {displayName ? `, ${displayName}` : ''}
           </Title>
           <Text type="secondary">
-            {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'} · {stats.totalStudents} students
+            {stats.activeCourses} active course{stats.activeCourses === 1 ? '' : 's'} · {stats.totalStudents} student
+            {stats.totalStudents === 1 ? '' : 's'}
           </Text>
         </div>
 
         {/* Summary stats */}
         <Card size="small" style={{ marginBottom: 20 }}>
           <Flex justify="space-around">
-            <Statistic
-              title="Active"
-              value={stats.activeCourses}
-              styles={{ content: { fontSize: 20, color: '#722ed1' } }}
-            />
+            {/* Plain counts, as on the desktop: colour here would read as status. */}
+            <Statistic title="Active" value={stats.activeCourses} styles={{ content: { fontSize: 20 } }} />
             <Statistic title="Students" value={stats.totalStudents} styles={{ content: { fontSize: 20 } }} />
             <Statistic title="Assignments" value={stats.totalAssignments} styles={{ content: { fontSize: 20 } }} />
-            <Statistic title="Archived" value={stats.archivedCourses} styles={{ content: { fontSize: 20 } }} />
+            {stats.archivedCourses > 0 && (
+              <Statistic title="Archived" value={stats.archivedCourses} styles={{ content: { fontSize: 20 } }} />
+            )}
           </Flex>
         </Card>
 
@@ -833,7 +834,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                 {uniquePeriods.map((period) => (
                   <Tag
                     key={period}
-                    color={selectedPeriod === period ? 'purple' : undefined}
+                    color={selectedPeriod === period ? 'green' : undefined}
                     style={{ cursor: 'pointer' }}
                     {...clickableProps(() => setSelectedPeriod(selectedPeriod === period ? null : period))}
                   >
@@ -849,11 +850,11 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
         {filteredActive.length > 0 && (
           <div style={{ marginBottom: 20 }}>
             <Flex align="center" gap={8} style={{ marginBottom: 10 }}>
-              <BookOutlined style={{ color: '#722ed1' }} />
+              <BookOutlined style={{ color: colors.brandPrimary }} />
               <Text strong style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Active Courses
               </Text>
-              <Badge count={filteredActive.length} size="small" color="purple" />
+              <Badge count={filteredActive.length} size="small" color={colors.brandPrimary} />
             </Flex>
 
             <Flex vertical gap={10}>
@@ -880,10 +881,12 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
                       </Flex>
                       <Flex gap={16} style={{ marginTop: 8 }}>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          <TeamOutlined /> {course.studentCount ?? 0} students
+                          <TeamOutlined /> {course.studentCount ?? 0} student
+                          {(course.studentCount ?? 0) === 1 ? '' : 's'}
                         </Text>
                         <Text type="secondary" style={{ fontSize: 12 }}>
-                          <BookOutlined /> {course.assignments?.length ?? 0} assignments
+                          <BookOutlined /> {course.assignments?.length ?? 0} assignment
+                          {(course.assignments?.length ?? 0) === 1 ? '' : 's'}
                         </Text>
                       </Flex>
                     </Card>
@@ -972,7 +975,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
 
       <Card size="small" style={{ marginBottom: 16 }}>
         <Flex gap={12} align="center">
-          <Avatar size={44} style={{ background: '#722ed1', flexShrink: 0 }}>
+          <Avatar size={44} style={{ background: colors.brandPrimary, flexShrink: 0 }}>
             {(displayName ?? userEmail).charAt(0).toUpperCase()}
           </Avatar>
           <div style={{ minWidth: 0 }}>
@@ -982,7 +985,7 @@ const MobileAdminConsole: React.FC<MobileAdminConsoleProps> = ({ courses, userEm
               {userEmail}
             </Text>
             <br />
-            <Tag color="purple" style={{ marginTop: 4 }}>
+            <Tag color="green" style={{ marginTop: 4 }}>
               Course Administrator
             </Tag>
           </div>

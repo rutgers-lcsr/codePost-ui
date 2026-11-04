@@ -6,7 +6,7 @@
 import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router';
 
-import { Breadcrumb, Button, Empty, Tag } from 'antd';
+import { Button, Empty, Tag } from 'antd';
 
 import { TableDetail } from '../../other/TableDetail';
 
@@ -53,7 +53,7 @@ const RubricOverview: React.FC<IProps> = ({ assignments, course }) => {
   const columns = useMemo(
     () => [
       { title: 'Assignment', key: 'assignment', dataIndex: 'assignment' },
-      { title: 'Edit', key: 'edit', dataIndex: 'edit', align: 'center' as const },
+      { title: 'Rubric', key: 'edit', dataIndex: 'edit', align: 'center' as const },
     ],
     [],
   );
@@ -95,22 +95,16 @@ const RubricOverview: React.FC<IProps> = ({ assignments, course }) => {
     [],
   );
 
-  const breadcrumbs = useMemo(
-    () => (
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <>
-                {course !== undefined && course.archived ? <Tag>Archived</Tag> : null}
-                Assignments
-              </>
-            ),
-          },
-          { title: TITLE },
-        ]}
-      />
-    ),
+  // The archived flag used to ride on a breadcrumb that only repeated the sidebar and the title.
+  const title = useMemo(
+    () =>
+      course !== undefined && course.archived ? (
+        <>
+          {TITLE} <Tag>Archived</Tag>
+        </>
+      ) : (
+        TITLE
+      ),
     [course],
   );
 
@@ -118,13 +112,12 @@ const RubricOverview: React.FC<IProps> = ({ assignments, course }) => {
     <TableDetail
       loadComplete={true}
       pagination={pagination}
-      title={TITLE}
+      title={title}
       isEmpty={isEmpty}
       emptyNode={emptyNode}
       columns={columns}
       data={data}
       actions={[]}
-      breadcrumbs={breadcrumbs}
     />
   );
 };

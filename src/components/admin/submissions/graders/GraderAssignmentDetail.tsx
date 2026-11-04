@@ -211,14 +211,20 @@ const GraderAssignmentDetail: React.FC<IProps> = (props) => {
         actions: (
           <div style={{ whiteSpace: 'nowrap' }}>
             <Tooltip title="Open Submission">
-              <Button shape="circle" icon={<CodeOutlined />} onClick={open} style={{ marginRight: 8 }} />
+              <Button
+                shape="circle"
+                icon={<CodeOutlined />}
+                aria-label="Open submission"
+                onClick={open}
+                style={{ marginRight: 8 }}
+              />
             </Tooltip>
             <Popconfirm
               title="Are you sure you want to delete this submission?"
               onConfirm={() => removeSubmission(submission)}
             >
               <Tooltip title="Delete Submission">
-                <Button shape="circle" icon={<DeleteOutlined />} danger />
+                <Button shape="circle" icon={<DeleteOutlined />} danger aria-label="Delete submission" />
               </Tooltip>
             </Popconfirm>
           </div>

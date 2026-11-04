@@ -6,7 +6,6 @@ import { Navigate, Route, Routes } from 'react-router';
 const ManageAssignments = lazy(() => import('./assignments/ManageAssignments'));
 const RosterManager = lazy(() => import('./roster/RosterManager'));
 const CourseSettingsPanel = lazy(() => import('./settings/CourseSettingsPanel'));
-const WebhooksPanel = lazy(() => import('./settings/WebhooksPanel'));
 const SubmissionsManager = lazy(() => import('./submissions/SubmissionsManager'));
 const ActivityLog = lazy(() => import('./activity-log/ActivityLog'));
 const QuizzesManager = lazy(() => import('./quizzes/QuizzesManager'));
@@ -206,15 +205,12 @@ const AdminRoutes: React.FC<AdminRoutesProps> = (props) => {
         <Route path="quizzes/*" element={<QuizzesManager course={props.course} />} />
         <Route path="gradebook" element={<Gradebook course={props.course} />} />
         <Route path="course-files" element={<CourseFilesManager course={props.course} />} />
-        <Route path="settings/webhooks" element={<WebhooksPanel currentCourse={props.course} />} />
+        {/* Webhooks live in the settings page's section rail now; old links still land there. */}
+        <Route path="settings/webhooks" element={<Navigate to="../settings?section=webhooks" replace />} />
         <Route
           path="activity-log"
           element={
-            <ActivityLog
-              currentCourse={props.course}
-              assignments={props.assignments}
-              students={props.students}
-            />
+            <ActivityLog currentCourse={props.course} assignments={props.assignments} students={props.students} />
           }
         />
         <Route
