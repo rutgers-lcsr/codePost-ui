@@ -10,6 +10,13 @@ interface LogInAsProps {
   replaceUser: (user: UserType, redirect: boolean, isSuperUser: boolean) => void;
 }
 
+// The impersonation request in flight, by target email. StrictMode's double effect and the
+// remount while the identity switches would otherwise send it several times, and every call
+// mints a token and writes an audit event.
+let inFlightEmail: string | null = null;
+// Once the switch succeeded the page is navigating away; a remount in between must not repeat it.
+let completedEmail: string | null = null;
+
 const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
   const location = useLocation();
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -26,6 +33,10 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
       return;
     }
 
+    if (inFlightEmail === email || completedEmail === email) {
+      return;
+    }
+    inFlightEmail = email;
     setLoading(true);
     setErrorMessage('');
 
@@ -46,12 +57,15 @@ const LogInAs: React.FC<LogInAsProps> = ({ replaceUser }) => {
       }
 
       const user: UserType = await response.json();
+      completedEmail = email;
       replaceUser(user, true, true);
     } catch (err) {
       console.error('Login as error:', err);
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
       setErrorMessage(message);
       setLoading(false);
+    } finally {
+      inFlightEmail = null;
     }
   }, [email, replaceUser]);
 

@@ -173,6 +173,116 @@
   overflow: hidden;
 }
 
+// The management-console sider: header on top, navigation filling the rest and scrolling
+// on its own (antd already reserves the collapse trigger's height via padding-bottom).
+// Delete buttons in tables stay quiet among routine actions until pointed at or focused;
+// the red is for the moment of intent, not for every row at rest (red-7 on hover: 5.6:1).
+.cp-quiet-delete:not(:hover):not(:focus-visible) {
+  color: rgba(0, 0, 0, 0.6);
+  border-color: #d9d9d9;
+}
+
+.cp-quiet-delete:hover,
+.cp-quiet-delete:focus-visible {
+  // !important: antd's own danger hover (red-4, 2.7:1 on white) has the higher specificity.
+  color: #cf1322 !important;
+  border-color: #cf1322 !important;
+}
+
+// Staff console navigation: it scrolls on its own under the pinned footer, so when it overflows
+// a shadow at the bottom says there is more (the overlay scrollbar is invisible until it moves).
+.cp-staff-nav {
+  background:
+    linear-gradient(#1b1b1b, #1b1b1b) bottom / 100% 44px no-repeat local,
+    linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8)) bottom / 100% 44px no-repeat scroll;
+  // A thin, always-drawn scrollbar: macOS overlay bars stay invisible until something moves.
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+
+  .ant-menu {
+    background: transparent;
+  }
+}
+
+// Laptop heights: tighter rows so all three groups and the footer fit without scrolling at 800px.
+@media (max-height: 860px) {
+  .cp-staff-nav .ant-menu-item,
+  .cp-staff-nav .ant-menu-submenu-title {
+    height: 36px;
+    line-height: 36px;
+    margin-block: 2px;
+  }
+
+  .cp-staff-nav .ant-menu-item-group-title {
+    padding-top: 10px;
+  }
+}
+
+// A light scroller that shows a shadow along its bottom only while there is more below: the white layer
+// scrolls with the content (local) and covers the fixed (scroll) gradient once the end is in view.
+.cp-scroll-shade {
+  background:
+    linear-gradient(#fff, #fff) bottom / 100% 36px no-repeat local,
+    linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.14)) bottom / 100% 36px no-repeat scroll;
+  scrollbar-width: thin;
+
+  // Tinted children cover that background, so browsers with scroll-driven animations also get an overlay
+  // that is invisible when nothing scrolls (inactive timeline) and fades out as the end comes into view.
+  &::after {
+    content: '';
+    display: block;
+    position: sticky;
+    bottom: 0;
+    height: 36px;
+    margin-top: -36px;
+    pointer-events: none;
+    background: linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.12));
+    opacity: 0;
+    animation: cp-scroll-shade-fade linear both;
+    animation-timeline: scroll(nearest);
+  }
+}
+
+@keyframes cp-scroll-shade-fade {
+  0%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+// antd's zero-height column-measure row clones the selection cell, checkbox included, so keyboard users
+// landed on an invisible "Select all". Hidden elements are not focusable and still take their width.
+.ant-table-measure-row {
+  visibility: hidden;
+}
+
+// Keyboard users jump past the sider with the first Tab; the link is invisible until focused.
+.cp-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 1000;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #fff;
+  color: #198665;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  &:focus {
+    top: 8px;
+  }
+}
+
+.layout--admin__sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 #Admin .layout--admin {
   min-height: 100%;
 
@@ -228,6 +338,10 @@
     background-color: #fff;
     padding: 0px;
     margin-bottom: 32px;
+    // Grows with its content: when the title's actions wrap onto a second line (laptop widths)
+    // they must push the table down instead of spilling over the search box.
+    height: auto;
+    line-height: inherit;
 
     position: relative;
 
@@ -413,14 +527,24 @@
   opacity: 0.65;
 }
 
-// SuperAdmin sidebar group labels
+// Sidebar group labels (admin and staff consoles): 12px at 65% white clears 4.5:1 on the dark sider.
 .ant-layout-sider .ant-menu-item-group-title {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.65);
   padding-top: 16px;
   padding-bottom: 4px;
+}
+
+// Collapsed to icons there is no room for a word: antd would show "PLATF…", so draw a rule instead.
+.ant-layout-sider-collapsed .ant-menu-item-group-title {
+  height: 1px;
+  padding: 0;
+  margin: 8px 16px;
+  overflow: hidden;
+  color: transparent;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 #Code-Header {

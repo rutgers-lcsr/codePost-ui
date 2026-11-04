@@ -187,8 +187,13 @@ const wordWrap = generateSettingFunctions('wordWrap', false, booleanIParser, boo
 
 // key: sidebarCollapsed
 // return type: boolean. If true, the admin/grader console sidebar starts collapsed.
-// defalut value: true
-const sidebarCollapsed = generateSettingFunctions('sidebarCollapsed', true, booleanIParser, booleanOParser);
+// default value: false — a first visit shows the labelled navigation; collapsing is remembered per browser.
+const sidebarCollapsed = generateSettingFunctions('sidebarCollapsed', false, booleanIParser, booleanOParser);
+
+// key: staffSidebarCollapsed
+// return type: boolean. If true, the staff console (/dashboard) sider starts collapsed.
+// default value: false
+const staffSidebarCollapsed = generateSettingFunctions('staffSidebarCollapsed', false, booleanIParser, booleanOParser);
 
 // key: quizGradeDock
 // return type: 'bottom' | 'side'. Where the quiz focused grader docks its points/feedback
@@ -230,6 +235,7 @@ const LOCAL_SETTINGS = {
   sendMeAConfirmationEmail,
   defaultPageSize,
   sidebarCollapsed,
+  staffSidebarCollapsed,
   quizGradeDock,
   quizGradeSideWidth,
   quizGradeBottomHeight,

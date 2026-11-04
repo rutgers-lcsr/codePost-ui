@@ -47,6 +47,8 @@ interface AIUsageDashboardProps {
   title?: string;
   /** Optional description */
   description?: string;
+  /** Pass false when the surrounding page already carries the heading. */
+  showHeader?: boolean;
 }
 
 const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
@@ -54,6 +56,7 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
   breakdownLabel,
   title = 'AI Usage Analytics',
   description,
+  showHeader = true,
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -250,18 +253,20 @@ const AIUsageDashboard: React.FC<AIUsageDashboardProps> = ({
   return (
     <div>
       {/* Header */}
-      <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
-        <div>
-          <Title level={3} style={{ margin: 0, color: colors.neutralTitle }}>
-            {title}
-          </Title>
-          {description && (
-            <Text type="secondary" style={{ fontSize: 14 }}>
-              {description}
-            </Text>
-          )}
-        </div>
-      </Flex>
+      {showHeader && (
+        <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
+          <div>
+            <Title level={3} style={{ margin: 0, color: colors.neutralTitle }}>
+              {title}
+            </Title>
+            {description && (
+              <Text type="secondary" style={{ fontSize: 14 }}>
+                {description}
+              </Text>
+            )}
+          </div>
+        </Flex>
+      )}
 
       {/* Controls */}
       <Flex gap={16} wrap="wrap" style={{ marginBottom: 24 }}>

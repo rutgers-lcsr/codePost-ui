@@ -8,6 +8,13 @@ export class UserIO {
     const response: PaginatedUserList = await usersApi.list();
     return response.results;
   };
+  /** One server-side page of users; `count` is the platform total for the search. */
+  public static listPage = (params: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    ordering?: string;
+  }): Promise<PaginatedUserList> => usersApi.list(params);
   public static create = (user: Omit<User, 'id'>): Promise<User> => usersApi.create({ user });
   public static update = (email: string, payload: Partial<User>): Promise<User> =>
     usersApi.partialUpdate({ email, patchedUser: payload });

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import { HeartFilled } from '@ant-design/icons';
 
-import { Form, Input, message, Modal, Radio, theme } from 'antd';
+import { Button, Form, Input, message, Modal, Radio, theme } from 'antd';
 
 import { colors } from '../../theme/colors';
 import { sendSlack } from './slack';
@@ -96,12 +96,18 @@ const Referral = (props: IProps) => {
     <div>
       <ReferralForm form={form} open={visible} submit={submitReferral} onCancel={changeVisible} text={text} />
       <CPTooltip title="Know another course that might find codePost useful? Let us know!">
-        <HeartFilled
+        {/* A real button: reachable by keyboard and named for screen readers. */}
+        <Button
+          type="text"
+          size="small"
+          shape="circle"
+          aria-label="Refer a course to codePost"
           onClick={changeVisible}
-          style={{
-            color: props.theme === 'light' ? token.colorTextSecondary : token.colorTextLightSolid,
-            cursor: 'pointer',
-          }}
+          icon={
+            <HeartFilled
+              style={{ color: props.theme === 'light' ? token.colorTextSecondary : token.colorTextLightSolid }}
+            />
+          }
         />
       </CPTooltip>
     </div>

@@ -10,13 +10,16 @@ const gradeHeaderSmallScreenBreakpoint = 750; //breakpoint at which gradeHeader 
 
 const adminSmallScreenBreakpoint = 1000;
 const adminCompactBreakpoint = 800; // Compact layout for narrow/embedded views
+// Below this the assignments table folds its seven row actions into one menu; from 1440 up they all fit
+// beside the labelled progress column (measured: 1366 still clips the delete icon).
+const assignmentActionsCompactBreakpoint = 1440;
 
 // maxWidths
 const homeMaxWidth = 600;
 const gradeSiderMaxWidthNormal = 300; // Fat sider for grade screens
 const gradeSiderMaxWidthSmallScreen = 200; // Fat sider for grade screen
 
-const siderMaxWidthNormal = 200; // Normal sider for course management screens
+const siderMaxWidthNormal = 220; // Normal sider for course management screens ("Environment & Tests" fits)
 const siderMaxWidthSmallScreen = 165; // Normal sider for course management screens
 const siderMaxWidthCompact = 130; // Compact sider for narrow embedded views
 
@@ -35,6 +38,7 @@ export default {
       gradeHeader: gradeHeaderSmallScreenBreakpoint,
       admin: adminSmallScreenBreakpoint,
       adminCompact: adminCompactBreakpoint,
+      assignmentActionsCompact: assignmentActionsCompactBreakpoint,
     },
   },
   maxWidths: {

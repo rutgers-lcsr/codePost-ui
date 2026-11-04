@@ -75,7 +75,10 @@ function CourseRow({
   return (
     <Link
       to={encodedCourseLink(base, course, panel)}
-      onMouseEnter={() => { setHovered(true); onMouseEnter(); }}
+      onMouseEnter={() => {
+        setHovered(true);
+        onMouseEnter();
+      }}
       onMouseLeave={() => setHovered(false)}
       onClick={onNavigate}
       style={{ textDecoration: 'none', display: 'block' }}
@@ -303,12 +306,7 @@ const CourseMenu = (props: IProps) => {
   );
 
   return (
-    <Dropdown
-      open={open}
-      onOpenChange={handleOpenChange}
-      trigger={['click']}
-      dropdownRender={() => dropdownContent}
-    >
+    <Dropdown open={open} onOpenChange={handleOpenChange} trigger={['click']} popupRender={() => dropdownContent}>
       <Button
         style={{
           minWidth: 160,

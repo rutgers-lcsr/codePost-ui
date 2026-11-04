@@ -13,6 +13,7 @@ import { message } from 'antd';
 /* codePost imports */
 import { CLIENT_URL } from './config';
 import LogInAs from './components/core/LogInAs';
+import ImpersonationBar from './components/core/ImpersonationBar';
 import Logout from './components/core/Logout';
 
 import Home from './components/core/Home';
@@ -452,9 +453,17 @@ Firefox:
             })
           : undefined;
 
+      // The token this request authenticates as. If it changes while the request is in
+      // flight (loginAs / impersonation / another tab), the answer describes the previous
+      // identity and must not overwrite the new one.
+      const requestToken = localStorage.getItem('token');
+
       registrationApi
         .currentUserRetrieve(initOverrides)
         .then((currentUser) => {
+          if (requestToken !== localStorage.getItem('token')) {
+            return;
+          }
           if (currentUser) {
             const normalizedUser = normalizeUser(currentUser);
 
@@ -818,7 +827,7 @@ Firefox:
 
     const dashboardRoute = canAccessSuperAdminConsole ? (
       <Route
-        path="/dashboard"
+        path="/dashboard/*"
         element={
           <Suspense fallback={<RouterLoading />}>
             <AsyncDashboard />
@@ -932,6 +941,8 @@ Firefox:
           {logoutRoute}
           <Route path="*" element={<Navigate to={HOME} replace />} />
         </Routes>
+        {/* Staff acting as another user: says so on every page and offers the way back. */}
+        <ImpersonationBar user={user} />
         {process.env.NODE_ENV === 'development' && (
           <Suspense fallback={null}>
             <AsyncDevTools replaceUser={replaceUser} />

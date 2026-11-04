@@ -31,12 +31,21 @@ export function setTokens(access: string, refresh?: string | null): void {
   }
 }
 
+/** sessionStorage key holding a staff session while that staff member acts as another user. */
+export const IMPERSONATOR_KEY = 'codepost:impersonator';
+
 /**
- * Clear both tokens from localStorage.
+ * Clear both tokens from localStorage. Ending the session also ends any impersonation:
+ * the stashed staff session must not outlive a logout.
  */
 export function clearTokens(): void {
   localStorage.removeItem('token');
   localStorage.removeItem('refresh');
+  try {
+    sessionStorage.removeItem(IMPERSONATOR_KEY);
+  } catch {
+    // Storage can be unavailable (private mode); nothing to clear then.
+  }
 }
 
 /**

@@ -12,10 +12,16 @@ const themeConfig: ThemeConfig = {
   token: {
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
     colorPrimary: '#198665',
+    // The keyboard focus ring (antd outlines with this token): the derived tint is 2.6:1 on white.
+    colorPrimaryBorder: '#198665',
     colorLink: '#1473ccff',
     colorSuccess: colors.brandPrimary,
     colorWarning: '#a26510ff',
-    colorError: colors.actionRed,
+    // antd's danger button is white text on this red: #f64852 (actionRed) is 3.5:1, #cf1322 is 5.6:1.
+    // Hover/active are set by hand because antd would derive a lighter hover that fails again.
+    colorError: '#cf1322',
+    colorErrorHover: '#a8071a',
+    colorErrorActive: '#820014',
     colorInfo: colors.actionBlue,
     colorBgLayout: '#f2f2f2',
     colorBgContainer: '#ffffff',
@@ -121,7 +127,7 @@ const themeConfig: ThemeConfig = {
       hoverBorderColor: '#198665',
       activeBorderColor: '#198665',
       activeOutlineColor: 'rgba(25, 134, 101, 0.2)',
-      optionSelectedColor: '#198665',
+      optionSelectedColor: '#034d39', // green-9: 5:1 on the selected/active tint; the brand green was 2.2:1
       optionSelectedBg: 'rgba(25, 134, 101, 0.1)',
       optionActiveBg: 'rgba(25, 134, 101, 0.05)',
       multipleItemBg: 'rgba(25, 134, 101, 0.1)',
@@ -129,7 +135,8 @@ const themeConfig: ThemeConfig = {
     },
     Tag: {
       defaultBg: 'rgba(25, 134, 101, 0.1)',
-      defaultColor: '#198665',
+      // Brand green on its own 10% tint is 4.0:1; this is 5.2:1, the same text as the AA green tag.
+      defaultColor: '#0d7354',
     },
     Badge: {
       indicatorZIndex: 1,
