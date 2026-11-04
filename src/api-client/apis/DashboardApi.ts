@@ -21,7 +21,7 @@ import type {
   DashboardStats,
   PendingAdminActionRequest,
   PendingAdminActionResponse,
-  User,
+  PendingAdminUser,
 } from '../models/index';
 
 export interface ApprovePendingAdminCreateRequest {
@@ -383,7 +383,7 @@ export class DashboardApi extends runtime.BaseAPI {
    */
   async pendingAdminsListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
-  ): Promise<runtime.ApiResponse<Array<User>>> {
+  ): Promise<runtime.ApiResponse<Array<PendingAdminUser>>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -421,7 +421,9 @@ export class DashboardApi extends runtime.BaseAPI {
   /**
    * Returns all users with pendingValidation=True across all organizations. Used by the SuperAdmin dashboard to manage pending admin requests.
    */
-  async pendingAdminsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<User>> {
+  async pendingAdminsList(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Array<PendingAdminUser>> {
     const response = await this.pendingAdminsListRaw(initOverrides);
     return await response.value();
   }

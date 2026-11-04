@@ -299,6 +299,7 @@ docs/PatchedUser.md
 docs/PatchedWebhook.md
 docs/PendingAdminActionRequest.md
 docs/PendingAdminActionResponse.md
+docs/PendingAdminUser.md
 docs/PendingAgentAction.md
 docs/PendingAgentActionStatusEnum.md
 docs/PreviewDemoFile.md

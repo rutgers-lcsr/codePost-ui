@@ -11179,6 +11179,127 @@ export interface PendingAdminActionResponse {
   status: string;
 }
 /**
+ * A pending course-admin request: the user plus when they signed up, which is when they asked.
+ * @export
+ * @interface PendingAdminUser
+ */
+export interface PendingAdminUser {
+  /**
+   *
+   * @type {number}
+   * @memberof PendingAdminUser
+   */
+  readonly id: number;
+  /**
+   *
+   * @type {EmailAddress}
+   * @memberof PendingAdminUser
+   */
+  email?: EmailAddress;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminUser
+   */
+  password: string;
+  /**
+   *
+   * @type {number}
+   * @memberof PendingAdminUser
+   */
+  organization?: number | null;
+  /**
+   *
+   * @type {Array<Course>}
+   * @memberof PendingAdminUser
+   */
+  readonly studentCourses: Array<Course>;
+  /**
+   *
+   * @type {Array<Course>}
+   * @memberof PendingAdminUser
+   */
+  graderCourses: Array<Course>;
+  /**
+   *
+   * @type {Array<Course>}
+   * @memberof PendingAdminUser
+   */
+  superGraderCourses: Array<Course>;
+  /**
+   *
+   * @type {Array<Course>}
+   * @memberof PendingAdminUser
+   */
+  courseadminCourses: Array<Course>;
+  /**
+   *
+   * @type {Array<Section>}
+   * @memberof PendingAdminUser
+   */
+  leaderSections: Array<Section>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  codePostAdmin?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  canCreateCourses: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  canModifyRosters: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  isOrgStaff?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  showProductTips: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminUser
+   */
+  apiToken?: string | null;
+  /**
+   *
+   * @type {Array<number>}
+   * @memberof PendingAdminUser
+   */
+  studentSections: Array<number>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PendingAdminUser
+   */
+  readonly hasCredentials: boolean;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminUser
+   */
+  readonly token: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof PendingAdminUser
+   */
+  readonly dateJoined: string;
+}
+/**
  * Dashboard rows for Tier-3 agent confirmations. The plan describes a
  * destructive operation in instructor-only detail, so this serializer must
  * only ever be reachable by a human course admin.

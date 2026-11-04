@@ -398,7 +398,7 @@ example().catch(console.error);
 
 ## pendingAdminsList
 
-> Array&lt;User&gt; pendingAdminsList()
+> Array&lt;PendingAdminUser&gt; pendingAdminsList()
 
 Returns all users with pendingValidation&#x3D;True across all organizations. Used by the SuperAdmin dashboard to manage pending admin requests.
 
@@ -441,7 +441,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**Array&lt;User&gt;**](User.md)
+[**Array&lt;PendingAdminUser&gt;**](PendingAdminUser.md)
 
 ### Authorization
 
