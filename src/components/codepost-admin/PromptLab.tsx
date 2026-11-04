@@ -60,9 +60,10 @@ import {
   type VariantStatus,
 } from '../../services/promptLab';
 import TemplateTextArea from '../core/TemplateTextArea';
+import AdminPageHeader from './AdminPageHeader';
 import PromptTemplatePicker from '../core/PromptTemplatePicker';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -615,47 +616,34 @@ const PromptLab: React.FC = () => {
   );
 
   return (
-    <div style={{ padding: 24 }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 24,
-        }}
-      >
-        <div>
-          <Title level={3} style={{ margin: 0, fontWeight: 700 }}>
-            <ExperimentOutlined style={{ marginRight: 10, color: '#6366f1' }} />
-            Prompt Lab
-          </Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            Manage AI system prompts and run A/B experiments
-          </Text>
-        </div>
-        <Space>
-          <Select
-            placeholder="Filter by type"
-            allowClear
-            style={{ width: 200 }}
-            value={filterType || undefined}
-            onChange={(val) => setFilterType(val ?? '')}
-            options={PROMPT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
-          />
-          <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
-            Refresh
-          </Button>
-          <Tooltip title="Auto-improvement settings">
-            <Button icon={<SettingOutlined />} onClick={() => setSettingsDrawerOpen(true)} />
-          </Tooltip>
-          {labSettings && (
-            <Tag color={labSettings.autoImproveEnabled ? 'green' : 'default'} style={{ margin: 0 }}>
-              Auto: {labSettings.autoImproveEnabled ? 'ON' : 'OFF'}
-            </Tag>
-          )}
-        </Space>
-      </div>
+    <div>
+      <AdminPageHeader
+        title="Prompt Lab"
+        subtitle="Manage AI system prompts and run A/B experiments."
+        actions={
+          <Space wrap>
+            <Select
+              placeholder="Filter by type"
+              allowClear
+              style={{ width: 200 }}
+              value={filterType || undefined}
+              onChange={(val) => setFilterType(val ?? '')}
+              options={PROMPT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
+            />
+            <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
+              Refresh
+            </Button>
+            <Tooltip title="Auto-improvement settings">
+              <Button icon={<SettingOutlined />} onClick={() => setSettingsDrawerOpen(true)} />
+            </Tooltip>
+            {labSettings && (
+              <Tag color={labSettings.autoImproveEnabled ? 'green' : 'default'} style={{ margin: 0 }}>
+                Auto: {labSettings.autoImproveEnabled ? 'ON' : 'OFF'}
+              </Tag>
+            )}
+          </Space>
+        }
+      />
 
       <Tabs
         activeKey={activeTab}
@@ -988,14 +976,10 @@ const PromptLab: React.FC = () => {
                                   }}
                                 >
                                   <Tooltip title="Suggestions accepted by graders">
-                                    <Tag color="success">
-                                      {variantStats.behavioral.accepted} accepted
-                                    </Tag>
+                                    <Tag color="success">{variantStats.behavioral.accepted} accepted</Tag>
                                   </Tooltip>
                                   <Tooltip title="Suggestions rejected by graders">
-                                    <Tag color="error">
-                                      {variantStats.behavioral.rejected} rejected
-                                    </Tag>
+                                    <Tag color="error">{variantStats.behavioral.rejected} rejected</Tag>
                                   </Tooltip>
                                   <Tooltip title="Suggestions not yet acted on">
                                     <Tag>{variantStats.behavioral.pending} pending</Tag>
@@ -1043,14 +1027,10 @@ const PromptLab: React.FC = () => {
                                 </Text>
                                 <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                                   <Tooltip title="Thumbs up from graders">
-                                    <Tag color="success">
-                                      +{variantStats.explicitFeedback.thumbsUp} thumbs up
-                                    </Tag>
+                                    <Tag color="success">+{variantStats.explicitFeedback.thumbsUp} thumbs up</Tag>
                                   </Tooltip>
                                   <Tooltip title="Thumbs down from graders">
-                                    <Tag color="error">
-                                      -{variantStats.explicitFeedback.thumbsDown} thumbs down
-                                    </Tag>
+                                    <Tag color="error">-{variantStats.explicitFeedback.thumbsDown} thumbs down</Tag>
                                   </Tooltip>
                                   <Text type="secondary" style={{ fontSize: 11, alignSelf: 'center' }}>
                                     {variantStats.explicitFeedback.total} total
@@ -1189,9 +1169,7 @@ const PromptLab: React.FC = () => {
               <TemplateTextArea
                 value={editingVariant.text}
                 onChange={(text) => setEditingVariant((prev) => ({ ...prev!, text }))}
-                variables={
-                  promptTypesRaw?.find((t) => t.key === editingVariant.promptType)?.placeholders ?? []
-                }
+                variables={promptTypesRaw?.find((t) => t.key === editingVariant.promptType)?.placeholders ?? []}
                 rows={16}
                 label="Prompt Text"
                 placeholder="Enter the system prompt text… type { to insert a variable"

@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import { BookOutlined, GlobalOutlined, LoginOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { BookOutlined, GlobalOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Space, Statistic, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useMemo, useState } from 'react';
 import groupBy from 'lodash/groupBy';
@@ -10,6 +10,7 @@ import { Organization } from '../../api-client';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 import AdminTableToolbar from './AdminTableToolbar';
+import LoginAsButton from './LoginAsButton';
 import { AdminData } from './Dashboard';
 import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
@@ -88,21 +89,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
             {
               title: 'Actions',
               key: 'actions',
-              width: 120,
-              render: (_: unknown, record: GroupedAdminData) => (
-                <Tooltip title="Login as this user">
-                  <Button
-                    type="primary"
-                    size="small"
-                    icon={<LoginOutlined />}
-                    onClick={() => {
-                      window.location.href = `/loginAs?email=${encodeURIComponent(record.email)}`;
-                    }}
-                  >
-                    Login As
-                  </Button>
-                </Tooltip>
-              ),
+              width: 110,
+              render: (_: unknown, record: GroupedAdminData) => <LoginAsButton email={record.email} variant="text" />,
             },
           ]
         : []),

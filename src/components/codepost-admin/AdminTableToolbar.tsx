@@ -38,7 +38,8 @@ const AdminTableToolbar: React.FC<AdminTableToolbarProps> = ({
       flexWrap: 'wrap',
     }}
   >
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+    {/* The search keeps a usable width and wraps onto its own line before it would shrink to a stub. */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: '1 1 260px', minWidth: 0, flexWrap: 'wrap' }}>
       <Search
         placeholder={searchPlaceholder}
         allowClear
@@ -46,7 +47,7 @@ const AdminTableToolbar: React.FC<AdminTableToolbarProps> = ({
         value={searchValue}
         onChange={(e) => onSearch(e.target.value)}
         onSearch={onSearch}
-        style={{ maxWidth: 480 }}
+        style={{ flex: '1 1 220px', maxWidth: 480 }}
       />
       {filters}
     </div>

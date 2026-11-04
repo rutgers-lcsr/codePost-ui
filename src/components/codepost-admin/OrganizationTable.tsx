@@ -9,7 +9,6 @@ import {
 } from '@ant-design/icons';
 import { Badge, Button, Card, Col, Descriptions, Drawer, Row, Space, Statistic, Table, Tag } from 'antd';
 import * as React from 'react';
-import { Link } from 'react-router';
 import { colors } from '../../theme/colors';
 import type { RosterType as InfraRosterType } from '../../types/models';
 import { Organization } from '../../api-client';
@@ -17,7 +16,9 @@ import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 
 import AdminTableToolbar from './AdminTableToolbar';
+import LoginAsButton from './LoginAsButton';
 import NewOrganizationDialog from './NewOrganizationDialog';
+import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 const compactEmails = (emails: Array<string | null | undefined>): string[] =>
   emails.filter((email): email is string => Boolean(email));
@@ -48,6 +49,8 @@ interface Props {
 }
 
 const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh }) => {
+  const platformCaps = usePlatformCapabilities();
+  const canImpersonate = platformCaps.impersonate_user !== false;
   const getOrganizationRows = React.useCallback((): OrganizationRow[] => {
     return organizations.map((organization) => {
       const orgRosters = rosters.filter((roster) => roster.organization === organization.id);
@@ -286,11 +289,12 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
       </Descriptions>
       <Space orientation="vertical" style={{ width: '100%' }}>
         {emails.map((email) => (
-          <Tag key={email} color={color} style={{ marginBottom: '4px' }}>
-            <Link to={`/loginAs?email=${encodeURIComponent(email)}`} style={{ color: 'inherit' }}>
+          <Space key={email} size={8}>
+            <Tag color={color} style={{ marginBottom: 0 }}>
               {email}
-            </Link>
-          </Tag>
+            </Tag>
+            {canImpersonate && <LoginAsButton email={email} variant="text" />}
+          </Space>
         ))}
       </Space>
       <br />

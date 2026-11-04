@@ -26,6 +26,7 @@ import {
 
 import type { AssignmentDeadline } from '../../api-client';
 import { dashboardApi } from '../../api-client/clients';
+import useWindowSize from '../core/useWindowSize';
 import AdminPageHeader from './AdminPageHeader';
 
 const { Text, Title } = Typography;
@@ -121,7 +122,11 @@ const riskLabel = (level: RiskLevel): string => {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
+// Below this a seven-column month cannot be read; the month becomes a list of days with deadlines.
+const AGENDA_BREAKPOINT = 768;
+
 const DeployCalendar = () => {
+  const isPhone = useWindowSize().width < AGENDA_BREAKPOINT;
   const [deadlines, setDeadlines] = useState<AssignmentDeadline[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -295,17 +300,13 @@ const DeployCalendar = () => {
   }
 
   if (error) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <Alert title="Error" description={error} type="error" showIcon />
-      </div>
-    );
+    return <Alert title="Error" description={error} type="error" showIcon />;
   }
 
   const todayKey = toLocalDateKey(today.toISOString());
 
   return (
-    <div style={{ padding: 24 }}>
+    <div>
       <AdminPageHeader
         title="Deploy Calendar"
         subtitle="Visualise all assignment due dates &amp; late-upload deadlines to find the safest deployment windows."
@@ -364,7 +365,7 @@ const DeployCalendar = () => {
           <Select
             allowClear
             placeholder="Filter by course"
-            style={{ width: 320 }}
+            style={{ width: isPhone ? '100%' : 320 }}
             value={selectedCourseId}
             onChange={(v) => setSelectedCourseId(v ?? null)}
             options={courseOptions.map((c) => ({ value: c.id, label: c.label }))}
@@ -376,14 +377,15 @@ const DeployCalendar = () => {
 
       {/* Month summary bar */}
       <Card size="small" style={{ marginBottom: '16px' }}>
-        <Space size="large">
-          <Text>
+        {/* Wraps between the counts, never inside a word. */}
+        <Space size="large" wrap>
+          <Text style={{ whiteSpace: 'nowrap' }}>
             <Badge status="error" /> <strong>{monthlySummary.dueCount}</strong> due dates
           </Text>
-          <Text>
+          <Text style={{ whiteSpace: 'nowrap' }}>
             <Badge status="warning" /> <strong>{monthlySummary.lateCount}</strong> late-upload deadlines
           </Text>
-          <Text>
+          <Text style={{ whiteSpace: 'nowrap' }}>
             <Badge status="default" /> <strong>{monthlySummary.regradeCount}</strong> regrade deadlines
           </Text>
           {monthlySummary.bestLen >= 2 && (
@@ -406,172 +408,231 @@ const DeployCalendar = () => {
         </Space>
       </Card>
 
-      {/* Calendar grid */}
-      <Card bodyStyle={{ padding: 0 }}>
-        {/* Day-of-week header */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            borderBottom: '1px solid #f0f0f0',
-          }}
-        >
-          {DAY_NAMES.map((name) => (
-            <div
-              key={name}
-              style={{
-                padding: '8px 4px',
-                textAlign: 'center',
-                fontWeight: 600,
-                color: '#595959',
-                fontSize: 12,
-              }}
-            >
-              {name}
+      {/* Calendar grid, or on a phone the month as an agenda of the days that carry deadlines */}
+      {isPhone ? (
+        <Card size="small" styles={{ body: { padding: 0 } }}>
+          {calendarDays.every((cell) => cell.day === null || (eventsByDate.get(cell.dateKey!) ?? []).length === 0) ? (
+            <div style={{ padding: 16 }}>
+              <Text type="secondary">No deadlines this month — any day is safe to deploy.</Text>
             </div>
-          ))}
-        </div>
-
-        {/* Day cells */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-          }}
-        >
-          {calendarDays.map((cell, idx) => {
-            if (cell.day === null) {
+          ) : (
+            calendarDays.map((cell) => {
+              if (cell.day === null) return null;
+              const dayEvents = eventsByDate.get(cell.dateKey!) ?? [];
+              if (dayEvents.length === 0) return null;
+              const risk = riskLevel(dayEvents);
+              const isToday = cell.dateKey === todayKey;
               return (
                 <div
-                  key={`blank-${idx}`}
-                  style={{ minHeight: 90, borderBottom: '1px solid #f0f0f0', borderRight: '1px solid #f0f0f0' }}
-                />
-              );
-            }
-
-            const dayEvents = eventsByDate.get(cell.dateKey!) ?? [];
-            const risk = riskLevel(dayEvents);
-            const isToday = cell.dateKey === todayKey;
-
-            return (
-              <Popover
-                key={cell.dateKey}
-                placement="right"
-                title={
-                  <Space>
-                    <CalendarOutlined />
-                    <span>
-                      {MONTH_NAMES[viewMonth]} {cell.day}, {viewYear}
-                    </span>
-                    <Badge status={RISK_BADGE[risk]} text={riskLabel(risk)} />
-                  </Space>
-                }
-                content={
-                  dayEvents.length === 0 ? (
-                    <Text type="secondary">No deadlines — safe to deploy.</Text>
-                  ) : (
-                    <div style={{ maxWidth: 420, maxHeight: 320, overflowY: 'auto' }}>
-                      {dayEvents.map((ev, i) => (
-                        <Descriptions
-                          key={`${ev.assignment.id}-${ev.type}-${i}`}
-                          size="small"
-                          column={1}
-                          bordered
-                          style={{ marginBottom: 8 }}
-                          title={
-                            <Space>
-                              {ev.type === 'due' && <Tag color="red">Due</Tag>}
-                              {ev.type === 'late' && <Tag color="orange">Late Upload</Tag>}
-                              {ev.type === 'regrade' && <Tag color="default">Regrade</Tag>}
-                              <Text strong>{ev.assignment.name}</Text>
-                            </Space>
-                          }
-                        >
-                          <Descriptions.Item label="Course">
-                            {ev.assignment.courseName} ({ev.assignment.coursePeriod})
-                          </Descriptions.Item>
-                          <Descriptions.Item label="Time">{formatDateTime(ev.date)}</Descriptions.Item>
-                          <Descriptions.Item label="Students">{ev.assignment.studentCount}</Descriptions.Item>
-                          {ev.assignment.allowLateUploads && (
-                            <Descriptions.Item label="Max Late Days">{ev.assignment.maxLateDays}</Descriptions.Item>
-                          )}
-                        </Descriptions>
-                      ))}
-                    </div>
-                  )
-                }
-                trigger="click"
-              >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${MONTH_NAMES[viewMonth]} ${cell.day}: ${dayEvents.length} deadlines, ${riskLabel(risk)}`}
-                  style={{
-                    minHeight: 90,
-                    padding: '4px 6px',
-                    borderBottom: '1px solid #f0f0f0',
-                    borderRight: '1px solid #f0f0f0',
-                    background: RISK_COLORS[risk],
-                    cursor: 'pointer',
-                    transition: 'background 0.15s',
-                    position: 'relative',
-                    outline: isToday ? '2px solid #1890ff' : undefined,
-                    outlineOffset: isToday ? '-2px' : undefined,
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#e6f7ff')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = RISK_COLORS[risk])}
+                  key={cell.dateKey}
+                  style={{ display: 'flex', gap: 12, padding: '10px 12px', borderBottom: '1px solid #f0f0f0' }}
                 >
-                  {/* Day number */}
-                  <div
-                    style={{
-                      fontWeight: isToday ? 700 : 400,
-                      color: isToday ? '#1890ff' : '#262626',
-                      fontSize: 13,
-                      marginBottom: 2,
-                    }}
-                  >
-                    {isToday ? (
-                      <Badge
-                        count={cell.day}
-                        style={{ backgroundColor: '#1890ff', fontSize: 11, fontWeight: 700 }}
-                        overflowCount={99}
-                      />
-                    ) : (
-                      cell.day
-                    )}
+                  <div style={{ flex: '0 0 64px' }}>
+                    <Text strong style={{ fontSize: 13, color: isToday ? '#1890ff' : undefined }}>
+                      {MONTH_NAMES[viewMonth].slice(0, 3)} {cell.day}
+                    </Text>
+                    <div style={{ fontSize: 11, lineHeight: '16px' }}>
+                      <Badge status={RISK_BADGE[risk]} text={<span style={{ fontSize: 11 }}>{riskLabel(risk)}</span>} />
+                    </div>
                   </div>
-
-                  {/* Event dots (max 4 shown) */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {dayEvents.slice(0, 4).map((ev, i) => (
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {dayEvents.map((ev, i) => (
                       <div
                         key={`${ev.assignment.id}-${ev.type}-${i}`}
-                        style={{
-                          fontSize: 10,
-                          lineHeight: '14px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          color: ev.type === 'due' ? '#cf1322' : ev.type === 'late' ? '#d48806' : '#595959',
-                        }}
+                        style={{ display: 'flex', gap: 6, alignItems: 'baseline', fontSize: 12, marginBottom: 4 }}
                       >
-                        {ev.type === 'due' && <ClockCircleOutlined style={{ marginRight: 2 }} />}
-                        {ev.type === 'late' && <WarningOutlined style={{ marginRight: 2 }} />}
-                        {ev.assignment.name}
+                        {ev.type === 'due' && (
+                          <Tag color="red" style={{ margin: 0 }}>
+                            Due
+                          </Tag>
+                        )}
+                        {ev.type === 'late' && (
+                          <Tag color="orange" style={{ margin: 0 }}>
+                            Late
+                          </Tag>
+                        )}
+                        {ev.type === 'regrade' && <Tag style={{ margin: 0 }}>Regrade</Tag>}
+                        <span style={{ minWidth: 0 }}>
+                          {ev.assignment.name}{' '}
+                          <Text type="secondary">
+                            · {ev.assignment.courseName} · {formatDateTime(ev.date)}
+                          </Text>
+                        </span>
                       </div>
                     ))}
-                    {dayEvents.length > 4 && (
-                      <Text type="secondary" style={{ fontSize: 10 }}>
-                        +{dayEvents.length - 4} more
-                      </Text>
-                    )}
                   </div>
                 </div>
-              </Popover>
-            );
-          })}
-        </div>
-      </Card>
+              );
+            })
+          )}
+        </Card>
+      ) : (
+        <Card styles={{ body: { padding: 0 } }}>
+          {/* Day-of-week header */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              borderBottom: '1px solid #f0f0f0',
+            }}
+          >
+            {DAY_NAMES.map((name) => (
+              <div
+                key={name}
+                style={{
+                  padding: '8px 4px',
+                  textAlign: 'center',
+                  fontWeight: 600,
+                  color: '#595959',
+                  fontSize: 12,
+                }}
+              >
+                {name}
+              </div>
+            ))}
+          </div>
+
+          {/* Day cells */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(7, 1fr)',
+            }}
+          >
+            {calendarDays.map((cell, idx) => {
+              if (cell.day === null) {
+                return (
+                  <div
+                    key={`blank-${idx}`}
+                    style={{ minHeight: 90, borderBottom: '1px solid #f0f0f0', borderRight: '1px solid #f0f0f0' }}
+                  />
+                );
+              }
+
+              const dayEvents = eventsByDate.get(cell.dateKey!) ?? [];
+              const risk = riskLevel(dayEvents);
+              const isToday = cell.dateKey === todayKey;
+
+              return (
+                <Popover
+                  key={cell.dateKey}
+                  placement="right"
+                  title={
+                    <Space>
+                      <CalendarOutlined />
+                      <span>
+                        {MONTH_NAMES[viewMonth]} {cell.day}, {viewYear}
+                      </span>
+                      <Badge status={RISK_BADGE[risk]} text={riskLabel(risk)} />
+                    </Space>
+                  }
+                  content={
+                    dayEvents.length === 0 ? (
+                      <Text type="secondary">No deadlines — safe to deploy.</Text>
+                    ) : (
+                      <div style={{ maxWidth: 420, maxHeight: 320, overflowY: 'auto' }}>
+                        {dayEvents.map((ev, i) => (
+                          <Descriptions
+                            key={`${ev.assignment.id}-${ev.type}-${i}`}
+                            size="small"
+                            column={1}
+                            bordered
+                            style={{ marginBottom: 8 }}
+                            title={
+                              <Space>
+                                {ev.type === 'due' && <Tag color="red">Due</Tag>}
+                                {ev.type === 'late' && <Tag color="orange">Late Upload</Tag>}
+                                {ev.type === 'regrade' && <Tag color="default">Regrade</Tag>}
+                                <Text strong>{ev.assignment.name}</Text>
+                              </Space>
+                            }
+                          >
+                            <Descriptions.Item label="Course">
+                              {ev.assignment.courseName} ({ev.assignment.coursePeriod})
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Time">{formatDateTime(ev.date)}</Descriptions.Item>
+                            <Descriptions.Item label="Students">{ev.assignment.studentCount}</Descriptions.Item>
+                            {ev.assignment.allowLateUploads && (
+                              <Descriptions.Item label="Max Late Days">{ev.assignment.maxLateDays}</Descriptions.Item>
+                            )}
+                          </Descriptions>
+                        ))}
+                      </div>
+                    )
+                  }
+                  trigger="click"
+                >
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${MONTH_NAMES[viewMonth]} ${cell.day}: ${dayEvents.length} deadlines, ${riskLabel(risk)}`}
+                    style={{
+                      minHeight: 90,
+                      padding: '4px 6px',
+                      borderBottom: '1px solid #f0f0f0',
+                      borderRight: '1px solid #f0f0f0',
+                      background: RISK_COLORS[risk],
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
+                      position: 'relative',
+                      outline: isToday ? '2px solid #1890ff' : undefined,
+                      outlineOffset: isToday ? '-2px' : undefined,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#e6f7ff')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = RISK_COLORS[risk])}
+                  >
+                    {/* Day number */}
+                    <div
+                      style={{
+                        fontWeight: isToday ? 700 : 400,
+                        color: isToday ? '#1890ff' : '#262626',
+                        fontSize: 13,
+                        marginBottom: 2,
+                      }}
+                    >
+                      {isToday ? (
+                        <Badge
+                          count={cell.day}
+                          style={{ backgroundColor: '#1890ff', fontSize: 11, fontWeight: 700 }}
+                          overflowCount={99}
+                        />
+                      ) : (
+                        cell.day
+                      )}
+                    </div>
+
+                    {/* Event dots (max 4 shown) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {dayEvents.slice(0, 4).map((ev, i) => (
+                        <div
+                          key={`${ev.assignment.id}-${ev.type}-${i}`}
+                          style={{
+                            fontSize: 10,
+                            lineHeight: '14px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            color: ev.type === 'due' ? '#cf1322' : ev.type === 'late' ? '#d48806' : '#595959',
+                          }}
+                        >
+                          {ev.type === 'due' && <ClockCircleOutlined style={{ marginRight: 2 }} />}
+                          {ev.type === 'late' && <WarningOutlined style={{ marginRight: 2 }} />}
+                          {ev.assignment.name}
+                        </div>
+                      ))}
+                      {dayEvents.length > 4 && (
+                        <Text type="secondary" style={{ fontSize: 10 }}>
+                          +{dayEvents.length - 4} more
+                        </Text>
+                      )}
+                    </div>
+                  </div>
+                </Popover>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {/* Legend */}
       <Card size="small" style={{ marginTop: 16 }}>

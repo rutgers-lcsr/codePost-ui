@@ -184,8 +184,8 @@ const ActivityFeed: React.FC = () => {
       title: 'Time',
       dataIndex: 'created',
       key: 'created',
-      render: (text: string) => dayjs(text).format('MM/DD HH:mm:ss'),
-      width: 150,
+      render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm:ss'),
+      width: 170,
     },
     {
       title: 'Category',
@@ -530,7 +530,7 @@ const ActivityFeed: React.FC = () => {
   );
 
   return (
-    <div style={{ padding: 24 }}>
+    <div>
       <AdminPageHeader
         title="Activity & Audit Logs"
         subtitle="System-level events, errors, and authentication audit trail."

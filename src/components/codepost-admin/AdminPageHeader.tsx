@@ -21,7 +21,8 @@ const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({ title, subtitle, acti
     }}
   >
     <div>
-      <Title level={2} style={{ margin: 0, fontSize: 22 }}>
+      {/* Level 1: the staff console sider carries no heading, so each page's title is the document's h1. */}
+      <Title level={1} style={{ margin: 0, fontSize: 22 }}>
         {title}
       </Title>
       {subtitle && (
