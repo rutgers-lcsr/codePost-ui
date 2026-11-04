@@ -61,7 +61,7 @@ submissions.zip
 
 ### How to Bulk Upload
 
-1. Go to **Admin Console > Assignments > Overview**
+1. Go to **Admin Console > Assignments > All assignments**
 2. Click on the assignment
 3. Navigate to **Submissions** tab
 4. Click **Upload Submissions**

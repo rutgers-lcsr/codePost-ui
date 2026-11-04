@@ -59,7 +59,7 @@ modes (Hidden, Live, Per student, Released), grade masking, and scheduled releas
 
 ## Creating an assignment
 
-From **Assignments > Overview**, click **New Assignment**. You have two options:
+From **Assignments > All assignments**, click **New Assignment**. You have two options:
 
 ### New assignment
 

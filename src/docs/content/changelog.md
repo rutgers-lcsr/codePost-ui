@@ -32,6 +32,145 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ---
 
+## Unreleased — Admin & Staff console refinements
+
+### Improved: Admin console navigation and the assignments overview
+
+- The sidebar opens expanded, with labels, on a first visit. Collapsing it is still remembered per browser.
+- The filter bar keeps **Search** and **Status** inline; the other filters sit behind **More filters**, which
+  shows how many are active.
+- A banner above the table counts unclaimed submissions that still need a grader.
+- Quizzes, Course Files, Gradebook and Course Settings now use the same page frame (breadcrumb, title,
+  actions on the right) as the other sections.
+- Icon-only buttons in the rosters, submission tables and the header have accessible names.
+- The course landing page says, per active course, whether submissions are waiting for a grader. Its counts
+  sit in one line under the greeting instead of a row of tiles.
+- The unclaimed-submissions banner links straight to **Submissions by Grader**.
+- The sidebar is a little wider, so **Environment & Tests** no longer truncates.
+- A **Skip to content** link leads keyboard users past the sidebar. The rubric, environment and delete row
+  actions and **Download grades** are single tab stops (they used to be a link wrapping a button).
+- One navigation system: **Course Settings** is a single sidebar entry and **Webhooks** is a section in its rail
+  (old `/settings/webhooks` links still land there). Docs, API Reference, Changelog and Scholarship sit under
+  one **Help** entry. Pages no longer repeat their own title in a breadcrumb.
+- Calmer assignment rows: the delete icon stays grey until you point at it, and progress reads
+  "2 submitted", "222 missing" and "0% graded" instead of "2 / 222 0%". The progress bar grows with the
+  screen while the action icons keep their place beside it.
+- Page titles are real level-one headings, **Skip to content** lands on them, and the sidebar and header
+  are labelled landmarks.
+- The Status and Feedback chips open with a small caret, and "Past due date" or "Grades hidden" is
+  written under the chip instead of hidden in a glyph. The delete icon turns red when pointed at, and the
+  grading progress track is visible against the row.
+- The course landing page is a main region with a level-one heading, the sidebar is a navigation landmark
+  and the current page's link is marked as current. Selected dropdown options use a darker green.
+- In Course Settings the API keys and webhooks tables scroll inside their card instead of being cut off, with
+  the key actions pinned in view, and a section opened from the rail or a link lands below the sticky title bar.
+- Quiz delete buttons are quiet until pointed at, like the assignment ones. The status and feedback choosers
+  open beside the chip, never taller than half the window. Gradebook column headers stay on one line and show
+  the full assignment name on hover, the header stays put while rows scroll, and "Pending" and "—" are
+  explained once under the table.
+- The sidebar says **All assignments** and **All quizzes** instead of two identical "Overview" entries.
+- The API keys section explains itself in labelled rows (Scope, Use it, Claude Code, Levels, Privacy) instead of
+  three paragraphs. The quiz list has a title search once it holds more than five quizzes. The Course Settings
+  title sits on the same line as the other sections' titles.
+- **Phone console**: assignments carry the same six statuses as the desktop table, and a status picker
+  replaces the old Published / Visible switches, which the server had stopped accepting. The accent is
+  codePost green, matching the desktop.
+
+### Improved: Staff console
+
+- Every view has its own address (for example `/dashboard/courses`), so refresh, the Back button and shared
+  links keep your place. The sidebar collapses on narrow screens.
+- **System Health** shows an error with a Retry button when the check fails, and the Overview names the
+  failing checks.
+- **Users** loads one page at a time from the server, with server-side search, so every account can be found.
+  Sidebar counts now come from platform statistics.
+- **Courses** lists each course's admins with a **Log in as** action. Logging in as someone always asks first.
+- Pending admin requests show on the sidebar badge and at the top of the Overview, and **Approve** asks for
+  confirmation.
+- Platform superusers now see every course in **Courses**, not only the ones they belong to.
+- **Prompt Lab** and **AI Usage** use the standard page header, and every view shares the same page padding.
+  Collapsing the sidebar is remembered per browser.
+- Role counts on **Overview** and **Users** are one neutral colour, and **Platform Admins**, **Course
+  Admins** and **Inactive** explain themselves on hover.
+- On narrow screens **Users** and **Courses** hide their secondary columns so names and actions stay in view,
+  and the Users and Pending Admins action columns stay pinned. **Log in as** is a text link in every table.
+- A **Skip to content** link, a browser-tab title per view, and definitions that open on keyboard focus.
+- The banner editor rejects a custom colour the browser cannot use, and the Info and Warning presets are dark
+  enough for their white text.
+- **Overview** leads with what needs attention: system health, admin requests, the banner and the next
+  deadline-free deploy window, then one quiet strip of totals.
+- The collapsed sidebar draws rules instead of truncated group names, and keeps the pending-request count on
+  its icon.
+- The Overview health card keeps its size while the first check runs, takes the warning or error tone when
+  something is wrong, and names the cause without a click.
+- **Pending Admin Requests** can be approved or denied in bulk: select rows, confirm once.
+- On a phone the **Deploy Calendar** lists the month's deadlines by day instead of squeezing seven columns,
+  and **Courses** hides Status and Students so the course and its admins stay in view.
+- The Overview's loading placeholder has the same four cells as the loaded status row, the collapsed sidebar
+  keeps a readable pending count, warning tags are dark enough to read, the banner editor says "Unsaved
+  changes" beside the live state, and the pending-requests bulk bar no longer shifts the table.
+- The banner confirmation names how many people will see it. "Off" is neutral grey, "Unsaved changes" is
+  amber, and a **Discard changes** button restores the saved banner. System Health shows one placeholder on
+  first load instead of a column of "Loading…".
+- **Log in as** keeps your staff session for the tab: a bar at the bottom of every page says who you are
+  acting as and returns you, in one click, to the exact page and search you left. Courses shows one **Log in as** control per
+  course, with a menu when a course has several admins.
+- **Ctrl+K** (⌘K) opens a jump box that finds pages, courses and users from anywhere in the staff console;
+  the sidebar has a **Jump to…** button for the same thing.
+- The Developer pages (API, AI Usage, Prompt Lab) fold under one sidebar group, and the Overview's status row
+  is the page's headline: its labels are larger and the totals beneath are smaller. The sidebar's brand and
+  footer stay put while its list scrolls, so an opened group is never hidden on a short window.
+- Jump results are grouped under Pages, Courses and Users, and a user result offers **Log in as** directly
+  (Ctrl+Enter, or its own button). Green tags, the pending badge and the yellow count badges in Courses use
+  colours that pass contrast.
+- **Approve** and **Deny** can be undone for eight seconds: the row leaves the list at once and the decision is
+  sent when the Undo window closes (or immediately if you leave the page).
+- A known health problem can be **acknowledged** on System Health: the Overview card goes quiet for that exact
+  failure, in that browser, until something else fails or you clear it.
+- The Overview totals are four tiles, each with one qualifying line, instead of six tiles and a loose row of
+  counts.
+- Pending Admin Requests shows when each request was made, its confirmations stay on screen, and single-row
+  Approve/Deny step back while rows are selected. System Health colours slow checks by threshold, and the
+  banner editor states who the banner reaches, and when, right above Save.
+- **Fixed: Log in as could switch straight back.** The account check that runs on every page load could finish
+  after the switch and restore the staff identity, so the bar named the wrong person. It now ignores a stale
+  answer, and the switch is requested once instead of several times.
+- System Health says what its colours mean ("2106 ms · very slow", with the threshold on hover) and shows
+  **No workers** in red rather than blue. The banner's Discard sits beside a full-width Save, and the page says
+  "Off: no one sees this banner" when the banner is off. The jump box names each course's organisation, and its
+  keyboard hint is readable. The Overview tile, sidebar entry and page all say **Pending Admins**.
+- On laptop-height windows the staff sidebar's rows are tighter so every group fits, and when it still has to
+  scroll a shadow and a thin scrollbar say so.
+- Course API Keys lists the keys first and folds the explanation under **How course API keys work**; the key's
+  name stays pinned while the table scrolls. The quiz search spans the list, names how many quizzes it
+  searches, and "No quizzes match" offers **Clear search**. A quiz's icon stays with its title when it wraps.
+- The keyboard focus ring is codePost green everywhere (it was a pale tint that failed contrast on white), and
+  the delete icons' hover red is dark enough to read.
+- The impersonation bar says what the account can do ("student in CS 101 · Spring 2026", or "student in 2
+  courses, grader in 1"), so a staff member knows which views to expect. The Users table uses the same row
+  height as Courses, so its pager fits on a laptop screen.
+- **Delete assignment** explains why its button is still grey ("Delete stays off until the name matches"),
+  warns when the typed name is close but not exact, turns green when it matches, and Enter then deletes. The
+  name to type is written in the dialog and the field is focused when it opens.
+- **Destructive confirms are AA red.** The confirm button in Delete assignment, and every other red
+  confirmation button, now uses a darker red that keeps white text readable (it was 3.5:1). Settings
+  descriptions and subtitles, the quiz Attached and Draft tags and the gradebook Pending tag are darker for
+  the same reason.
+- The quiz delete icon shows "Delete quiz" on hover like the assignments one, and the API key revoke icon is
+  quiet until pointed at and named for screen readers. The grades (#) button says "feedback is hidden, so
+  grades are not shown" when that is why it is off. The status and feedback choosers keep their title in view
+  and shade their bottom edge while there is more to scroll. A sidebar group opened near the bottom (Roster,
+  Help) scrolls into view above the collapse control. The course list's account-settings link has a name.
+- **Staff console**: the impersonation bar says "Actions here are real and saved as this user", carries an
+  amber band and pads the page so it covers nothing. Pending Admins says why row buttons pause while rows
+  are selected. The banner's severity choice fills only the chosen one and its date pickers sit beside their
+  labels; the reach line above Save is bold. System Health shows the latency thresholds in words, no longer
+  repeats the page title and says "1 event". The jump box's hint says what Enter does for a person, the row's
+  Log in as shows its shortcut, and closing the box returns focus to where you were. Activity times carry
+  the year. The hidden column-measuring row no longer traps keyboard focus on a phantom "Select all".
+
+---
+
 ## v4.3.0 — Instructor Agents, Quiz Workflow & Section Staffing
 
 > **Highlight**: Your graders can grade quizzes out of the box, quizzes are created through
@@ -150,12 +289,12 @@ schedule — no more 11:59pm publishing from your couch.
 
 ### New: Feedback badge (four modes)
 
-Releasing grades is now its own control next to Status, so *when students can work* and
-*when they see grading* never get tangled:
+Releasing grades is now its own control next to Status, so _when students can work_ and
+_when they see grading_ never get tangled:
 
 - **Hidden** (default) — grade at your own pace, nothing shows.
 - **Live** — feedback appears as it's written; good for office hours and exercises.
-- **Per student** — each student sees their feedback as soon as *their own* submission is
+- **Per student** — each student sees their feedback as soon as _their own_ submission is
   finalized — a rolling release with no global switch.
 - **Released** — everything is out at once.
 
