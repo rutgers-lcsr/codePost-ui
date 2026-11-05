@@ -20,9 +20,19 @@ interface IProps {
   onCancel: () => void;
   onDelete: () => void;
   assignmentName: string;
+  /** What goes with it, when the table knows: submissions, and how many of them are graded. */
+  submissionCount?: number;
+  gradedCount?: number;
 }
 
-const DeleteAssignmentDialog: React.FC<IProps> = ({ isVisible, onCancel, onDelete, assignmentName }) => {
+const DeleteAssignmentDialog: React.FC<IProps> = ({
+  isVisible,
+  onCancel,
+  onDelete,
+  assignmentName,
+  submissionCount,
+  gradedCount,
+}) => {
   const [typedName, setTypedName] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const inputRef = useRef<InputRef>(null);
@@ -48,10 +58,19 @@ const DeleteAssignmentDialog: React.FC<IProps> = ({ isVisible, onCancel, onDelet
       ? 'Not the exact name yet. Capitals and spaces count.'
       : 'Delete stays off until the name matches.';
 
+  // Name what is lost in numbers when the table knows them; the generic sentence otherwise.
+  const stakes =
+    submissionCount == null
+      ? 'all submissions associated with it, including all grades and comments'
+      : submissionCount === 0
+        ? 'nothing else: it has no submissions yet'
+        : `its ${submissionCount} submission${submissionCount === 1 ? '' : 's'}${
+            gradedCount ? ` (${gradedCount} graded)` : ''
+          }, with every grade and comment on them`;
+
   const content = (
     <div>
-      Are you sure you want to delete this assignment? If you proceed, you will delete all submissions associated with
-      this assignment, including all grades and comments. <b>You cannot undo this.</b>
+      Deleting this assignment deletes {stakes}. <b>You cannot undo this.</b>
       <br />
       <br />
       To continue, type the name of the assignment, <b>{assignmentName}</b>, into the field below.

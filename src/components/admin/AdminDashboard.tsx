@@ -17,7 +17,9 @@ import { motion } from 'motion/react';
 import { Course } from '../../api-client';
 import { encodedCourseLink } from '../core/CourseMenu';
 import { useAdminDashboardData } from './useAdminDashboardData';
-import { useAssignmentsQuery } from './hooks/useAssignmentsQuery';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
+import { fetchCourseAssignments, useAssignmentsQuery } from './hooks/useAssignmentsQuery';
+import { assignmentKeys } from '../../lib/queryKeys';
 import { usePrefetchCourse } from '../../hooks/usePrefetchCourse';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import styles from './AdminDashboard.module.scss';
@@ -121,14 +123,33 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ courses }) => {
 
   /* ── Filter courses by search + period ───────────────────────────────── */
 
+  /* Attention first: a course with unclaimed submissions sorts above the rest. Same cached query the
+     card's own attention line (and the course's pages) use, so this costs no extra requests. */
+  const queryClient = useQueryClient();
+  const unclaimedByCourse = useQueries({
+    queries: activeCourses.map((course) => ({
+      queryKey: assignmentKeys.list(course.id),
+      queryFn: () => fetchCourseAssignments(queryClient, course.id),
+    })),
+    combine: (results) =>
+      Object.fromEntries(
+        results.map((r, i) => [
+          activeCourses[i].id,
+          (r.data ?? []).reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0),
+        ]),
+      ) as Record<number, number>,
+  });
+
   const filteredActive = useMemo(() => {
-    return activeCourses.filter((c) => {
-      if (selectedPeriod && c.period !== selectedPeriod) return false;
-      if (!searchText) return true;
-      const search = searchText.toLowerCase();
-      return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
-    });
-  }, [activeCourses, searchText, selectedPeriod]);
+    return activeCourses
+      .filter((c) => {
+        if (selectedPeriod && c.period !== selectedPeriod) return false;
+        if (!searchText) return true;
+        const search = searchText.toLowerCase();
+        return c.name.toLowerCase().includes(search) || c.period.toLowerCase().includes(search);
+      })
+      .sort((a, b) => (unclaimedByCourse[b.id] ?? 0) - (unclaimedByCourse[a.id] ?? 0));
+  }, [activeCourses, searchText, selectedPeriod, unclaimedByCourse]);
 
   const filteredArchived = useMemo(() => {
     return archivedCourses.filter((c) => {
