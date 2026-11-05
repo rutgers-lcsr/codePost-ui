@@ -1,43 +1,25 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Flex,
-  Progress,
-  Select,
-  Skeleton,
-  Space,
-  Tag,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import React, { useContext } from 'react';
+import { Alert, Badge, Button, Card, Flex, Progress, Select, Skeleton, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClusterOutlined,
   ExclamationCircleOutlined,
-  DatabaseOutlined,
-  HddOutlined,
   InfoCircleOutlined,
   RedoOutlined,
-  ThunderboltOutlined,
-  BranchesOutlined,
 } from '@ant-design/icons';
-import { dashboardApi, systemApi } from '../../api-client/clients';
-import type {
-  SystemHealthAck,
-  SystemHealthResponse,
-  HealthCheck,
-  CeleryCheck,
-  DiskCheck,
-  MigrationCheck,
-} from '../../api-client';
+import type { HealthCheck, CeleryCheck, DiskCheck, MigrationCheck } from '../../api-client';
 import { StatusDfeEnum, OverallEnum } from '../../api-client/models/index';
-import { apiErrorMessageAsync } from '../../lib/apiError';
+import {
+  CHECKS,
+  NEXT_STEPS,
+  OVERALL_CONFIG,
+  SystemHealthContext,
+  useSystemHealth,
+  type AnyCheck,
+  type CheckKey,
+  type SystemHealthModel,
+} from './systemHealthModel';
 
 const { Text } = Typography;
 
@@ -49,57 +31,12 @@ const STATUS_BADGE: Record<StatusDfeEnum, 'success' | 'warning' | 'error'> = {
   [StatusDfeEnum.Error]: 'error',
 };
 
-const OVERALL_CONFIG: Record<
-  OverallEnum,
-  { color: string; text: string; badge: 'success' | 'warning' | 'error' | 'processing'; summary: string }
-> = {
-  [OverallEnum.Ok]: { color: '#52c41a', text: 'Healthy', badge: 'success', summary: 'Every check passed.' },
-  [OverallEnum.Degraded]: {
-    // orange-ink (6.5:1 on white); antd's orange-6 is 2.4:1 at this size.
-    color: '#ad4e00',
-    text: 'Degraded',
-    badge: 'warning',
-    summary: 'The platform is up, but something needs attention.',
-  },
-  [OverallEnum.Critical]: {
-    color: '#f5222d',
-    text: 'Critical',
-    badge: 'error',
-    summary: 'A core service is failing.',
-  },
-};
-
 const REFRESH_OPTIONS = [
   { label: 'Off', value: 0 },
   { label: '30 s', value: 30_000 },
   { label: '1 min', value: 60_000 },
   { label: '5 min', value: 300_000 },
 ];
-
-type AnyCheck = HealthCheck | CeleryCheck | DiskCheck | MigrationCheck;
-
-/** The individual checks, in display order; `key` indexes the health response. */
-const CHECKS: { key: 'database' | 'celery' | 'cache' | 'migrations' | 'disk'; name: string; icon: React.ReactNode }[] =
-  [
-    { key: 'database', name: 'Database', icon: <DatabaseOutlined /> },
-    { key: 'celery', name: 'Task Queue', icon: <ClusterOutlined /> },
-    { key: 'cache', name: 'Cache', icon: <ThunderboltOutlined /> },
-    { key: 'migrations', name: 'Migrations', icon: <BranchesOutlined /> },
-    { key: 'disk', name: 'Disk', icon: <HddOutlined /> },
-  ];
-
-/** The staff-wide acknowledgement lives on the server (GET/PUT/DELETE /dashboard/health_ack/): one note for everyone. */
-/** What exactly is failing, so an acknowledgement expires the moment something else breaks. */
-function failureSignature(health: SystemHealthResponse | null): string {
-  if (!health) return '';
-  return CHECKS.map((c) => {
-    const check = health[c.key] as AnyCheck | null | undefined;
-    const status = check ? (check as HealthCheck).status : 'none';
-    return status === StatusDfeEnum.Ok ? '' : `${c.key}:${status}`;
-  })
-    .filter(Boolean)
-    .join('|');
-}
 
 const LATENCY_SLOW_MS = 800;
 const LATENCY_VERY_SLOW_MS = 2000;
@@ -121,15 +58,6 @@ function latencyLabel(ms: number): { suffix: string; title: string } {
   return { suffix: '', title: `Normal: under ${LATENCY_SLOW_MS} ms` };
 }
 
-/** Names of the checks that are not OK, for the one-line summary. */
-function failingCheckNames(health: SystemHealthResponse | null): string[] {
-  if (!health) return [];
-  return CHECKS.filter((c) => {
-    const check = health[c.key] as AnyCheck | null | undefined;
-    return check && (check as HealthCheck).status !== StatusDfeEnum.Ok;
-  }).map((c) => c.name);
-}
-
 function diskProgressStatus(pct: number): 'success' | 'normal' | 'exception' {
   if (pct >= 90) return 'exception';
   if (pct >= 75) return 'normal'; // will be orange via strokeColor
@@ -143,64 +71,6 @@ function diskStrokeColor(pct: number): string | undefined {
 }
 
 // ─── sub-components ──────────────────────────────────────────────────────────
-
-type CheckKey = (typeof CHECKS)[number]['key'];
-
-/** What to do while a check is failing, and what the failure means for users: written once per
- *  check, by us, in the words of this deployment (app VM, data VM, compose). Shown only while failing. */
-const NEXT_STEPS: Record<CheckKey, (row: CeleryCheck & DiskCheck) => { next: React.ReactNode; means: string }> = {
-  database: () => ({
-    next: (
-      <>
-        Is the database container up? <code>docker compose ps database</code> where the data stack runs, then its log.
-      </>
-    ),
-    means: 'Nothing works until it is back; requests answer 503.',
-  }),
-  // workerCount 0 means the broker answered and no worker did; null means the broker itself did not answer.
-  celery: (row) =>
-    row.workerCount === 0
-      ? {
-          next: (
-            <>
-              The broker answered but no worker did: is the worker container running?{' '}
-              <code>docker compose ps worker</code> on the app VM, then its log.
-            </>
-          ),
-          means: 'Autograder runs and emails wait in the queue and run once a worker is back.',
-        }
-      : {
-          next: (
-            <>
-              The broker did not answer: is the Redis container up and reachable from the app VM?{' '}
-              <code>docker compose ps redis</code>, then the API log.
-            </>
-          ),
-          means: 'Nothing can be queued until the broker is back: autograder runs and emails fail.',
-        },
-  cache: () => ({
-    next: (
-      <>The API process could not read back a value it had just cached. Restart the api container and read its log.</>
-    ),
-    means: 'Pages still load; this points at the API container itself, not at Redis.',
-  }),
-  migrations: () => ({
-    next: (
-      <>
-        A deploy left migrations unapplied: in the api container run <code>python manage.py migrate</code>.
-      </>
-    ),
-    means: 'Requests that touch the changed tables fail with a 500.',
-  }),
-  disk: () => ({
-    next: (
-      <>
-        Find what grew on the API host: uploads, logs, Docker images. <code>docker system df</code> there.
-      </>
-    ),
-    means: 'Uploads and autograder runs fail once it fills.',
-  }),
-};
 
 interface CheckRowProps {
   checkKey: CheckKey;
@@ -346,77 +216,40 @@ interface SystemHealthProps {
   onOpenDetails?: () => void;
 }
 
-const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDetails }) => {
-  const [health, setHealth] = useState<SystemHealthResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [ack, setAck] = useState<SystemHealthAck | null>(null);
-  const [ackBusy, setAckBusy] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState<number>(60_000);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+/** With a console around it the view shares the console's model; alone, it runs its own. */
+const SystemHealth: React.FC<SystemHealthProps> = (props) => {
+  const shared = useContext(SystemHealthContext);
+  return shared ? <SystemHealthView {...props} model={shared} /> : <SystemHealthStandalone {...props} />;
+};
 
-  const checkHealth = useCallback(async () => {
-    setLoading(true);
-    // The shared acknowledgement rides along with every check; a failure here only means "unknown".
-    void dashboardApi.healthAckRetrieve().then(setAck, () => undefined);
-    try {
-      const data = await systemApi.healthRetrieve();
-      setHealth(data);
-      setLastUpdated(new Date());
-      setError(null);
-    } catch (e) {
-      // Keep the last good result on screen (marked stale) rather than wiping it.
-      setError((await apiErrorMessageAsync(e)) ?? 'The health check did not respond.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const SystemHealthStandalone: React.FC<SystemHealthProps> = (props) => {
+  const model = useSystemHealth();
+  return <SystemHealthView {...props} model={model} />;
+};
 
-  // Initial fetch
-  useEffect(() => {
-    checkHealth();
-  }, [checkHealth]);
-
-  // Auto-refresh
-  useEffect(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (refreshInterval > 0) {
-      intervalRef.current = setInterval(checkHealth, refreshInterval);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [checkHealth, refreshInterval]);
-
-  const overall = health ? OVERALL_CONFIG[health.overall] : null;
-  const failing = failingCheckNames(health);
-  const unavailable = error !== null && health === null;
-  const signature = failureSignature(health);
-  // Acknowledged: the same problem as when someone said "known"; anything new un-acknowledges itself.
-  const acknowledged = !!ack && signature !== '' && ack.signature === signature;
-  const acknowledge = async () => {
-    setAckBusy(true);
-    try {
-      setAck(await dashboardApi.healthAckUpdate({ systemHealthAckRequest: { signature } }));
-    } catch (e) {
-      message.error((await apiErrorMessageAsync(e)) ?? 'Could not save the acknowledgement.');
-    } finally {
-      setAckBusy(false);
-    }
-  };
-  const clearAck = async () => {
-    setAckBusy(true);
-    try {
-      setAck(await dashboardApi.healthAckDestroy());
-    } catch (e) {
-      message.error((await apiErrorMessageAsync(e)) ?? 'Could not clear the acknowledgement.');
-    } finally {
-      setAckBusy(false);
-    }
-  };
-  const ackWhen = ack?.acknowledgedAt ? new Date(ack.acknowledgedAt).toLocaleString() : '';
-  const ackWho = ack?.acknowledgedBy ?? 'a staff member';
+const SystemHealthView: React.FC<SystemHealthProps & { model: SystemHealthModel }> = ({
+  compact = false,
+  onOpenDetails,
+  model,
+}) => {
+  const {
+    health,
+    loading,
+    error,
+    lastUpdated,
+    ackBusy,
+    refreshInterval,
+    setRefreshInterval,
+    checkHealth,
+    overall,
+    failing,
+    unavailable,
+    acknowledged,
+    acknowledge,
+    clearAck,
+    ackWhen,
+    ackWho,
+  } = model;
 
   // ── Compact mode: single-row status indicator ──────────────────────────────
   if (compact) {
@@ -577,8 +410,8 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
             onChange={setRefreshInterval}
             options={REFRESH_OPTIONS}
             style={{ width: 80 }}
-            aria-label="Auto-refresh interval"
-            title="Auto-refresh interval"
+            aria-label="Auto-refresh interval, for the whole console"
+            title="Auto-refresh interval, for the whole console (the Inbox and the sidebar follow it)"
           />
           <Tooltip title="Refresh now">
             <Button

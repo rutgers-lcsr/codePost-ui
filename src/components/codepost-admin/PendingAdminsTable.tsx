@@ -1,30 +1,19 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React from 'react';
-import { Table, Card, Tag, Button, Space, message, Popconfirm, Alert, Empty, Skeleton, Typography } from 'antd';
+import { Table, Card, Tag, Button, Space, Popconfirm, Alert, Empty, Skeleton, Typography } from 'antd';
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 import type { Organization, PendingAdminUser } from '../../api-client';
-import { dashboardApi } from '../../api-client/clients';
-import { apiErrorMessageAsync, responseErrorMessage } from '../../lib/apiError';
-import { getAuthToken } from '../../utils/auth';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 import AdminPageHeader from './AdminPageHeader';
 import useWindowSize from '../core/useWindowSize';
+import { usePendingAdminRequests, type Decision } from './pendingAdminRequests';
 
 const { Text } = Typography;
 
-type Decision = 'approve' | 'deny';
-
 /** How long a decision stays undoable before it is sent; the row leaves the list straight away. */
-const UNDO_WINDOW_MS = 8000;
-
-interface DeferredDecision {
-  kind: Decision;
-  emails: string[];
-  timer: number;
-}
 
 interface PendingAdminsTableProps {
   organizations: Organization[];
@@ -35,134 +24,17 @@ interface PendingAdminsTableProps {
 }
 
 const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, onChanged, hideHeader = false }) => {
-  const [pendingUsers, setPendingUsers] = React.useState<PendingAdminUser[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedKeys, setSelectedKeys] = React.useState<React.Key[]>([]);
-  // Decisions wait UNDO_WINDOW_MS before they are sent (deny deletes the account, so the server
-  // offers no way back); their rows leave the table at once and come back on Undo.
-  const deferredRef = React.useRef<Map<string, DeferredDecision>>(new Map());
-  const [hiddenEmails, setHiddenEmails] = React.useState<Set<string>>(new Set());
   const [pageSize, setPageSize] = useDefaultPageSize();
   // A phone has room for the email and two icon buttons; bulk selection is a desktop affordance.
   const isPhone = useWindowSize().width < 768;
-
-  const fetchPendingAdmins = React.useCallback(async () => {
-    setLoading(true);
-    setLoadError(null);
-    try {
-      // The client is generated without runtime mapping, so the wire key stays snake_case.
-      const rows = (await dashboardApi.pendingAdminsList()) as Array<PendingAdminUser & { date_joined?: string }>;
-      setPendingUsers(
-        rows.map(({ date_joined, ...user }) => ({ ...user, dateJoined: date_joined ?? user.dateJoined ?? '' })),
-      );
-    } catch (error) {
-      setLoadError((await apiErrorMessageAsync(error)) ?? 'Pending requests could not be loaded.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    fetchPendingAdmins();
-  }, [fetchPendingAdmins]);
-
-  // Plain fetch on purpose: the endpoint reads `user_email` (as schema.yaml documents) but the
-  // generated client's PendingAdminActionRequest model names the field `userEmail`.
-  const postAction = async (kind: Decision, email: string, keepalive = false) => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/dashboard/${kind}_pending_admin/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getAuthToken()}` },
-      body: JSON.stringify({ user_email: email }),
-      keepalive,
-    });
-    if (!res.ok) throw new Error(await responseErrorMessage(res));
-  };
-
-  const syncHidden = () => {
-    const emails = new Set<string>();
-    deferredRef.current.forEach((d) => d.emails.forEach((e) => emails.add(e)));
-    setHiddenEmails(emails);
-  };
-
-  const commit = async (key: string) => {
-    const deferred = deferredRef.current.get(key);
-    if (!deferred) return;
-    deferredRef.current.delete(key);
-    const failed: string[] = [];
-    for (const email of deferred.emails) {
-      try {
-        await postAction(deferred.kind, email);
-      } catch {
-        failed.push(email);
-      }
-    }
-    if (failed.length > 0) message.error(`Could not ${deferred.kind}: ${failed.join(', ')}`);
-    await fetchPendingAdmins();
-    syncHidden();
-    onChanged?.();
-  };
-
-  const undo = (key: string) => {
-    const deferred = deferredRef.current.get(key);
-    if (!deferred) return;
-    window.clearTimeout(deferred.timer);
-    deferredRef.current.delete(key);
-    syncHidden();
-    message.open({ key, type: 'info', content: 'Undone. The request is back in the list.', duration: 2 });
-  };
-
-  const defer = (kind: Decision, emails: string[]) => {
-    if (emails.length === 0) return;
-    const key = `${kind}:${Date.now()}`;
-    const timer = window.setTimeout(() => commit(key), UNDO_WINDOW_MS);
-    deferredRef.current.set(key, { kind, emails, timer });
-    syncHidden();
-    setSelectedKeys([]);
-    const what =
-      emails.length === 1
-        ? kind === 'approve'
-          ? `${emails[0]} approved.`
-          : `Request from ${emails[0]} denied.`
-        : `${emails.length} requests ${kind === 'approve' ? 'approved' : 'denied'}.`;
-    message.open({
-      key,
-      type: 'success',
-      duration: UNDO_WINDOW_MS / 1000,
-      content: (
-        <span>
-          {what}{' '}
-          <Button type="link" size="small" onClick={() => undo(key)} style={{ padding: '0 4px' }}>
-            Undo
-          </Button>
-        </span>
-      ),
-    });
-  };
-
-  // Leaving the page (tab close, or navigating within the console) sends what is still waiting,
-  // so a decision never silently evaporates with its Undo window.
-  React.useEffect(() => {
-    const flush = () => {
-      deferredRef.current.forEach((d) => {
-        window.clearTimeout(d.timer);
-        d.emails.forEach((email) => postAction(d.kind, email, true).catch(() => {}));
-      });
-      deferredRef.current.clear();
-    };
-    window.addEventListener('pagehide', flush);
-    return () => {
-      window.removeEventListener('pagehide', flush);
-      flush();
-    };
-    // postAction only reads module-level config; it is stable for the component's life.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { pendingUsers, hiddenEmails, loading, loadError, fetchPendingAdmins, defer } =
+    usePendingAdminRequests(onChanged);
 
   const act = (kind: Decision, email: string) => defer(kind, [email]);
 
   // One confirmation for the whole selection; the endpoint takes one email at a time.
-  const actMany = (kind: Decision) =>
+  const actMany = (kind: Decision) => {
     defer(
       kind,
       pendingUsers
@@ -170,6 +42,8 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
         .map((u) => u.email ?? '')
         .filter(Boolean),
     );
+    setSelectedKeys([]);
+  };
 
   const orgName = (id: number | null | undefined) => organizations.find((o) => o.id === id)?.name;
   const hasRequestDates = pendingUsers.some((u) => u.dateJoined);

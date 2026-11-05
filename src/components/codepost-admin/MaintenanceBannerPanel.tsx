@@ -1,5 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Alert,
   Card,
@@ -73,14 +73,14 @@ function toDraft(data: MaintenanceBannerResponse): DraftBanner {
 }
 
 /** What users are seeing right now, derived from the saved banner and its schedule. */
-type LiveState = { key: 'live' | 'scheduled' | 'expired' | 'off'; label: string; color: string };
+export type LiveState = { key: 'live' | 'scheduled' | 'expired' | 'off'; label: string; color: string };
 
 // Off is neutral grey, not the themed tag tint: green would read as "healthy" or "on".
 const OFF_TAG = { color: 'rgba(0, 0, 0, 0.65)', background: '#fafafa', borderColor: '#d9d9d9' } as const;
 // Dark amber text: an unsaved edit is a warning, and 12px tag text needs 4.5:1.
 const UNSAVED_TAG = { color: '#ad4e00', background: '#fff7e6', borderColor: '#ffd591' } as const;
 
-function liveState(saved: MaintenanceBannerResponse | null): LiveState {
+export function liveState(saved: MaintenanceBannerResponse | null): LiveState {
   if (!saved || !saved.active) return { key: 'off', label: 'Off', color: 'default' };
   const now = dayjs();
   if (saved.startsAt && dayjs(saved.startsAt).isAfter(now)) {
@@ -92,6 +92,36 @@ function liveState(saved: MaintenanceBannerResponse | null): LiveState {
   return { key: 'live', label: 'Live now', color: 'green' };
 }
 
+/** The saved banner alone, for a row that only needs to say whether one is showing. */
+export function useSavedBanner() {
+  const [saved, setSaved] = useState<MaintenanceBannerResponse | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  // A failure here only means "unknown": the row says nothing is showing rather than breaking the page.
+  const refresh = useCallback(async () => {
+    try {
+      const data = await systemApi.bannerRetrieve();
+      if (alive.current && data) setSaved(data);
+    } catch {
+      // leave saved as it was
+    } finally {
+      if (alive.current) setLoaded(true);
+    }
+  }, []);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+  return { saved, loaded, state: liveState(saved), refresh };
+}
+
+export type SavedBanner = ReturnType<typeof useSavedBanner>;
+
 interface MaintenanceBannerPanelProps {
   compact?: boolean;
   /** How many people the banner reaches; named in the confirmation when known. */
@@ -100,6 +130,8 @@ interface MaintenanceBannerPanelProps {
   onOpenDetails?: () => void;
   /** Full mode: reports unsaved edits, so the console can ask before navigating away. */
   onDirtyChange?: (dirty: boolean) => void;
+  /** Full mode: a save went through, so the console's own copy of the banner can refresh. */
+  onSaved?: () => void;
 }
 
 const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
@@ -107,6 +139,7 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
   onOpenDetails,
   audienceCount,
   onDirtyChange,
+  onSaved,
 }) => {
   const [saved, setSaved] = useState<MaintenanceBannerResponse | null>(null);
   const [draft, setDraft] = useState<DraftBanner>({
@@ -215,6 +248,7 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
       };
       const updated = await systemApi.bannerPartialUpdate({ patchedMaintenanceBanner: patch });
       setSaved(updated);
+      onSaved?.();
       setDraft(toDraft(updated));
       const next = liveState(updated);
       messageApi.success(
