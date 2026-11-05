@@ -10,22 +10,22 @@
   text-align: left;
   width: 100%;
   font: inherit;
-  gap: 10px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 5px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #ffffff;
+  /* A list, not a stack of cards: the border only appears on hover and on the current row,
+     so ten options read as one picker and fit beside each other. */
+  border: 1px solid transparent;
+  background: transparent;
   cursor: pointer;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
-    box-shadow 0.15s ease,
     transform 0.1s ease;
 
   &:hover:not(:disabled):not(.stateOptionCurrent) {
-    border-color: #198665;
+    border-color: rgba(0, 0, 0, 0.15);
     background: #fafafa;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 
   &:active:not(:disabled):not(.stateOptionCurrent) {
@@ -50,7 +50,29 @@
   cursor: default;
 }
 
-/* The tag-buttons in the Status / Feedback cells that open the pickers. */
+/* Work beside Feedback inside the Stage popover (.stageGrid); stacked when the window is narrow
+   (.stageStack) — the component picks, since the popover's own width depends on the window. */
+.stageGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  align-items: start;
+}
+
+.stageStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stageColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* The tag-button in the Stage cell that opens the picker. */
 .cellTrigger {
   cursor: pointer;
   display: inline-flex;

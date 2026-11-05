@@ -26,7 +26,6 @@ import {
   MailOutlined,
   MessageOutlined,
   MoreOutlined,
-  NumberOutlined,
   OrderedListOutlined,
   ReadOutlined,
   SendOutlined,
@@ -40,9 +39,9 @@ import {
 import {
   Alert,
   Button,
+  Checkbox,
   Dropdown,
   Empty,
-  Flex,
   message,
   Modal,
   Popover,
@@ -143,8 +142,7 @@ type alignType = 'left' | 'right' | 'center';
 interface AssignmentRow extends Record<string, unknown> {
   key: number;
   assignment: React.ReactNode;
-  status: React.ReactNode;
-  feedback: React.ReactNode;
+  stage: React.ReactNode;
   progress: React.ReactNode;
   actions: React.ReactNode;
   // Searchable plain-text shadow fields (not rendered as columns)
@@ -186,7 +184,7 @@ const STATE_META: Record<
     border: '#d4b106',
     text: '#7c4a03', // 7.1:1 on #fffbe6
     icon: <EyeOutlined />,
-    description: 'Students see the name and due date — no files, no submitting.',
+    description: 'Students see the name, due date and description — no files, no submitting.',
   },
   [AssignmentStateEnum.Preview]: {
     label: 'Preview',
@@ -276,6 +274,44 @@ const FEEDBACK_ORDER: AssignmentFeedbackStatusEnum[] = [
   AssignmentFeedbackStatusEnum.PerStudent,
   AssignmentFeedbackStatusEnum.Released,
 ];
+
+/** The words under the Stage chip for the feedback axis. */
+const FEEDBACK_CAPTION: Record<AssignmentFeedbackStatusEnum, string> = {
+  [AssignmentFeedbackStatusEnum.Hidden]: 'feedback hidden',
+  [AssignmentFeedbackStatusEnum.Live]: 'live feedback',
+  [AssignmentFeedbackStatusEnum.PerStudent]: 'per-student feedback',
+  [AssignmentFeedbackStatusEnum.Released]: 'feedback released',
+};
+
+/** What students can do right now, one sentence per effective work state. */
+const WORK_NOW: Record<AssignmentStateEnum, string> = {
+  [AssignmentStateEnum.Draft]: "Students can't see this assignment yet.",
+  [AssignmentStateEnum.Visible]: 'Students see the name, due date and description, but no files.',
+  [AssignmentStateEnum.Preview]: "Students can read the files but can't submit.",
+  [AssignmentStateEnum.Published]: 'Students can download the files and submit.',
+  [AssignmentStateEnum.Closed]: 'Students can no longer submit; they keep access to their work.',
+  [AssignmentStateEnum.Archived]: "Students can't see this assignment any more.",
+};
+
+/** What students see of the grading right now; hideGrades is the modifier. */
+const feedbackNow = (status: AssignmentFeedbackStatusEnum, hideGrades: boolean): string => {
+  switch (status) {
+    case AssignmentFeedbackStatusEnum.Live:
+      return hideGrades
+        ? 'They see comments and the rubric as they are written; numeric grades stay hidden.'
+        : 'They see comments and grades as they are written.';
+    case AssignmentFeedbackStatusEnum.PerStudent:
+      return hideGrades
+        ? 'Each sees their comments and rubric once their own submission is finalized; numeric grades stay hidden.'
+        : 'Each sees their grades, comments and rubric once their own submission is finalized.';
+    case AssignmentFeedbackStatusEnum.Released:
+      return hideGrades
+        ? 'They see comments and the rubric on finalized submissions; numeric grades stay hidden.'
+        : 'They see grades, comments and the rubric on finalized submissions.';
+    default:
+      return 'They see no grades, comments or rubric.';
+  }
+};
 
 /** Per-transition confirmation copy for the feedback picker. */
 const FEEDBACK_CONFIRM: Record<AssignmentFeedbackStatusEnum, { title: string; content: string; ok: string }> = {
@@ -372,6 +408,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   const windowSize = useWindowSize();
   // Seven inline row actions need the room of a wide screen; laptops get the single actions menu.
   const isCompact = windowSize.width < layoutVars.breakpoints.smallScreen.assignmentActionsCompact;
+  // The Stage picker shows Work beside Feedback when the window has room for a 620px popover.
+  const stageTwoColumn = windowSize.width >= 960;
   const courseCaps = useCourseCapabilities(props.currentCourse?.id);
   const canCreateAssignment = courseCaps.create_assignment !== false;
   const canEditAssignment = courseCaps.edit_assignment ?? canCreateAssignment; // fall back to create_assignment if edit_assignment not yet loaded
@@ -726,16 +764,11 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       className: 'draggable',
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: isCompact ? 100 : 130,
-    },
-    {
-      title: 'Feedback',
-      dataIndex: 'feedback',
-      key: 'feedback',
-      width: isCompact ? 90 : 120,
+      title: 'Stage',
+      dataIndex: 'stage',
+      key: 'stage',
+      // One chip plus the words under it; the former Status + Feedback pair took 250.
+      width: isCompact ? 130 : 210,
     },
     {
       title: 'Progress',
@@ -871,131 +904,194 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         );
       };
 
-      // --- Status: the table tag shows the DERIVED effectiveState (a past-deadline
-      // published assignment reads as Closed on its own); the picker sets the stored state ---
+      // --- Stage: one control for the work state and the feedback state. The chip shows the
+      // DERIVED effectiveState (a past-deadline published assignment reads as Closed on its own);
+      // the picker sets the stored state. Feedback and the hide-grades modifier live in the same
+      // panel, so what students see right now is one read and one click, not three. ---
       const storedState = assignment.state ?? AssignmentStateEnum.Draft;
       const effState = assignment.effectiveState ?? storedState;
       const effMeta = STATE_META[effState] ?? STATE_META[AssignmentStateEnum.Draft];
       const isAutoClosed = effState === AssignmentStateEnum.Closed && storedState === AssignmentStateEnum.Published;
+      const fbStatus = assignment.feedbackStatus ?? AssignmentFeedbackStatusEnum.Hidden;
+      const hideGrades = !!assignment.hideGrades;
+      const studentsCanSee = effState !== AssignmentStateEnum.Draft && effState !== AssignmentStateEnum.Archived;
 
-      const statusContent = (
-        <div className="cp-scroll-shade" style={{ width: 340, maxHeight: 'calc(50vh - 56px)', overflowY: 'auto' }}>
-          <Flex vertical gap="small">
-            {STATE_ORDER.map((s) => {
-              const meta = STATE_META[s];
-              const isCurrent = s === storedState;
-              // Auto-closed divergence is explained inline, exactly where it applies,
-              // instead of a banner: on the current (Published) row and the Closed row.
-              let description: React.ReactNode = meta.description;
-              if (isAutoClosed && s === AssignmentStateEnum.Published) {
-                description = (
-                  <>
-                    {meta.description}
-                    <br />
-                    <ClockCircleOutlined aria-hidden style={{ marginRight: 4 }} />
-                    Past the due date — students can no longer submit. Extend the due date to reopen.
-                  </>
-                );
-              } else if (isAutoClosed && s === AssignmentStateEnum.Closed) {
-                description = `${meta.description} In effect now — select to make it permanent.`;
-              }
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={isCurrent}
-                  disabled={!canEditAssignment && !isCurrent}
-                  onClick={!isCurrent ? () => setAssignmentState(assignment, s) : undefined}
-                  className={`${styles.stateOption} ${isCurrent ? styles.stateOptionCurrent : ''}`}
-                >
-                  <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
-                    {meta.icon}
-                  </span>
-                  <span style={{ flex: 1 }}>
-                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.neutralMainText }}>
-                      {meta.label}
-                      {isCurrent && (
-                        <span style={{ fontWeight: 400, color: colors.neutralSecondaryText }}>
-                          {' '}
-                          — current{isAutoClosed && s === AssignmentStateEnum.Published ? ' setting' : ''}
-                        </span>
-                      )}
-                    </span>
-                    <span style={{ display: 'block', fontSize: 12, color: colors.neutralSecondaryText }}>
-                      {description}
-                    </span>
-                  </span>
-                  {isCurrent && (
-                    <CheckCircleOutlined aria-hidden style={{ color: colors.brandPrimary, marginTop: 4 }} />
-                  )}
-                </button>
-              );
-            })}
+      // Words under the chip: whatever the work-state chip does not already say.
+      const captionParts: string[] = [];
+      if (isAutoClosed) captionParts.push('Past due date');
+      if (
+        studentsCanSee &&
+        (fbStatus !== AssignmentFeedbackStatusEnum.Hidden ||
+          effState === AssignmentStateEnum.Published ||
+          effState === AssignmentStateEnum.Closed)
+      ) {
+        captionParts.push(FEEDBACK_CAPTION[fbStatus]);
+      }
+      if (studentsCanSee && hideGrades && fbStatus !== AssignmentFeedbackStatusEnum.Hidden) {
+        captionParts.push('grades hidden');
+      }
+      const captionRaw = captionParts.join(' · ');
+      const caption = captionRaw ? captionRaw.charAt(0).toUpperCase() + captionRaw.slice(1) : '';
+      const studentsNow = studentsCanSee
+        ? `${WORK_NOW[effState]} ${feedbackNow(fbStatus, hideGrades)}`
+        : WORK_NOW[effState];
 
-            {storedState === AssignmentStateEnum.Published && (
-              <div style={{ textAlign: 'right' }}>
-                <SendEmailModal
-                  buttonText={'Notify students'}
-                  title="Notify students via email"
-                  template="publish_assignment"
-                  course={currentCourse}
-                  assignment={assignment}
-                  me={myEmail}
-                  emails={students}
-                  body={<div>Notify students via email that {assignment.name} has been published.</div>}
-                  button={notifyButton}
-                />
-              </div>
-            )}
-          </Flex>
-        </div>
+      const stageOption = (
+        key: string,
+        meta: { label: string; icon: React.ReactNode },
+        isCurrent: boolean,
+        locked: boolean,
+        onSelect: () => void,
+        description: React.ReactNode,
+        currentLabel = 'current',
+      ) => (
+        <button
+          key={key}
+          type="button"
+          aria-pressed={isCurrent}
+          disabled={locked && !isCurrent}
+          onClick={!isCurrent ? onSelect : undefined}
+          className={`${styles.stateOption} ${isCurrent ? styles.stateOptionCurrent : ''}`}
+        >
+          <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
+            {meta.icon}
+          </span>
+          <span style={{ flex: 1 }}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: 13,
+                lineHeight: '18px',
+                fontWeight: 600,
+                color: colors.neutralMainText,
+              }}
+            >
+              {meta.label}
+              {isCurrent && (
+                <span style={{ fontWeight: 400, color: colors.neutralSecondaryText }}> — {currentLabel}</span>
+              )}
+            </span>
+            <span style={{ display: 'block', fontSize: 12, lineHeight: '16px', color: colors.neutralSecondaryText }}>
+              {description}
+            </span>
+          </span>
+          {isCurrent && <CheckCircleOutlined aria-hidden style={{ color: colors.brandPrimary, marginTop: 3 }} />}
+        </button>
       );
 
-      // --- Feedback axis: tag + described picker (Status-popover pattern) ---
-      const fbStatus = assignment.feedbackStatus ?? AssignmentFeedbackStatusEnum.Hidden;
-      const fbMeta = FEEDBACK_META[fbStatus] ?? FEEDBACK_META[AssignmentFeedbackStatusEnum.Hidden];
+      const groupLabel = (text: string) => (
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: '0.6px',
+            textTransform: 'uppercase',
+            color: colors.neutralSecondaryText,
+            padding: '0 8px',
+            marginBottom: 2,
+          }}
+        >
+          {text}
+        </Text>
+      );
 
-      const feedbackContent = (
-        <div className="cp-scroll-shade" style={{ width: 340, maxHeight: 'calc(50vh - 56px)', overflowY: 'auto' }}>
-          <Flex vertical gap="small">
-            {FEEDBACK_ORDER.map((s) => {
-              const meta = FEEDBACK_META[s];
-              const isCurrent = s === fbStatus;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={isCurrent}
-                  disabled={!canReleaseGrades && !isCurrent}
-                  onClick={!isCurrent ? () => setFeedbackStatus(assignment, s) : undefined}
-                  className={`${styles.stateOption} ${isCurrent ? styles.stateOptionCurrent : ''}`}
-                >
-                  <span aria-hidden style={{ marginTop: 2, color: colors.neutralMainText }}>
-                    {meta.icon}
-                  </span>
-                  <span style={{ flex: 1 }}>
-                    <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: colors.neutralMainText }}>
-                      {meta.label}
-                      {isCurrent && (
-                        <span style={{ fontWeight: 400, color: colors.neutralSecondaryText }}> — current</span>
-                      )}
-                    </span>
-                    <span style={{ display: 'block', fontSize: 12, color: colors.neutralSecondaryText }}>
+      const stageContent = (
+        <div className="cp-scroll-shade" style={{ maxHeight: 'calc(65vh - 56px)', overflowY: 'auto' }}>
+          <Text
+            style={{
+              display: 'block',
+              fontSize: 13,
+              lineHeight: '18px',
+              color: colors.neutralMainText,
+              marginBottom: 10,
+            }}
+          >
+            <strong>Students right now:</strong> {studentsNow}
+          </Text>
+          {/* Work beside Feedback: the two axes are independent, and side by side the whole
+              panel fits a laptop screen; it stacks when the window is narrow. */}
+          <div className={stageTwoColumn ? styles.stageGrid : styles.stageStack}>
+            <div className={styles.stageColumn}>
+              {groupLabel('Work')}
+              {STATE_ORDER.map((s) => {
+                const meta = STATE_META[s];
+                // Auto-closed divergence is explained inline, exactly where it applies,
+                // instead of a banner: on the current (Published) row and the Closed row.
+                let description: React.ReactNode = meta.description;
+                let currentLabel = 'current';
+                if (isAutoClosed && s === AssignmentStateEnum.Published) {
+                  currentLabel = 'current setting';
+                  description = (
+                    <>
                       {meta.description}
-                    </span>
+                      <br />
+                      <ClockCircleOutlined aria-hidden style={{ marginRight: 4 }} />
+                      Past the due date — students can no longer submit. Extend the due date to reopen.
+                    </>
+                  );
+                } else if (isAutoClosed && s === AssignmentStateEnum.Closed) {
+                  description = `${meta.description} In effect now — select to make it permanent.`;
+                }
+                return stageOption(
+                  s,
+                  meta,
+                  s === storedState,
+                  !canEditAssignment,
+                  () => setAssignmentState(assignment, s),
+                  description,
+                  currentLabel,
+                );
+              })}
+              {storedState === AssignmentStateEnum.Published && (
+                <div style={{ textAlign: 'right', marginTop: 4 }}>
+                  <SendEmailModal
+                    buttonText={'Notify students'}
+                    title="Notify students via email"
+                    template="publish_assignment"
+                    course={currentCourse}
+                    assignment={assignment}
+                    me={myEmail}
+                    emails={students}
+                    body={<div>Notify students via email that {assignment.name} has been published.</div>}
+                    button={notifyButton}
+                  />
+                </div>
+              )}
+            </div>
+            <div className={styles.stageColumn}>
+              {groupLabel('Feedback')}
+              {FEEDBACK_ORDER.map((s) =>
+                stageOption(
+                  s,
+                  FEEDBACK_META[s],
+                  s === fbStatus,
+                  !canReleaseGrades,
+                  () => setFeedbackStatus(assignment, s),
+                  FEEDBACK_META[s].description,
+                ),
+              )}
+              <Tooltip
+                title={
+                  fbStatus === AssignmentFeedbackStatusEnum.Hidden
+                    ? 'Feedback is hidden, so no grades show either way.'
+                    : undefined
+                }
+              >
+                <Checkbox
+                  checked={hideGrades}
+                  disabled={fbStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades}
+                  onChange={() => toggleHideGrades(assignment)}
+                  style={{ fontSize: 13, color: colors.neutralMainText, margin: '4px 8px 0' }}
+                >
+                  Hide numeric grades
+                  {/* Inherits the label colour, so it dims with a disabled checkbox; 0.7 reads as secondary. */}
+                  <span style={{ display: 'block', fontSize: 12, lineHeight: '16px', opacity: 0.7 }}>
+                    Students see comments and the rubric only.
                   </span>
-                  {isCurrent && (
-                    <CheckCircleOutlined aria-hidden style={{ color: colors.brandPrimary, marginTop: 4 }} />
-                  )}
-                </button>
-              );
-            })}
-            {assignment.hideGrades && (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Numeric grades are hidden for this assignment (Hide grades) — students see comments and the rubric only.
-              </Text>
-            )}
-          </Flex>
+                </Checkbox>
+              </Tooltip>
+            </div>
+          </div>
         </div>
       );
 
@@ -1058,23 +1154,23 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
             )}
           </Space>
         ),
-        status: (
+        stage: (
           <div>
             <Popover
-              content={statusContent}
+              content={stageContent}
               trigger="click"
-              placement="rightTop"
-              title="Assignment status"
-              // The list never grows past half the window (it scrolls inside, under a shade), so the popover
-              // always fits beside the chip.
-              styles={{ root: { width: 360 } }}
+              // The wide two-column panel drops under the chip (it has no room beside it on a laptop);
+              // the narrow stacked one sits beside the chip as before.
+              placement={stageTwoColumn ? 'bottom' : 'rightTop'}
+              title="Stage"
+              // Two columns on a laptop, one on a narrow window; never taller than two thirds of the
+              // window (it scrolls inside, under a shade), so the popover always fits beside the chip.
+              styles={{ root: { width: stageTwoColumn ? 620 : 340, maxWidth: 'calc(100vw - 24px)' } }}
             >
               <button
                 type="button"
                 aria-haspopup="dialog"
-                aria-label={`Assignment status: ${effMeta.label}${
-                  isAutoClosed ? ', closed automatically because the due date passed (setting: Published)' : ''
-                }. Open status options.`}
+                aria-label={`Stage: ${effMeta.label}${caption ? `, ${caption.toLowerCase()}` : ''}. Open stage options.`}
                 className={styles.cellTrigger}
               >
                 <Tag
@@ -1086,43 +1182,10 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 <DownOutlined aria-hidden style={{ fontSize: 9, color: colors.neutralSecondaryText, marginLeft: 4 }} />
               </button>
             </Popover>
-            {/* Words under the chip, not a glyph: the setting is Published, the due date closed it. */}
-            {isAutoClosed && (
+            {/* Words under the chip, not a second chip: the feedback axis and the past-due note. */}
+            {caption && (
               <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>
-                Past due date
-              </Text>
-            )}
-          </div>
-        ),
-        feedback: (
-          <div>
-            <Popover
-              content={feedbackContent}
-              trigger="click"
-              placement="rightTop"
-              title="Feedback"
-              styles={{ root: { width: 360 } }}
-            >
-              <button
-                type="button"
-                aria-haspopup="dialog"
-                aria-label={`Feedback: ${fbMeta.label}${
-                  assignment.hideGrades ? ', numeric grades hidden' : ''
-                }. Open feedback options.`}
-                className={styles.cellTrigger}
-              >
-                <Tag
-                  icon={fbMeta.icon}
-                  style={{ marginRight: 0, background: fbMeta.bg, borderColor: fbMeta.border, color: fbMeta.text }}
-                >
-                  {fbMeta.label}
-                </Tag>
-                <DownOutlined aria-hidden style={{ fontSize: 9, color: colors.neutralSecondaryText, marginLeft: 4 }} />
-              </button>
-            </Popover>
-            {assignment.hideGrades && (
-              <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>
-                Grades hidden
+                {caption}
               </Text>
             )}
           </div>
@@ -1219,19 +1282,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   children: uploadItems,
                 },
                 { type: 'divider' as const },
-                {
-                  key: 'grades',
-                  icon: assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />,
-                  label:
-                    assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
-                      ? 'Grades (feedback hidden)'
-                      : assignment.hideGrades
-                        ? 'Grades hidden'
-                        : 'Grades visible',
-                  disabled: assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades,
-                  onClick: () => toggleHideGrades(assignment),
-                },
-                { type: 'divider' as const },
                 ...dataItems,
                 ...(canEditAssignment
                   ? [
@@ -1290,35 +1340,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                   aria-label={`Manage submissions for ${assignment.name}`}
                 />
               </Dropdown>
-            </Tooltip>
-            <Tooltip
-              title={
-                assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
-                  ? 'Grades — feedback is hidden, so grades are not shown regardless'
-                  : assignment.hideGrades
-                    ? 'Grades hidden — click to show numeric grades'
-                    : 'Grades visible — click to hide numeric grades'
-              }
-            >
-              <Button
-                shape="circle"
-                aria-label={
-                  assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden
-                    ? `Grades for ${assignment.name}: feedback is hidden, so grades are not shown`
-                    : assignment.hideGrades
-                      ? `Grades hidden for ${assignment.name} — show numeric grades`
-                      : `Grades visible for ${assignment.name} — hide numeric grades`
-                }
-                aria-pressed={!assignment.hideGrades}
-                disabled={assignment.feedbackStatus === AssignmentFeedbackStatusEnum.Hidden || !canReleaseGrades}
-                onClick={() => toggleHideGrades(assignment)}
-                icon={assignment.hideGrades ? <EyeInvisibleOutlined /> : <NumberOutlined />}
-                style={
-                  !assignment.hideGrades && assignment.feedbackStatus !== AssignmentFeedbackStatusEnum.Hidden
-                    ? { borderColor: colors.brandPrimary, color: colors.brandPrimary }
-                    : undefined
-                }
-              />
             </Tooltip>
             {canViewStats && (
               <Tooltip title="Analyze grades & stats">
@@ -1568,6 +1589,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           <DeleteAssignmentDialog
             isVisible={true}
             assignmentName={activeAssignment.name}
+            submissionCount={assignmentStats[activeAssignment.id]?.numSubmissions}
+            gradedCount={assignmentStats[activeAssignment.id]?.numGraded}
             onCancel={cancel}
             onDelete={deleteAssignment}
           />

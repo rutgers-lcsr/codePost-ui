@@ -19,21 +19,23 @@ This page covers the full instructor lifecycle for assignments — from creation
 3. **Add files** — Upload assignment files (starter code, helper files, test resources).
 4. **Build the rubric** — Create rubric categories and comments before grading begins.
 5. **Set up tests** _(optional)_ — Configure the execution environment and autograder tests.
-6. **Announce** — Set the **Status** badge to **Visible** (students see the name, due date, and description) or **Preview** (they can also read the hand-out files). Optionally set **Publish at** to open automatically on schedule.
+6. **Announce** — Set the **Stage** to **Visible** (students see the name, due date, and description) or **Preview** (they can also read the hand-out files). Optionally set **Publish at** to open automatically on schedule.
 7. **Publish** — Students can submit (with **Allow student upload** on). The assignment **Closes** by itself when the deadline (plus any late window) passes.
 8. **Grade** — Assign graders, review submissions, apply rubric, finalize.
-9. **Release feedback** — Use the **Feedback** badge: release everything at once, per student as you finalize, or live as you type. See [Grading, Release & Exports](/docs/instructor-grading-publishing).
+9. **Release feedback** — Open the **Stage** picker and choose a feedback mode: release everything at once, per student as you finalize, or live as you type. See [Grading, Release & Exports](/docs/instructor-grading-publishing).
 
 ---
 
-## The Status and Feedback badges
+## The Stage badge
 
-Every assignment row carries two colored badges. Click either to open a picker where each
-option explains itself.
+Every assignment row carries one colored badge, **Stage**, with a line under it for whatever
+else applies: the feedback mode, "Past due date", "grades hidden". Click it to open a picker
+that starts with one sentence — what students can see and do right now — and then shows the
+two things it controls side by side. Every option explains itself.
 
-**Status** controls the *work*:
+![The stage picker](/assets/docs/instructor_status_picker.png)
 
-![The assignment status picker](/assets/docs/instructor_status_picker.png)
+**Work** (the left column) controls the *work*:
 
 | Status | Students see it | Read files | Submit |
 | --- | :---: | :---: | :---: |
@@ -45,15 +47,16 @@ option explains itself.
 | **Archived** | ✗ | ✗ | ✗ |
 
 - **Closed usually happens by itself** when the due date (plus any late window) passes —
-  the badge shows a small clock icon. Extend the due date to reopen, or set Closed
+  the badge says "Past due date" underneath. Extend the due date to reopen, or set Closed
   yourself to end submissions early.
 - **Publish at** (Settings > General) schedules an automatic move to Published from
   Visible or Preview, checked every few minutes.
 - Moving backwards never deletes anything — submissions and grades are kept.
 
-**Feedback** controls the *grading* — see
+**Feedback** (the right column) controls the *grading* — see
 [Grading, Release & Exports](/docs/instructor-grading-publishing) for the four feedback
-modes (Hidden, Live, Per student, Released), grade masking, and scheduled release.
+modes (Hidden, Live, Per student, Released), the **Hide numeric grades** checkbox under
+them, and scheduled release.
 
 ---
 
@@ -67,7 +70,7 @@ From **Assignments > All assignments**, click **New Assignment**. You have two o
 - **Points** — total points available (≥ 0). Used as the starting score in subtractive grading mode.
 - **Allow student upload** — toggle on if students should upload their own submissions.
 - **Visible** — off creates the assignment as a **Draft**; on creates it in **Preview** so
-  students can see it and read the hand-out. Adjust anytime with the Status badge.
+  students can see it and read the hand-out. Adjust anytime with the Stage badge.
 - **Due Date** — optional; submissions after this date are marked late.
 
 ### Clone from existing
@@ -122,10 +125,10 @@ Open any assignment's **Settings** (gear icon) to access four tabs of configurat
 
 | Setting                      | Description                                                                                                        |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Feedback flow**            | How grading becomes visible: Hidden, Live, Per student, or Released — the same choice as the Feedback badge.       |
+| **Feedback flow**            | How grading becomes visible: Hidden, Live, Per student, or Released — the same choice as the Stage picker's Feedback column. |
 | **Release at**               | Optional: automatically release feedback at this time (only while the flow is Hidden or Per student).              |
 | **Show graders**             | Override the course-level setting for whether students see who graded them. `null` = use course default.           |
-| **Hide grades**              | Mask numeric grades in any revealing feedback mode — students see comments and the rubric but no number.           |
+| **Hide grades**              | Mask numeric grades in any revealing feedback mode — students see comments and the rubric but no number. Also a checkbox in the Stage picker. |
 | **Comment feedback**         | Students can provide feedback (thumbs up/down) on rubric comments.                                                 |
 | **Allow regrade requests**   | Students can submit questions or regrade requests after grading.                                                   |
 | **Regrade deadline**         | Cutoff date for new regrade requests.                                                                              |

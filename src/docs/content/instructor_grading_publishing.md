@@ -59,10 +59,10 @@ Speed up your grading with these hotkeys:
 
 ## Releasing feedback
 
-Students do not see grades, comments, or the rubric until you open the **Feedback**
-badge on the assignment row (next to Status) and pick a mode:
+Students do not see grades, comments, or the rubric until you open the **Stage** badge on
+the assignment row and pick a mode in its **Feedback** column:
 
-![The feedback picker](/assets/docs/instructor_feedback_picker.png)
+![The stage picker, with the feedback modes on the right](/assets/docs/instructor_status_picker.png)
 
 | Feedback | What students see |
 | --- | --- |
@@ -73,7 +73,7 @@ badge on the assignment row (next to Status) and pick a mode:
 
 Two extras:
 
-- **Hide grades** (the `#` button on the row, or Settings > Publishing) masks numeric
+- **Hide grades** (the checkbox under Feedback in the Stage picker, or Settings > Publishing) masks numeric
   grades in any revealing mode — students see comments and the rubric but no number.
 - **Release at** (Settings > Publishing) schedules an automatic move to Released —
   "grades out Friday 5pm" without being at a keyboard.

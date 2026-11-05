@@ -96,27 +96,16 @@ export const DOC_SHOTS: DocShot[] = [
     file: 'instructor_dashboard.png',
     auth: 'instructor',
     path: `/admin/${course}/assignments`,
-    readySelector: 'text=Feedback',
+    readySelector: 'text=Stage',
   },
   {
     file: 'instructor_status_picker.png',
     auth: 'instructor',
     path: `/admin/${course}/assignments`,
-    readySelector: 'text=Feedback',
+    readySelector: 'text=Stage',
     prepare: async (page) => {
-      await page.getByRole('button', { name: /Assignment status:/ }).first().click();
+      await page.getByRole('button', { name: /^Stage:/ }).first().click();
       await page.getByText('Hidden from students while you set it up.').waitFor();
-    },
-    clipSelector: '.ant-popover:visible',
-  },
-  {
-    file: 'instructor_feedback_picker.png',
-    auth: 'instructor',
-    path: `/admin/${course}/assignments`,
-    readySelector: 'text=Feedback',
-    prepare: async (page) => {
-      await page.getByRole('button', { name: /^Feedback:/ }).first().click();
-      await page.getByText('Grading in progress').first().waitFor();
     },
     clipSelector: '.ant-popover:visible',
   },
