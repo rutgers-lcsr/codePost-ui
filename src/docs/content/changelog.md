@@ -34,6 +34,18 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ## Unreleased — Admin & Staff console refinements
 
+### Changed: one Stage badge per assignment, and settings that save themselves
+
+- The assignments table's **Status** and **Feedback** badges and the `#` grades button are now one **Stage**
+  badge. The line under it says what else applies ("Feedback released · grades hidden", "Past due date").
+  Its picker opens with one sentence about what students can see and do right now, then shows **Work** beside
+  **Feedback**, with **Hide numeric grades** as a checkbox under the feedback modes.
+- **Course Settings** has no Save button: switches save when flipped, text fields when you leave them, the
+  timezone when you pick one. Each save shows a tick beside the control and a toast with **Undo**.
+  **Archive course** asks first. The AI card's switches save the same way; the provider connection (provider,
+  key, URL, model, rates) keeps a **Save connection** button so it is never half-saved.
+- Renaming a course no longer reloads the page; the settings page follows the course to its new address.
+
 ### Improved: Admin console navigation and the assignments overview
 
 - The sidebar opens expanded, with labels, on a first visit. Collapsing it is still remembered per browser.
@@ -168,6 +180,12 @@ Stay up to date with new features, improvements, and fixes in codePost.
   repeats the page title and says "1 event". The jump box's hint says what Enter does for a person, the row's
   Log in as shows its shortcut, and closing the box returns focus to where you were. Activity times carry
   the year. The hidden column-measuring row no longer traps keyboard focus on a phantom "Select all".
+- **Delete assignment counts what goes with it** ("deletes its 107 submissions (12 graded), with every grade
+  and comment on them", or "nothing else: it has no submissions yet").
+- The course landing page lists courses with unclaimed submissions first.
+- **Staff console**: acknowledging a System Health problem is now shared by all staff (it says who and when),
+  not kept per browser. Leaving the banner editor with unsaved edits asks first, from the sidebar, the jump box
+  or a reload.
 
 ---
 
