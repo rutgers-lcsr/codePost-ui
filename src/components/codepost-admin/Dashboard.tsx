@@ -1,4 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+import { MenuOutlined, SearchOutlined } from '@ant-design/icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Badge, Button, Card, Layout, Modal, Result, Skeleton, Tabs, Tag, Typography, theme } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -19,13 +21,16 @@ import ActivityFeed from './ActivityFeed';
 import MaintenanceBannerPanel from './MaintenanceBannerPanel';
 import { AIUsageService } from '../../services/aiUsage';
 import PendingAdminsTable from './PendingAdminsTable';
-import StaffSidebar, { SIDER_COLLAPSED_WIDTH, SIDER_WIDTH } from './StaffSidebar';
+import StaffSidebar, { PHONE_BAR_HEIGHT, SIDER_COLLAPSED_WIDTH, SIDER_WIDTH } from './StaffSidebar';
 import StaffInbox from './StaffInbox';
+import PersonPage from './PersonPage';
 import { SystemHealthContext, useSystemHealth } from './systemHealthModel';
 import { useSavedBanner } from './MaintenanceBannerPanel';
 import {
   DASHBOARD_PATH,
+  PAGE_TABS,
   STAFF_DESTINATIONS,
+  personPath,
   countLabel,
   isBannerAddress,
   resolveStaffLocation,
@@ -146,7 +151,7 @@ const Dashboard = () => {
   }, []);
 
   const staffLocation = resolveStaffLocation(location.pathname, location.search);
-  const { page: currentPage, tab: currentTab } = staffLocation;
+  const { page: currentPage, tab: currentTab, person: currentPerson } = staffLocation;
   // An old address renders its page on the first frame (above) and is then rewritten, so no bookmark breaks.
   useEffect(() => {
     if (staffLocation.canonical) navigate(`${staffLocation.canonical}${location.hash}`, { replace: true });
@@ -238,9 +243,9 @@ const Dashboard = () => {
 
   // The tab title is how a screen reader (and the browser's tab strip) tells the views apart.
   useEffect(() => {
-    const tab = tabLabel(currentPage, currentTab);
+    const tab = currentPerson ? 'person' : tabLabel(currentPage, currentTab);
     document.title = `codePost - Staff Console - ${currentPage}${tab ? ` · ${tab}` : ''}`;
-  }, [currentPage, currentTab]);
+  }, [currentPage, currentTab, currentPerson]);
 
   const [admins, setAdmins] = useState<AdminData[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -328,6 +333,33 @@ const Dashboard = () => {
   const adminCount = useMemo(() => new Set(admins.map((a) => a.email)).size, [admins]);
 
   const collapsedWidth = isPhone ? 0 : SIDER_COLLAPSED_WIDTH;
+  const queryClient = useQueryClient();
+  // On a phone the open sider behaves like a drawer: Escape closes it, focus moves in and comes back.
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const phoneMenuOpen = isPhone && !collapsed;
+  useEffect(() => {
+    if (!phoneMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCollapse(true, 'clickTrigger');
+    };
+    window.addEventListener('keydown', onKey);
+    document.querySelector<HTMLElement>('aside .ant-menu-item')?.focus();
+    const toggle = menuToggleRef.current;
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      toggle?.focus();
+    };
+  }, [phoneMenuOpen, onCollapse]);
+  // Closing the person drawer unmounts it at once, so antd cannot hand focus back; return it to the
+  // link that opened it, or to the page.
+  const lastPerson = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    const prev = lastPerson.current;
+    lastPerson.current = currentPerson;
+    if (prev === undefined || currentPerson !== undefined) return;
+    const link = document.querySelector<HTMLElement>(`a[href="${personPath(prev)}"], a[href^="${personPath(prev)}?"]`);
+    (link ?? document.getElementById('staff-main'))?.focus();
+  }, [currentPerson]);
   const contentOffset = collapsed ? collapsedWidth : SIDER_WIDTH;
   const pagePadding = isPhone ? 16 : 24;
 
@@ -504,6 +536,19 @@ const Dashboard = () => {
                 },
               ]}
             />
+            {currentPerson !== undefined && (
+              <PersonPage
+                id={currentPerson}
+                organizations={organizations}
+                isPhone={isPhone}
+                onClose={() => navigate(staffPath('People', 'people', location.search))}
+                onChanged={() => {
+                  refreshPending();
+                  loadRosters(courses, organizations);
+                  queryClient.invalidateQueries({ queryKey: ['staff', 'users'] });
+                }}
+              />
+            )}
           </div>
         );
       case 'Platform':
@@ -633,11 +678,67 @@ const Dashboard = () => {
           courses={courses}
           organizations={organizations}
           onCourse={(course) => guardedNavigate(`${DASHBOARD_PATH}/courses?q=${encodeURIComponent(course.name)}`)}
-          onUser={(email) => guardedNavigate(`${DASHBOARD_PATH}/users?q=${encodeURIComponent(email)}`)}
+          onUser={(u) => guardedNavigate(personPath(u.id))}
         />
         <a className="cp-skip-link" href="#staff-main">
           Skip to content
         </a>
+
+        {isPhone && (
+          <>
+            {/* The one bar a phone needs: the menu, where you are, and the search the keyboard shortcut cannot offer. */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: PHONE_BAR_HEIGHT,
+                zIndex: 21,
+                background: '#1b1b1b',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '0 8px 0 4px',
+              }}
+            >
+              <Button
+                ref={menuToggleRef}
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => onCollapse(!collapsed, 'clickTrigger')}
+                aria-label={collapsed ? 'Open the navigation' : 'Close the navigation'}
+                aria-expanded={!collapsed}
+                style={{ color: '#fff' }}
+              />
+              <Text
+                strong
+                style={{ color: '#fff', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+              >
+                {currentPage}
+                {tabLabel(currentPage, currentTab) && currentTab !== PAGE_TABS[currentPage][0]?.key
+                  ? ` · ${tabLabel(currentPage, currentTab)}`
+                  : ''}
+              </Text>
+              <Button
+                type="text"
+                icon={<SearchOutlined />}
+                onClick={() => setJumpOpen(true)}
+                aria-label="Find a person, a course or a page"
+                style={{ color: '#fff' }}
+              />
+            </div>
+            {!collapsed && (
+              // Tapping beside the open sider closes it, as a drawer would.
+              <div
+                role="presentation"
+                onClick={() => onCollapse(true, 'clickTrigger')}
+                style={{ position: 'fixed', inset: 0, zIndex: 19, background: 'rgba(0,0,0,0.35)' }}
+              />
+            )}
+          </>
+        )}
         <StaffSidebar
           collapsed={collapsed}
           collapsedWidth={collapsedWidth}
@@ -647,11 +748,16 @@ const Dashboard = () => {
           counts={{ courses: stats.totalCourses, people: stats.totalUniqueUsers, pendingRequests: pendingCount }}
           openItems={isLoading ? 0 : openItems}
           bannerDirty={bannerDirtyState}
-          onNavigate={(page) => goTo(page)}
+          onNavigate={(page) => {
+            goTo(page);
+            // A phone's sider is an overlay: it goes away once a destination is picked.
+            if (isPhone) onCollapse(true, 'clickTrigger');
+          }}
           onHome={() => guardedNavigate('/')}
           onJump={() => setJumpOpen(true)}
         />
         <Layout
+          inert={phoneMenuOpen}
           style={{
             height: '100vh',
             overflowY: 'auto',
@@ -660,12 +766,17 @@ const Dashboard = () => {
             transition: 'margin-left 0.2s ease',
           }}
         >
-          {/* Extra room on phones for the sider's corner trigger, which sits over the content's bottom-left. */}
+          {/* Room under the phone top bar. */}
           <Content
             id="staff-main"
             tabIndex={-1}
             role="main"
-            style={{ margin: '0', overflow: 'initial', paddingBottom: isPhone ? 96 : 64 }}
+            style={{
+              margin: '0',
+              overflow: 'initial',
+              paddingTop: isPhone ? PHONE_BAR_HEIGHT : 0,
+              paddingBottom: isPhone ? 32 : 64,
+            }}
           >
             {isLoading ? skeleton : loadError ? errorResult : renderContent()}
           </Content>

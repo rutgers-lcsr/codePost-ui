@@ -1,4 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+import { useLocation } from 'react-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Table,
@@ -132,7 +133,9 @@ const ActivityFeed: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }
   }, [logs, groupRepeats, activeTab]);
 
   // Filter state
-  const [searchText, setSearchText] = useState('');
+  // The person page hands over a search through router state, so no email sits in the address.
+  const handedSearch = (useLocation().state as { q?: string } | null)?.q ?? '';
+  const [searchText, setSearchText] = useState(handedSearch);
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
 
@@ -176,7 +179,7 @@ const ActivityFeed: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }
   );
 
   useEffect(() => {
-    fetchLogs(1, pageSize, undefined, undefined, undefined, activeTab);
+    fetchLogs(1, pageSize, handedSearch || undefined, undefined, undefined, activeTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

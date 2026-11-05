@@ -16,12 +16,13 @@ import { UserIO, type PeopleRole } from '../../services/user';
 import { apiErrorMessageAsync } from '../../lib/apiError';
 
 import AdminPageHeader from './AdminPageHeader';
-import { useLocation, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import AdminTableToolbar from './AdminTableToolbar';
 import NewUserDialog from './NewUserDialog';
 import EditUserDialog from './EditUserDialog';
 import LoginAsButton from './LoginAsButton';
 import { DEFINITIONS } from './definitions';
+import { personPath } from './staffRoutes';
 import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 type Role = 'courseAdmin' | 'superGrader' | 'grader' | 'student';
@@ -163,7 +164,12 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
       sortOrder: ordering === 'email' ? 'ascend' : ordering === '-email' ? 'descend' : null,
       render: (email: string, record) => (
         <Space>
-          <span style={{ fontWeight: 500 }}>{email}</span>
+          <Link
+            to={{ pathname: personPath(record.id), search: location.search }}
+            style={{ fontWeight: 500, color: colors.brandPrimary }}
+          >
+            {email}
+          </Link>
           {record.codePostAdmin && (
             <Tag color="red" icon={<CrownOutlined />}>
               Platform Admin

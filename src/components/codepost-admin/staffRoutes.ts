@@ -65,6 +65,8 @@ export interface StaffLocation {
   page: StaffPage;
   /** Set on pages that have tabs; always one of the page's tab keys. */
   tab?: string;
+  /** `/dashboard/people/<id>`: one person, over the People list. */
+  person?: number;
   /** The address this location should have. Set only when the current one is an old form. */
   canonical?: string;
 }
@@ -100,10 +102,19 @@ export function resolveStaffLocation(pathname: string, search = ''): StaffLocati
   // The Users page became People; its tabs and its `?q=` keep working at the old address.
   if (slug === 'users') {
     const moved = resolveStaffLocation(`${DASHBOARD_PATH}/people${sub ? `/${sub}` : ''}`, search);
-    return { ...moved, canonical: moved.canonical ?? staffPath(moved.page, moved.tab, keptSearch) };
+    const target = moved.person === undefined ? staffPath(moved.page, moved.tab) : personPath(moved.person);
+    return { ...moved, canonical: moved.canonical ?? `${target}${keptSearch}` };
   }
 
   const page = STAFF_PAGES.find((p) => PAGE_SLUG[p] === slug) ?? 'Inbox';
+  // A person's id under People: the list's first tab, with the person over it.
+  if (page === 'People' && /^\d+$/.test(sub)) {
+    const rest = params.toString();
+    const location: StaffLocation = { page, tab: PAGE_TABS.People[0].key, person: Number(sub) };
+    return queryTab === null
+      ? location
+      : { ...location, canonical: `${personPath(Number(sub))}${rest ? `?${rest}` : ''}` };
+  }
   const tabs = PAGE_TABS[page];
   const isTab = (key: string | null): key is string => !!key && tabs.some((t) => t.key === key);
   const tab = tabs.length === 0 ? undefined : isTab(sub) ? sub : isTab(queryTab) ? queryTab : tabs[0].key;
@@ -115,6 +126,9 @@ export function resolveStaffLocation(pathname: string, search = ''): StaffLocati
   const canonical = !isRoot && (trimmed !== want || queryTab !== null) ? `${want}${keptSearch}` : undefined;
   return canonical ? { page, tab, canonical } : { page, tab };
 }
+
+/** `/dashboard/people/564`: the person page, by id (no email in any address). */
+export const personPath = (id: number): string => `${staffPath('People')}/${id}`;
 
 /** Whether an address is the banner editor, the one place the unsaved-edits guard never asks about. */
 export const isBannerAddress = (to: string): boolean => {

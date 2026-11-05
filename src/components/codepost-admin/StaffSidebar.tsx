@@ -22,6 +22,8 @@ const { Sider } = Layout;
 
 export const SIDER_WIDTH = 220;
 export const SIDER_COLLAPSED_WIDTH = 64;
+/** The phone top bar's height; the sider starts under it. */
+export const PHONE_BAR_HEIGHT = 48;
 // red-7 under the white badge count: antd's #ff4d4f is 3.5:1.
 const BADGE_RED = '#cf1322';
 
@@ -63,14 +65,15 @@ const StaffSidebar = ({
     breakpoint="lg"
     width={SIDER_WIDTH}
     collapsedWidth={collapsedWidth}
-    zeroWidthTriggerStyle={{ top: 'auto', bottom: 16 }}
+    // On a phone the top bar's menu button opens the sider; antd's corner trigger sat over content.
+    trigger={collapsedWidth === 0 ? null : undefined}
     style={{
       // Visible: the zero-width trigger hangs outside the sider box on phones.
       overflow: 'visible',
-      height: '100vh',
+      height: collapsedWidth === 0 ? `calc(100vh - ${PHONE_BAR_HEIGHT}px)` : '100vh',
       position: 'fixed',
       left: 0,
-      top: 0,
+      top: collapsedWidth === 0 ? PHONE_BAR_HEIGHT : 0,
       bottom: 0,
       zIndex: 20,
     }}

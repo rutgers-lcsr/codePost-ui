@@ -42,6 +42,10 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - **People** (the old Users page) keeps its People, Course admins and Requests tabs and filters by role and
   idleness instead of showing six tiles; the Inbox's totals link straight to a filter.
 - **Courses** absorbs Organizations as a filter and a **By organization** tab.
+- A **person page** (`/dashboard/people/<id>`, no email in the address) opens over the People list from any
+  email, palette result or request: roles with Edit, a pending request with Approve and Deny, their courses
+  with Open, Log in as, and a way into the activity log filtered to them. Full-screen on a phone, where the
+  console also gains a top bar with the menu and a search button instead of the corner trigger.
 - The sidebar is **Inbox**, **People**, **Courses**, **Platform** and, below a divider,
   **Tools**. **Platform** holds Health, Activity, Autograding and the Deploy calendar as tabs; **Tools** holds the
   Banner, AI usage, the API reference and the Prompt lab. Each tab has its own address
@@ -84,6 +88,8 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - Staff console: browser **Back** from the banner with unsaved edits asks the same Stay/Leave question; confirm
   dialogs take the console's green; the Overview banner tile no longer breaks "Banner" mid-word; **Degraded**
   reads at AA; the activity log shows skeleton rows before its first answer.
+- Turning on a person's **Organization Staff** switch saves now; the API had dropped the flag while reporting
+  the update as successful.
 
 ### Improved: staff console loading, labels and the banner guard
 

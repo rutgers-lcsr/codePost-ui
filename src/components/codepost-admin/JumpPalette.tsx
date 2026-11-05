@@ -24,7 +24,7 @@ interface JumpPaletteProps {
   /** Names the organisation beside a course: two "cs101 s2020" rows need telling apart. */
   organizations?: Organization[];
   onCourse: (course: Course) => void;
-  onUser: (email: string) => void;
+  onUser: (user: { id: number; email: string }) => void;
 }
 
 interface JumpResult {
@@ -63,7 +63,7 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
   onUser,
 }) => {
   const [query, setQuery] = useState('');
-  const [userHits, setUserHits] = useState<string[]>([]);
+  const [userHits, setUserHits] = useState<{ id: number; email: string }[]>([]);
   const [active, setActive] = useState(0);
   const inputRef = useRef<InputRef>(null);
 
@@ -87,7 +87,8 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
     const timer = setTimeout(() => {
       UserIO.listPage({ page: 1, pageSize: 6, search: q })
         .then((page) => {
-          if (!cancelled) setUserHits((page.results ?? []).map((u) => u.email ?? '').filter(Boolean));
+          if (!cancelled)
+            setUserHits((page.results ?? []).filter((u) => !!u.email).map((u) => ({ id: u.id, email: u.email ?? '' })));
         })
         .catch(() => {
           if (!cancelled) setUserHits([]);
@@ -124,12 +125,12 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
             run: () => onCourse(c),
           }))
       : [];
-    const users = userHits.map((email) => ({
-      key: `user:${email}`,
+    const users = userHits.map(({ id, email }) => ({
+      key: `user:${id}`,
       group: 'Users' as const,
       icon: <UserOutlined />,
       title: email,
-      run: () => onUser(email),
+      run: () => onUser({ id, email }),
       secondary: { label: 'Log in as', run: () => confirmLoginAs(email) },
     }));
     return [...tabHits, ...courseHits, ...users];
