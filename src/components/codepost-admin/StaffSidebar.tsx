@@ -1,0 +1,213 @@
+// Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
+/**
+ * The staff console's sider: five destinations, one per job, and a quiet Tools entry below a divider.
+ * Brand and the jump button stay put; only the navigation scrolls.
+ */
+import {
+  BookOutlined,
+  ClusterOutlined,
+  DashboardOutlined,
+  GlobalOutlined,
+  SearchOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { Badge, Button, Divider, Layout, Menu, Tooltip, Typography } from 'antd';
+import { Link } from 'react-router';
+
+import CPLogo from '../core/CPLogo';
+import { countLabel, type StaffPage } from './staffRoutes';
+
+const { Text } = Typography;
+const { Sider } = Layout;
+
+export const SIDER_WIDTH = 220;
+export const SIDER_COLLAPSED_WIDTH = 64;
+// red-7 under the white badge count: antd's #ff4d4f is 3.5:1.
+const BADGE_RED = '#cf1322';
+
+interface StaffSidebarProps {
+  collapsed: boolean;
+  collapsedWidth: number;
+  onCollapse: (next: boolean, type: 'clickTrigger' | 'responsive') => void;
+  currentPage: StaffPage;
+  /** Counts are left off the labels until the first load answers. */
+  isLoading: boolean;
+  counts: { organizations: number; courses: number; users: number; pendingRequests: number };
+  /** The banner editor has unsaved edits: the Tools entry says so, so the leave guard is never a surprise. */
+  bannerDirty: boolean;
+  onNavigate: (page: StaffPage) => void;
+  /** The logo: leaves the console, so it goes through the same guard as the pages. */
+  onHome: () => void;
+  onJump: () => void;
+}
+
+const StaffSidebar = ({
+  collapsed,
+  collapsedWidth,
+  onCollapse,
+  currentPage,
+  isLoading,
+  counts,
+  bannerDirty,
+  onNavigate,
+  onHome,
+  onJump,
+}: StaffSidebarProps) => (
+  <Sider
+    collapsible
+    collapsed={collapsed}
+    onCollapse={onCollapse}
+    breakpoint="lg"
+    width={SIDER_WIDTH}
+    collapsedWidth={collapsedWidth}
+    zeroWidthTriggerStyle={{ top: 'auto', bottom: 16 }}
+    style={{
+      // Visible: the zero-width trigger hangs outside the sider box on phones.
+      overflow: 'visible',
+      height: '100vh',
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      zIndex: 20,
+    }}
+  >
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: collapsed ? '16px 8px 8px' : '16px 16px 8px', textAlign: 'center' }}>
+        <Link
+          to="/"
+          aria-label="codePost home"
+          onClick={(e) => {
+            e.preventDefault();
+            onHome();
+          }}
+        >
+          <CPLogo cpType={collapsed ? 'icon' : 'main'} />
+        </Link>
+        {!collapsed && (
+          <Text
+            style={{
+              display: 'block',
+              marginTop: 10,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              color: 'rgba(255, 255, 255, 0.6)',
+            }}
+          >
+            Staff console
+          </Text>
+        )}
+      </div>
+
+      <Divider style={{ margin: '0 16px', borderColor: 'rgba(255,255,255,0.08)', minWidth: 'auto', width: 'auto' }} />
+
+      <nav
+        aria-label="Staff console navigation"
+        className="cp-staff-nav"
+        style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+      >
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[currentPage]}
+          onClick={({ key }) => onNavigate(key as StaffPage)}
+          style={{ borderRight: 0 }}
+          items={[
+            { key: 'Overview', icon: <DashboardOutlined />, label: 'Overview' },
+            {
+              key: 'Organizations',
+              icon: <GlobalOutlined />,
+              label: countLabel('Organizations', isLoading ? undefined : counts.organizations),
+            },
+            {
+              key: 'Courses',
+              icon: <BookOutlined />,
+              label: countLabel('Courses', isLoading ? undefined : counts.courses),
+            },
+            {
+              key: 'Users',
+              // People of every role, plus the admin requests waiting on this page's Requests tab.
+              // Collapsed, the icon carries the number itself; a dot would lose the count.
+              icon: (
+                <Badge count={collapsed ? counts.pendingRequests : 0} size="small" offset={[4, 8]} color={BADGE_RED}>
+                  <UserOutlined />
+                </Badge>
+              ),
+              label: (
+                <span>
+                  {countLabel('Users', isLoading ? undefined : counts.users)}
+                  {counts.pendingRequests > 0 && (
+                    <>
+                      <Badge count={counts.pendingRequests} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
+                      <span className="sr-only">, {counts.pendingRequests} admin requests waiting</span>
+                    </>
+                  )}
+                </span>
+              ),
+            },
+            // Health, activity, autograding and the deploy calendar: what the platform is doing.
+            { key: 'Platform', icon: <ClusterOutlined />, label: 'Platform' },
+            { type: 'divider', style: { borderColor: 'rgba(255,255,255,0.1)', margin: '8px 16px' } },
+            // Banner, AI usage, the API reference and the prompt lab: changed or consulted rarely.
+            {
+              key: 'Tools',
+              icon:
+                collapsed && bannerDirty ? (
+                  <Badge dot color="#ffc53d" offset={[2, 2]}>
+                    <ToolOutlined />
+                  </Badge>
+                ) : (
+                  <ToolOutlined />
+                ),
+              label: (
+                <span>
+                  Tools
+                  {bannerDirty && (
+                    <>
+                      <Badge dot color="#ffc53d" style={{ marginLeft: 8 }} />
+                      <Text style={{ marginLeft: 6, fontSize: 11, color: '#ffd666' }}>unsaved banner</Text>
+                      <span className="sr-only">, the banner has unsaved edits</span>
+                    </>
+                  )}
+                </span>
+              ),
+            },
+          ]}
+        />
+      </nav>
+
+      {/* The one keyboard path across users, courses and pages; Ctrl+K opens it too. */}
+      <div style={{ padding: collapsed ? '8px 8px 0' : '8px 16px 0' }}>
+        <Tooltip title="Jump to a page, course or user (Ctrl+K)" placement="right">
+          <Button
+            size="small"
+            icon={<SearchOutlined />}
+            onClick={onJump}
+            aria-label="Jump to a page, course or user (Ctrl+K)"
+            style={{
+              width: '100%',
+              background: 'rgba(255, 255, 255, 0.08)',
+              borderColor: 'transparent',
+              color: 'rgba(255, 255, 255, 0.85)',
+            }}
+          >
+            {collapsed ? null : 'Jump to…  Ctrl+K'}
+          </Button>
+        </Tooltip>
+      </div>
+
+      {!collapsed && (
+        <div style={{ padding: '8px 16px 12px', textAlign: 'center' }}>
+          <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
+            {process.env.REACT_APP_VERSION || 'dev'}
+          </Text>
+        </div>
+      )}
+    </div>
+  </Sider>
+);
+
+export default StaffSidebar;

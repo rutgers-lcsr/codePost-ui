@@ -125,7 +125,8 @@ const riskLabel = (level: RiskLevel): string => {
 // Below this a seven-column month cannot be read; the month becomes a list of days with deadlines.
 const AGENDA_BREAKPOINT = 768;
 
-const DeployCalendar = () => {
+/** `hideHeader`: rendered inside the Platform page's tabs, which carry the title. */
+const DeployCalendar = ({ hideHeader = false }: { hideHeader?: boolean }) => {
   const isPhone = useWindowSize().width < AGENDA_BREAKPOINT;
   const [deadlines, setDeadlines] = useState<AssignmentDeadline[]>([]);
   const [loading, setLoading] = useState(true);
@@ -307,10 +308,12 @@ const DeployCalendar = () => {
 
   return (
     <div>
-      <AdminPageHeader
-        title="Deploy Calendar"
-        subtitle="Visualise all assignment due dates &amp; late-upload deadlines to find the safest deployment windows."
-      />
+      {!hideHeader && (
+        <AdminPageHeader
+          title="Deploy Calendar"
+          subtitle="Visualise all assignment due dates &amp; late-upload deadlines to find the safest deployment windows."
+        />
+      )}
 
       {/* Toolbar */}
       <Row gutter={16} style={{ marginBottom: '16px' }} align="middle">

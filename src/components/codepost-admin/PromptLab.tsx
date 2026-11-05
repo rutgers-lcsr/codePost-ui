@@ -168,7 +168,8 @@ function flattenTree(roots: VariantTreeNode[]): VariantTreeNode[] {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const PromptLab: React.FC = () => {
+/** `hideHeader`: rendered inside the Tools page's tabs, which carry the title. */
+const PromptLab: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const [activeTab, setActiveTab] = useState<'variants' | 'experiments'>('variants');
   const [variants, setVariants] = useState<PromptVariant[]>([]);
   const [experiments, setExperiments] = useState<PromptExperiment[]>([]);
@@ -615,35 +616,41 @@ const PromptLab: React.FC = () => {
       (!newExperiment.promptType || v.promptType === newExperiment.promptType),
   );
 
+  const headerActions = (
+    <Space wrap>
+      <Select
+        placeholder="Filter by type"
+        allowClear
+        style={{ width: 200 }}
+        value={filterType || undefined}
+        onChange={(val) => setFilterType(val ?? '')}
+        options={PROMPT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
+      />
+      <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
+        Refresh
+      </Button>
+      <Tooltip title="Auto-improvement settings">
+        <Button icon={<SettingOutlined />} onClick={() => setSettingsDrawerOpen(true)} />
+      </Tooltip>
+      {labSettings && (
+        <Tag color={labSettings.autoImproveEnabled ? 'green' : 'default'} style={{ margin: 0 }}>
+          Auto: {labSettings.autoImproveEnabled ? 'ON' : 'OFF'}
+        </Tag>
+      )}
+    </Space>
+  );
+
   return (
     <div>
-      <AdminPageHeader
-        title="Prompt Lab"
-        subtitle="Manage AI system prompts and run A/B experiments."
-        actions={
-          <Space wrap>
-            <Select
-              placeholder="Filter by type"
-              allowClear
-              style={{ width: 200 }}
-              value={filterType || undefined}
-              onChange={(val) => setFilterType(val ?? '')}
-              options={PROMPT_TYPES.map((p) => ({ value: p.value, label: p.label }))}
-            />
-            <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
-              Refresh
-            </Button>
-            <Tooltip title="Auto-improvement settings">
-              <Button icon={<SettingOutlined />} onClick={() => setSettingsDrawerOpen(true)} />
-            </Tooltip>
-            {labSettings && (
-              <Tag color={labSettings.autoImproveEnabled ? 'green' : 'default'} style={{ margin: 0 }}>
-                Auto: {labSettings.autoImproveEnabled ? 'ON' : 'OFF'}
-              </Tag>
-            )}
-          </Space>
-        }
-      />
+      {hideHeader ? (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>{headerActions}</div>
+      ) : (
+        <AdminPageHeader
+          title="Prompt Lab"
+          subtitle="Manage AI system prompts and run A/B experiments."
+          actions={headerActions}
+        />
+      )}
 
       <Tabs
         activeKey={activeTab}

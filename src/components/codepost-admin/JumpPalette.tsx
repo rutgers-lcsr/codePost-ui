@@ -12,6 +12,8 @@ const { Text } = Typography;
 export interface JumpTab {
   label: string;
   go: () => void;
+  /** Other words that should find this page: its old name, a synonym. */
+  keywords?: string[];
 }
 
 interface JumpPaletteProps {
@@ -100,7 +102,7 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
   const results = useMemo<JumpResult[]>(() => {
     const q = query.trim().toLowerCase();
     const tabHits = tabs
-      .filter((t) => !q || t.label.toLowerCase().includes(q))
+      .filter((t) => !q || t.label.toLowerCase().includes(q) || (t.keywords ?? []).some((k) => k.includes(q)))
       .slice(0, q ? 5 : 6)
       .map((t) => ({
         key: `tab:${t.label}`,

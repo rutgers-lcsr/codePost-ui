@@ -94,7 +94,8 @@ const getRowClassName = (record: Record<string, any>) => {
   return '';
 };
 
-const ActivityFeed: React.FC = () => {
+/** `hideHeader`: rendered inside the Platform page's tabs, which carry the title. */
+const ActivityFeed: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   type EventLogType = SystemActivityResponse['results'][number];
   const [logs, setLogs] = useState<EventLogType[]>([]);
   const [loading, setLoading] = useState(false);
@@ -626,27 +627,33 @@ const ActivityFeed: React.FC = () => {
     </>
   );
 
+  const headerActions = (
+    <Space>
+      {hasActiveFilters && (
+        <Button icon={<ClearOutlined />} onClick={handleClearFilters} size="small">
+          Clear Filters
+        </Button>
+      )}
+      <Button
+        icon={<ReloadOutlined />}
+        onClick={() => fetchLogs(1, pageSize, searchText, categoryFilter, dateRange, activeTab)}
+      >
+        Refresh
+      </Button>
+    </Space>
+  );
+
   return (
     <div>
-      <AdminPageHeader
-        title="Activity & Audit Logs"
-        subtitle="System-level events, errors, and authentication audit trail."
-        actions={
-          <Space>
-            {hasActiveFilters && (
-              <Button icon={<ClearOutlined />} onClick={handleClearFilters} size="small">
-                Clear Filters
-              </Button>
-            )}
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => fetchLogs(1, pageSize, searchText, categoryFilter, dateRange, activeTab)}
-            >
-              Refresh
-            </Button>
-          </Space>
-        }
-      />
+      {hideHeader ? (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>{headerActions}</div>
+      ) : (
+        <AdminPageHeader
+          title="Activity & Audit Logs"
+          subtitle="System-level events, errors, and authentication audit trail."
+          actions={headerActions}
+        />
+      )}
       <Card bodyStyle={{ padding: 0 }}>
         <Tabs
           activeKey={activeTab}

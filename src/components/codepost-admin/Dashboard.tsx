@@ -1,20 +1,10 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import {
-  ApiOutlined,
   BookOutlined,
   CalendarOutlined,
-  CodeOutlined,
-  DashboardOutlined,
-  ExperimentOutlined,
   GlobalOutlined,
-  HeartOutlined,
   InfoCircleOutlined,
-  NotificationOutlined,
-  RiseOutlined,
-  RobotOutlined,
-  SearchOutlined,
   TeamOutlined,
-  ThunderboltOutlined,
   UserAddOutlined,
   UserOutlined,
 } from '@ant-design/icons';
@@ -25,9 +15,7 @@ import {
   Card,
   Col,
   ConfigProvider,
-  Divider,
   Layout,
-  Menu,
   Modal,
   Result,
   Row,
@@ -41,12 +29,12 @@ import {
   Typography,
   theme,
 } from 'antd';
-import { Link, useLocation, useNavigate } from 'react-router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ErrorBoundary from '../core/ErrorBoundary';
 
 import useFixedWindow from '../core/useFixedWindow';
 import useWindowSize from '../core/useWindowSize';
-import CPLogo from '../core/CPLogo';
 import uniqBy from 'lodash/uniqBy';
 import { apiErrorMessageAsync } from '../../lib/apiError';
 
@@ -56,15 +44,28 @@ import SystemHealth from './SystemHealth';
 import CoursesTable from './CoursesTable';
 import OrganizationTable from './OrganizationTable';
 import UsersTable from './UsersTable';
-import APIIframe from './APIIframe';
 import ActivityFeed from './ActivityFeed';
 import MaintenanceBannerPanel from './MaintenanceBannerPanel';
-import DeployCalendar from './DeployCalendar';
-import AIUsageDashboard from '../core/AIUsageDashboard';
 import { AIUsageService } from '../../services/aiUsage';
 import PendingAdminsTable from './PendingAdminsTable';
-import PromptLab from './PromptLab';
-import AutogradingStats from './AutogradingStats';
+import StaffSidebar, { SIDER_COLLAPSED_WIDTH, SIDER_WIDTH } from './StaffSidebar';
+import {
+  DASHBOARD_PATH,
+  STAFF_DESTINATIONS,
+  countLabel,
+  isBannerAddress,
+  resolveStaffLocation,
+  staffPath,
+  tabLabel,
+  type StaffPage,
+} from './staffRoutes';
+
+// The heavy, rarely opened tabs load when first opened, not with the console.
+const APIIframe = lazy(() => import('./APIIframe'));
+const DeployCalendar = lazy(() => import('./DeployCalendar'));
+const AIUsageDashboard = lazy(() => import('../core/AIUsageDashboard'));
+const PromptLab = lazy(() => import('./PromptLab'));
+const AutogradingStats = lazy(() => import('./AutogradingStats'));
 
 import type { RosterType } from '../../types/models';
 import type { AssignmentDeadline, Course, DashboardStats, Organization } from '../../api-client';
@@ -76,53 +77,7 @@ import { formatWindow, nextSafeWindow } from './deployWindows';
 import JumpPalette from './JumpPalette';
 
 const { Text } = Typography;
-const { Content, Sider } = Layout;
-
-type TabType =
-  | 'Overview'
-  | 'Organizations'
-  | 'Courses'
-  | 'Admins'
-  | 'Pending Admins'
-  | 'Users'
-  | 'Activity'
-  | 'Deploy Calendar'
-  | 'Autograding'
-  | 'System Health'
-  | 'Banner'
-  | 'API'
-  | 'AI Usage'
-  | 'Prompt Lab';
-
-export const DASHBOARD_PATH = '/dashboard';
-
-/** URL segment for each tab (`/dashboard/<slug>`), so views can be linked, refreshed and navigated back to. */
-const TAB_SLUGS: Record<TabType, string> = {
-  Overview: 'overview',
-  Organizations: 'organizations',
-  Courses: 'courses',
-  Users: 'users',
-  // Both live on the Users page now, as tabs; the old paths redirect there.
-  Admins: 'users?tab=admins',
-  'Pending Admins': 'users?tab=requests',
-  Activity: 'activity',
-  'Deploy Calendar': 'deploy-calendar',
-  Autograding: 'autograding',
-  'System Health': 'system-health',
-  Banner: 'banner',
-  API: 'api',
-  'AI Usage': 'ai-usage',
-  'Prompt Lab': 'prompt-lab',
-};
-
-const DEVELOPER_TABS: TabType[] = ['API', 'AI Usage', 'Prompt Lab'];
-
-const SLUG_TO_TAB: Record<string, TabType> = {
-  ...Object.fromEntries((Object.entries(TAB_SLUGS) as [TabType, string][]).map(([tab, slug]) => [slug, tab])),
-  // The old page paths, so a bookmark renders the Users page (right tab) on its very first frame.
-  admins: 'Admins',
-  'pending-admins': 'Pending Admins',
-};
+const { Content } = Layout;
 
 export interface AdminData {
   id: number;
@@ -175,8 +130,6 @@ const EMPTY_STATS: DashboardStats = {
 
 type TopOrganization = Organization & { courseCount: number };
 
-const SIDER_WIDTH = 220;
-const SIDER_COLLAPSED_WIDTH = 64;
 // Below this the sider hides completely and a corner trigger brings it back.
 const PHONE_BREAKPOINT = 768;
 // antd's orange tag puts #d46b08 on #fff7e6 (3.3:1); orange-8 text on the same tint reads 5.4:1.
@@ -223,13 +176,12 @@ const Dashboard = () => {
     setCollapsed(next || LOCAL_SETTINGS.staffSidebarCollapsed.getter());
   }, []);
 
-  const slug = location.pathname.replace(/^\/dashboard\/?/, '').split('/')[0];
-  const currentTab: TabType = SLUG_TO_TAB[slug] ?? 'Overview';
-  // Bookmarks and the Overview's old links still say /admins and /pending-admins.
+  const staffLocation = resolveStaffLocation(location.pathname, location.search);
+  const { page: currentPage, tab: currentTab } = staffLocation;
+  // An old address renders its page on the first frame (above) and is then rewritten, so no bookmark breaks.
   useEffect(() => {
-    if (slug === 'admins') navigate(`${DASHBOARD_PATH}/users?tab=admins`, { replace: true });
-    if (slug === 'pending-admins') navigate(`${DASHBOARD_PATH}/users?tab=requests`, { replace: true });
-  }, [slug, navigate]);
+    if (staffLocation.canonical) navigate(`${staffLocation.canonical}${location.hash}`, { replace: true });
+  }, [staffLocation.canonical, location.hash, navigate]);
 
   // The banner editor reports unsaved edits here; in-app navigation away from it asks first (reload and
   // close get the browser's own prompt from the panel). Back/forward are not guarded.
@@ -284,15 +236,20 @@ const Dashboard = () => {
   }, [bannerDirtyState, leaveBannerDialog]);
   const guardedNavigate = useCallback(
     (to: string) => {
-      if (!bannerDirty.current || to.startsWith(`${DASHBOARD_PATH}/${TAB_SLUGS.Banner}`)) {
+      // Already there (the sidebar entry of the current page): no duplicate history entry.
+      if (to === `${window.location.pathname}${window.location.search}`) return;
+      if (!bannerDirty.current || isBannerAddress(to)) {
         navigate(to);
         return;
       }
-      leaveBannerDialog(() => navigate(to));
+      // Leaving replaces the guard's sentinel entry, so Back from the new page lands where it should.
+      leaveBannerDialog(() =>
+        navigate(to, { replace: !!(window.history.state as { cpBannerGuard?: boolean } | null)?.cpBannerGuard }),
+      );
     },
     [navigate, leaveBannerDialog],
   );
-  const goTo = useCallback((tab: TabType) => guardedNavigate(`${DASHBOARD_PATH}/${TAB_SLUGS[tab]}`), [guardedNavigate]);
+  const goTo = useCallback((page: StaffPage, tab?: string) => guardedNavigate(staffPath(page, tab)), [guardedNavigate]);
 
   // Ctrl+K (⌘K) anywhere in the console opens the jump palette.
   useEffect(() => {
@@ -306,18 +263,15 @@ const Dashboard = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
   const jumpTabs = useMemo(
-    () =>
-      (Object.keys(TAB_SLUGS) as TabType[]).map((tab) => ({
-        label: tab === 'Admins' ? 'Course admins' : tab === 'Pending Admins' ? 'Admin requests' : tab,
-        go: () => goTo(tab),
-      })),
+    () => STAFF_DESTINATIONS.map((d) => ({ label: d.label, keywords: d.keywords, go: () => goTo(d.page, d.tab) })),
     [goTo],
   );
 
   // The tab title is how a screen reader (and the browser's tab strip) tells the views apart.
   useEffect(() => {
-    document.title = `codePost - Staff Console - ${currentTab}`;
-  }, [currentTab]);
+    const tab = tabLabel(currentPage, currentTab);
+    document.title = `codePost - Staff Console - ${currentPage}${tab ? ` · ${tab}` : ''}`;
+  }, [currentPage, currentTab]);
 
   const [admins, setAdmins] = useState<AdminData[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -432,7 +386,7 @@ const Dashboard = () => {
         <section aria-label="Status" style={{ marginBottom: 24 }}>
           <Row gutter={[16, 16]}>
             <Col xs={24} md={12} xl={6}>
-              <SystemHealth compact onOpenDetails={() => goTo('System Health')} />
+              <SystemHealth compact onOpenDetails={() => goTo('Platform', 'health')} />
             </Col>
             <Col xs={24} md={12} xl={6}>
               {statusCell(
@@ -445,13 +399,13 @@ const Dashboard = () => {
                 ) : (
                   <Tag style={GOOD_TAG}>None waiting</Tag>
                 ),
-                <Button type="link" size="small" onClick={() => goTo('Pending Admins')}>
+                <Button type="link" size="small" onClick={() => goTo('Users', 'requests')}>
                   Review
                 </Button>,
               )}
             </Col>
             <Col xs={24} md={12} xl={6}>
-              <MaintenanceBannerPanel compact onOpenDetails={() => goTo('Banner')} />
+              <MaintenanceBannerPanel compact onOpenDetails={() => goTo('Tools', 'banner')} />
             </Col>
             <Col xs={24} md={12} xl={6}>
               {statusCell(
@@ -468,7 +422,7 @@ const Dashboard = () => {
                 ) : (
                   <Tag color="orange">No 3-day gap in 60 days</Tag>
                 ),
-                <Button type="link" size="small" onClick={() => goTo('Deploy Calendar')}>
+                <Button type="link" size="small" onClick={() => goTo('Platform', 'deploy-calendar')}>
                   Calendar
                 </Button>,
               )}
@@ -583,8 +537,21 @@ const Dashboard = () => {
     </div>
   );
 
+  // A one-line description under a tab bar, where the old page subtitle carried something.
+  const tabIntro = (text: string) => (
+    <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+      {text}
+    </Text>
+  );
+  // The boundary turns a chunk that vanished in a deploy into a reload prompt instead of a blank console.
+  const lazyTab = (node: React.ReactNode) => (
+    <ErrorBoundary type="codepanel">
+      <Suspense fallback={<Skeleton active paragraph={{ rows: 6 }} />}>{node}</Suspense>
+    </ErrorBoundary>
+  );
+
   const renderContent = () => {
-    switch (currentTab) {
+    switch (currentPage) {
       case 'Overview':
         return renderOverview();
       case 'Organizations':
@@ -625,16 +592,7 @@ const Dashboard = () => {
           </div>
         );
       case 'Users':
-      case 'Admins':
-      case 'Pending Admins': {
         // One page for people: everyone by role, the course admins roster, and the requests to join it.
-        const tabParam = new URLSearchParams(location.search).get('tab');
-        const activeKey =
-          tabParam === 'admins' || currentTab === 'Admins'
-            ? 'admins'
-            : tabParam === 'requests' || currentTab === 'Pending Admins'
-              ? 'requests'
-              : 'people';
         return (
           <div style={{ padding: pagePadding }}>
             <AdminPageHeader
@@ -642,10 +600,10 @@ const Dashboard = () => {
               subtitle="Everyone with an account, by role. Course admins and the requests to become one are tabs here."
             />
             <Tabs
-              activeKey={activeKey}
+              activeKey={currentTab}
               // Hidden panes unmount, so each tab shows fresh data when it is opened again.
               destroyOnHidden
-              onChange={(key) => navigate(`${DASHBOARD_PATH}/users${key === 'people' ? '' : `?tab=${key}`}`)}
+              onChange={(key) => goTo('Users', key)}
               items={[
                 {
                   key: 'people',
@@ -676,66 +634,88 @@ const Dashboard = () => {
             />
           </div>
         );
-      }
-      case 'Activity':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <ActivityFeed />
-          </div>
-        );
-      case 'Deploy Calendar':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <DeployCalendar />
-          </div>
-        );
-      case 'Autograding':
+      case 'Platform':
+        // What the platform is doing: one page, one header, the existing views as tabs.
         return (
           <div style={{ padding: pagePadding }}>
             <AdminPageHeader
-              title="Autograding"
-              subtitle="Cache efficiency, language usage, and failure diagnostics for the autograder."
+              title="Platform"
+              subtitle="What the platform is doing: health, activity, autograding and the deploy calendar."
             />
-            <AutogradingStats />
+            <Tabs
+              activeKey={currentTab}
+              destroyOnHidden
+              onChange={(key) => goTo('Platform', key)}
+              items={[
+                { key: 'health', label: 'Health', children: <SystemHealth /> },
+                { key: 'activity', label: 'Activity', children: <ActivityFeed hideHeader /> },
+                {
+                  key: 'autograding',
+                  label: 'Autograding',
+                  children: (
+                    <>
+                      {tabIntro('Cache efficiency, language usage, and failure diagnostics for the autograder.')}
+                      {lazyTab(<AutogradingStats />)}
+                    </>
+                  ),
+                },
+                { key: 'deploy-calendar', label: 'Deploy calendar', children: lazyTab(<DeployCalendar hideHeader />) },
+              ]}
+            />
           </div>
         );
-      case 'System Health':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <AdminPageHeader title="System Health" subtitle="Real-time infrastructure status and diagnostics." />
-            <SystemHealth />
-          </div>
-        );
-      case 'Banner':
+      case 'Tools':
+        // Changed or consulted rarely: the banner, AI usage, the API reference and the prompt lab.
         return (
           <div style={{ padding: pagePadding }}>
             <AdminPageHeader
-              title="Maintenance Banner"
-              subtitle="Broadcast a maintenance message to all platform users."
+              title="Tools"
+              subtitle="The maintenance banner, AI usage, the API reference and the prompt lab."
             />
-            <MaintenanceBannerPanel audienceCount={stats.totalUniqueUsers} onDirtyChange={onBannerDirtyChange} />
-          </div>
-        );
-      case 'API':
-        return <APIIframe />;
-      case 'AI Usage':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <AdminPageHeader
-              title="AI Usage"
-              subtitle="Platform-wide AI token consumption and breakdown by organization."
+            <Tabs
+              activeKey={currentTab}
+              destroyOnHidden
+              // Leaving the banner with unsaved edits asks first, from a tab as from the sidebar.
+              onChange={(key) => goTo('Tools', key)}
+              items={[
+                {
+                  key: 'banner',
+                  label: (
+                    <span>
+                      Banner
+                      {bannerDirtyState && <Tag style={{ marginLeft: 8, ...WARNING_TAG }}>unsaved</Tag>}
+                    </span>
+                  ),
+                  children: (
+                    <>
+                      {tabIntro('Broadcast a maintenance message to every signed-in user.')}
+                      <MaintenanceBannerPanel
+                        audienceCount={stats.totalUniqueUsers}
+                        onDirtyChange={onBannerDirtyChange}
+                      />
+                    </>
+                  ),
+                },
+                {
+                  key: 'ai-usage',
+                  label: 'AI usage',
+                  children: (
+                    <>
+                      {tabIntro('Platform-wide AI token consumption and breakdown by organization.')}
+                      {lazyTab(
+                        <AIUsageDashboard
+                          fetchUsage={AIUsageService.getPlatformUsage}
+                          breakdownLabel="Organization"
+                          showHeader={false}
+                        />,
+                      )}
+                    </>
+                  ),
+                },
+                { key: 'api', label: 'API', children: lazyTab(<APIIframe hideHeader />) },
+                { key: 'prompt-lab', label: 'Prompt lab', children: lazyTab(<PromptLab hideHeader />) },
+              ]}
             />
-            <AIUsageDashboard
-              fetchUsage={AIUsageService.getPlatformUsage}
-              breakdownLabel="Organization"
-              showHeader={false}
-            />
-          </div>
-        );
-      case 'Prompt Lab':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <PromptLab />
           </div>
         );
       default:
@@ -788,8 +768,6 @@ const Dashboard = () => {
     </div>
   );
 
-  const countLabel = (label: string, count?: number) => (count === undefined ? label : `${label} (${count})`);
-
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {modalHolder}
@@ -805,218 +783,23 @@ const Dashboard = () => {
       <a className="cp-skip-link" href="#staff-main">
         Skip to content
       </a>
-      <Sider
-        collapsible
+      <StaffSidebar
         collapsed={collapsed}
-        onCollapse={onCollapse}
-        breakpoint="lg"
-        width={SIDER_WIDTH}
         collapsedWidth={collapsedWidth}
-        zeroWidthTriggerStyle={{ top: 'auto', bottom: 16 }}
-        style={{
-          // Visible: the zero-width trigger hangs outside the sider box on phones.
-          overflow: 'visible',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          zIndex: 20,
+        onCollapse={onCollapse}
+        currentPage={currentPage}
+        isLoading={isLoading}
+        counts={{
+          organizations: stats.totalOrganizations,
+          courses: stats.totalCourses,
+          users: stats.totalUniqueUsers,
+          pendingRequests: pendingCount,
         }}
-      >
-        {/* Brand and footer stay put; only the navigation scrolls, so an opened group is never hidden under the footer. */}
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: collapsed ? '16px 8px 8px' : '16px 16px 8px', textAlign: 'center' }}>
-            <Link to="/" aria-label="codePost home">
-              <CPLogo cpType={collapsed ? 'icon' : 'main'} />
-            </Link>
-            {!collapsed && (
-              <Text
-                style={{
-                  display: 'block',
-                  marginTop: 10,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '1.5px',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255, 255, 255, 0.6)',
-                }}
-              >
-                Staff console
-              </Text>
-            )}
-          </div>
-
-          <Divider
-            style={{ margin: '0 16px', borderColor: 'rgba(255,255,255,0.08)', minWidth: 'auto', width: 'auto' }}
-          />
-
-          <nav
-            aria-label="Staff console navigation"
-            className="cp-staff-nav"
-            style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
-          >
-            <Menu
-              theme="dark"
-              mode="inline"
-              selectedKeys={[currentTab]}
-              defaultOpenKeys={DEVELOPER_TABS.includes(currentTab) ? ['developer'] : []}
-              onOpenChange={(keys) => {
-                // The group opens below the fold on short windows: bring its pages into view.
-                if (keys.includes('developer')) {
-                  // After antd's ~200ms open motion, or the group still has no height to scroll to.
-                  window.setTimeout(() => {
-                    document
-                      .querySelector('.ant-menu-submenu-open > .ant-menu-sub > li:last-child')
-                      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                  }, 350);
-                }
-              }}
-              onClick={({ key }) => goTo(key as TabType)}
-              style={{ borderRight: 0 }}
-              items={[
-                // ── Platform ──
-                {
-                  type: 'group',
-                  label: 'Platform',
-                  children: [
-                    {
-                      key: 'Overview',
-                      icon: <DashboardOutlined />,
-                      label: 'Overview',
-                    },
-                  ],
-                },
-
-                // ── Management ──
-                {
-                  type: 'group',
-                  label: 'Management',
-                  children: [
-                    {
-                      key: 'Organizations',
-                      icon: <GlobalOutlined />,
-                      label: countLabel('Organizations', isLoading ? undefined : stats.totalOrganizations),
-                    },
-                    {
-                      key: 'Courses',
-                      icon: <BookOutlined />,
-                      label: countLabel('Courses', isLoading ? undefined : stats.totalCourses),
-                    },
-                    {
-                      key: 'Users',
-                      // People of every role, plus the admin requests waiting on this page's Requests tab.
-                      // Collapsed, the icon carries the number itself; a dot would lose the count.
-                      icon: (
-                        <Badge count={collapsed ? pendingCount : 0} size="small" offset={[4, 8]} color={BADGE_RED}>
-                          <UserOutlined />
-                        </Badge>
-                      ),
-                      label: (
-                        <span>
-                          {countLabel('Users', isLoading ? undefined : stats.totalUniqueUsers)}
-                          {pendingCount > 0 && (
-                            <>
-                              <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
-                              <span className="sr-only">, {pendingCount} admin requests waiting</span>
-                            </>
-                          )}
-                        </span>
-                      ),
-                    },
-                  ],
-                },
-
-                // ── Operations ──
-                {
-                  type: 'group',
-                  label: 'Operations',
-                  children: [
-                    {
-                      key: 'Activity',
-                      icon: <RiseOutlined />,
-                      label: 'Activity',
-                    },
-                    {
-                      key: 'Deploy Calendar',
-                      icon: <CalendarOutlined />,
-                      label: 'Deploy Calendar',
-                    },
-                    {
-                      key: 'Autograding',
-                      icon: <ThunderboltOutlined />,
-                      label: 'Autograding',
-                    },
-                    {
-                      key: 'System Health',
-                      icon: <HeartOutlined />,
-                      label: 'System Health',
-                    },
-                    {
-                      key: 'Banner',
-                      icon: <NotificationOutlined />,
-                      label: 'Banner',
-                    },
-                  ],
-                },
-
-                // ── Developer: used rarely, so it folds; it opens when one of its pages is current ──
-                {
-                  key: 'developer',
-                  icon: <CodeOutlined />,
-                  label: 'Developer',
-                  children: [
-                    {
-                      key: 'API',
-                      icon: <ApiOutlined />,
-                      label: 'API',
-                    },
-                    {
-                      key: 'AI Usage',
-                      icon: <RobotOutlined />,
-                      label: 'AI Usage',
-                    },
-                    {
-                      key: 'Prompt Lab',
-                      icon: <ExperimentOutlined />,
-                      label: 'Prompt Lab',
-                    },
-                  ],
-                },
-              ]}
-            />
-          </nav>
-
-          {/* The one keyboard path across users, courses and pages; Ctrl+K opens it too. */}
-          <div style={{ padding: collapsed ? '8px 8px 0' : '8px 16px 0' }}>
-            <Tooltip title="Jump to a page, course or user (Ctrl+K)" placement="right">
-              <Button
-                size="small"
-                icon={<SearchOutlined />}
-                onClick={() => setJumpOpen(true)}
-                aria-label="Jump to a page, course or user (Ctrl+K)"
-                style={{
-                  width: '100%',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  borderColor: 'transparent',
-                  color: 'rgba(255, 255, 255, 0.85)',
-                }}
-              >
-                {collapsed ? null : 'Jump to…  Ctrl+K'}
-              </Button>
-            </Tooltip>
-          </div>
-
-          {/* Version badge */}
-          {!collapsed && (
-            <div style={{ padding: '8px 16px 12px', textAlign: 'center' }}>
-              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
-                {process.env.REACT_APP_VERSION || 'dev'}
-              </Text>
-            </div>
-          )}
-        </div>
-      </Sider>
+        bannerDirty={bannerDirtyState}
+        onNavigate={(page) => goTo(page)}
+        onHome={() => guardedNavigate('/')}
+        onJump={() => setJumpOpen(true)}
+      />
       <Layout
         style={{
           height: '100vh',

@@ -28,7 +28,8 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import { colors } from '../../theme/colors';
 import type { RosterType } from '../../types/models';
@@ -77,8 +78,15 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
   organizations,
   onRefresh,
 }) => {
-  // The jump palette lands here with ?q=<course name>.
+  // The jump palette lands here with ?q=<course name>, and may do so again while the table is mounted.
   const [searchValue, setSearchValue] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '');
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('q');
+    if (q !== null && q !== searchValue) setSearchValue(q);
+    // Only the URL's q matters here; typing in the box sets searchValue itself.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
   const [pageSize, setPageSize] = useDefaultPageSize();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const platformCaps = usePlatformCapabilities();

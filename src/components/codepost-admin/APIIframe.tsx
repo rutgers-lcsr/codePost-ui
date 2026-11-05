@@ -4,7 +4,8 @@ import { Button, Space, Tooltip } from 'antd';
 import { ExpandOutlined, LinkOutlined, ReloadOutlined, CompressOutlined } from '@ant-design/icons';
 import AdminPageHeader from './AdminPageHeader';
 
-const APIIframe: React.FC = () => {
+/** `hideHeader`: rendered inside the Tools page's tabs, which carry the title and the padding. */
+const APIIframe: React.FC<{ hideHeader?: boolean }> = ({ hideHeader = false }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const apiUrl = `${process.env.REACT_APP_API_URL}/`;
@@ -17,30 +18,32 @@ const APIIframe: React.FC = () => {
 
   const toggleFullscreen = () => setIsFullscreen((f) => !f);
 
+  const headerActions = (
+    <Space>
+      <Tooltip title="Reload">
+        <Button icon={<ReloadOutlined />} onClick={handleReload} />
+      </Tooltip>
+      <Tooltip title="Open in new tab">
+        <Button icon={<LinkOutlined />} onClick={() => window.open(apiUrl, '_blank', 'noopener,noreferrer')} />
+      </Tooltip>
+      <Tooltip title="Fullscreen">
+        <Button icon={<ExpandOutlined />} onClick={toggleFullscreen} />
+      </Tooltip>
+    </Space>
+  );
+
   return (
-    <div style={{ padding: isFullscreen ? 0 : 24, height: isFullscreen ? '100vh' : 'auto' }}>
-      {!isFullscreen && (
-        <AdminPageHeader
-          title="API Documentation"
-          subtitle="Live API reference served by the backend."
-          actions={
-            <Space>
-              <Tooltip title="Reload">
-                <Button icon={<ReloadOutlined />} onClick={handleReload} />
-              </Tooltip>
-              <Tooltip title="Open in new tab">
-                <Button
-                  icon={<LinkOutlined />}
-                  onClick={() => window.open(apiUrl, '_blank', 'noopener,noreferrer')}
-                />
-              </Tooltip>
-              <Tooltip title="Fullscreen">
-                <Button icon={<ExpandOutlined />} onClick={toggleFullscreen} />
-              </Tooltip>
-            </Space>
-          }
-        />
-      )}
+    <div style={{ padding: isFullscreen || hideHeader ? 0 : 24, height: isFullscreen ? '100vh' : 'auto' }}>
+      {!isFullscreen &&
+        (hideHeader ? (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>{headerActions}</div>
+        ) : (
+          <AdminPageHeader
+            title="API Documentation"
+            subtitle="Live API reference served by the backend."
+            actions={headerActions}
+          />
+        ))}
       {isFullscreen && (
         <div style={{ position: 'absolute', top: 8, right: 16, zIndex: 10 }}>
           <Tooltip title="Exit fullscreen">
