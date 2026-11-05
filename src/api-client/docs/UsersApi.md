@@ -234,7 +234,7 @@ example().catch(console.error);
 
 ## list
 
-> PaginatedUserList list(ordering, page, pageSize, search)
+> PaginatedUserList list(inactive, ordering, page, pageSize, role, search)
 
 ### Example
 
@@ -258,12 +258,16 @@ async function example() {
   const api = new UsersApi(config);
 
   const body = {
+    // boolean | Only people who never signed in, or not in the last 90 days. (optional)
+    inactive: true,
     // string | Which field to use when ordering the results. (optional)
     ordering: ordering_example,
     // number | A page number within the paginated result set. (optional)
     page: 56,
     // number | Number of results to return per page. (optional)
     pageSize: 56,
+    // 'course_admin' | 'grader' | 'platform_admin' | 'student' | Only people holding this role in at least one course (platform_admin: superusers). (optional)
+    role: role_example,
     // string | A search term. (optional)
     search: search_example,
   } satisfies ListRequest;
@@ -282,12 +286,14 @@ example().catch(console.error);
 
 ### Parameters
 
-| Name         | Type     | Description                                    | Notes                                |
-| ------------ | -------- | ---------------------------------------------- | ------------------------------------ |
-| **ordering** | `string` | Which field to use when ordering the results.  | [Optional] [Defaults to `undefined`] |
-| **page**     | `number` | A page number within the paginated result set. | [Optional] [Defaults to `undefined`] |
-| **pageSize** | `number` | Number of results to return per page.          | [Optional] [Defaults to `undefined`] |
-| **search**   | `string` | A search term.                                 | [Optional] [Defaults to `undefined`] |
+| Name         | Type                                                  | Description                                                                        | Notes                                                                                      |
+| ------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **inactive** | `boolean`                                             | Only people who never signed in, or not in the last 90 days.                       | [Optional] [Defaults to `undefined`]                                                       |
+| **ordering** | `string`                                              | Which field to use when ordering the results.                                      | [Optional] [Defaults to `undefined`]                                                       |
+| **page**     | `number`                                              | A page number within the paginated result set.                                     | [Optional] [Defaults to `undefined`]                                                       |
+| **pageSize** | `number`                                              | Number of results to return per page.                                              | [Optional] [Defaults to `undefined`]                                                       |
+| **role**     | `course_admin`, `grader`, `platform_admin`, `student` | Only people holding this role in at least one course (platform_admin: superusers). | [Optional] [Defaults to `undefined`] [Enum: course_admin, grader, platform_admin, student] |
+| **search**   | `string`                                              | A search term.                                                                     | [Optional] [Defaults to `undefined`]                                                       |
 
 ### Return type
 

@@ -30,9 +30,11 @@ export interface EmailCreateRequest {
 }
 
 export interface ListRequest {
+  inactive?: boolean;
   ordering?: string;
   page?: number;
   pageSize?: number;
+  role?: ListRoleEnum;
   search?: string;
 }
 
@@ -256,6 +258,10 @@ export class UsersApi extends runtime.BaseAPI {
   ): Promise<runtime.ApiResponse<PaginatedUserList>> {
     const queryParameters: any = {};
 
+    if (requestParameters['inactive'] != null) {
+      queryParameters['inactive'] = requestParameters['inactive'];
+    }
+
     if (requestParameters['ordering'] != null) {
       queryParameters['ordering'] = requestParameters['ordering'];
     }
@@ -266,6 +272,10 @@ export class UsersApi extends runtime.BaseAPI {
 
     if (requestParameters['pageSize'] != null) {
       queryParameters['page_size'] = requestParameters['pageSize'];
+    }
+
+    if (requestParameters['role'] != null) {
+      queryParameters['role'] = requestParameters['role'];
     }
 
     if (requestParameters['search'] != null) {
@@ -716,4 +726,15 @@ export class UsersApi extends runtime.BaseAPI {
     const response = await this.userCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum ListRoleEnum {
+  CourseAdmin = 'course_admin',
+  Grader = 'grader',
+  PlatformAdmin = 'platform_admin',
+  Student = 'student',
 }
