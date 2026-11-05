@@ -56,7 +56,8 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
                   <GlobalOutlined style={{ color: colors.actionBlue }} />
                   {org.name}
                 </Space>
-                <Tag color="blue">{org.shortname}</Tag>
+                {/* The slug only adds something when it differs from the name. */}
+                {org.shortname !== org.name && <Tag color="blue">{org.shortname}</Tag>}
               </Space>
             ))}
           </Space>

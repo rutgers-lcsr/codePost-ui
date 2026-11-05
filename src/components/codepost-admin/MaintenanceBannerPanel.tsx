@@ -187,6 +187,11 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
                 {saved.message}
               </Text>
             )}
+            {state.key === 'off' && (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                No banner showing
+              </Text>
+            )}
             {onOpenDetails && (
               <Button type="link" size="small" onClick={onOpenDetails}>
                 Manage
@@ -457,7 +462,7 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
             </div>
             {customColor && !colorInvalid && (
               <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 4 }}>
-                Custom colour. The {preset.label} severity sets only the icon.
+                Using your custom colour; {preset.label} only changes the icon.
               </Text>
             )}
           </div>

@@ -8,7 +8,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Card, Col, Row, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Alert, Button, Card, Col, Row, Skeleton, Space, Statistic, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -261,7 +261,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
           </Col>
           <Col xs={12} sm={8} lg={4}>
             <Statistic
-              title={definedTitle('Inactive', DEFINITIONS.inactiveUsers)}
+              title={definedTitle('Idle 90+ days', DEFINITIONS.inactiveUsers)}
               value={stats.totalInactiveUsers}
               prefix={<CloseCircleOutlined />}
             />
@@ -300,6 +300,10 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
         dataSource={users}
         rowKey="email"
         loading={usersQuery.isPending || usersQuery.isFetching}
+        // Rows that are still on their way look like rows, not like an empty table.
+        locale={
+          usersQuery.isPending ? { emptyText: <Skeleton active title={false} paragraph={{ rows: 6 }} /> } : undefined
+        }
         onChange={handleTableChange}
         pagination={{
           current: page,

@@ -236,9 +236,14 @@ const Dashboard = () => {
       Modal.confirm({
         title: 'Leave the banner without saving?',
         content: 'Your unsaved banner edits will be lost.',
+        // Staying is the safe default: it holds focus (so Enter and Esc both keep the edits)
+        // and the primary colour; leaving is the quiet red one.
         okText: 'Leave',
-        okButtonProps: { danger: true },
+        okButtonProps: { danger: true, type: 'default' },
         cancelText: 'Stay',
+        cancelButtonProps: { type: 'primary' },
+        autoFocusButton: 'cancel',
+        keyboard: true,
         onOk: () => navigate(to),
       });
     },
@@ -432,7 +437,7 @@ const Dashboard = () => {
                 <Statistic title="Unique Users" value={stats.totalUniqueUsers} prefix={<UserOutlined />} />
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {stats.totalStudents.toLocaleString()} students · {stats.totalGraders.toLocaleString()} graders ·{' '}
-                  {stats.totalInactiveUsers.toLocaleString()} inactive{' '}
+                  {stats.totalInactiveUsers.toLocaleString()} idle 90+ days{' '}
                   <Tooltip title={DEFINITIONS.inactiveUsers} trigger={['hover', 'focus']}>
                     <InfoCircleOutlined aria-label={DEFINITIONS.inactiveUsers} tabIndex={0} />
                   </Tooltip>
@@ -443,15 +448,18 @@ const Dashboard = () => {
                   title="Active Courses"
                   value={stats.activeCourses}
                   prefix={<BookOutlined />}
+                  // "30 / 30" reads as a contradiction; the denominator only means something once a course is archived.
                   suffix={
-                    <Text type="secondary" style={{ fontSize: 14 }}>
-                      / {stats.totalCourses}
-                    </Text>
+                    stats.archivedCourses > 0 ? (
+                      <Text type="secondary" style={{ fontSize: 14 }}>
+                        / {stats.totalCourses}
+                      </Text>
+                    ) : undefined
                   }
                 />
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  {stats.archivedCourses} archived · {stats.totalAssignments.toLocaleString()} assignments ·{' '}
-                  {stats.totalSections} sections
+                  {stats.archivedCourses > 0 ? `${stats.archivedCourses} archived` : 'none archived'} ·{' '}
+                  {stats.totalAssignments.toLocaleString()} assignments · {stats.totalSections} sections
                 </Text>
               </Col>
               <Col xs={12} lg={6}>
@@ -820,7 +828,7 @@ const Dashboard = () => {
                     {
                       key: 'Admins',
                       icon: <TeamOutlined />,
-                      label: countLabel('Admins', rostersLoading || isLoading ? undefined : adminCount),
+                      label: countLabel('Course Admins', rostersLoading || isLoading ? undefined : adminCount),
                     },
                     {
                       key: 'Pending Admins',
@@ -832,7 +840,7 @@ const Dashboard = () => {
                       ),
                       label: (
                         <span>
-                          Pending Admins
+                          Admin Requests
                           {pendingCount > 0 && (
                             <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
                           )}

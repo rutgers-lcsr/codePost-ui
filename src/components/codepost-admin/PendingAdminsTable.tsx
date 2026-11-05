@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React from 'react';
-import { Table, Card, Tag, Button, Space, message, Popconfirm, Alert, Empty, Typography } from 'antd';
+import { Table, Card, Tag, Button, Space, message, Popconfirm, Alert, Empty, Skeleton, Typography } from 'antd';
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
@@ -263,7 +263,7 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
   return (
     <div>
       <AdminPageHeader
-        title="Pending Admins"
+        title="Admin Requests"
         subtitle="People who asked for course admin access. Approving a request with no organization also creates one."
         actions={
           <Button icon={<ReloadOutlined />} onClick={fetchPendingAdmins} loading={loading}>
@@ -333,6 +333,7 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
             columns={columns}
             rowKey="id"
             loading={loading}
+            locale={loading ? { emptyText: <Skeleton active title={false} paragraph={{ rows: 4 }} /> } : undefined}
             rowSelection={isPhone ? undefined : { selectedRowKeys: selectedKeys, onChange: setSelectedKeys }}
             scroll={{ x: 'max-content' }}
             pagination={{
