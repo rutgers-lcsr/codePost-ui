@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { startTransition, useState, useEffect, useMemo } from 'react';
 
 import { SettingOutlined } from '@ant-design/icons';
 
@@ -343,8 +343,19 @@ const Admin: React.FC<IComponentProps> = (props) => {
     if (patch.id === undefined) return Promise.reject();
 
     return coursesApi.update({ id: patch.id, course: patch }).then((newCourse: Course) => {
-      setCourses(courses.map((c) => (c.id === newCourse.id ? newCourse : c)));
-      navigate(`${formatCourseURL(newCourse)}/settings`);
+      // The course routes are named after the course, so a rename must land in the same render
+      // as the move to the new URL: the router navigates in a transition, and a course list that
+      // updates ahead of it leaves the old URL unmatched for one render, which bounces to the overview.
+      startTransition(() => {
+        setCourses(courses.map((c) => (c.id === newCourse.id ? newCourse : c)));
+        props.updateCourse?.(newCourse);
+        // Only a new name or period moves the page; any other save keeps the URL (and its ?section=).
+        const moved =
+          !props.currentCourse ||
+          props.currentCourse.name !== newCourse.name ||
+          props.currentCourse.period !== newCourse.period;
+        if (moved) navigate(`${formatCourseURL(newCourse)}/settings`);
+      });
       return newCourse;
     });
   };

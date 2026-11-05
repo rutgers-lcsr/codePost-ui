@@ -11,6 +11,7 @@ import * as React from 'react';
 import {
   Alert,
   AutoComplete,
+  Button,
   Card,
   Flex,
   Input,
@@ -23,6 +24,7 @@ import {
   Typography,
 } from 'antd';
 import { RobotOutlined, BankOutlined } from '@ant-design/icons';
+import type { CourseAISettings, PatchedCourseAISettings } from '../../../api-client';
 import CPButton from '../../core/CPButton';
 import TokenRateEditor from '../../core/TokenRateEditor';
 import type { CustomTokenRates, DefaultTokenRates } from '../../core/TokenRateEditor';
@@ -34,6 +36,7 @@ import type { AIModel } from '../../../api-client';
 import { apiErrorMessageAsync } from '../../../lib/apiError';
 import AIProviderTestModal from '../../core/AIProviderTestModal';
 import { usePermissionsStore } from '../../../stores/usePermissionsStore';
+import FieldStatusText, { FieldStatus, useSaveAnnouncer } from './FieldStatusText';
 
 const { Text } = Typography;
 
@@ -53,13 +56,25 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   // Course-own settings
   const [aiEnabled, setAiEnabled] = React.useState(false);
   const [aiDisabled, setAiDisabled] = React.useState(false);
-  const [aiCommentsDisabled, setAiCommentsDisabled] = React.useState(false);
   const [isConfigured, setIsConfigured] = React.useState(false);
   const [provider, setProvider] = React.useState<AIProvider | undefined>(undefined);
   const [apiKey, setApiKey] = React.useState('');
   const [baseUrl, setBaseUrl] = React.useState('');
   const [model, setModel] = React.useState('');
-  const [isDirty, setIsDirty] = React.useState(false);
+  // Only the connection block (provider, key, URL, model, rates) waits for a Save: a provider
+  // without its key is a broken half-config. Every switch saves itself.
+  const [connectionDirty, setConnectionDirty] = React.useState(false);
+  const [fieldStatus, setFieldStatus] = React.useState<Record<string, FieldStatus>>({});
+  const statusTimers = React.useRef<Record<string, number>>({});
+  React.useEffect(() => () => Object.values(statusTimers.current).forEach((t) => window.clearTimeout(t)), []);
+  const { announce, region: announcer } = useSaveAnnouncer();
+  // Saves run one after another. The feature map and the model overrides are whole JSON fields
+  // on the server, so each PATCH carries the full map: `featureConfigRef` is the optimistic
+  // latest (two quick toggles build on each other), `savedFeatureModels` the last server answer.
+  const queue = React.useRef<Promise<unknown>>(Promise.resolve());
+  const featureConfigRef = React.useRef<AIFeatureConfig>({});
+  const savedFeatureModels = React.useRef<Record<string, string>>({});
+  const pendingFeatureModel = React.useRef<Record<string, string | undefined>>({});
   const [hasApiKey, setHasApiKey] = React.useState(false);
   const [apiKeyHint, setApiKeyHint] = React.useState<string | null>(null);
   const [customTokenRates, setCustomTokenRates] = React.useState<CustomTokenRates>({});
@@ -91,7 +106,6 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setAiUseOwnSettings(settings.aiUseOwnSettings ?? false);
         setAiEnabled(settings.aiEnabled);
         setAiDisabled(settings.aiDisabled || false);
-        setAiCommentsDisabled(settings.aiCommentsDisabled || false);
         setIsConfigured(!!settings.aiProvider);
         setProvider((settings.aiProvider as AIProvider | undefined) || undefined);
         setBaseUrl(settings.aiBaseUrl || '');
@@ -103,8 +117,10 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         setOrgRateModels(Object.keys((settings.orgTokenRates as DefaultTokenRates) ?? {}));
         setFeatureRegistry(features);
         setFeatureConfig(((s.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
+        featureConfigRef.current = ((s.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig;
         setFeatureStatus(((s.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
         setFeatureModels((s.aiFeatureModels as Record<string, string>) ?? {});
+        savedFeatureModels.current = (s.aiFeatureModels as Record<string, string>) ?? {};
         setFeatureModelsResolved((s.aiFeatureModelsResolved as Record<string, string>) ?? {});
       } catch (error) {
         console.error('Failed to fetch AI settings:', error);
@@ -168,46 +184,158 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
     });
   }, [provider, courseId, usingOrgSettings]);
 
-  const handleSave = async () => {
+  const applyResult = (result: CourseAISettings) => {
+    const r = result as unknown as Record<string, unknown>;
+    setAiEnabled(result.aiEnabled);
+    setAiDisabled(result.aiDisabled || false);
+    setIsConfigured(!!result.aiProvider);
+    setAiUseOwnSettings(result.aiUseOwnSettings ?? false);
+    setHasApiKey(result.hasApiKey ?? false);
+    setFeatureConfig(((r.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
+    setFeatureStatus(((r.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
+    setFeatureModels((r.aiFeatureModels as Record<string, string>) ?? {});
+    savedFeatureModels.current = (r.aiFeatureModels as Record<string, string>) ?? {};
+    setFeatureModelsResolved((r.aiFeatureModelsResolved as Record<string, string>) ?? {});
+    // Feature toggles feed capabilities (e.g. generate_ai_quiz_questions), so drop the
+    // cached ones or AI buttons stay visible until the next reload.
+    usePermissionsStore.getState().invalidateCourse(courseId);
+  };
+
+  /** After the org key takes over, pending edits to the course's own connection are moot:
+   *  show the saved connection again so Test is never locked behind a Save that cannot render. */
+  const resetConnectionDraft = (r: CourseAISettings) => {
+    setProvider((r.aiProvider as AIProvider | undefined) || undefined);
+    setBaseUrl(r.aiBaseUrl || '');
+    setModel(r.aiModel || '');
+    setCustomTokenRates((r.aiTokenRates as CustomTokenRates) ?? {});
+    setApiKey('');
+    setConnectionDirty(false);
+  };
+
+  const setStatus = (key: string, status: FieldStatus | null) => {
+    window.clearTimeout(statusTimers.current[key]);
+    setFieldStatus((prev) => {
+      const next = { ...prev };
+      if (status) next[key] = status;
+      else delete next[key];
+      return next;
+    });
+    if (status?.state === 'saved') {
+      statusTimers.current[key] = window.setTimeout(() => setStatus(key, null), 2500);
+    }
+  };
+
+  /** Save one switch the moment it changes; the toast offers Undo for six seconds. `undo` is
+   *  computed when Undo is clicked, against whatever has been saved since, so it reverts only
+   *  this change. Resolves with the server's answer, or null when the save failed. */
+  const persist = (
+    key: string,
+    label: string,
+    patch: Partial<PatchedCourseAISettings>,
+    undo: () => Partial<PatchedCourseAISettings>,
+    onError?: () => void,
+  ): Promise<CourseAISettings | null> => {
+    setStatus(key, { state: 'saving' });
+    const run = async () => {
+      try {
+        const result = await AIUsageService.updateCourseAISettings(courseId, patch);
+        applyResult(result);
+        setStatus(key, { state: 'saved' });
+        announce(`${label} saved.`);
+        message.success({
+          key: 'course-settings-save',
+          duration: 6,
+          content: (
+            <span>
+              {label} saved.{' '}
+              <Button
+                type="link"
+                size="small"
+                style={{ padding: 0, height: 'auto' }}
+                onClick={() => {
+                  message.destroy('course-settings-save');
+                  void persist(key, label, undo(), () => patch);
+                }}
+              >
+                Undo
+              </Button>
+            </span>
+          ),
+        });
+        return result;
+      } catch (error) {
+        onError?.();
+        const detail = (await apiErrorMessageAsync(error)) ?? 'Could not save this setting.';
+        setStatus(key, { state: 'error', detail });
+        announce(`${label} was not saved. ${detail}`);
+        return null;
+      }
+    };
+    queue.current = queue.current.then(run, run);
+    return queue.current as Promise<CourseAISettings | null>;
+  };
+
+  /** One feature switch: builds on the optimistic map so two quick flips both land. */
+  const persistFeature = (key: string, label: string, checked: boolean) => {
+    featureConfigRef.current = { ...featureConfigRef.current, [key]: checked };
+    void persist(
+      `feature:${key}`,
+      label,
+      { aiFeatureConfig: featureConfigRef.current },
+      () => {
+        featureConfigRef.current = { ...featureConfigRef.current, [key]: !checked };
+        return { aiFeatureConfig: featureConfigRef.current };
+      },
+      // The server did not take it: fall back to what it last confirmed.
+      () => {
+        featureConfigRef.current = { ...featureConfigRef.current, [key]: !checked };
+      },
+    );
+  };
+
+  const saveConnection = async () => {
     setIsSaving(true);
     try {
-      const result = await AIUsageService.updateCourseAISettings(courseId, {
-        aiUseOwnSettings,
-        aiProvider: provider || null,
-        aiBaseUrl: baseUrl || null,
-        aiModel: model || null,
-        aiDisabled,
-        aiCommentsDisabled,
-        aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
-        aiFeatureConfig: featureConfig,
-        aiFeatureModels: featureModels,
-        ...(apiKey ? { aiApiKey: apiKey } : {}),
-      } as Parameters<typeof AIUsageService.updateCourseAISettings>[1]);
-      const r = result as unknown as Record<string, unknown>;
-      setAiEnabled(result.aiEnabled);
-      setAiDisabled(result.aiDisabled || false);
-      setAiCommentsDisabled(result.aiCommentsDisabled || false);
-      setIsConfigured(!!result.aiProvider);
-      setAiUseOwnSettings(result.aiUseOwnSettings ?? false);
-      setHasApiKey(result.hasApiKey ?? false);
-      setFeatureConfig(((r.aiFeatureConfig as AIFeatureConfig) ?? {}) as AIFeatureConfig);
-      setFeatureStatus(((r.aiFeatures as AIFeatureStatus) ?? {}) as AIFeatureStatus);
-      setFeatureModels((r.aiFeatureModels as Record<string, string>) ?? {});
-      setFeatureModelsResolved((r.aiFeatureModelsResolved as Record<string, string>) ?? {});
+      applyResult(
+        await AIUsageService.updateCourseAISettings(courseId, {
+          aiProvider: provider || null,
+          aiBaseUrl: baseUrl || null,
+          aiModel: model || null,
+          aiTokenRates: Object.keys(customTokenRates).length > 0 ? customTokenRates : {},
+          ...(apiKey ? { aiApiKey: apiKey } : {}),
+        } as Parameters<typeof AIUsageService.updateCourseAISettings>[1]),
+      );
       setApiKey('');
-      setIsDirty(false);
-      // Feature toggles feed capabilities (e.g. generate_ai_quiz_questions), so drop the
-      // cached ones or AI buttons stay visible until the next reload.
-      usePermissionsStore.getState().invalidateCourse(courseId);
-      message.success('AI settings saved!');
+      setConnectionDirty(false);
+      message.success('AI connection saved.');
     } catch (error) {
-      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to save AI settings');
+      message.error((await apiErrorMessageAsync(error)) ?? 'Failed to save the AI connection');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const mark = () => setIsDirty(true);
+  const mark = () => setConnectionDirty(true);
+
+  // A per-feature model override is one field: it saves when a model is picked, cleared, or
+  // typed and left. The baseline is the server's last answer, so a rejected value is retried on
+  // the next blur; `pendingFeatureModel` stops select-then-blur from sending the same value twice.
+  const commitFeatureModel = (key: string, label: string, value: string) => {
+    const before = savedFeatureModels.current;
+    if ((before[key] ?? '') === value || pendingFeatureModel.current[key] === value) return;
+    const next = { ...before };
+    if (value) next[key] = value;
+    else delete next[key];
+    pendingFeatureModel.current[key] = value;
+    void persist(`model:${key}`, `${label} model`, { aiFeatureModels: next }, () => {
+      const reverted = { ...savedFeatureModels.current };
+      if (before[key]) reverted[key] = before[key];
+      else delete reverted[key];
+      return { aiFeatureModels: reverted };
+    }).finally(() => {
+      delete pendingFeatureModel.current[key];
+    });
+  };
 
   const showBaseUrl = provider === 'ollama' || provider === 'portkey' || provider === 'custom';
 
@@ -225,38 +353,32 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
         </Space>
       }
       extra={
-        <Space>
-          <Tooltip
-            title={
-              isDirty
-                ? 'Save your changes first — the test runs against saved settings'
-                : 'Send a test request to your AI provider'
-            }
-          >
-            <CPButton size="small" onClick={() => setTestOpen(true)} disabled={isDirty || isLoading}>
-              Test
-            </CPButton>
-          </Tooltip>
+        <Tooltip
+          title={
+            connectionDirty && !usingOrgSettings
+              ? 'Save the connection first — the test runs against saved settings'
+              : 'Send a test request to your AI provider'
+          }
+        >
           <CPButton
-            cpType="primary"
             size="small"
-            onClick={handleSave}
-            loading={isSaving}
-            disabled={!isDirty || isLoading}
+            onClick={() => setTestOpen(true)}
+            disabled={(connectionDirty && !usingOrgSettings) || isLoading}
           >
-            Save AI Settings
+            Test
           </CPButton>
-        </Space>
+        </Tooltip>
       }
       style={{ marginBottom: 24 }}
     >
+      {announcer}
       {isLoading ? (
         <Text type="secondary">Loading AI settings...</Text>
       ) : (
         <Flex vertical gap={16}>
           <Text type="secondary" style={{ marginBottom: 8 }}>
             Enable AI for this course. The global toggle controls all AI features, and each feature can be toggled
-            individually below.
+            individually below. Switches save as you flip them; the provider connection saves as one unit.
           </Text>
 
           {/* ── Org AI banner ── */}
@@ -271,14 +393,22 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   : 'Organization AI key is available. Toggle "Use org key" below to inherit it instead of your own.'
               }
               action={
-                <Switch
-                  size="small"
-                  checked={!aiUseOwnSettings}
-                  onChange={(checked) => {
-                    setAiUseOwnSettings(!checked);
-                    mark();
-                  }}
-                />
+                <Space size={8}>
+                  <FieldStatusText status={fieldStatus.aiUseOwnSettings} />
+                  <Switch
+                    size="small"
+                    aria-label="Use organization AI key"
+                    checked={!aiUseOwnSettings}
+                    loading={fieldStatus.aiUseOwnSettings?.state === 'saving'}
+                    onChange={(checked) =>
+                      void persist('aiUseOwnSettings', 'Use org key', { aiUseOwnSettings: !checked }, () => ({
+                        aiUseOwnSettings: checked,
+                      })).then((r) => {
+                        if (r && checked) resetConnectionDraft(r);
+                      })
+                    }
+                  />
+                </Space>
               }
               description={
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -429,6 +559,23 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                   }}
                 />
               )}
+
+              <Flex align="center" gap={12}>
+                <CPButton
+                  cpType="primary"
+                  size="small"
+                  onClick={saveConnection}
+                  loading={isSaving}
+                  disabled={!connectionDirty || isLoading}
+                >
+                  Save connection
+                </CPButton>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  {connectionDirty
+                    ? 'Provider, key, URL, model and rates are saved together.'
+                    : 'Provider, key, URL, model and rates — saved.'}
+                </Text>
+              </Flex>
             </>
           )}
 
@@ -454,13 +601,19 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                         : 'Toggle off to disable all AI features for this course.'}
                     </Text>
                   </Flex>
-                  <Switch
-                    checked={!aiDisabled}
-                    onChange={(checked) => {
-                      setAiDisabled(!checked);
-                      mark();
-                    }}
-                  />
+                  <Space size={8}>
+                    <FieldStatusText status={fieldStatus.aiDisabled} />
+                    <Switch
+                      aria-label="Global AI"
+                      checked={!aiDisabled}
+                      loading={fieldStatus.aiDisabled?.state === 'saving'}
+                      onChange={(checked) =>
+                        void persist('aiDisabled', 'Global AI', { aiDisabled: !checked }, () => ({
+                          aiDisabled: checked,
+                        }))
+                      }
+                    />
+                  </Space>
                 </Flex>
               </Card>
 
@@ -512,8 +665,12 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                                   else delete next[feature.key];
                                   return next;
                                 });
-                                mark();
                               }}
+                              onSelect={(value: string) => commitFeatureModel(feature.key, feature.label, value)}
+                              onClear={() => commitFeatureModel(feature.key, feature.label, '')}
+                              onBlur={() =>
+                                commitFeatureModel(feature.key, feature.label, featureModels[feature.key] ?? '')
+                              }
                               placeholder={
                                 featureModelsResolved[feature.key] && !modelOverride
                                   ? `Default (${featureModelsResolved[feature.key]})`
@@ -533,14 +690,16 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                             />
                           )}
                         </Flex>
-                        <Switch
-                          checked={effectiveEnabled}
-                          disabled={forcedOn}
-                          onChange={(checked) => {
-                            setFeatureConfig((prev) => ({ ...prev, [feature.key]: checked }));
-                            mark();
-                          }}
-                        />
+                        <Space size={8}>
+                          <FieldStatusText status={fieldStatus[`feature:${feature.key}`]} />
+                          <Switch
+                            aria-label={feature.label}
+                            checked={effectiveEnabled}
+                            disabled={forcedOn}
+                            loading={fieldStatus[`feature:${feature.key}`]?.state === 'saving'}
+                            onChange={(checked) => persistFeature(feature.key, feature.label, checked)}
+                          />
+                        </Space>
                       </Flex>
                     </Card>
                   );

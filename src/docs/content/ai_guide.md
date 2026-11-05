@@ -79,7 +79,7 @@ If you prefer to use a different provider or key:
 2. Enter your **Provider**, **API Key**, **Base URL** (if needed), and **Model**.
 3. After saving the API key, a masked hint (e.g., `sk-…abc1`) appears below the key field so you can confirm which key is in use.
 4. Optionally configure **Custom Token Rates** for cost tracking.
-5. Click **Save**.
+5. Click **Save connection**. (The switches on the card — org key, global AI, each feature — save themselves the moment you flip them.)
 
 ### AI Feature Toggles
 
@@ -252,7 +252,7 @@ Organization and course admins can override the default token rates — useful f
 3. Click **Edit** next to any model to override its rates.
 4. To add a rate for a model not in the list, type the model name in the text field at the bottom and click **Add model**.
 5. Overrides are shown with a blue "override" badge. Click the delete icon to revert to the default rate.
-6. Click **Save** to persist your changes.
+6. Click **Save** (organization) or **Save connection** (course) to persist your changes.
 
 Rates set at the organization level flow down to every course automatically: in a course's rate table, org-configured models appear as read-only rows with a purple **org default** badge (built-in rates show a plain **default** badge). When the org adds a rate for a new model, it shows up in all its courses without any action on the course side. Clicking **Edit** on an org default creates a course-level override, which takes precedence for that course only.
 

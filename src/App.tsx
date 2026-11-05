@@ -262,6 +262,23 @@ Firefox:
     [user],
   );
 
+  // A saved course replaces its copy in every role list: the console routes are built from
+  // these lists, so a renamed course keeps its page instead of falling back to the overview.
+  const updateUserCourse = useCallback(
+    (course: Course) => {
+      if (!user) return;
+      const replace = (list: Course[]) => list.map((c) => (c.id === course.id ? course : c));
+      setUser({
+        ...user,
+        courseadminCourses: replace(user.courseadminCourses),
+        graderCourses: replace(user.graderCourses),
+        superGraderCourses: replace(user.superGraderCourses),
+        studentCourses: replace(user.studentCourses),
+      });
+    },
+    [user],
+  );
+
   const addAssignment = useCallback(
     (assignment: Assignment) => {
       if (!user) return;
@@ -707,10 +724,11 @@ Firefox:
       addAssignment,
       deleteAssignment,
       addCourse: addCreatedCourse,
+      updateCourse: updateUserCourse,
       superGraderCourses: user?.superGraderCourses ?? [],
       sectionsLed: user?.leaderSections ?? [],
     }),
-    [user, handleLogout, addAssignment, deleteAssignment, addCreatedCourse],
+    [user, handleLogout, addAssignment, deleteAssignment, addCreatedCourse, updateUserCourse],
   );
 
   const graderAccessibleCoursesMemo = useMemo(

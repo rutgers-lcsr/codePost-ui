@@ -37,6 +37,7 @@ interface IAdminManagerProps {
   addAssignment: (assignment: Assignment) => void;
   deleteAssignment: (assignment: Assignment) => void;
   addCourse: (newCourse: Course) => void;
+  updateCourse: (course: Course) => void;
   superGraderCourses: Course[];
   sectionsLed: Section[];
   handleLogout: () => void;

@@ -11,7 +11,6 @@ import {
   BookOutlined,
   KeyOutlined,
   SafetyOutlined,
-  RedoOutlined,
   RobotOutlined,
   SettingOutlined,
   InfoCircleOutlined,
@@ -21,12 +20,10 @@ import {
 } from '@ant-design/icons';
 
 /* style imports */
-import { Descriptions, Flex, Form, Input, message, Select, Skeleton, Switch, Typography } from 'antd';
+import { Button, Descriptions, Flex, Form, Input, message, Modal, Select, Skeleton, Switch, Typography } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 
 import { apiErrorMessageAsync } from '../../../lib/apiError';
-
-import CPButton from '../../../components/core/CPButton';
 
 /* codePost imports */
 import { Course, Webhook } from '../../../api-client';
@@ -38,6 +35,7 @@ import CourseAIUsageCard from './CourseAIUsageCard';
 import CourseAPIKeysCard from './CourseAPIKeysCard';
 import PendingAgentActionsCard from './PendingAgentActionsCard';
 import StudentAliasLookupCard from './StudentAliasLookupCard';
+import FieldStatusText, { FieldStatus, useSaveAnnouncer } from './FieldStatusText';
 
 import { timezones } from '../other/timezones';
 import { colors } from '../../../theme/colors';
@@ -59,6 +57,19 @@ interface SectionDef {
   description: string;
   capability?: Capability;
 }
+
+/** The course fields this page saves one at a time, the moment a control changes. */
+type SettingKey =
+  | 'name'
+  | 'period'
+  | 'timezone'
+  | 'lateDayCreditsAllowable'
+  | 'sendReleasedSubmissionsToBack'
+  | 'showStudentsStatistics'
+  | 'emailNewUsers'
+  | 'anonymousGradingDefault'
+  | 'gradersCanGradeQuizzes'
+  | 'archived';
 
 const ALL_SECTIONS: SectionDef[] = [
   { key: 'identity', label: 'Identity', icon: <BookOutlined />, description: 'Name and period' },
@@ -125,8 +136,8 @@ interface IProps {
 }
 
 const CourseSettingsPanel: React.FC<IProps> = (props) => {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isDirty, setIsDirty] = React.useState(false);
+  const [fieldStatus, setFieldStatus] = React.useState<Record<string, FieldStatus>>({});
+  const { announce, region: announcer } = useSaveAnnouncer();
   const [form] = Form.useForm();
   const [activeSection, setActiveSection] = React.useState('identity');
   const sectionRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
@@ -148,8 +159,7 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
 
   // Reset form when course changes
   React.useEffect(() => {
-    setIsLoading(false);
-    setIsDirty(false);
+    setFieldStatus({});
     form.resetFields();
   }, [props.currentCourse.id, form]);
 
@@ -220,56 +230,72 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
   // after this panel, so the hook lives in the ref callback rather than a parent effect.
   const deepLinkedSection = React.useRef(false);
 
-  const resetForm = () => {
-    form.resetFields();
-    setIsDirty(false);
-  };
+  // Every control saves itself; there is no Save button. Saves run one after another so
+  // two quick toggles never race: each sends the latest known course plus its own change,
+  // and the server's answer is carried forward to the next.
+  const latestCourse = React.useRef<Course>(props.currentCourse);
+  React.useEffect(() => {
+    latestCourse.current = props.currentCourse;
+  }, [props.currentCourse]);
+  const queue = React.useRef<Promise<unknown>>(Promise.resolve());
+  const clearTimers = React.useRef<Record<string, number>>({});
+  React.useEffect(() => () => Object.values(clearTimers.current).forEach((t) => window.clearTimeout(t)), []);
 
-  const handleSave = () => {
-    form
-      .validateFields()
-      .then((values) => updateSettings(values))
-      .catch(async (info) => {
-        if (info?.errorFields) return; // antd form validation — errors are shown inline
-        setIsLoading(false);
-        message.error((await apiErrorMessageAsync(info, 'name', 'period')) ?? 'Could not save the course settings.');
-      });
-  };
-
-  const updateSettings = (values: Course & { allowGradersToEditRubric?: boolean }) => {
-    setIsLoading(true);
-    const { currentCourse } = props;
-
-    const payload: Course = {
-      ...currentCourse,
-      name: values.name,
-      period: values.period,
-      sendReleasedSubmissionsToBack: values.sendReleasedSubmissionsToBack,
-      showStudentsStatistics: values.showStudentsStatistics,
-      timezone: values.timezone,
-      emailNewUsers: values.emailNewUsers,
-      anonymousGradingDefault: values.anonymousGradingDefault,
-      gradersCanGradeQuizzes: values.gradersCanGradeQuizzes,
-      lateDayCreditsAllowable: values.lateDayCreditsAllowable,
-      assignments: [],
-      sections: [],
-      archived: values.archived,
-    };
-
-    return props.updateSettings(payload).then(() => {
-      message.success('Your settings were saved!');
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-
-      setIsLoading(false);
-      setIsDirty(false);
+  const setStatus = (key: string, status: FieldStatus | null) => {
+    setFieldStatus((prev) => {
+      const next = { ...prev };
+      if (status) next[key] = status;
+      else delete next[key];
+      return next;
     });
   };
 
-  const makeDirty = () => {
-    setIsDirty(true);
+  const saveField = (key: SettingKey, value: unknown, label: string, previous: unknown): Promise<unknown> => {
+    window.clearTimeout(clearTimers.current[key]);
+    setStatus(key, { state: 'saving' });
+    const run = async () => {
+      try {
+        const saved = await props.updateSettings({
+          ...latestCourse.current,
+          [key]: value,
+          assignments: [],
+          sections: [],
+        } as Course);
+        latestCourse.current = saved;
+        setStatus(key, { state: 'saved' });
+        announce(`${label} saved.`);
+        clearTimers.current[key] = window.setTimeout(() => setStatus(key, null), 2500);
+        message.success({
+          key: 'course-settings-save',
+          duration: 6,
+          content: (
+            <span>
+              {label} saved.{' '}
+              <Button
+                type="link"
+                size="small"
+                style={{ padding: 0, height: 'auto' }}
+                onClick={() => {
+                  message.destroy('course-settings-save');
+                  form.setFieldValue(key, previous);
+                  void saveField(key, previous, label, value);
+                }}
+              >
+                Undo
+              </Button>
+            </span>
+          ),
+        });
+      } catch (e) {
+        // Put the control back, unless the user has already typed something newer into it.
+        if (form.getFieldValue(key) === value) form.setFieldValue(key, previous);
+        const detail = (await apiErrorMessageAsync(e, key)) ?? 'Could not save this setting.';
+        setStatus(key, { state: 'error', detail });
+        announce(`${label} was not saved. ${detail}`);
+      }
+    };
+    queue.current = queue.current.then(run, run);
+    return queue.current;
   };
 
   const setSectionRef = (key: string) => (el: HTMLDivElement | null) => {
@@ -294,32 +320,9 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
               Course Settings
             </h1>
           </div>
-          <Flex gap={8}>
-            {isDirty && (
-              <div style={styles.unsavedPill}>
-                <div style={styles.unsavedDot} />
-                <Text style={styles.unsavedText}>Unsaved changes</Text>
-              </div>
-            )}
-            <CPButton
-              disabled={!isDirty || isLoading || !canEditSettings}
-              icon={<RedoOutlined />}
-              cpType="secondary"
-              onClick={resetForm}
-              size="small"
-            >
-              Undo
-            </CPButton>
-            <CPButton
-              loading={isLoading}
-              cpType="primary"
-              onClick={handleSave}
-              disabled={!isDirty || !canEditSettings}
-              size="small"
-            >
-              Save changes
-            </CPButton>
-          </Flex>
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Changes save as you make them.
+          </Text>
         </Flex>
       </div>
 
@@ -376,10 +379,15 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
 
         {/* ── Content area ── */}
         <div style={styles.content}>
+          {announcer}
           <SettingsForm
             form={form}
             thisCourse={props.currentCourse}
-            makeDirty={makeDirty}
+            lastSaved={() => latestCourse.current}
+            canEdit={canEditSettings}
+            fieldStatus={fieldStatus}
+            saveField={saveField}
+            setStatus={setStatus}
             setSectionRef={setSectionRef}
             visibleSectionKeys={sections.map((s) => s.key)}
           />
@@ -396,13 +404,60 @@ const CourseSettingsPanel: React.FC<IProps> = (props) => {
 interface IFormProps {
   form: ReturnType<typeof Form.useForm>[0];
   thisCourse: Course;
-  makeDirty: () => void;
+  /** The last course the server confirmed: the baseline for "did this change?" and for Undo,
+   *  which the `thisCourse` prop lags behind while a save is in flight. */
+  lastSaved: () => Course;
+  canEdit: boolean;
+  fieldStatus: Record<string, FieldStatus>;
+  saveField: (key: SettingKey, value: unknown, label: string, previous: unknown) => Promise<unknown>;
+  setStatus: (key: string, status: FieldStatus | null) => void;
   setSectionRef: (key: string) => (el: HTMLDivElement | null) => void;
   visibleSectionKeys: string[];
 }
 
 const SettingsForm: React.FC<IFormProps> = (props) => {
-  const { form, thisCourse, makeDirty, setSectionRef, visibleSectionKeys } = props;
+  const { form, thisCourse, lastSaved, canEdit, fieldStatus, saveField, setStatus, setSectionRef, visibleSectionKeys } =
+    props;
+
+  // Text fields save when you leave them (or press Enter), once they pass their rules.
+  const commitText = (key: 'name' | 'period', label: string) => {
+    form.validateFields([key]).then(
+      (values) => {
+        const value = (values as Record<string, string>)[key];
+        setStatus(key, null);
+        const previous = lastSaved()[key];
+        if (value === previous) return;
+        void saveField(key, value, label, previous);
+      },
+      () => setStatus(key, { state: 'error', detail: 'Not saved until this is fixed.' }),
+    );
+  };
+
+  const commitLateDays = () => {
+    const value = form.getFieldValue('lateDayCreditsAllowable') as number | null;
+    const previous = lastSaved().lateDayCreditsAllowable;
+    if (value === previous) return;
+    void saveField('lateDayCreditsAllowable', value, 'Late day credits', previous);
+  };
+
+  // Archiving locks the whole course, so it is the one switch that asks first.
+  const onToggle = (setting: { key: string; title: string; danger?: boolean }, checked: boolean) => {
+    const key = setting.key as SettingKey;
+    if (setting.danger && checked) {
+      Modal.confirm({
+        title: 'Archive this course?',
+        content:
+          'Nothing in it can be edited until you unarchive it. Everything is kept, and students and graders keep read access.',
+        okText: 'Archive',
+        okButtonProps: { danger: true },
+        cancelText: 'Keep editing',
+        onOk: () => saveField(key, true, setting.title, false),
+        onCancel: () => form.setFieldValue(key, false),
+      });
+      return;
+    }
+    void saveField(key, checked, setting.title, !checked);
+  };
 
   // Webhooks are their own resources; the course only lists their ids.
   const { data: webhooks = [], isLoading: webhooksLoading } = useQuery({
@@ -472,13 +527,13 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
 
   return (
     <>
-      <Form form={form} layout="horizontal" onChange={makeDirty}>
+      <Form form={form} layout="horizontal">
         {/* ━━━ Course Identity ━━━ */}
         <div ref={setSectionRef('identity')} style={styles.section}>
           <SectionHeader
             icon={<BookOutlined />}
             title="Course Identity"
-            subtitle="Your course's name and term period"
+            subtitle="Your course's name and term period. Each field saves when you leave it."
           />
           <div style={styles.sectionCard}>
             <Flex vertical gap={20} style={{ padding: '20px 24px' }}>
@@ -495,6 +550,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   { required: true, message: 'Please enter a course name with at least 4 characters', min: 4 },
                   { message: 'Course name cannot exceed 36 characters', max: 36 },
                 ]}
+                extra={<FieldStatusText status={fieldStatus.name} />}
               >
                 <Input
                   id="course-name"
@@ -503,6 +559,9 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   minLength={4}
                   count={{ show: true }}
                   style={styles.input}
+                  disabled={!canEdit}
+                  onBlur={() => commitText('name', 'Course name')}
+                  onPressEnter={(e) => (e.target as HTMLInputElement).blur()}
                 />
               </Form.Item>
               <Form.Item
@@ -518,6 +577,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   { required: true, message: 'Please enter a course period.' },
                   { message: 'Course period cannot exceed 32 characters', max: 32 },
                 ]}
+                extra={<FieldStatusText status={fieldStatus.period} />}
               >
                 <Input
                   id="course-period"
@@ -526,6 +586,9 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                   minLength={1}
                   count={{ show: true }}
                   style={styles.input}
+                  disabled={!canEdit}
+                  onBlur={() => commitText('period', 'Course period')}
+                  onPressEnter={(e) => (e.target as HTMLInputElement).blur()}
                 />
               </Form.Item>
             </Flex>
@@ -569,13 +632,20 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                         {setting.description}
                       </Text>
                     </Flex>
+                    <FieldStatusText status={fieldStatus[setting.key]} style={{ marginRight: 12 }} />
                     <Form.Item
                       name={setting.key}
                       valuePropName="checked"
                       initialValue={setting.initialValue}
                       style={{ marginBottom: 0, flexShrink: 0 }}
                     >
-                      <Switch id={`switch-${setting.key}`} aria-label={setting.title} onChange={makeDirty} />
+                      <Switch
+                        id={`switch-${setting.key}`}
+                        aria-label={setting.title}
+                        disabled={!canEdit}
+                        loading={fieldStatus[setting.key]?.state === 'saving'}
+                        onChange={(checked) => onToggle(setting, checked)}
+                      />
                     </Form.Item>
                   </Flex>
                 </div>
@@ -599,13 +669,21 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                       Maximum late day credits a student can use per assignment.
                     </Text>
                   </Flex>
-                  <Form.Item
-                    name="lateDayCreditsAllowable"
-                    initialValue={thisCourse.lateDayCreditsAllowable}
-                    style={{ marginBottom: 0, flexShrink: 0 }}
+                  <FieldStatusText status={fieldStatus.lateDayCreditsAllowable} style={{ marginRight: 12 }} />
+                  {/* Saves once focus leaves the On/Off + number pair, not on every keystroke. */}
+                  <span
+                    onBlur={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node | null)) commitLateDays();
+                    }}
                   >
-                    <InputNumberOrNull value={null} onChange={makeDirty} />
-                  </Form.Item>
+                    <Form.Item
+                      name="lateDayCreditsAllowable"
+                      initialValue={thisCourse.lateDayCreditsAllowable}
+                      style={{ marginBottom: 0, flexShrink: 0 }}
+                    >
+                      <InputNumberOrNull value={null} onChange={() => undefined} disabled={!canEdit} />
+                    </Form.Item>
+                  </span>
                 </Flex>
               </div>
               <div style={{ ...styles.toggleRow, borderBottom: 'none' }}>
@@ -618,12 +696,19 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
                       All dates and times are displayed in this timezone.
                     </Text>
                   </Flex>
+                  <FieldStatusText status={fieldStatus.timezone} style={{ marginRight: 12 }} />
                   <Form.Item
                     name="timezone"
                     initialValue={thisCourse.timezone}
                     style={{ marginBottom: 0, flexShrink: 0 }}
                   >
-                    <Select aria-label="Course Timezone" style={{ width: 220 }} onChange={makeDirty} showSearch>
+                    <Select
+                      aria-label="Course Timezone"
+                      style={{ width: 220 }}
+                      disabled={!canEdit}
+                      onChange={(tz: string) => void saveField('timezone', tz, 'Course timezone', lastSaved().timezone)}
+                      showSearch
+                    >
                       {timezones.map((tz, i) => (
                         <Select.Option key={i} value={tz}>
                           {tz}
@@ -769,28 +854,6 @@ const styles: Record<string, React.CSSProperties> = {
     top: 0,
     zIndex: 10,
   },
-  unsavedPill: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '4px 14px',
-    borderRadius: 20,
-    background: 'rgba(255, 191, 0, 0.06)',
-    border: '1px solid rgba(255, 191, 0, 0.2)',
-  },
-  unsavedDot: {
-    width: 6,
-    height: 6,
-    borderRadius: '50%',
-    background: colors.actionYellow,
-    boxShadow: '0 0 6px rgba(255, 191, 0, 0.4)',
-  },
-  unsavedText: {
-    fontSize: 12,
-    fontWeight: 500,
-    color: 'rgba(0, 0, 0, 0.5)',
-  },
-
   // ── Body layout ──
   body: {
     display: 'flex',

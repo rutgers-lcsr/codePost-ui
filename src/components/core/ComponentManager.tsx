@@ -35,6 +35,8 @@ interface IComponentManagerProps {
   addAssignment: (assignment: Assignment) => void;
   deleteAssignment: (assignment: Assignment) => void;
   addCourse: (newCourse: Course) => void;
+  // Optional: only the admin console saves courses; the grader and student shells never do.
+  updateCourse?: (course: Course) => void;
 
   superGraderCourses: Course[];
   sectionsLed: Section[];
