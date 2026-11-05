@@ -1,34 +1,5 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import {
-  BookOutlined,
-  CalendarOutlined,
-  GlobalOutlined,
-  InfoCircleOutlined,
-  TeamOutlined,
-  UserAddOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Col,
-  ConfigProvider,
-  Layout,
-  Modal,
-  Result,
-  Row,
-  Skeleton,
-  Space,
-  Statistic,
-  Table,
-  Tabs,
-  Tag,
-  Tooltip,
-  Typography,
-  theme,
-} from 'antd';
+import { Alert, Badge, Button, Card, Layout, Modal, Result, Skeleton, Tabs, Tag, Typography, theme } from 'antd';
 import { useLocation, useNavigate } from 'react-router';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ErrorBoundary from '../core/ErrorBoundary';
@@ -49,6 +20,9 @@ import MaintenanceBannerPanel from './MaintenanceBannerPanel';
 import { AIUsageService } from '../../services/aiUsage';
 import PendingAdminsTable from './PendingAdminsTable';
 import StaffSidebar, { SIDER_COLLAPSED_WIDTH, SIDER_WIDTH } from './StaffSidebar';
+import StaffInbox from './StaffInbox';
+import { SystemHealthContext, useSystemHealth } from './systemHealthModel';
+import { useSavedBanner } from './MaintenanceBannerPanel';
 import {
   DASHBOARD_PATH,
   STAFF_DESTINATIONS,
@@ -72,8 +46,7 @@ import type { AssignmentDeadline, Course, DashboardStats, Organization } from '.
 import { organizationsApi, coursesApi, dashboardApi } from '../../api-client/clients';
 import { UserIO } from '../../services/user';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
-import { DEFINITIONS, definedTitle } from './definitions';
-import { formatWindow, nextSafeWindow } from './deployWindows';
+import { nextSafeWindow } from './deployWindows';
 import JumpPalette from './JumpPalette';
 
 const { Text } = Typography;
@@ -128,14 +101,10 @@ const EMPTY_STATS: DashboardStats = {
   activeUsers30d: 0,
 };
 
-type TopOrganization = Organization & { courseCount: number };
-
 // Below this the sider hides completely and a corner trigger brings it back.
 const PHONE_BREAKPOINT = 768;
 // antd's orange tag puts #d46b08 on #fff7e6 (3.3:1); orange-8 text on the same tint reads 5.4:1.
 const WARNING_TAG = { color: '#ad4e00', background: '#fff7e6', borderColor: '#ffd591' } as const;
-// antd's green tag is 3.1:1 at 12px; green-8 on the brand's light tint reads 5.3:1.
-const GOOD_TAG = { color: '#0d7354', background: '#f0fff6', borderColor: '#9ce6c3' } as const;
 // red-7 under the white badge count: antd's #ff4d4f is 3.5:1.
 const BADGE_RED = '#cf1322';
 
@@ -280,8 +249,11 @@ const Dashboard = () => {
   const [rostersError, setRostersError] = useState<string | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  // The requests could not be fetched: the Inbox says so instead of showing "none waiting".
+  const [pendingUnknown, setPendingUnknown] = useState(false);
   // null until the deadlines arrive (or fail): the Overview's deploy-window cell says "Checking…".
   const [deadlines, setDeadlines] = useState<AssignmentDeadline[] | null>(null);
+  const [deadlinesUnknown, setDeadlinesUnknown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats>(EMPTY_STATS);
@@ -316,17 +288,20 @@ const Dashboard = () => {
         organizationsApi.list(),
         coursesApi.list(),
         // The badge and the deploy window are conveniences; a failure must not take the console down.
-        dashboardApi.pendingAdminsList().catch(() => []),
-        dashboardApi.deadlinesList().catch(() => [] as AssignmentDeadline[]),
+        dashboardApi.pendingAdminsList().catch(() => null),
+        // null: the due dates did not load, which is not the same as there being none.
+        dashboardApi.deadlinesList().catch(() => null),
       ]);
 
       setStats(statsData);
       setDeadlines(deadlineData);
+      setDeadlinesUnknown(deadlineData === null);
       const uniqueOrgs = uniqBy(organizationData, 'id');
       const uniqueCourses = uniqBy(courseData, 'id');
       setOrganizations(uniqueOrgs);
       setCourses(uniqueCourses);
-      setPendingCount(pendingData.length);
+      setPendingCount(pendingData?.length ?? 0);
+      setPendingUnknown(pendingData === null);
       setIsLoading(false);
 
       await loadRosters(uniqueCourses, uniqueOrgs);
@@ -343,8 +318,11 @@ const Dashboard = () => {
   const refreshPending = useCallback(() => {
     dashboardApi
       .pendingAdminsList()
-      .then((pending) => setPendingCount(pending.length))
-      .catch(() => {});
+      .then((pending) => {
+        setPendingCount(pending.length);
+        setPendingUnknown(false);
+      })
+      .catch(() => setPendingUnknown(true));
   }, []);
 
   const adminCount = useMemo(() => new Set(admins.map((a) => a.email)).size, [admins]);
@@ -353,165 +331,21 @@ const Dashboard = () => {
   const contentOffset = collapsed ? collapsedWidth : SIDER_WIDTH;
   const pagePadding = isPhone ? 16 : 24;
 
-  const renderOverview = () => {
-    const topOrganizations: TopOrganization[] = organizations
-      .map((org) => ({
-        ...org,
-        courseCount: courses.filter((c) => c.organization === org.id).length,
-      }))
-      .sort((a, b) => b.courseCount - a.courseCount)
-      .slice(0, 5);
-
-    const safeWindow = deadlines ? nextSafeWindow(deadlines, new Date()) : null;
-    const statusCell = (icon: React.ReactNode, label: string, state: React.ReactNode, action: React.ReactNode) => (
-      <Card size="small" style={{ height: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%' }} align="start">
-          <Space wrap size={[8, 4]}>
-            {icon}
-            <Text strong style={{ fontSize: 15 }}>
-              {label}
-            </Text>
-            {state}
-          </Space>
-          {action}
-        </Space>
-      </Card>
-    );
-
-    return (
-      <div style={{ padding: pagePadding }}>
-        <AdminPageHeader title="Overview" subtitle="What needs attention right now, then the platform at a glance." />
-
-        {/* ── Status first: the four things a staff member acts on ────────── */}
-        <section aria-label="Status" style={{ marginBottom: 24 }}>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} md={12} xl={6}>
-              <SystemHealth compact onOpenDetails={() => goTo('Platform', 'health')} />
-            </Col>
-            <Col xs={24} md={12} xl={6}>
-              {statusCell(
-                <UserAddOutlined />,
-                // Same words as the Users page tab it opens.
-                'Admin requests',
-                pendingCount > 0 ? (
-                  // Darker than antd's orange tag text: 12px on the tint needs 4.5:1, not 3.3:1.
-                  <Tag style={WARNING_TAG}>{pendingCount} waiting</Tag>
-                ) : (
-                  <Tag style={GOOD_TAG}>None waiting</Tag>
-                ),
-                <Button type="link" size="small" onClick={() => goTo('Users', 'requests')}>
-                  Review
-                </Button>,
-              )}
-            </Col>
-            <Col xs={24} md={12} xl={6}>
-              <MaintenanceBannerPanel compact onOpenDetails={() => goTo('Tools', 'banner')} />
-            </Col>
-            <Col xs={24} md={12} xl={6}>
-              {statusCell(
-                <CalendarOutlined />,
-                'Deploy window',
-                deadlines === null ? (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Checking…
-                  </Text>
-                ) : safeWindow ? (
-                  <Tag style={GOOD_TAG}>
-                    {formatWindow(safeWindow)} · {safeWindow.days} days
-                  </Tag>
-                ) : (
-                  <Tag color="orange">No 3-day gap in 60 days</Tag>
-                ),
-                <Button type="link" size="small" onClick={() => goTo('Platform', 'deploy-calendar')}>
-                  Calendar
-                </Button>,
-              )}
-            </Col>
-          </Row>
-        </section>
-
-        {/* ── Then the platform at a glance: four totals, each with its one qualifying line ── */}
-        <ConfigProvider theme={{ components: { Statistic: { contentFontSize: 20, titleFontSize: 12 } } }}>
-          <Card size="small" style={{ marginBottom: 24 }}>
-            <Row gutter={[24, 16]}>
-              <Col xs={12} lg={6}>
-                <Statistic title="Unique Users" value={stats.totalUniqueUsers} prefix={<UserOutlined />} />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {stats.totalStudents.toLocaleString()} students · {stats.totalGraders.toLocaleString()} graders ·{' '}
-                  {stats.totalInactiveUsers.toLocaleString()} idle 90+ days{' '}
-                  <Tooltip title={DEFINITIONS.inactiveUsers} trigger={['hover', 'focus']}>
-                    <InfoCircleOutlined aria-label={DEFINITIONS.inactiveUsers} tabIndex={0} />
-                  </Tooltip>
-                </Text>
-              </Col>
-              <Col xs={12} lg={6}>
-                <Statistic
-                  title="Active Courses"
-                  value={stats.activeCourses}
-                  prefix={<BookOutlined />}
-                  // "30 / 30" reads as a contradiction; the denominator only means something once a course is archived.
-                  suffix={
-                    stats.archivedCourses > 0 ? (
-                      <Text type="secondary" style={{ fontSize: 14 }}>
-                        / {stats.totalCourses}
-                      </Text>
-                    ) : undefined
-                  }
-                />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {stats.archivedCourses > 0 ? `${stats.archivedCourses} archived` : 'none archived'} ·{' '}
-                  {stats.totalAssignments.toLocaleString()} assignments · {stats.totalSections} sections
-                </Text>
-              </Col>
-              <Col xs={12} lg={6}>
-                <Statistic title="Organizations" value={stats.totalOrganizations} prefix={<GlobalOutlined />} />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {stats.avgCoursesPerOrg} courses per organization on average
-                </Text>
-              </Col>
-              <Col xs={12} lg={6}>
-                <Statistic
-                  title={definedTitle('Course Admins', DEFINITIONS.courseAdmins)}
-                  value={stats.totalCourseAdmins}
-                  prefix={<TeamOutlined />}
-                />
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {stats.totalCodePostAdmins} platform admins{' '}
-                  <Tooltip title={DEFINITIONS.platformAdmins} trigger={['hover', 'focus']}>
-                    <InfoCircleOutlined aria-label={DEFINITIONS.platformAdmins} tabIndex={0} />
-                  </Tooltip>
-                </Text>
-              </Col>
-            </Row>
-          </Card>
-        </ConfigProvider>
-
-        <Card title="Top Organizations by Courses" variant="borderless">
-          <Table
-            dataSource={topOrganizations}
-            pagination={false}
-            size="small"
-            rowKey="id"
-            columns={[
-              {
-                title: 'Organization',
-                dataIndex: 'name',
-                key: 'name',
-                render: (name: string) => <Text strong>{name}</Text>,
-              },
-              {
-                title: 'Courses',
-                dataIndex: 'courseCount',
-                key: 'courseCount',
-                width: 100,
-                align: 'right',
-              },
-            ]}
-          />
-        </Card>
-      </div>
-    );
-  };
+  // One health model for the Inbox, the sidebar badge and the Health tab (SystemHealthContext below).
+  const healthModel = useSystemHealth();
+  const savedBanner = useSavedBanner();
+  const safeWindow = deadlines ? nextSafeWindow(deadlines, new Date()) : null;
+  // The Inbox's queue, counted for the sidebar: failing checks nobody has acknowledged, requests
+  // waiting, a banner showing, no safe deploy window.
+  const openItems =
+    (healthModel.unavailable
+      ? 1
+      : !healthModel.ackLoaded || healthModel.acknowledged
+        ? 0
+        : healthModel.failing.length) +
+    (pendingCount > 0 || pendingUnknown ? 1 : 0) +
+    (savedBanner.state.key === 'live' || savedBanner.state.key === 'scheduled' ? 1 : 0) +
+    (deadlines && !safeWindow ? 1 : 0);
 
   const renderAdmins = () => (
     <div>
@@ -552,22 +386,35 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (currentPage) {
-      case 'Overview':
-        return renderOverview();
-      case 'Organizations':
+      case 'Inbox':
         return (
           <div style={{ padding: pagePadding }}>
             <AdminPageHeader
-              title="Organizations"
-              subtitle={`${organizations.length} organizations on the platform.`}
+              title="Inbox"
+              subtitle="What is waiting for you, then what is fine, then the platform in one line."
             />
-            <OrganizationTable organizations={organizations} rosters={rosters} onRefresh={fetchData} />
+            <StaffInbox
+              stats={stats}
+              deadlines={deadlines}
+              deadlinesUnknown={deadlinesUnknown}
+              banner={savedBanner}
+              pendingCount={pendingCount}
+              pendingUnknown={pendingUnknown}
+              organizations={organizations}
+              onPendingChanged={refreshPending}
+              goTo={goTo}
+              onJump={() => setJumpOpen(true)}
+              isPhone={isPhone}
+            />
           </div>
         );
       case 'Courses':
         return (
           <div style={{ padding: pagePadding }}>
-            <AdminPageHeader title="Courses" subtitle={`${courses.length} courses across all organizations.`} />
+            <AdminPageHeader
+              title="Courses"
+              subtitle={`${courses.length} courses in ${organizations.length} organizations.`}
+            />
             {rostersError && (
               <Alert
                 type="warning"
@@ -582,28 +429,53 @@ const Dashboard = () => {
                 style={{ marginBottom: 16 }}
               />
             )}
-            <CoursesTable
-              courses={courses}
-              rosters={rosters}
-              rostersLoading={rostersLoading}
-              organizations={organizations}
-              onRefresh={fetchData}
+            <Tabs
+              activeKey={currentTab}
+              destroyOnHidden
+              onChange={(key) => goTo('Courses', key)}
+              items={[
+                {
+                  key: 'all',
+                  label: 'By course',
+                  children: (
+                    <CoursesTable
+                      courses={courses}
+                      rosters={rosters}
+                      rostersLoading={rostersLoading}
+                      organizations={organizations}
+                      onRefresh={fetchData}
+                    />
+                  ),
+                },
+                {
+                  key: 'organizations',
+                  label: countLabel('By organization', isLoading ? undefined : organizations.length),
+                  children: (
+                    <OrganizationTable
+                      organizations={organizations}
+                      rosters={rosters}
+                      onRefresh={fetchData}
+                      hideStats
+                    />
+                  ),
+                },
+              ]}
             />
           </div>
         );
-      case 'Users':
+      case 'People':
         // One page for people: everyone by role, the course admins roster, and the requests to join it.
         return (
           <div style={{ padding: pagePadding }}>
             <AdminPageHeader
-              title="Users"
-              subtitle="Everyone with an account, by role. Course admins and the requests to become one are tabs here."
+              title="People"
+              subtitle="Everyone with an account; course admins and the requests to become one are tabs."
             />
             <Tabs
               activeKey={currentTab}
               // Hidden panes unmount, so each tab shows fresh data when it is opened again.
               destroyOnHidden
-              onChange={(key) => goTo('Users', key)}
+              onChange={(key) => goTo('People', key)}
               items={[
                 {
                   key: 'people',
@@ -692,6 +564,7 @@ const Dashboard = () => {
                       <MaintenanceBannerPanel
                         audienceCount={stats.totalUniqueUsers}
                         onDirtyChange={onBannerDirtyChange}
+                        onSaved={savedBanner.refresh}
                       />
                     </>
                   ),
@@ -726,30 +599,11 @@ const Dashboard = () => {
   const skeleton = (
     <div style={{ padding: pagePadding }}>
       <Skeleton active paragraph={false} title={{ width: 280 }} style={{ marginBottom: 24 }} />
-      {/* Same shape as the loaded Overview (four status cells), so nothing jumps when data lands. */}
-      <Row gutter={[16, 16]}>
-        {[1, 2, 3, 4].map((i) => (
-          <Col xs={24} md={12} xl={6} key={i}>
-            <Card size="small">
-              <Skeleton
-                active
-                title={{ width: '45%' }}
-                paragraph={{ rows: 1, width: '70%' }}
-                style={{ minHeight: 44 }}
-              />
-            </Card>
-          </Col>
-        ))}
-      </Row>
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-        {[1, 2, 3, 4].map((i) => (
-          <Col xs={24} sm={12} lg={6} key={i}>
-            <Card>
-              <Skeleton active paragraph={{ rows: 1 }} />
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      {/* Same shape as the loaded Inbox (a search box, then rows), so nothing jumps when data lands. */}
+      <Skeleton.Input active style={{ width: 560, maxWidth: '100%', marginBottom: 16 }} />
+      <Card size="small">
+        <Skeleton active title={false} paragraph={{ rows: 4 }} />
+      </Card>
     </div>
   );
 
@@ -769,57 +623,55 @@ const Dashboard = () => {
   );
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {modalHolder}
-      <JumpPalette
-        open={jumpOpen}
-        onClose={() => setJumpOpen(false)}
-        tabs={jumpTabs}
-        courses={courses}
-        organizations={organizations}
-        onCourse={(course) => guardedNavigate(`${DASHBOARD_PATH}/courses?q=${encodeURIComponent(course.name)}`)}
-        onUser={(email) => guardedNavigate(`${DASHBOARD_PATH}/users?q=${encodeURIComponent(email)}`)}
-      />
-      <a className="cp-skip-link" href="#staff-main">
-        Skip to content
-      </a>
-      <StaffSidebar
-        collapsed={collapsed}
-        collapsedWidth={collapsedWidth}
-        onCollapse={onCollapse}
-        currentPage={currentPage}
-        isLoading={isLoading}
-        counts={{
-          organizations: stats.totalOrganizations,
-          courses: stats.totalCourses,
-          users: stats.totalUniqueUsers,
-          pendingRequests: pendingCount,
-        }}
-        bannerDirty={bannerDirtyState}
-        onNavigate={(page) => goTo(page)}
-        onHome={() => guardedNavigate('/')}
-        onJump={() => setJumpOpen(true)}
-      />
-      <Layout
-        style={{
-          height: '100vh',
-          overflowY: 'auto',
-          background: token.colorBgLayout,
-          marginLeft: contentOffset,
-          transition: 'margin-left 0.2s ease',
-        }}
-      >
-        {/* Extra room on phones for the sider's corner trigger, which sits over the content's bottom-left. */}
-        <Content
-          id="staff-main"
-          tabIndex={-1}
-          role="main"
-          style={{ margin: '0', overflow: 'initial', paddingBottom: isPhone ? 96 : 64 }}
+    <SystemHealthContext.Provider value={healthModel}>
+      <Layout style={{ minHeight: '100vh' }}>
+        {modalHolder}
+        <JumpPalette
+          open={jumpOpen}
+          onClose={() => setJumpOpen(false)}
+          tabs={jumpTabs}
+          courses={courses}
+          organizations={organizations}
+          onCourse={(course) => guardedNavigate(`${DASHBOARD_PATH}/courses?q=${encodeURIComponent(course.name)}`)}
+          onUser={(email) => guardedNavigate(`${DASHBOARD_PATH}/users?q=${encodeURIComponent(email)}`)}
+        />
+        <a className="cp-skip-link" href="#staff-main">
+          Skip to content
+        </a>
+        <StaffSidebar
+          collapsed={collapsed}
+          collapsedWidth={collapsedWidth}
+          onCollapse={onCollapse}
+          currentPage={currentPage}
+          isLoading={isLoading}
+          counts={{ courses: stats.totalCourses, people: stats.totalUniqueUsers, pendingRequests: pendingCount }}
+          openItems={isLoading ? 0 : openItems}
+          bannerDirty={bannerDirtyState}
+          onNavigate={(page) => goTo(page)}
+          onHome={() => guardedNavigate('/')}
+          onJump={() => setJumpOpen(true)}
+        />
+        <Layout
+          style={{
+            height: '100vh',
+            overflowY: 'auto',
+            background: token.colorBgLayout,
+            marginLeft: contentOffset,
+            transition: 'margin-left 0.2s ease',
+          }}
         >
-          {isLoading ? skeleton : loadError ? errorResult : renderContent()}
-        </Content>
+          {/* Extra room on phones for the sider's corner trigger, which sits over the content's bottom-left. */}
+          <Content
+            id="staff-main"
+            tabIndex={-1}
+            role="main"
+            style={{ margin: '0', overflow: 'initial', paddingBottom: isPhone ? 96 : 64 }}
+          >
+            {isLoading ? skeleton : loadError ? errorResult : renderContent()}
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
+    </SystemHealthContext.Provider>
   );
 };
 

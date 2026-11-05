@@ -7,7 +7,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Card, Col, Descriptions, Drawer, Row, Space, Statistic, Table, Tag } from 'antd';
+import { Badge, Button, Card, Col, Descriptions, Drawer, Row, Space, Statistic, Table, Tag, Typography } from 'antd';
 import * as React from 'react';
 import { colors } from '../../theme/colors';
 import type { RosterType as InfraRosterType } from '../../types/models';
@@ -46,9 +46,11 @@ interface Props {
   organizations: Organization[];
   rosters: RosterType[];
   onRefresh: () => void;
+  /** Inside the Courses page's tab: one count line instead of the stat tiles. */
+  hideStats?: boolean;
 }
 
-const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh }) => {
+const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh, hideStats = false }) => {
   const platformCaps = usePlatformCapabilities();
   const canImpersonate = platformCaps.impersonate_user !== false;
   const getOrganizationRows = React.useCallback((): OrganizationRow[] => {
@@ -340,40 +342,48 @@ const OrganizationTable: React.FC<Props> = ({ organizations, rosters, onRefresh 
 
   return (
     <>
-      {/* Stats */}
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Row gutter={[24, 16]}>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Organizations"
-              value={organizationRows.length}
-              prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Courses"
-              value={orgStats.totalCourses}
-              prefix={<BookOutlined style={{ color: colors.actionGreen }} />}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Students"
-              value={orgStats.totalStudents}
-              prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Staff"
-              value={orgStats.totalStaff}
-              prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
-            />
-          </Col>
-        </Row>
-      </Card>
-
+      {hideStats ? (
+        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+          {organizationRows.length} organizations · {orgStats.totalCourses} courses ·{' '}
+          {orgStats.totalStudents.toLocaleString()} students · {orgStats.totalStaff} staff
+        </Typography.Text>
+      ) : (
+        <>
+          {/* Stats */}
+          <Card size="small" style={{ marginBottom: 16 }}>
+            <Row gutter={[24, 16]}>
+              <Col xs={12} sm={6}>
+                <Statistic
+                  title="Organizations"
+                  value={organizationRows.length}
+                  prefix={<GlobalOutlined style={{ color: colors.actionBlue }} />}
+                />
+              </Col>
+              <Col xs={12} sm={6}>
+                <Statistic
+                  title="Courses"
+                  value={orgStats.totalCourses}
+                  prefix={<BookOutlined style={{ color: colors.actionGreen }} />}
+                />
+              </Col>
+              <Col xs={12} sm={6}>
+                <Statistic
+                  title="Students"
+                  value={orgStats.totalStudents}
+                  prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
+                />
+              </Col>
+              <Col xs={12} sm={6}>
+                <Statistic
+                  title="Staff"
+                  value={orgStats.totalStaff}
+                  prefix={<TeamOutlined style={{ color: colors.brandVibrant }} />}
+                />
+              </Col>
+            </Row>
+          </Card>
+        </>
+      )}
       <AdminTableToolbar
         searchPlaceholder="Search organizations…"
         onSearch={onSearch}

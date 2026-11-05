@@ -7,25 +7,26 @@
 
 export const DASHBOARD_PATH = '/dashboard';
 
-export type StaffPage = 'Overview' | 'Organizations' | 'Courses' | 'Users' | 'Platform' | 'Tools';
+export type StaffPage = 'Inbox' | 'People' | 'Courses' | 'Platform' | 'Tools';
 
-export const STAFF_PAGES: StaffPage[] = ['Overview', 'Organizations', 'Courses', 'Users', 'Platform', 'Tools'];
+export const STAFF_PAGES: StaffPage[] = ['Inbox', 'People', 'Courses', 'Platform', 'Tools'];
 
 const PAGE_SLUG: Record<StaffPage, string> = {
-  Overview: 'overview',
-  Organizations: 'organizations',
+  Inbox: 'inbox',
+  People: 'people',
   Courses: 'courses',
-  Users: 'users',
   Platform: 'platform',
   Tools: 'tools',
 };
 
 /** The tabs of each page, first one default (and left out of the address). */
 export const PAGE_TABS: Record<StaffPage, readonly { key: string; label: string }[]> = {
-  Overview: [],
-  Organizations: [],
-  Courses: [],
-  Users: [
+  Inbox: [],
+  Courses: [
+    { key: 'all', label: 'By course' },
+    { key: 'organizations', label: 'By organization' },
+  ],
+  People: [
     { key: 'people', label: 'People' },
     { key: 'admins', label: 'Course admins' },
     { key: 'requests', label: 'Requests' },
@@ -46,8 +47,10 @@ export const PAGE_TABS: Record<StaffPage, readonly { key: string; label: string 
 
 /** The addresses the console used to have, one segment each, and the page and tab they mean now. */
 const LEGACY_SLUGS: Record<string, { page: StaffPage; tab: string }> = {
-  admins: { page: 'Users', tab: 'admins' },
-  'pending-admins': { page: 'Users', tab: 'requests' },
+  overview: { page: 'Inbox', tab: '' },
+  organizations: { page: 'Courses', tab: 'organizations' },
+  admins: { page: 'People', tab: 'admins' },
+  'pending-admins': { page: 'People', tab: 'requests' },
   activity: { page: 'Platform', tab: 'activity' },
   'deploy-calendar': { page: 'Platform', tab: 'deploy-calendar' },
   autograding: { page: 'Platform', tab: 'autograding' },
@@ -90,9 +93,17 @@ export function resolveStaffLocation(pathname: string, search = ''): StaffLocati
   const keptSearch = queryTab === null ? search : rest ? `?${rest}` : '';
 
   const legacy = LEGACY_SLUGS[slug];
-  if (legacy) return { ...legacy, canonical: staffPath(legacy.page, legacy.tab, keptSearch) };
+  if (legacy) {
+    const tab = legacy.tab || PAGE_TABS[legacy.page][0]?.key;
+    return { page: legacy.page, tab, canonical: staffPath(legacy.page, tab, keptSearch) };
+  }
+  // The Users page became People; its tabs and its `?q=` keep working at the old address.
+  if (slug === 'users') {
+    const moved = resolveStaffLocation(`${DASHBOARD_PATH}/people${sub ? `/${sub}` : ''}`, search);
+    return { ...moved, canonical: moved.canonical ?? staffPath(moved.page, moved.tab, keptSearch) };
+  }
 
-  const page = STAFF_PAGES.find((p) => PAGE_SLUG[p] === slug) ?? 'Overview';
+  const page = STAFF_PAGES.find((p) => PAGE_SLUG[p] === slug) ?? 'Inbox';
   const tabs = PAGE_TABS[page];
   const isTab = (key: string | null): key is string => !!key && tabs.some((t) => t.key === key);
   const tab = tabs.length === 0 ? undefined : isTab(sub) ? sub : isTab(queryTab) ? queryTab : tabs[0].key;
@@ -100,7 +111,8 @@ export function resolveStaffLocation(pathname: string, search = ''): StaffLocati
   // One address per view: a bad or redundant form (`/users/bogus`, `/platform/health`, an unknown
   // page, a `?tab=`) is rewritten. The console's root, `/dashboard`, is left alone.
   const want = staffPath(page, tab);
-  const canonical = slug !== '' && (trimmed !== want || queryTab !== null) ? `${want}${keptSearch}` : undefined;
+  const isRoot = slug === '';
+  const canonical = !isRoot && (trimmed !== want || queryTab !== null) ? `${want}${keptSearch}` : undefined;
   return canonical ? { page, tab, canonical } : { page, tab };
 }
 
@@ -116,12 +128,12 @@ export const isBannerAddress = (to: string): boolean => {
 /** Everything the jump palette can open, pages and tabs alike. `keywords` are the words people
  *  still type for them: the old page names, and plain synonyms. */
 export const STAFF_DESTINATIONS: { label: string; page: StaffPage; tab?: string; keywords?: string[] }[] = [
-  { label: 'Overview', page: 'Overview', keywords: ['home', 'inbox'] },
-  { label: 'Organizations', page: 'Organizations' },
+  { label: 'Inbox', page: 'Inbox', keywords: ['home', 'overview', 'attention'] },
+  { label: 'People', page: 'People', keywords: ['users', 'students', 'graders'] },
+  { label: 'Course admins', page: 'People', tab: 'admins', keywords: ['admins', 'users'] },
+  { label: 'Admin requests', page: 'People', tab: 'requests', keywords: ['pending admins', 'requests', 'approve'] },
   { label: 'Courses', page: 'Courses' },
-  { label: 'Users', page: 'Users', keywords: ['people'] },
-  { label: 'Course admins', page: 'Users', tab: 'admins', keywords: ['admins'] },
-  { label: 'Admin requests', page: 'Users', tab: 'requests', keywords: ['pending admins', 'requests', 'approve'] },
+  { label: 'Organizations', page: 'Courses', tab: 'organizations', keywords: ['orgs', 'by organization'] },
   { label: 'Platform: Health', page: 'Platform', tab: 'health', keywords: ['system health', 'status', 'degraded'] },
   { label: 'Platform: Activity', page: 'Platform', tab: 'activity', keywords: ['logs', 'audit', 'errors'] },
   { label: 'Platform: Autograding', page: 'Platform', tab: 'autograding', keywords: ['autograder', 'cache'] },

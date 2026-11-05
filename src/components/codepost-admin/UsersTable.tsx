@@ -1,14 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import {
-  BookOutlined,
-  CloseCircleOutlined,
-  CrownOutlined,
-  EditOutlined,
-  StarOutlined,
-  TeamOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import { Alert, Button, Card, Col, Row, Skeleton, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
+import { BookOutlined, CrownOutlined, EditOutlined, StarOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { Alert, Button, Skeleton, Space, Table, Tag, Tooltip, Typography } from 'antd';
 
 const { Text } = Typography;
 import type { ColumnsType, TableProps } from 'antd/es/table';
@@ -20,16 +12,16 @@ import useDefaultPageSize from '../utils/useDefaultPageSize';
 import { colors } from '../../theme/colors';
 import useWindowSize from '../core/useWindowSize';
 import type { DashboardStats, Organization, User } from '../../api-client';
-import { UserIO } from '../../services/user';
+import { UserIO, type PeopleRole } from '../../services/user';
 import { apiErrorMessageAsync } from '../../lib/apiError';
 
 import AdminPageHeader from './AdminPageHeader';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import AdminTableToolbar from './AdminTableToolbar';
 import NewUserDialog from './NewUserDialog';
 import EditUserDialog from './EditUserDialog';
 import LoginAsButton from './LoginAsButton';
-import { DEFINITIONS, definedTitle } from './definitions';
+import { DEFINITIONS } from './definitions';
 import { usePlatformCapabilities } from '../../stores/usePermissionsStore';
 
 type Role = 'courseAdmin' | 'superGrader' | 'grader' | 'student';
@@ -99,6 +91,27 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]);
   const [ordering, setOrdering] = useState<string | undefined>(undefined);
+  // The filters live in the address (?role=student, ?inactive=1): the Inbox's totals link here with
+  // one preselected, a copied link keeps it, and the sidebar's plain People link clears it.
+  const navigate = useNavigate();
+  const role = useMemo((): PeopleRole | undefined => {
+    const r = new URLSearchParams(location.search).get('role');
+    return r === 'student' || r === 'grader' || r === 'course_admin' || r === 'platform_admin' ? r : undefined;
+  }, [location.search]);
+  const inactive = useMemo(
+    () => ['1', 'true'].includes(new URLSearchParams(location.search).get('inactive') ?? ''),
+    [location.search],
+  );
+  const setFilters = (next: { role?: PeopleRole; inactive?: boolean }) => {
+    const params = new URLSearchParams(location.search);
+    if (next.role) params.set('role', next.role);
+    else params.delete('role');
+    if (next.inactive) params.set('inactive', '1');
+    else params.delete('inactive');
+    const search = params.toString();
+    navigate({ pathname: location.pathname, search: search ? `?${search}` : '' }, { replace: true });
+    setPage(1);
+  };
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -117,8 +130,9 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
   }, [searchInput]);
 
   const usersQuery = useQuery({
-    queryKey: ['staff', 'users', { page, pageSize, search, ordering }],
-    queryFn: () => UserIO.listPage({ page, pageSize, search: search || undefined, ordering }),
+    queryKey: ['staff', 'users', { page, pageSize, search, ordering, role, inactive }],
+    queryFn: () =>
+      UserIO.listPage({ page, pageSize, search: search || undefined, ordering, role, inactive: inactive || undefined }),
     placeholderData: keepPreviousData,
   });
 
@@ -241,9 +255,22 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
     }
   };
 
-  const subtitle = search
-    ? `${total} user${total === 1 ? '' : 's'} matching “${search}”.`
-    : `${stats.totalUniqueUsers} users across the platform.`;
+  const filterWords = [
+    role === 'student'
+      ? 'students'
+      : role === 'grader'
+        ? 'graders'
+        : role === 'course_admin'
+          ? 'course admins'
+          : role === 'platform_admin'
+            ? 'platform admins'
+            : null,
+    inactive ? 'idle 90+ days' : null,
+  ].filter(Boolean);
+  const subtitle =
+    search || filterWords.length
+      ? `${total} ${filterWords.length ? filterWords.join(', ') : total === 1 ? 'person' : 'people'}${search ? ` matching “${search}”` : ''}.`
+      : `${stats.totalUniqueUsers.toLocaleString()} people across the platform.`;
 
   return (
     <div>
@@ -252,45 +279,43 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
           {subtitle}
         </Text>
       ) : (
-        <AdminPageHeader title="Users" subtitle={subtitle} />
+        <AdminPageHeader title="People" subtitle={subtitle} />
       )}
 
-      {/* Platform totals (from the stats endpoint, not from the page that happens to be loaded).
-          One neutral colour: a hue per role was decoration, not meaning. */}
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Row gutter={[24, 16]}>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic title="Total" value={stats.totalUniqueUsers} prefix={<UserOutlined />} />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic title="Students" value={stats.totalStudents} prefix={<UserOutlined />} />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic title="Graders" value={stats.totalGraders} prefix={<TeamOutlined />} />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic
-              title={definedTitle('Course Admins', DEFINITIONS.courseAdmins)}
-              value={stats.totalCourseAdmins}
-              prefix={<TeamOutlined />}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic
-              title={definedTitle('Platform Admins', DEFINITIONS.platformAdmins)}
-              value={stats.totalCodePostAdmins}
-              prefix={<CrownOutlined />}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Statistic
-              title={definedTitle('Idle 90+ days', DEFINITIONS.inactiveUsers)}
-              value={stats.totalInactiveUsers}
-              prefix={<CloseCircleOutlined />}
-            />
-          </Col>
-        </Row>
-      </Card>
+      {/* The counts that have a filter behind them, as the filter itself; the rest was decoration. */}
+      <Space wrap size={[6, 6]} style={{ marginBottom: 12 }} role="group" aria-label="Filter people by role">
+        {(
+          [
+            [undefined, `All ${stats.totalUniqueUsers.toLocaleString()}`],
+            ['student', `Students ${stats.totalStudents.toLocaleString()}`],
+            ['grader', `Graders ${stats.totalGraders.toLocaleString()}`],
+            ['course_admin', `Course admins ${stats.totalCourseAdmins}`],
+            ['platform_admin', `Platform admins ${stats.totalCodePostAdmins}`],
+          ] as [PeopleRole | undefined, string][]
+        ).map(([value, label]) => (
+          <Button
+            key={value ?? 'all'}
+            size="small"
+            shape="round"
+            type={role === value ? 'primary' : 'default'}
+            aria-pressed={role === value}
+            onClick={() => setFilters(value ? { role: value, inactive } : {})}
+          >
+            {label}
+          </Button>
+        ))}
+        <Tooltip title={DEFINITIONS.inactiveUsers}>
+          <Button
+            size="small"
+            shape="round"
+            type={inactive ? 'primary' : 'default'}
+            aria-pressed={inactive}
+            onClick={() => setFilters({ role, inactive: !inactive })}
+          >
+            Idle 90+ days {stats.totalInactiveUsers.toLocaleString()}
+          </Button>
+        </Tooltip>
+      </Space>
 
       <AdminTableToolbar
         searchPlaceholder="Search by email or name…"

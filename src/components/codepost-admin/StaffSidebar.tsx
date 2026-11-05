@@ -6,8 +6,7 @@
 import {
   BookOutlined,
   ClusterOutlined,
-  DashboardOutlined,
-  GlobalOutlined,
+  InboxOutlined,
   SearchOutlined,
   ToolOutlined,
   UserOutlined,
@@ -33,7 +32,9 @@ interface StaffSidebarProps {
   currentPage: StaffPage;
   /** Counts are left off the labels until the first load answers. */
   isLoading: boolean;
-  counts: { organizations: number; courses: number; users: number; pendingRequests: number };
+  counts: { courses: number; people: number; pendingRequests: number };
+  /** Items waiting on the Inbox: the badge on its entry. */
+  openItems: number;
   /** The banner editor has unsaved edits: the Tools entry says so, so the leave guard is never a surprise. */
   bannerDirty: boolean;
   onNavigate: (page: StaffPage) => void;
@@ -49,6 +50,7 @@ const StaffSidebar = ({
   currentPage,
   isLoading,
   counts,
+  openItems,
   bannerDirty,
   onNavigate,
   onHome,
@@ -116,37 +118,42 @@ const StaffSidebar = ({
           onClick={({ key }) => onNavigate(key as StaffPage)}
           style={{ borderRight: 0 }}
           items={[
-            { key: 'Overview', icon: <DashboardOutlined />, label: 'Overview' },
             {
-              key: 'Organizations',
-              icon: <GlobalOutlined />,
-              label: countLabel('Organizations', isLoading ? undefined : counts.organizations),
+              key: 'Inbox',
+              // What is waiting, counted on the entry. Collapsed, the icon carries the number itself.
+              icon: (
+                <Badge count={collapsed ? openItems : 0} size="small" offset={[4, 8]} color={BADGE_RED}>
+                  <InboxOutlined />
+                </Badge>
+              ),
+              label: (
+                <span>
+                  Inbox
+                  {openItems > 0 && (
+                    <>
+                      <Badge count={openItems} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
+                      <span className="sr-only">, {openItems} waiting</span>
+                    </>
+                  )}
+                </span>
+              ),
+            },
+            {
+              key: 'People',
+              icon: <UserOutlined />,
+              label: (
+                <span>
+                  {countLabel('People', isLoading ? undefined : counts.people)}
+                  {counts.pendingRequests > 0 && (
+                    <span className="sr-only">, {counts.pendingRequests} admin requests waiting</span>
+                  )}
+                </span>
+              ),
             },
             {
               key: 'Courses',
               icon: <BookOutlined />,
               label: countLabel('Courses', isLoading ? undefined : counts.courses),
-            },
-            {
-              key: 'Users',
-              // People of every role, plus the admin requests waiting on this page's Requests tab.
-              // Collapsed, the icon carries the number itself; a dot would lose the count.
-              icon: (
-                <Badge count={collapsed ? counts.pendingRequests : 0} size="small" offset={[4, 8]} color={BADGE_RED}>
-                  <UserOutlined />
-                </Badge>
-              ),
-              label: (
-                <span>
-                  {countLabel('Users', isLoading ? undefined : counts.users)}
-                  {counts.pendingRequests > 0 && (
-                    <>
-                      <Badge count={counts.pendingRequests} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
-                      <span className="sr-only">, {counts.pendingRequests} admin requests waiting</span>
-                    </>
-                  )}
-                </span>
-              ),
             },
             // Health, activity, autograding and the deploy calendar: what the platform is doing.
             { key: 'Platform', icon: <ClusterOutlined />, label: 'Platform' },

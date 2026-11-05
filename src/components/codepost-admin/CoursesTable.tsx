@@ -11,22 +11,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import {
-  Badge,
-  Button,
-  Card,
-  Col,
-  Dropdown,
-  Modal,
-  Row,
-  Space,
-  Spin,
-  Statistic,
-  Table,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Badge, Button, Dropdown, Modal, Select, Space, Spin, Table, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
@@ -80,6 +65,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
 }) => {
   // The jump palette lands here with ?q=<course name>, and may do so again while the table is mounted.
   const [searchValue, setSearchValue] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '');
+  const [organizationFilter, setOrganizationFilter] = useState<number | undefined>(undefined);
   const location = useLocation();
   useEffect(() => {
     const q = new URLSearchParams(location.search).get('q');
@@ -103,26 +89,43 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
 
   const filteredCourses = useMemo(() => {
     const search = searchValue.toLowerCase();
-    if (!search) return coursesWithData;
+    const inOrganization = coursesWithData.filter(
+      (course) => organizationFilter === undefined || course.organization?.id === organizationFilter,
+    );
+    if (!search) return inOrganization;
 
-    return coursesWithData.filter(
+    return inOrganization.filter(
       (course) =>
         course.name.toLowerCase().includes(search) ||
         course.period.toLowerCase().includes(search) ||
         course.organization?.name.toLowerCase().includes(search) ||
         course.organization?.shortname.toLowerCase().includes(search),
     );
-  }, [coursesWithData, searchValue]);
+  }, [coursesWithData, searchValue, organizationFilter]);
+
+  const organizationOptions = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const c of coursesWithData) {
+      if (c.organization) counts.set(c.organization.id, (counts.get(c.organization.id) ?? 0) + 1);
+    }
+    return organizations
+      .map((org) => ({ value: org.id, label: `${org.name} (${counts.get(org.id) ?? 0})` }))
+      .sort((x, y) => x.label.localeCompare(y.label));
+  }, [organizations, coursesWithData]);
 
   // Platform-wide totals: these do not change while the user types in the search box.
   const stats = useMemo(() => {
-    const activeCourses = coursesWithData.filter((c) => !c.archived).length;
-    const archivedCourses = coursesWithData.filter((c) => c.archived).length;
-    const totalAssignments = coursesWithData.reduce((sum, c) => sum + c.assignments.length, 0);
-    const totalSections = coursesWithData.reduce((sum, c) => sum + c.sections.length, 0);
+    const scope =
+      organizationFilter === undefined
+        ? coursesWithData
+        : coursesWithData.filter((c) => c.organization?.id === organizationFilter);
+    const activeCourses = scope.filter((c) => !c.archived).length;
+    const archivedCourses = scope.filter((c) => c.archived).length;
+    const totalAssignments = scope.reduce((sum, c) => sum + c.assignments.length, 0);
+    const totalSections = scope.reduce((sum, c) => sum + c.sections.length, 0);
 
     const allStudents = new Set<string>();
-    coursesWithData.forEach((c) => {
+    scope.forEach((c) => {
       if (c.roster) {
         c.roster.students.forEach((email) => addEmailToSet(allStudents, email));
         c.roster.inactiveStudents.forEach((email) => addEmailToSet(allStudents, email));
@@ -130,7 +133,7 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
     });
 
     return { activeCourses, archivedCourses, totalAssignments, totalSections, totalStudents: allStudents.size };
-  }, [coursesWithData]);
+  }, [coursesWithData, organizationFilter]);
 
   // On a phone the table shares the width and wraps; wider screens keep every column at its natural width.
   const isPhone = useWindowSize().width < 768;
@@ -334,40 +337,27 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
 
   return (
     <>
-      {/* Stats */}
-      <Card size="small" style={{ marginBottom: 16 }}>
-        <Row gutter={[24, 16]}>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Active"
-              value={stats.activeCourses}
-              prefix={<CheckCircleOutlined style={{ color: colors.actionGreen }} />}
-              suffix={<span style={{ fontSize: 14, color: colors.neutralSecondaryText }}>/ {courses.length}</span>}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Archived"
-              value={stats.archivedCourses}
-              prefix={<CloseCircleOutlined style={{ color: colors.neutralDisable }} />}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Students"
-              value={stats.totalStudents}
-              prefix={<UserOutlined style={{ color: colors.brandPrimary }} />}
-            />
-          </Col>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Assignments"
-              value={stats.totalAssignments}
-              prefix={<FileTextOutlined style={{ color: colors.actionYellow }} />}
-            />
-          </Col>
-        </Row>
-      </Card>
+      {/* One line of facts and the one filter staff use: the organization. */}
+      <Space wrap size={[12, 6]} align="center" style={{ marginBottom: 12 }}>
+        <Typography.Text type="secondary">
+          {stats.activeCourses} active{stats.archivedCourses > 0 ? ` · ${stats.archivedCourses} archived` : ''} ·{' '}
+          {stats.totalStudents.toLocaleString()} students · {stats.totalAssignments.toLocaleString()} assignments
+          {organizationFilter !== undefined
+            ? ` in ${organizations.find((o) => o.id === organizationFilter)?.name ?? 'this organization'}`
+            : ''}
+        </Typography.Text>
+        <Select
+          allowClear
+          showSearch
+          placeholder="All organizations"
+          aria-label="Filter by organization"
+          value={organizationFilter}
+          onChange={(value: number | undefined) => setOrganizationFilter(value)}
+          optionFilterProp="label"
+          style={{ minWidth: 220 }}
+          options={organizationOptions}
+        />
+      </Space>
 
       <AdminTableToolbar
         searchPlaceholder="Search by course name, period, or organization…"

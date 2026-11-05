@@ -2,6 +2,8 @@
 import { dashboardApi, usersApi } from '../api-client/clients';
 import type { DashboardStats, PaginatedUserList, User } from '../api-client';
 
+export type PeopleRole = 'student' | 'grader' | 'course_admin' | 'platform_admin';
+
 export class UserIO {
   public static read = (email: string): Promise<User> => usersApi.retrieve({ email });
   public static list = async (): Promise<User[]> => {
@@ -14,7 +16,12 @@ export class UserIO {
     pageSize: number;
     search?: string;
     ordering?: string;
-  }): Promise<PaginatedUserList> => usersApi.list(params);
+    /** Only people holding this role in at least one course. */
+    role?: PeopleRole;
+    /** Only people who never signed in, or not in 90 days. */
+    inactive?: boolean;
+  }): Promise<PaginatedUserList> =>
+    usersApi.list({ ...params, role: params.role as NonNullable<Parameters<typeof usersApi.list>[0]>['role'] });
   public static create = (user: Omit<User, 'id'>): Promise<User> => usersApi.create({ user });
   public static update = (email: string, payload: Partial<User>): Promise<User> =>
     usersApi.partialUpdate({ email, patchedUser: payload });
