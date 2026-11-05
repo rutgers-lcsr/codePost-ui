@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Table, Tabs, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Table, Tabs, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image, Switch } from 'antd';
 import { ReloadOutlined, SearchOutlined, ClearOutlined, AuditOutlined, BarChartOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
@@ -88,6 +88,32 @@ const ActivityFeed: React.FC = () => {
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
   const [activeTab, setActiveTab] = useState<EventTabType>('activity');
+  // Repeats of one message (a client error firing on every render, say) collapse into one row with a
+  // count, so the single line about something else is not buried. Grouping is within the loaded page.
+  const [groupRepeats, setGroupRepeats] = useState(true);
+  type Row = EventLogType & { repeats?: EventLogType[] };
+  const rows: Row[] = useMemo(() => {
+    // Audit lines are each their own event; only the error-like categories repeat for one reason,
+    // and only an identical message is the same reason ("Course created: CS 344" is not "CS 101").
+    if (!groupRepeats || activeTab === 'audit') return logs;
+    const members = new Map<string, EventLogType[]>();
+    const order: string[] = [];
+    for (const log of logs) {
+      const key = DIAGNOSTIC_CATEGORIES.has(log.category)
+        ? `${log.category}\u0000${(log.description ?? '').trim()}`
+        : `id:${log.id}`;
+      const list = members.get(key);
+      if (list) list.push(log);
+      else {
+        members.set(key, [log]);
+        order.push(key);
+      }
+    }
+    return order.map((key) => {
+      const list = members.get(key) ?? [];
+      return list.length > 1 ? { ...list[0], repeats: list } : list[0];
+    });
+  }, [logs, groupRepeats, activeTab]);
 
   // Filter state
   const [searchText, setSearchText] = useState('');
@@ -198,15 +224,59 @@ const ActivityFeed: React.FC = () => {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
-      render: (text: string) => (
-        <Typography.Paragraph ellipsis={{ rows: 2, expandable: false, symbol: 'more' }} style={{ margin: 0 }}>
-          {text}
-        </Typography.Paragraph>
-      ),
+      render: (text: string, record: Row) => {
+        const repeats = record.repeats;
+        if (!repeats) {
+          return (
+            <Typography.Paragraph ellipsis={{ rows: 2, expandable: false, symbol: 'more' }} style={{ margin: 0 }}>
+              {text}
+            </Typography.Paragraph>
+          );
+        }
+        const people = new Set(repeats.map((r) => r.user).filter(Boolean)).size;
+        const first = repeats[repeats.length - 1].created;
+        const last = repeats[0].created;
+        return (
+          <div>
+            <Typography.Paragraph ellipsis={{ rows: 2, expandable: false, symbol: 'more' }} style={{ margin: 0 }}>
+              <Tag color="red" style={{ marginRight: 8, fontVariantNumeric: 'tabular-nums' }}>
+                ×{repeats.length}
+              </Tag>
+              {text}
+            </Typography.Paragraph>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {repeats.length} times on this page · first {dayjs(first).format('HH:mm:ss')} · last{' '}
+              {dayjs(last).format('HH:mm:ss')}
+              {people > 0 ? ` · ${people} ${people === 1 ? 'person' : 'people'}` : ''} · expand for every line
+            </Typography.Text>
+          </div>
+        );
+      },
     },
   ];
 
-  const expandedRowRender = (record: EventLogType) => {
+  const expandedRowRender = (record: Row) => {
+    const repeatList = record.repeats ? (
+      <div style={{ marginBottom: 12 }}>
+        <Typography.Text strong style={{ display: 'block', fontSize: 12, marginBottom: 4 }}>
+          Every occurrence on this page
+          <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 400 }}>
+            {' '}
+            · the details below are the newest one&rsquo;s; turn Group repeats off for each line&rsquo;s own
+          </Typography.Text>
+        </Typography.Text>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 12px', fontSize: 12 }}>
+          {record.repeats.map((r) => (
+            <React.Fragment key={r.id}>
+              <Typography.Text type="secondary" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {dayjs(r.created).format('YYYY-MM-DD HH:mm:ss')}
+              </Typography.Text>
+              <Typography.Text>{r.user ?? '—'}</Typography.Text>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    ) : null;
     let parsedMeta: Record<string, unknown> | null = null;
     try {
       parsedMeta = JSON.parse(record.meta);
@@ -268,6 +338,7 @@ const ActivityFeed: React.FC = () => {
           overflowWrap: 'anywhere',
         }}
       >
+        {repeatList}
         {/* ── Basic row info ──────────────────────────────────── */}
         <SectionLabel>Description</SectionLabel>
         <div style={{ whiteSpace: 'pre-wrap', marginBottom: '8px' }}>{record.description}</div>
@@ -499,10 +570,18 @@ const ActivityFeed: React.FC = () => {
             format="MM/DD/YYYY"
             placeholder={['Start date', 'End date']}
           />
+          {activeTab === 'activity' && (
+            <Space size={6}>
+              <Switch size="small" checked={groupRepeats} onChange={setGroupRepeats} aria-label="Group repeats" />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                Group repeats
+              </Typography.Text>
+            </Space>
+          )}
         </Space>
       </div>
       <Table
-        dataSource={logs}
+        dataSource={rows}
         columns={columns}
         rowKey="id"
         loading={loading}

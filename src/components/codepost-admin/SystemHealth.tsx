@@ -143,7 +143,66 @@ function diskStrokeColor(pct: number): string | undefined {
 
 // ─── sub-components ──────────────────────────────────────────────────────────
 
+type CheckKey = (typeof CHECKS)[number]['key'];
+
+/** What to do while a check is failing, and what the failure means for users: written once per
+ *  check, by us, in the words of this deployment (app VM, data VM, compose). Shown only while failing. */
+const NEXT_STEPS: Record<CheckKey, (row: CeleryCheck & DiskCheck) => { next: React.ReactNode; means: string }> = {
+  database: () => ({
+    next: (
+      <>
+        Is the database container up? <code>docker compose ps database</code> where the data stack runs, then its log.
+      </>
+    ),
+    means: 'Nothing works until it is back; requests answer 503.',
+  }),
+  // workerCount 0 means the broker answered and no worker did; null means the broker itself did not answer.
+  celery: (row) =>
+    row.workerCount === 0
+      ? {
+          next: (
+            <>
+              The broker answered but no worker did: is the worker container running?{' '}
+              <code>docker compose ps worker</code> on the app VM, then its log.
+            </>
+          ),
+          means: 'Autograder runs and emails wait in the queue and run once a worker is back.',
+        }
+      : {
+          next: (
+            <>
+              The broker did not answer: is the Redis container up and reachable from the app VM?{' '}
+              <code>docker compose ps redis</code>, then the API log.
+            </>
+          ),
+          means: 'Nothing can be queued until the broker is back: autograder runs and emails fail.',
+        },
+  cache: () => ({
+    next: (
+      <>The API process could not read back a value it had just cached. Restart the api container and read its log.</>
+    ),
+    means: 'Pages still load; this points at the API container itself, not at Redis.',
+  }),
+  migrations: () => ({
+    next: (
+      <>
+        A deploy left migrations unapplied: in the api container run <code>python manage.py migrate</code>.
+      </>
+    ),
+    means: 'Requests that touch the changed tables fail with a 500.',
+  }),
+  disk: () => ({
+    next: (
+      <>
+        Find what grew on the API host: uploads, logs, Docker images. <code>docker system df</code> there.
+      </>
+    ),
+    means: 'Uploads and autograder runs fail once it fills.',
+  }),
+};
+
 interface CheckRowProps {
+  checkKey: CheckKey;
   icon: React.ReactNode;
   name: string;
   check: AnyCheck | null;
@@ -151,7 +210,7 @@ interface CheckRowProps {
   unavailable: boolean;
 }
 
-const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check, unavailable }) => {
+const CheckRow: React.FC<CheckRowProps> = ({ checkKey, icon, name, check, unavailable }) => {
   const row = check as (HealthCheck & CeleryCheck & DiskCheck & MigrationCheck) | null;
 
   const badgeStatus = row ? STATUS_BADGE[row.status as StatusDfeEnum] : unavailable ? 'error' : 'processing';
@@ -217,6 +276,36 @@ const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check, unavailable }) =
       </Text>
     ) : null;
 
+  // A failing check owns its next step and what the failure means; the fault alone is not help.
+  const steps = failing && row ? NEXT_STEPS[checkKey](row) : null;
+  const guidance = steps ? (
+    <div
+      style={{
+        marginLeft: 24,
+        marginTop: 6,
+        padding: '8px 10px',
+        borderRadius: 6,
+        background: '#fafafa',
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        fontSize: 12.5,
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr',
+        gap: '4px 10px',
+      }}
+    >
+      <Text strong style={{ fontSize: 12.5 }}>
+        Next
+      </Text>
+      <Text style={{ fontSize: 12.5 }}>{steps.next}</Text>
+      <Text strong style={{ fontSize: 12.5 }}>
+        Means
+      </Text>
+      <Text type="secondary" style={{ fontSize: 12.5 }}>
+        {steps.means}
+      </Text>
+    </div>
+  ) : null;
+
   // Disk gets an extra progress bar
   const disk = row as DiskCheck;
   if (disk?.usedPct != null) {
@@ -225,6 +314,7 @@ const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check, unavailable }) =
       <div>
         {content}
         {detail}
+        {guidance}
         <Progress
           percent={pct}
           size="small"
@@ -241,6 +331,7 @@ const CheckRow: React.FC<CheckRowProps> = ({ icon, name, check, unavailable }) =
     <div>
       {content}
       {detail}
+      {guidance}
     </div>
   );
 };
@@ -523,6 +614,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
         {CHECKS.map((c) => (
           <CheckRow
             key={c.key}
+            checkKey={c.key}
             icon={c.icon}
             name={c.name}
             check={(health?.[c.key] as AnyCheck | undefined) ?? null}
