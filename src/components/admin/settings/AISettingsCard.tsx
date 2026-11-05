@@ -634,15 +634,12 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                     <Card
                       key={feature.key}
                       size="small"
-                      style={{
-                        marginTop: 4,
-                        background: effectiveEnabled ? '#f6ffed' : '#fffbe6',
-                        borderColor: effectiveEnabled ? '#b7eb8f' : '#ffe58f',
-                      }}
+                      // Plain rows: the switch is the one green thing, so on and off read at a glance.
+                      style={{ marginTop: 4, background: '#fff', borderColor: 'rgba(0, 0, 0, 0.09)' }}
                     >
                       <Flex justify="space-between" align="center">
                         <Flex vertical>
-                          <Text strong style={{ color: effectiveEnabled ? undefined : '#ad6800' }}>
+                          <Text strong type={effectiveEnabled ? undefined : 'secondary'}>
                             {feature.label}
                           </Text>
                           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -654,40 +651,43 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
                             </Text>
                           )}
                           {effectiveEnabled && (
-                            <AutoComplete
-                              allowClear
-                              size="small"
-                              value={modelOverride ?? ''}
-                              onChange={(value: string) => {
-                                setFeatureModels((prev) => {
-                                  const next = { ...prev };
-                                  if (value) next[feature.key] = value;
-                                  else delete next[feature.key];
-                                  return next;
-                                });
-                              }}
-                              onSelect={(value: string) => commitFeatureModel(feature.key, feature.label, value)}
-                              onClear={() => commitFeatureModel(feature.key, feature.label, '')}
-                              onBlur={() =>
-                                commitFeatureModel(feature.key, feature.label, featureModels[feature.key] ?? '')
-                              }
-                              placeholder={
-                                featureModelsResolved[feature.key] && !modelOverride
-                                  ? `Default (${featureModelsResolved[feature.key]})`
-                                  : 'Default model'
-                              }
-                              aria-label={`Model for ${feature.label}`}
-                              style={{ width: 320, marginTop: 8 }}
-                              options={modelOptions}
-                              showSearch={{
-                                filterOption: (input, option) =>
-                                  !!option &&
-                                  (String(option.value).toLowerCase().includes(input.toLowerCase()) ||
-                                    (typeof option.label === 'string' &&
-                                      option.label.toLowerCase().includes(input.toLowerCase()))),
-                              }}
-                              notFoundContent={loadingModels ? <Spin size="small" /> : null}
-                            />
+                            <>
+                              <AutoComplete
+                                allowClear
+                                size="small"
+                                value={modelOverride ?? ''}
+                                onChange={(value: string) => {
+                                  setFeatureModels((prev) => {
+                                    const next = { ...prev };
+                                    if (value) next[feature.key] = value;
+                                    else delete next[feature.key];
+                                    return next;
+                                  });
+                                }}
+                                onSelect={(value: string) => commitFeatureModel(feature.key, feature.label, value)}
+                                onClear={() => commitFeatureModel(feature.key, feature.label, '')}
+                                onBlur={() =>
+                                  commitFeatureModel(feature.key, feature.label, featureModels[feature.key] ?? '')
+                                }
+                                placeholder="Use the default model"
+                                aria-label={`Model for ${feature.label}`}
+                                style={{ width: 320, marginTop: 8 }}
+                                options={modelOptions}
+                                showSearch={{
+                                  filterOption: (input, option) =>
+                                    !!option &&
+                                    (String(option.value).toLowerCase().includes(input.toLowerCase()) ||
+                                      (typeof option.label === 'string' &&
+                                        option.label.toLowerCase().includes(input.toLowerCase()))),
+                                }}
+                                notFoundContent={loadingModels ? <Spin size="small" /> : null}
+                              />
+                              {featureModelsResolved[feature.key] && !modelOverride && (
+                                <Text type="secondary" style={{ fontSize: 12, marginTop: 2 }}>
+                                  Default: {featureModelsResolved[feature.key]}
+                                </Text>
+                              )}
+                            </>
                           )}
                         </Flex>
                         <Space size={8}>
@@ -731,9 +731,10 @@ const AISettingsCard: React.FC<IAISettingsCardProps> = ({ courseId }) => {
   );
 };
 
+/** Reads with the switch: on means the organization key is in use. */
 function usingOwnSettingsLabel(useOwn: boolean): string {
-  if (useOwn) return 'This course is using its own API key. Turn this off to use the organization key instead.';
-  return 'Turn on to configure a separate API key for this course.';
+  if (useOwn) return 'This course uses a key of its own. Turn on to inherit the organization key instead.';
+  return 'This course inherits the organization key. Turn off to give it a key of its own.';
 }
 
 export default AISettingsCard;

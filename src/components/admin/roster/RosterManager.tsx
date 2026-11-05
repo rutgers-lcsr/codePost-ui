@@ -6,7 +6,7 @@
 /* react imports */
 
 /* other library imports */
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 
 /* codePost imports */
 import ManageAdmins, { IManageAdminsProps } from './ManageAdmins';
@@ -22,6 +22,8 @@ type IProps = IManageStudentsProps & IManageGradersProps & IManageAdminsProps & 
 const RosterManager = (props: IProps) => {
   return (
     <Routes>
+      {/* A bare /roster (bookmark, typed URL) used to render nothing. */}
+      <Route index element={<Navigate to="students" replace />} />
       <Route path="students" element={<ManageStudents {...props} key="students" />} />
       <Route path="graders" element={<ManageGraders {...props} key="graders" />} />
       <Route path="admins" element={<ManageAdmins {...props} key="admins" />} />

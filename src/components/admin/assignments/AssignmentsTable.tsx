@@ -606,8 +606,21 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
   }, [navigate, baseURL]);
 
   const cancel = useCallback(() => {
+    // The dialogs are routes, so closing one is a navigation that drops focus on the body. The
+    // delete dialog hands it back to the button that opened it, once the modal has left the DOM.
+    const returnTo = detailType === DETAIL_TYPE.Delete && activeAssignment ? `Delete ${activeAssignment.name}` : null;
     navigate(`${baseURL}/overview`);
-  }, [navigate, baseURL]);
+    if (!returnTo) return;
+    const started = Date.now();
+    const tryFocus = () => {
+      if (document.querySelector('.ant-modal')) {
+        if (Date.now() - started < 1500) window.setTimeout(tryFocus, 50);
+        return;
+      }
+      document.querySelector<HTMLElement>(`[aria-label="${CSS.escape(returnTo)}"]`)?.focus();
+    };
+    window.setTimeout(tryFocus, 50);
+  }, [navigate, baseURL, detailType, activeAssignment]);
 
   const createAssignment = useCallback(
     (name: string, points: number, upload: boolean, isVisible: boolean, dueDate?: string) => {

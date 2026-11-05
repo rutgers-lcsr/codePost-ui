@@ -110,8 +110,9 @@ const themeConfig: ThemeConfig = {
     },
     Tabs: {
       itemColor: 'rgba(0, 0, 0, 0.8)',
-      itemHoverColor: '#198665',
-      itemSelectedColor: '#198665',
+      // brand-green-deep: a selected tab sits on the page grey, where the brand green is 4.0:1.
+      itemHoverColor: '#0d7354',
+      itemSelectedColor: '#0d7354',
       inkBarColor: '#198665',
     },
     Input: {
