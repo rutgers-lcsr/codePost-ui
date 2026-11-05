@@ -1136,8 +1136,9 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const dueDateValue: string | null =
         assignment.allowStudentUpload && assignment.uploadDueDate ? assignment.uploadDueDate : null;
 
-      // --- Next action: the one move this row is waiting for, if any. Chosen from the stage and the
-      // grading progress; each opens the same confirmation (or page) the picker and the banner use. ---
+      // --- Next action: the one move this row is waiting for, if any. Grading itself is pull-based
+      // (graders claim from the queue), so the only moves here are the instructor's own: opening the
+      // assignment and releasing feedback. Each opens the same confirmation the picker uses. ---
       const unclaimed = assignment.submissions_unclaimed_count ?? 0;
       let nextAction: { label: string; icon: React.ReactNode; title: string; run: () => void } | null = null;
       if (
@@ -1152,28 +1153,24 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           title: 'Open it for work: students can download the files and submit.',
           run: () => setAssignmentState(assignment, AssignmentStateEnum.Published),
         };
-      } else if (effState === AssignmentStateEnum.Closed && totalSubmissions > 0) {
-        // Fully graded comes first: a finalized submission can have lost its grader (the account was
-        // removed) and still count as unclaimed, and then there is nothing left to assign.
-        if (graded >= totalSubmissions && canReleaseGrades && fbStatus === AssignmentFeedbackStatusEnum.Hidden) {
-          nextAction = {
-            label: 'Release feedback',
-            icon: <SendOutlined />,
-            title: 'Everything is graded; students see nothing until you release it.',
-            run: () => setFeedbackStatus(assignment, AssignmentFeedbackStatusEnum.Released),
-          };
-        } else if (unclaimed > 0 && graded < totalSubmissions) {
-          nextAction = {
-            label: 'Assign graders',
-            icon: <UserOutlined />,
-            title: `${unclaimed} submission${unclaimed === 1 ? '' : 's'} nobody has claimed yet.`,
-            run: () => navigate(encodedCourseLink('admin', currentCourse, 'submissions/by_grader')),
-          };
-        }
+      } else if (
+        effState === AssignmentStateEnum.Closed &&
+        totalSubmissions > 0 &&
+        graded >= totalSubmissions &&
+        canReleaseGrades &&
+        fbStatus === AssignmentFeedbackStatusEnum.Hidden
+      ) {
+        nextAction = {
+          label: 'Release feedback',
+          icon: <SendOutlined />,
+          title: 'Everything is graded; students see nothing until you release it.',
+          run: () => setFeedbackStatus(assignment, AssignmentFeedbackStatusEnum.Released),
+        };
       }
-      // The caption carries the number the button is about.
-      if (nextAction?.label === 'Assign graders') {
-        caption = caption ? `${caption} · ${unclaimed} unclaimed` : `${unclaimed} unclaimed`;
+      // Closed and still being graded: say how much is waiting in the queue for graders to claim.
+      if (effState === AssignmentStateEnum.Closed && unclaimed > 0 && graded < totalSubmissions) {
+        const queued = `${unclaimed} in the queue`;
+        caption = caption ? `${caption} · ${queued}` : queued.charAt(0).toUpperCase() + queued.slice(1);
       }
       const nextActionButton = nextAction ? (
         <Tooltip title={nextAction.title}>
@@ -1840,13 +1837,14 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               <>
                 {unclaimedCount > 0 && (
                   <Alert
-                    type="warning"
+                    type="info"
                     showIcon
                     style={{ marginBottom: 12 }}
                     title={
                       <>
-                        <Text strong>{unclaimedCount}</Text> unclaimed submission{unclaimedCount === 1 ? '' : 's'}{' '}
-                        across {unclaimedAssignments} assignment{unclaimedAssignments === 1 ? '' : 's'} need a grader.
+                        <Text strong>{unclaimedCount}</Text> submission{unclaimedCount === 1 ? '' : 's'} across{' '}
+                        {unclaimedAssignments} assignment{unclaimedAssignments === 1 ? '' : 's'}{' '}
+                        {unclaimedCount === 1 ? 'is' : 'are'} waiting in the grading queue.
                       </>
                     }
                     action={
@@ -1855,7 +1853,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                         size="small"
                         onClick={() => navigate(encodedCourseLink('admin', currentCourse, 'submissions/by_grader'))}
                       >
-                        Assign graders
+                        Grading progress
                       </Button>
                     }
                   />

@@ -9,7 +9,7 @@ import {
   InboxOutlined,
   SearchOutlined,
   TeamOutlined,
-  WarningOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import { Button, Card, Empty, Flex, Input, Tag, Typography } from 'antd';
 import { motion } from 'motion/react';
@@ -49,7 +49,7 @@ function getGreeting(): string {
 /* CourseAttention                                                           */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-/** One line per active course answering "does anything here need me?" — unclaimed
+/** One line per active course answering "how is grading going?" — submissions waiting in the queue
  *  submissions are the one thing only an admin can resolve. One aggregate request per
  *  course, shared with the course's own pages through the query cache. */
 const CourseAttention: React.FC<{ course: Course }> = ({ course }) => {
@@ -69,13 +69,13 @@ const CourseAttention: React.FC<{ course: Course }> = ({ course }) => {
     return (
       <Text strong style={lineStyle}>
         {/* orange-7: 3.9:1, fine for an icon; the words carry the message in default text. */}
-        <WarningOutlined style={{ color: '#d46b08' }} /> {unclaimed} unclaimed submission{unclaimed === 1 ? '' : 's'}
+        <ClockCircleOutlined /> {unclaimed} submission{unclaimed === 1 ? '' : 's'} in the grading queue
       </Text>
     );
   }
   return (
     <Text type="secondary" style={lineStyle}>
-      <CheckCircleOutlined /> Nothing waiting for a grader
+      <CheckCircleOutlined /> Grading queue is empty
     </Text>
   );
 };

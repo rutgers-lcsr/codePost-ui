@@ -212,8 +212,8 @@ const CourseDetail: React.FC<{ course: Course; onBack: () => void }> = ({ course
             <Flex align="center" gap={8}>
               <WarningFilled style={{ color: '#faad14', fontSize: 16 }} />
               <Text style={{ fontSize: 13 }}>
-                <Text strong>{totalUnclaimed}</Text> unclaimed submission{totalUnclaimed === 1 ? '' : 's'} need graders
-                assigned
+                <Text strong>{totalUnclaimed}</Text> submission{totalUnclaimed === 1 ? '' : 's'} waiting in the grading
+                queue assigned
               </Text>
             </Flex>
           </Card>
