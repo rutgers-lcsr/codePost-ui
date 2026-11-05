@@ -58,6 +58,16 @@ Stay up to date with new features, improvements, and fixes in codePost.
   key, URL, model, rates) keeps a **Save connection** button so it is never half-saved.
 - Renaming a course no longer reloads the page; the settings page follows the course to its new address.
 
+### Fixed: a blank roster link, a wall of green, lost focus and a Back that lost edits
+
+- Opening a course's bare **Roster** link lands on Students instead of an empty page.
+- The AI Features card uses plain rows with one green switch each, its org-key note reads with the switch, the
+  default model shows as text, and the quiz feature's description no longer argues with its switch.
+- Closing the delete dialog returns focus to the button that opened it.
+- Staff console: browser **Back** from the banner with unsaved edits asks the same Stay/Leave question; confirm
+  dialogs take the console's green; the Overview banner tile no longer breaks "Banner" mid-word; **Degraded**
+  reads at AA; the activity log shows skeleton rows before its first answer.
+
 ### Improved: staff console loading, labels and the banner guard
 
 - Users and Admin Requests show skeleton rows while their first page loads instead of an empty table under a spinner.
