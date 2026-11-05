@@ -781,8 +781,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       dataIndex: 'actions',
       key: 'actions',
       align: 'right' as alignType,
-      // Fixed to what the icons need, so a wide screen does not strand them far from the row.
-      width: isCompact ? 48 : 300,
+      // Fixed to what the icons and a next-action button need, so a wide screen does not strand them.
+      width: isCompact ? undefined : 340,
     },
   ];
 
@@ -931,7 +931,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         captionParts.push('grades hidden');
       }
       const captionRaw = captionParts.join(' · ');
-      const caption = captionRaw ? captionRaw.charAt(0).toUpperCase() + captionRaw.slice(1) : '';
+      let caption = captionRaw ? captionRaw.charAt(0).toUpperCase() + captionRaw.slice(1) : '';
       const studentsNow = studentsCanSee
         ? `${WORK_NOW[effState]} ${feedbackNow(fbStatus, hideGrades)}`
         : WORK_NOW[effState];
@@ -1123,6 +1123,59 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       const dueDateValue: string | null =
         assignment.allowStudentUpload && assignment.uploadDueDate ? assignment.uploadDueDate : null;
 
+      // --- Next action: the one move this row is waiting for, if any. Chosen from the stage and the
+      // grading progress; each opens the same confirmation (or page) the picker and the banner use. ---
+      const unclaimed = assignment.submissions_unclaimed_count ?? 0;
+      let nextAction: { label: string; icon: React.ReactNode; title: string; run: () => void } | null = null;
+      if (
+        canEditAssignment &&
+        (storedState === AssignmentStateEnum.Draft ||
+          storedState === AssignmentStateEnum.Visible ||
+          storedState === AssignmentStateEnum.Preview)
+      ) {
+        nextAction = {
+          label: 'Publish',
+          icon: <CheckCircleOutlined />,
+          title: 'Open it for work: students can download the files and submit.',
+          run: () => setAssignmentState(assignment, AssignmentStateEnum.Published),
+        };
+      } else if (effState === AssignmentStateEnum.Closed && totalSubmissions > 0) {
+        // Fully graded comes first: a finalized submission can have lost its grader (the account was
+        // removed) and still count as unclaimed, and then there is nothing left to assign.
+        if (graded >= totalSubmissions && canReleaseGrades && fbStatus === AssignmentFeedbackStatusEnum.Hidden) {
+          nextAction = {
+            label: 'Release feedback',
+            icon: <SendOutlined />,
+            title: 'Everything is graded; students see nothing until you release it.',
+            run: () => setFeedbackStatus(assignment, AssignmentFeedbackStatusEnum.Released),
+          };
+        } else if (unclaimed > 0 && graded < totalSubmissions) {
+          nextAction = {
+            label: 'Assign graders',
+            icon: <UserOutlined />,
+            title: `${unclaimed} submission${unclaimed === 1 ? '' : 's'} nobody has claimed yet.`,
+            run: () => navigate(encodedCourseLink('admin', currentCourse, 'submissions/by_grader')),
+          };
+        }
+      }
+      // The caption carries the number the button is about.
+      if (nextAction?.label === 'Assign graders') {
+        caption = caption ? `${caption} · ${unclaimed} unclaimed` : `${unclaimed} unclaimed`;
+      }
+      const nextActionButton = nextAction ? (
+        <Tooltip title={nextAction.title}>
+          <Button
+            type="primary"
+            size="small"
+            icon={nextAction.icon}
+            onClick={nextAction.run}
+            aria-label={`${nextAction.label} for ${assignment.name}`}
+          >
+            {nextAction.label}
+          </Button>
+        </Tooltip>
+      ) : null;
+
       return {
         key: assignment.id,
         assignmentName: assignment.name,
@@ -1238,73 +1291,77 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Tooltip>
         ),
         actions: isCompact ? (
-          <Dropdown
-            menu={{
-              items: [
-                ...(canEditAssignment
-                  ? [
-                      {
-                        key: 'configure',
-                        label: 'Configure',
-                        icon: <SettingOutlined />,
-                        children: configItems,
-                      },
-                    ]
-                  : []),
-                ...(canEditRubric
-                  ? [
-                      {
-                        key: 'rubric',
-                        label: (
-                          <Link to={`${baseURL}/rubrics/${encodedName}`}>
-                            <OrderedListOutlined /> Edit rubric
-                          </Link>
-                        ),
-                      },
-                    ]
-                  : []),
-                ...(canEditAssignment
-                  ? [
-                      {
-                        key: 'environment',
-                        label: (
-                          <Link to={`${baseURL}/environment/${encodedName}/edit`}>
-                            <FileDoneOutlined /> Environment & Tests
-                          </Link>
-                        ),
-                      },
-                    ]
-                  : []),
-                {
-                  key: 'uploads',
-                  label: 'Manage submissions',
-                  icon: <UploadOutlined />,
-                  children: uploadItems,
-                },
-                { type: 'divider' as const },
-                ...dataItems,
-                ...(canEditAssignment
-                  ? [
-                      { type: 'divider' as const },
-                      {
-                        key: 'delete',
-                        label: (
-                          <Link to={`${baseURL}/${encodedName}/delete`}>
-                            <DeleteOutlined /> Delete
-                          </Link>
-                        ),
-                        danger: true,
-                      },
-                    ]
-                  : []),
-              ],
-            }}
-            trigger={['click']}
-          >
-            <Button shape="circle" icon={<MoreOutlined />} aria-label={`Actions for ${assignment.name}`} />
-          </Dropdown>
+          <Space size={6}>
+            {nextActionButton}
+            <Dropdown
+              menu={{
+                items: [
+                  ...(canEditAssignment
+                    ? [
+                        {
+                          key: 'configure',
+                          label: 'Configure',
+                          icon: <SettingOutlined />,
+                          children: configItems,
+                        },
+                      ]
+                    : []),
+                  ...(canEditRubric
+                    ? [
+                        {
+                          key: 'rubric',
+                          label: (
+                            <Link to={`${baseURL}/rubrics/${encodedName}`}>
+                              <OrderedListOutlined /> Edit rubric
+                            </Link>
+                          ),
+                        },
+                      ]
+                    : []),
+                  ...(canEditAssignment
+                    ? [
+                        {
+                          key: 'environment',
+                          label: (
+                            <Link to={`${baseURL}/environment/${encodedName}/edit`}>
+                              <FileDoneOutlined /> Environment & Tests
+                            </Link>
+                          ),
+                        },
+                      ]
+                    : []),
+                  {
+                    key: 'uploads',
+                    label: 'Manage submissions',
+                    icon: <UploadOutlined />,
+                    children: uploadItems,
+                  },
+                  { type: 'divider' as const },
+                  ...dataItems,
+                  ...(canEditAssignment
+                    ? [
+                        { type: 'divider' as const },
+                        {
+                          key: 'delete',
+                          label: (
+                            <Link to={`${baseURL}/${encodedName}/delete`}>
+                              <DeleteOutlined /> Delete
+                            </Link>
+                          ),
+                          danger: true,
+                        },
+                      ]
+                    : []),
+                ],
+              }}
+              trigger={['click']}
+            >
+              <Button shape="circle" icon={<MoreOutlined />} aria-label={`Actions for ${assignment.name}`} />
+            </Dropdown>
+          </Space>
         ) : (
           <Space size={6}>
+            {nextActionButton}
             {canEditAssignment && (
               <Tooltip title="Configure assignment">
                 <Dropdown menu={{ items: configItems }} trigger={['click']}>
