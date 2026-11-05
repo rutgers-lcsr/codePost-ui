@@ -35,6 +35,12 @@ two things it controls side by side. Every option explains itself.
 
 ![The stage picker](/assets/docs/instructor_status_picker.png)
 
+Rows also carry at most one green button for the move they are waiting for: **Publish** on a
+draft, **Assign graders** when a closed assignment has submissions nobody has claimed (the count
+appears under the badge), or **Release feedback** once every submission is graded and feedback is
+still hidden. Each opens the same confirmation the picker does; a row with nothing waiting shows no
+button.
+
 **Work** (the left column) controls the *work*:
 
 | Status | Students see it | Read files | Submit |

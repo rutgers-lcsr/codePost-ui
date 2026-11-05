@@ -34,6 +34,18 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ## Unreleased — Admin & Staff console refinements
 
+### Changed: rows that say what to do next, one page for people, faults with a next step
+
+- Each assignment row shows at most one green button for the move it is waiting for: **Publish** on a draft,
+  **Assign graders** when a closed assignment has unclaimed submissions (the count joins the line under the
+  Stage badge), **Release feedback** once everything is graded and feedback is still hidden. Each opens the same
+  confirmation the Stage picker uses. Quiet rows show no button.
+- Staff console: **Course Admins** and **Admin Requests** are tabs on the **Users** page (People, Course admins,
+  Requests). The old links redirect there and the sidebar badge sits on Users.
+- **System Health**: a failing check shows a **Next** line (what to look at, on which machine) and a **Means**
+  line (what the fault does to users). **Activity**: repeated messages group into one row with a count, first and
+  last times and how many people hit it; expand for every line, or turn **Group repeats** off.
+
 ### Changed: one Stage badge per assignment, and settings that save themselves
 
 - The assignments table's **Status** and **Feedback** badges and the `#` grades button are now one **Stage**
