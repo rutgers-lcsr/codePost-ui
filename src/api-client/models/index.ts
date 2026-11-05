@@ -15666,6 +15666,44 @@ export interface SystemActivityResponse {
   pages: number;
 }
 /**
+ * The staff-wide acknowledgement of the current System Health failures; an empty signature means none.
+ * @export
+ * @interface SystemHealthAck
+ */
+export interface SystemHealthAck {
+  /**
+   *
+   * @type {string}
+   * @memberof SystemHealthAck
+   */
+  signature: string;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemHealthAck
+   */
+  readonly acknowledgedBy: string | null;
+  /**
+   *
+   * @type {string}
+   * @memberof SystemHealthAck
+   */
+  readonly acknowledgedAt: string | null;
+}
+/**
+ * Which failing checks are being acknowledged, as the console's signature string.
+ * @export
+ * @interface SystemHealthAckRequest
+ */
+export interface SystemHealthAckRequest {
+  /**
+   *
+   * @type {string}
+   * @memberof SystemHealthAckRequest
+   */
+  signature: string;
+}
+/**
  *
  * @export
  * @interface SystemHealthResponse

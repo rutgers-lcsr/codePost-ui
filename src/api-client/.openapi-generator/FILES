@@ -421,6 +421,8 @@ docs/SuggestedQuizQuestion.md
 docs/SuggestedQuizQuestionsApi.md
 docs/SystemActivityResponse.md
 docs/SystemApi.md
+docs/SystemHealthAck.md
+docs/SystemHealthAckRequest.md
 docs/SystemHealthResponse.md
 docs/SystemPromptVariant.md
 docs/SystemPromptVariantSummary.md

@@ -9,6 +9,9 @@ All URIs are relative to *http://localhost*
 | [**autogradingStatsRetrieve**](DashboardApi.md#autogradingstatsretrieve)       | **GET** /dashboard/autograding_stats/      |             |
 | [**deadlinesList**](DashboardApi.md#deadlineslist)                             | **GET** /dashboard/deadlines/              |             |
 | [**denyPendingAdminCreate**](DashboardApi.md#denypendingadmincreate)           | **POST** /dashboard/deny_pending_admin/    |             |
+| [**healthAckDestroy**](DashboardApi.md#healthackdestroy)                       | **DELETE** /dashboard/health_ack/          |             |
+| [**healthAckRetrieve**](DashboardApi.md#healthackretrieve)                     | **GET** /dashboard/health_ack/             |             |
+| [**healthAckUpdate**](DashboardApi.md#healthackupdate)                         | **PUT** /dashboard/health_ack/             |             |
 | [**pendingAdminsList**](DashboardApi.md#pendingadminslist)                     | **GET** /dashboard/pending_admins/         |             |
 | [**statsRetrieve**](DashboardApi.md#statsretrieve)                             | **GET** /dashboard/stats/                  |             |
 
@@ -378,6 +381,208 @@ example().catch(console.error);
 ### Return type
 
 [**PendingAdminActionResponse**](PendingAdminActionResponse.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## healthAckDestroy
+
+> SystemHealthAck healthAckDestroy()
+
+Clear the acknowledgement.
+
+### Example
+
+```ts
+import { Configuration, DashboardApi } from '';
+import type { HealthAckDestroyRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new DashboardApi(config);
+
+  try {
+    const data = await api.healthAckDestroy();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SystemHealthAck**](SystemHealthAck.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## healthAckRetrieve
+
+> SystemHealthAck healthAckRetrieve()
+
+The staff-wide acknowledgement of the current System Health failures. An empty signature means none.
+
+### Example
+
+```ts
+import { Configuration, DashboardApi } from '';
+import type { HealthAckRetrieveRequest } from '';
+
+async function example() {
+  console.log('🚀 Testing  SDK...');
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: 'YOUR USERNAME',
+    password: 'YOUR PASSWORD',
+    // To configure API key authorization: tokenAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: cookieAuth
+    apiKey: 'YOUR API KEY',
+    // To configure API key authorization: courseKeyAuth
+    apiKey: 'YOUR API KEY',
+  });
+  const api = new DashboardApi(config);
+
+  try {
+    const data = await api.healthAckRetrieve();
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**SystemHealthAck**](SystemHealthAck.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+| ----------- | ----------- | ---------------- |
+| **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## healthAckUpdate
+
+> SystemHealthAck healthAckUpdate(systemHealthAckRequest)
+
+Record the caller as having acknowledged exactly these failing checks, for every staff member.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DashboardApi,
+} from '';
+import type { HealthAckUpdateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new DashboardApi(config);
+
+  const body = {
+    // SystemHealthAckRequest
+    systemHealthAckRequest: ...,
+  } satisfies HealthAckUpdateRequest;
+
+  try {
+    const data = await api.healthAckUpdate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                       | Type                                                | Description | Notes |
+| -------------------------- | --------------------------------------------------- | ----------- | ----- |
+| **systemHealthAckRequest** | [SystemHealthAckRequest](SystemHealthAckRequest.md) |             |       |
+
+### Return type
+
+[**SystemHealthAck**](SystemHealthAck.md)
 
 ### Authorization
 

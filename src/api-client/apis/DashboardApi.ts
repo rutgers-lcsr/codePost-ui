@@ -22,6 +22,8 @@ import type {
   PendingAdminActionRequest,
   PendingAdminActionResponse,
   PendingAdminUser,
+  SystemHealthAck,
+  SystemHealthAckRequest,
 } from '../models/index';
 
 export interface ApprovePendingAdminCreateRequest {
@@ -48,6 +50,10 @@ export interface AutogradingStatsRetrieveRequest {
 
 export interface DenyPendingAdminCreateRequest {
   pendingAdminActionRequest: PendingAdminActionRequest;
+}
+
+export interface HealthAckUpdateRequest {
+  systemHealthAckRequest: SystemHealthAckRequest;
 }
 
 /**
@@ -375,6 +381,164 @@ export class DashboardApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<PendingAdminActionResponse> {
     const response = await this.denyPendingAdminCreateRaw(requestParameters, initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Clear the acknowledgement.
+   */
+  async healthAckDestroyRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SystemHealthAck>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/dashboard/health_ack/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'DELETE',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Clear the acknowledgement.
+   */
+  async healthAckDestroy(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SystemHealthAck> {
+    const response = await this.healthAckDestroyRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * The staff-wide acknowledgement of the current System Health failures. An empty signature means none.
+   */
+  async healthAckRetrieveRaw(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SystemHealthAck>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/dashboard/health_ack/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * The staff-wide acknowledgement of the current System Health failures. An empty signature means none.
+   */
+  async healthAckRetrieve(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SystemHealthAck> {
+    const response = await this.healthAckRetrieveRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Record the caller as having acknowledged exactly these failing checks, for every staff member.
+   */
+  async healthAckUpdateRaw(
+    requestParameters: HealthAckUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<SystemHealthAck>> {
+    if (requestParameters['systemHealthAckRequest'] == null) {
+      throw new runtime.RequiredError(
+        'systemHealthAckRequest',
+        'Required parameter "systemHealthAckRequest" was null or undefined when calling healthAckUpdate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/dashboard/health_ack/`;
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PUT',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['systemHealthAckRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Record the caller as having acknowledged exactly these failing checks, for every staff member.
+   */
+  async healthAckUpdate(
+    requestParameters: HealthAckUpdateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<SystemHealthAck> {
+    const response = await this.healthAckUpdateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 
