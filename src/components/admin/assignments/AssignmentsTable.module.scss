@@ -11,7 +11,7 @@
   width: 100%;
   font: inherit;
   gap: 8px;
-  padding: 5px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
   /* A list, not a stack of cards: the border only appears on hover and on the current row,
      so ten options read as one picker and fit beside each other. */
@@ -68,7 +68,7 @@
 .stageColumn {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 

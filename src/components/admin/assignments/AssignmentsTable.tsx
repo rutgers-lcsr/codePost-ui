@@ -996,7 +996,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       );
 
       const stageContent = (
-        <div className="cp-scroll-shade" style={{ maxHeight: 'calc(65vh - 56px)', overflowY: 'auto' }}>
+        <div className="cp-scroll-shade" style={{ maxHeight: 'calc(50vh - 60px)', overflowY: 'auto' }}>
           <Text
             style={{
               display: 'block',
@@ -1163,8 +1163,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
               // the narrow stacked one sits beside the chip as before.
               placement={stageTwoColumn ? 'bottom' : 'rightTop'}
               title="Stage"
-              // Two columns on a laptop, one on a narrow window; never taller than two thirds of the
-              // window (it scrolls inside, under a shade), so the popover always fits beside the chip.
+              // Two columns on a laptop, one on a narrow window. The body is capped at half the window
+              // (it scrolls inside, under a shade), so the whole popover fits above or below any row's chip.
               styles={{ root: { width: stageTwoColumn ? 620 : 340, maxWidth: 'calc(100vw - 24px)' } }}
             >
               <button
