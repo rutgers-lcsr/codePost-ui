@@ -34,6 +34,17 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ## Unreleased — Admin & Staff console refinements
 
+### Changed: the staff console has five destinations
+
+- The sidebar is **Overview**, **Organizations**, **Courses**, **Users**, **Platform** and, below a divider,
+  **Tools**. **Platform** holds Health, Activity, Autograding and the Deploy calendar as tabs; **Tools** holds the
+  Banner, AI usage, the API reference and the Prompt lab. Each tab has its own address
+  (`/dashboard/platform/activity`, `/dashboard/tools/api`), the Users tabs too (`/dashboard/users/requests`), and
+  every old address still opens the right page.
+- Leaving the banner with unsaved edits asks first when switching tabs, as it does from the sidebar and from the
+  browser's Back; the Tools entry and the Banner tab say "unsaved" while it is.
+- The jump palette (Ctrl+K) lists every tab, such as "Platform: Health" and "Tools: Banner".
+
 ### Changed: rows that say what to do next, one page for people, faults with a next step
 
 - Each assignment row shows at most one green button for the move it is waiting for: **Publish** on a draft,
