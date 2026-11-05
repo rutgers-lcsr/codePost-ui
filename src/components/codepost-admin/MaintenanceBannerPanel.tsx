@@ -98,12 +98,15 @@ interface MaintenanceBannerPanelProps {
   audienceCount?: number;
   /** Compact mode only: opens the full banner editor. */
   onOpenDetails?: () => void;
+  /** Full mode: reports unsaved edits, so the console can ask before navigating away. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
   compact = false,
   onOpenDetails,
   audienceCount,
+  onDirtyChange,
 }) => {
   const [saved, setSaved] = useState<MaintenanceBannerResponse | null>(null);
   const [draft, setDraft] = useState<DraftBanner>({
@@ -143,6 +146,28 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
   const state = liveState(saved);
 
   // ── Compact mode: summary row only ──────────────────────────────────────
+  const isDirty =
+    saved !== null &&
+    (draft.active !== saved.active ||
+      draft.message !== saved.message ||
+      draft.color !== saved.color ||
+      draft.severity !== saved.severity ||
+      draft.startsAt !== (saved.startsAt ?? null) ||
+      draft.endsAt !== (saved.endsAt ?? null));
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+    return () => onDirtyChange?.(false);
+  }, [isDirty, onDirtyChange]);
+  // Reload or close with unsaved edits: the browser's own "leave site?" prompt.
+  useEffect(() => {
+    if (!isDirty) return undefined;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [isDirty]);
+
   if (compact) {
     return (
       <Card size="small" style={{ height: '100%' }}>
@@ -201,15 +226,6 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
       setSaving(false);
     }
   };
-
-  const isDirty =
-    saved !== null &&
-    (draft.active !== saved.active ||
-      draft.message !== saved.message ||
-      draft.color !== saved.color ||
-      draft.severity !== saved.severity ||
-      draft.startsAt !== (saved.startsAt ?? null) ||
-      draft.endsAt !== (saved.endsAt ?? null));
 
   const scheduleInvalid = !!draft.startsAt && !!draft.endsAt && dayjs(draft.endsAt).isBefore(dayjs(draft.startsAt));
   const needsMessage = draft.active && draft.message.trim() === '';

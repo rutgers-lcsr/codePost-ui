@@ -28,6 +28,7 @@ import {
   Divider,
   Layout,
   Menu,
+  Modal,
   Result,
   Row,
   Skeleton,
@@ -40,7 +41,7 @@ import {
   theme,
 } from 'antd';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import useFixedWindow from '../core/useFixedWindow';
 import useWindowSize from '../core/useWindowSize';
@@ -220,7 +221,30 @@ const Dashboard = () => {
   const slug = location.pathname.replace(/^\/dashboard\/?/, '').split('/')[0];
   const currentTab: TabType = SLUG_TO_TAB[slug] ?? 'Overview';
 
-  const goTo = useCallback((tab: TabType) => navigate(`${DASHBOARD_PATH}/${TAB_SLUGS[tab]}`), [navigate]);
+  // The banner editor reports unsaved edits here; in-app navigation away from it asks first (reload and
+  // close get the browser's own prompt from the panel). Back/forward are not guarded.
+  const bannerDirty = useRef(false);
+  const onBannerDirtyChange = useCallback((dirty: boolean) => {
+    bannerDirty.current = dirty;
+  }, []);
+  const guardedNavigate = useCallback(
+    (to: string) => {
+      if (!bannerDirty.current || to.startsWith(`${DASHBOARD_PATH}/${TAB_SLUGS.Banner}`)) {
+        navigate(to);
+        return;
+      }
+      Modal.confirm({
+        title: 'Leave the banner without saving?',
+        content: 'Your unsaved banner edits will be lost.',
+        okText: 'Leave',
+        okButtonProps: { danger: true },
+        cancelText: 'Stay',
+        onOk: () => navigate(to),
+      });
+    },
+    [navigate],
+  );
+  const goTo = useCallback((tab: TabType) => guardedNavigate(`${DASHBOARD_PATH}/${TAB_SLUGS[tab]}`), [guardedNavigate]);
 
   // Ctrl+K (⌘K) anywhere in the console opens the jump palette.
   useEffect(() => {
@@ -599,7 +623,7 @@ const Dashboard = () => {
               title="Maintenance Banner"
               subtitle="Broadcast a maintenance message to all platform users."
             />
-            <MaintenanceBannerPanel audienceCount={stats.totalUniqueUsers} />
+            <MaintenanceBannerPanel audienceCount={stats.totalUniqueUsers} onDirtyChange={onBannerDirtyChange} />
           </div>
         );
       case 'API':
@@ -684,8 +708,8 @@ const Dashboard = () => {
         tabs={jumpTabs}
         courses={courses}
         organizations={organizations}
-        onCourse={(course) => navigate(`${DASHBOARD_PATH}/courses?q=${encodeURIComponent(course.name)}`)}
-        onUser={(email) => navigate(`${DASHBOARD_PATH}/users?q=${encodeURIComponent(email)}`)}
+        onCourse={(course) => guardedNavigate(`${DASHBOARD_PATH}/courses?q=${encodeURIComponent(course.name)}`)}
+        onUser={(email) => guardedNavigate(`${DASHBOARD_PATH}/users?q=${encodeURIComponent(email)}`)}
       />
       <a className="cp-skip-link" href="#staff-main">
         Skip to content

@@ -1,6 +1,20 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Badge, Button, Card, Flex, Progress, Select, Skeleton, Space, Tag, Tooltip, Typography } from 'antd';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Flex,
+  Progress,
+  Select,
+  Skeleton,
+  Space,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -13,8 +27,15 @@ import {
   ThunderboltOutlined,
   BranchesOutlined,
 } from '@ant-design/icons';
-import { systemApi } from '../../api-client/clients';
-import type { SystemHealthResponse, HealthCheck, CeleryCheck, DiskCheck, MigrationCheck } from '../../api-client';
+import { dashboardApi, systemApi } from '../../api-client/clients';
+import type {
+  SystemHealthAck,
+  SystemHealthResponse,
+  HealthCheck,
+  CeleryCheck,
+  DiskCheck,
+  MigrationCheck,
+} from '../../api-client';
 import { StatusDfeEnum, OverallEnum } from '../../api-client/models/index';
 import { apiErrorMessageAsync } from '../../lib/apiError';
 
@@ -66,28 +87,7 @@ const CHECKS: { key: 'database' | 'celery' | 'cache' | 'migrations' | 'disk'; na
     { key: 'disk', name: 'Disk', icon: <HddOutlined /> },
   ];
 
-/** Acknowledgement of a known problem, kept per browser until the failing checks change. */
-const ACK_KEY = 'codepost:healthAck';
-interface HealthAck {
-  signature: string;
-  at: string;
-}
-function readAck(): HealthAck | null {
-  try {
-    const raw = localStorage.getItem(ACK_KEY);
-    return raw ? (JSON.parse(raw) as HealthAck) : null;
-  } catch {
-    return null;
-  }
-}
-function writeAck(ack: HealthAck | null): void {
-  try {
-    if (ack) localStorage.setItem(ACK_KEY, JSON.stringify(ack));
-    else localStorage.removeItem(ACK_KEY);
-  } catch {
-    // No storage: acknowledging lasts until the next load.
-  }
-}
+/** The staff-wide acknowledgement lives on the server (GET/PUT/DELETE /dashboard/health_ack/): one note for everyone. */
 /** What exactly is failing, so an acknowledgement expires the moment something else breaks. */
 function failureSignature(health: SystemHealthResponse | null): string {
   if (!health) return '';
@@ -259,12 +259,15 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [ack, setAck] = useState<HealthAck | null>(readAck);
+  const [ack, setAck] = useState<SystemHealthAck | null>(null);
+  const [ackBusy, setAckBusy] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<number>(60_000);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const checkHealth = useCallback(async () => {
     setLoading(true);
+    // The shared acknowledgement rides along with every check; a failure here only means "unknown".
+    void dashboardApi.healthAckRetrieve().then(setAck, () => undefined);
     try {
       const data = await systemApi.healthRetrieve();
       setHealth(data);
@@ -300,15 +303,28 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
   const signature = failureSignature(health);
   // Acknowledged: the same problem as when someone said "known"; anything new un-acknowledges itself.
   const acknowledged = !!ack && signature !== '' && ack.signature === signature;
-  const acknowledge = () => {
-    const next = { signature, at: new Date().toISOString() };
-    writeAck(next);
-    setAck(next);
+  const acknowledge = async () => {
+    setAckBusy(true);
+    try {
+      setAck(await dashboardApi.healthAckUpdate({ systemHealthAckRequest: { signature } }));
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e)) ?? 'Could not save the acknowledgement.');
+    } finally {
+      setAckBusy(false);
+    }
   };
-  const clearAck = () => {
-    writeAck(null);
-    setAck(null);
+  const clearAck = async () => {
+    setAckBusy(true);
+    try {
+      setAck(await dashboardApi.healthAckDestroy());
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e)) ?? 'Could not clear the acknowledgement.');
+    } finally {
+      setAckBusy(false);
+    }
   };
+  const ackWhen = ack?.acknowledgedAt ? new Date(ack.acknowledgedAt).toLocaleString() : '';
+  const ackWho = ack?.acknowledgedBy ?? 'a staff member';
 
   // ── Compact mode: single-row status indicator ──────────────────────────────
   if (compact) {
@@ -358,7 +374,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
                   </Tag>
                 )}
                 {acknowledged && (
-                  <Tooltip title={`Acknowledged ${new Date(ack!.at).toLocaleString()} in this browser`}>
+                  <Tooltip title={`Acknowledged by ${ackWho} ${ackWhen}, for all staff`}>
                     <Tag style={{ fontSize: 12 }}>Acknowledged</Tag>
                   </Tooltip>
                 )}
@@ -442,15 +458,15 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ compact = false, onOpenDeta
         (acknowledged ? (
           <Space size={4}>
             <Text type="secondary" style={{ fontSize: 13 }}>
-              Acknowledged {new Date(ack!.at).toLocaleString()} in this browser.
+              Acknowledged by {ackWho} {ackWhen}, for all staff.
             </Text>
-            <Button type="link" size="small" onClick={clearAck}>
+            <Button type="link" size="small" onClick={clearAck} loading={ackBusy}>
               Clear
             </Button>
           </Space>
         ) : (
-          <Tooltip title="Quiets the Overview card for this problem, in this browser, until the failing checks change.">
-            <Button size="small" onClick={acknowledge}>
+          <Tooltip title="Quiets the Overview card for this problem, for every staff member, until the failing checks change.">
+            <Button size="small" onClick={acknowledge} loading={ackBusy}>
               Acknowledge
             </Button>
           </Tooltip>
