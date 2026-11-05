@@ -35,6 +35,7 @@ import {
   Space,
   Statistic,
   Table,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -101,8 +102,9 @@ const TAB_SLUGS: Record<TabType, string> = {
   Organizations: 'organizations',
   Courses: 'courses',
   Users: 'users',
-  Admins: 'admins',
-  'Pending Admins': 'pending-admins',
+  // Both live on the Users page now, as tabs; the old paths redirect there.
+  Admins: 'users?tab=admins',
+  'Pending Admins': 'users?tab=requests',
   Activity: 'activity',
   'Deploy Calendar': 'deploy-calendar',
   Autograding: 'autograding',
@@ -115,9 +117,12 @@ const TAB_SLUGS: Record<TabType, string> = {
 
 const DEVELOPER_TABS: TabType[] = ['API', 'AI Usage', 'Prompt Lab'];
 
-const SLUG_TO_TAB: Record<string, TabType> = Object.fromEntries(
-  (Object.entries(TAB_SLUGS) as [TabType, string][]).map(([tab, slug]) => [slug, tab]),
-);
+const SLUG_TO_TAB: Record<string, TabType> = {
+  ...Object.fromEntries((Object.entries(TAB_SLUGS) as [TabType, string][]).map(([tab, slug]) => [slug, tab])),
+  // The old page paths, so a bookmark renders the Users page (right tab) on its very first frame.
+  admins: 'Admins',
+  'pending-admins': 'Pending Admins',
+};
 
 export interface AdminData {
   id: number;
@@ -220,6 +225,11 @@ const Dashboard = () => {
 
   const slug = location.pathname.replace(/^\/dashboard\/?/, '').split('/')[0];
   const currentTab: TabType = SLUG_TO_TAB[slug] ?? 'Overview';
+  // Bookmarks and the Overview's old links still say /admins and /pending-admins.
+  useEffect(() => {
+    if (slug === 'admins') navigate(`${DASHBOARD_PATH}/users?tab=admins`, { replace: true });
+    if (slug === 'pending-admins') navigate(`${DASHBOARD_PATH}/users?tab=requests`, { replace: true });
+  }, [slug, navigate]);
 
   // The banner editor reports unsaved edits here; in-app navigation away from it asks first (reload and
   // close get the browser's own prompt from the panel). Back/forward are not guarded.
@@ -263,7 +273,11 @@ const Dashboard = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
   const jumpTabs = useMemo(
-    () => (Object.keys(TAB_SLUGS) as TabType[]).map((tab) => ({ label: tab, go: () => goTo(tab) })),
+    () =>
+      (Object.keys(TAB_SLUGS) as TabType[]).map((tab) => ({
+        label: tab === 'Admins' ? 'Course admins' : tab === 'Pending Admins' ? 'Admin requests' : tab,
+        go: () => goTo(tab),
+      })),
     [goTo],
   );
 
@@ -390,8 +404,8 @@ const Dashboard = () => {
             <Col xs={24} md={12} xl={6}>
               {statusCell(
                 <UserAddOutlined />,
-                // Same words as the sidebar entry and the page it opens.
-                'Pending admins',
+                // Same words as the Users page tab it opens.
+                'Admin requests',
                 pendingCount > 0 ? (
                   // Darker than antd's orange tag text: 12px on the tint needs 4.5:1, not 3.3:1.
                   <Tag style={WARNING_TAG}>{pendingCount} waiting</Tag>
@@ -513,11 +527,7 @@ const Dashboard = () => {
   };
 
   const renderAdmins = () => (
-    <div style={{ padding: pagePadding }}>
-      <AdminPageHeader
-        title="Course Administrators"
-        subtitle="All users with course admin roles across the platform."
-      />
+    <div>
       {rostersError ? (
         <Alert
           type="error"
@@ -544,14 +554,6 @@ const Dashboard = () => {
     switch (currentTab) {
       case 'Overview':
         return renderOverview();
-      case 'Admins':
-        return renderAdmins();
-      case 'Pending Admins':
-        return (
-          <div style={{ padding: pagePadding }}>
-            <PendingAdminsTable organizations={organizations} onChanged={refreshPending} />
-          </div>
-        );
       case 'Organizations':
         return (
           <div style={{ padding: pagePadding }}>
@@ -590,11 +592,58 @@ const Dashboard = () => {
           </div>
         );
       case 'Users':
+      case 'Admins':
+      case 'Pending Admins': {
+        // One page for people: everyone by role, the course admins roster, and the requests to join it.
+        const tabParam = new URLSearchParams(location.search).get('tab');
+        const activeKey =
+          tabParam === 'admins' || currentTab === 'Admins'
+            ? 'admins'
+            : tabParam === 'requests' || currentTab === 'Pending Admins'
+              ? 'requests'
+              : 'people';
         return (
           <div style={{ padding: pagePadding }}>
-            <UsersTable organizations={organizations} stats={stats} onRefresh={fetchData} />
+            <AdminPageHeader
+              title="Users"
+              subtitle="Everyone with an account, by role. Course admins and the requests to become one are tabs here."
+            />
+            <Tabs
+              activeKey={activeKey}
+              // Hidden panes unmount, so each tab shows fresh data when it is opened again.
+              destroyOnHidden
+              onChange={(key) => navigate(`${DASHBOARD_PATH}/users${key === 'people' ? '' : `?tab=${key}`}`)}
+              items={[
+                {
+                  key: 'people',
+                  label: 'People',
+                  children: <UsersTable organizations={organizations} stats={stats} onRefresh={fetchData} hideHeader />,
+                },
+                {
+                  key: 'admins',
+                  label: countLabel('Course admins', rostersLoading || isLoading ? undefined : adminCount),
+                  children: renderAdmins(),
+                },
+                {
+                  key: 'requests',
+                  label: (
+                    <span>
+                      Requests
+                      {pendingCount > 0 && (
+                        <>
+                          <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
+                          <span className="sr-only">, {pendingCount} waiting</span>
+                        </>
+                      )}
+                    </span>
+                  ),
+                  children: <PendingAdminsTable organizations={organizations} onChanged={refreshPending} hideHeader />,
+                },
+              ]}
+            />
           </div>
         );
+      }
       case 'Activity':
         return (
           <div style={{ padding: pagePadding }}>
@@ -822,27 +871,21 @@ const Dashboard = () => {
                     },
                     {
                       key: 'Users',
-                      icon: <UserOutlined />,
-                      label: countLabel('Users', isLoading ? undefined : stats.totalUniqueUsers),
-                    },
-                    {
-                      key: 'Admins',
-                      icon: <TeamOutlined />,
-                      label: countLabel('Course Admins', rostersLoading || isLoading ? undefined : adminCount),
-                    },
-                    {
-                      key: 'Pending Admins',
+                      // People of every role, plus the admin requests waiting on this page's Requests tab.
                       // Collapsed, the icon carries the number itself; a dot would lose the count.
                       icon: (
                         <Badge count={collapsed ? pendingCount : 0} size="small" offset={[4, 8]} color={BADGE_RED}>
-                          <UserAddOutlined />
+                          <UserOutlined />
                         </Badge>
                       ),
                       label: (
                         <span>
-                          Admin Requests
+                          {countLabel('Users', isLoading ? undefined : stats.totalUniqueUsers)}
                           {pendingCount > 0 && (
-                            <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
+                            <>
+                              <Badge count={pendingCount} size="small" style={{ marginLeft: 8 }} color={BADGE_RED} />
+                              <span className="sr-only">, {pendingCount} admin requests waiting</span>
+                            </>
                           )}
                         </span>
                       ),

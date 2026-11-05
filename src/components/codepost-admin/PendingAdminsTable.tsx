@@ -30,9 +30,11 @@ interface PendingAdminsTableProps {
   organizations: Organization[];
   /** Called after an approve or deny succeeds, so the sidebar badge can update. */
   onChanged?: () => void;
+  /** Rendered inside the Users page's tabs, which carry the page title. */
+  hideHeader?: boolean;
 }
 
-const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, onChanged }) => {
+const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, onChanged, hideHeader = false }) => {
   const [pendingUsers, setPendingUsers] = React.useState<PendingAdminUser[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
@@ -262,15 +264,24 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
 
   return (
     <div>
-      <AdminPageHeader
-        title="Admin Requests"
-        subtitle="People who asked for course admin access. Approving a request with no organization also creates one."
-        actions={
+      {hideHeader ? (
+        // Inside the Users page's Requests tab the page carries the title; keep only Refresh.
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
           <Button icon={<ReloadOutlined />} onClick={fetchPendingAdmins} loading={loading}>
             Refresh
           </Button>
-        }
-      />
+        </div>
+      ) : (
+        <AdminPageHeader
+          title="Admin Requests"
+          subtitle="People who asked for course admin access. Approving a request with no organization also creates one."
+          actions={
+            <Button icon={<ReloadOutlined />} onClick={fetchPendingAdmins} loading={loading}>
+              Refresh
+            </Button>
+          }
+        />
+      )}
 
       {loadError && (
         <Alert

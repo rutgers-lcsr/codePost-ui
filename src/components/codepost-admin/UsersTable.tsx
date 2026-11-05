@@ -8,7 +8,9 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Card, Col, Row, Skeleton, Space, Statistic, Table, Tag, Tooltip } from 'antd';
+import { Alert, Button, Card, Col, Row, Skeleton, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
+
+const { Text } = Typography;
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -22,6 +24,7 @@ import { UserIO } from '../../services/user';
 import { apiErrorMessageAsync } from '../../lib/apiError';
 
 import AdminPageHeader from './AdminPageHeader';
+import { useLocation } from 'react-router';
 import AdminTableToolbar from './AdminTableToolbar';
 import NewUserDialog from './NewUserDialog';
 import EditUserDialog from './EditUserDialog';
@@ -68,19 +71,33 @@ interface UsersTableProps {
   /** Platform totals from the stats endpoint; the table itself only holds one page. */
   stats: DashboardStats;
   onRefresh: () => void;
+  /** Rendered inside the Users page's tabs, which carry the page title. */
+  hideHeader?: boolean;
 }
 
 /**
  * Platform users, one server-side page at a time. Search and ordering run on the server, so
  * the total always reflects the whole platform rather than whatever page happened to load.
  */
-const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh }) => {
+const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh, hideHeader = false }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useDefaultPageSize();
   // The jump palette lands here with ?q=<email>; the first request searches for it straight away.
   const initialSearch = new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
   const [searchInput, setSearchInput] = useState(initialSearch);
   const [search, setSearch] = useState(initialSearch);
+  // The table now lives in a tab and stays mounted, so a later palette jump (?q=) must be picked up too.
+  const location = useLocation();
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('q')?.trim();
+    if (q && q !== search) {
+      setSearchInput(q);
+      setSearch(q);
+      setPage(1);
+    }
+    // Only the URL's q matters here; typing in the box is handled by the debounce below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
   const [ordering, setOrdering] = useState<string | undefined>(undefined);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -230,7 +247,13 @@ const UsersTable: React.FC<UsersTableProps> = ({ organizations, stats, onRefresh
 
   return (
     <div>
-      <AdminPageHeader title="Users" subtitle={subtitle} />
+      {hideHeader ? (
+        <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+          {subtitle}
+        </Text>
+      ) : (
+        <AdminPageHeader title="Users" subtitle={subtitle} />
+      )}
 
       {/* Platform totals (from the stats endpoint, not from the page that happens to be loaded).
           One neutral colour: a hue per role was decoration, not meaning. */}
