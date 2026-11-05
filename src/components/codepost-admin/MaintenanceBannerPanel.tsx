@@ -326,8 +326,23 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
           <Space style={{ justifyContent: 'space-between', width: '100%' }}>
             <div>
               <Text>Show banner to every user</Text>
-              <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-                Takes effect when you save. Scheduling below can delay or end it.
+              {/* The stakes sit with the switch, on the page and not only in the confirmation. */}
+              <Text style={{ fontSize: 12, display: 'block' }}>
+                {draft.active ? (
+                  <>
+                    <strong>
+                      Reaches every signed-in user{audienceCount ? ` (${audienceCount.toLocaleString()})` : ''}
+                    </strong>{' '}
+                    {draft.startsAt && dayjs(draft.startsAt).isAfter(dayjs())
+                      ? `from ${dayjs(draft.startsAt).format('MMM D, HH:mm')}`
+                      : 'as soon as you save'}
+                    {draft.endsAt ? ` until ${dayjs(draft.endsAt).format('MMM D, HH:mm')}` : ', until you turn it off'}.
+                  </>
+                ) : (
+                  <>
+                    <strong>Off:</strong> no one sees this banner until you turn it on and save.
+                  </>
+                )}
               </Text>
             </div>
             <Switch
@@ -500,24 +515,6 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
             )}
           </div>
 
-          {/* The stakes, on the page and not only in the confirmation. */}
-          <Text style={{ fontSize: 13 }}>
-            {draft.active ? (
-              <>
-                <strong>
-                  Reaches every signed-in user{audienceCount ? ` (${audienceCount.toLocaleString()})` : ''}
-                </strong>{' '}
-                {draft.startsAt && dayjs(draft.startsAt).isAfter(dayjs())
-                  ? `from ${dayjs(draft.startsAt).format('MMM D, HH:mm')}`
-                  : 'as soon as you save'}
-                {draft.endsAt ? ` until ${dayjs(draft.endsAt).format('MMM D, HH:mm')}` : ', until you turn it off'}.
-              </>
-            ) : (
-              <>
-                <strong>Off:</strong> no one sees this banner until you turn it on and save.
-              </>
-            )}
-          </Text>
           {/* One row: the quiet way back on the left, the one primary action filling the rest. */}
           <Flex gap={8} align="center">
             {isDirty && saved && (

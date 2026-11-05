@@ -54,6 +54,11 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - Leaving the banner with unsaved edits asks first when switching tabs, as it does from the sidebar and from the
   browser's Back; the Tools entry and the Banner tab say "unsaved" while it is.
 - The jump palette (Ctrl+K) lists every tab, such as "Platform: Health" and "Tools: Banner".
+- Approve and Deny look the same wherever a request appears (Inbox, Requests tab, person page): an outlined
+  Approve and a red Deny link, so an access grant never gets a solid green button per row. The email on an Inbox
+  or Requests row opens the person. The banner's "who sees this" sentence sits with its switch; Courses shows
+  Assignments and Sections as plain counts; the search box has one name everywhere ("Find a person, a course or
+  a page").
 
 ### Changed: rows that say what to do next, one page for people, faults with a next step
 

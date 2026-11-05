@@ -15,7 +15,7 @@ import { formatWindow, nextSafeWindow } from './deployWindows';
 import type { SavedBanner } from './MaintenanceBannerPanel';
 import { usePendingAdminRequests } from './pendingAdminRequests';
 import { CHECKS, NEXT_STEPS, SystemHealthContext, type AnyCheck } from './systemHealthModel';
-import { staffPath, type StaffPage } from './staffRoutes';
+import { personPath, staffPath, type StaffPage } from './staffRoutes';
 import { DEFINITIONS } from './definitions';
 
 const { Text } = Typography;
@@ -212,7 +212,7 @@ const StaffInbox: React.FC<StaffInboxProps> = ({
             const org = organizations.find((o) => o.id === u.organization)?.name;
             return (
               <Space key={u.id} wrap size={[8, 4]} style={{ fontSize: 13 }}>
-                <Text>{email}</Text>
+                <Link to={personPath(u.id)}>{email}</Link>
                 <Text type="secondary" style={{ fontSize: 12 }}>
                   {org ?? 'new organization'}
                   {u.dateJoined ? ` · ${age(u.dateJoined)}` : ''}
@@ -332,7 +332,7 @@ const StaffInbox: React.FC<StaffInboxProps> = ({
         display: 'grid',
         gridTemplateColumns: isPhone ? 'auto 1fr' : 'auto 1fr auto',
         gap: '6px 12px',
-        alignItems: 'center',
+        alignItems: 'start',
         padding: '10px 14px',
         background: quiet ? '#fafaf8' : '#fff',
         borderTop: '1px solid rgba(0, 0, 0, 0.08)',
@@ -385,7 +385,7 @@ const StaffInbox: React.FC<StaffInboxProps> = ({
           marginBottom: 16,
         }}
       >
-        Find a person or a course…
+        Find a person, a course or a page…
         {!isPhone && (
           <kbd
             style={{

@@ -74,9 +74,9 @@ const AdminTable: React.FC<AdminTableProps> = ({ admins }) => {
             <Space orientation="vertical" size={1}>
               {courses.map((c, i) => (
                 <Space key={i} style={{ fontSize: '12px' }}>
-                  <BookOutlined style={{ color: colors.actionGreen, fontSize: '10px' }} />
+                  <BookOutlined style={{ color: colors.actionGreen, fontSize: '12px' }} />
                   <span>{c.name}</span>
-                  <Tag color="green" style={{ margin: 0, fontSize: '10px', lineHeight: '18px' }}>
+                  <Tag color="green" style={{ margin: 0, fontSize: '12px', lineHeight: '18px' }}>
                     {c.period}
                   </Tag>
                 </Space>

@@ -4,14 +4,12 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   DownOutlined,
-  FileTextOutlined,
-  FolderOutlined,
   GlobalOutlined,
   LoginOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Modal, Select, Space, Spin, Table, Tag, Tooltip, Typography } from 'antd';
+import { Button, Dropdown, Modal, Select, Space, Spin, Table, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
@@ -34,7 +32,6 @@ const { Text } = Typography;
 // antd's green tag puts #389e0d on #f6ffed (3.1:1); green-8 on the brand's light tint reads 5.3:1.
 const GREEN_TAG = { color: '#0d7354', background: '#f0fff6', borderColor: '#9ce6c3' } as const;
 // A count on the yellow badge needs dark text: white on #ffbf00 is 1.6:1.
-const YELLOW_BADGE = { backgroundColor: '#ffbf00', color: '#1b1b1b', boxShadow: 'none' } as const;
 
 const addEmailToSet = (target: Set<string>, email: string | null | undefined) => {
   if (email) target.add(email);
@@ -313,11 +310,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
       key: 'assignments',
       width: 120,
       responsive: ['lg'],
-      render: (assignments: number[]) => (
-        <Badge count={assignments.length} showZero style={YELLOW_BADGE}>
-          <FileTextOutlined style={{ fontSize: '20px', color: colors.actionYellow }} />
-        </Badge>
-      ),
+      align: 'right',
+      render: (assignments: number[]) => assignments.length,
       sorter: (a, b) => a.assignments.length - b.assignments.length,
     },
     {
@@ -326,11 +320,8 @@ const CoursesTable: React.FC<CoursesTableProps> = ({
       key: 'sections',
       width: 110,
       responsive: ['lg'],
-      render: (sections: number[]) => (
-        <Badge count={sections.length} showZero style={YELLOW_BADGE}>
-          <FolderOutlined style={{ fontSize: '20px', color: '#faad14' }} />
-        </Badge>
-      ),
+      align: 'right',
+      render: (sections: number[]) => sections.length,
       sorter: (a, b) => a.sections.length - b.sections.length,
     },
   ];

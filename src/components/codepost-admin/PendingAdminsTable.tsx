@@ -1,5 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React from 'react';
+import { Link } from 'react-router';
 import { Table, Card, Tag, Button, Space, Popconfirm, Alert, Empty, Skeleton, Typography } from 'antd';
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -10,6 +11,7 @@ import useDefaultPageSize from '../utils/useDefaultPageSize';
 import AdminPageHeader from './AdminPageHeader';
 import useWindowSize from '../core/useWindowSize';
 import { usePendingAdminRequests, type Decision } from './pendingAdminRequests';
+import { personPath } from './staffRoutes';
 
 const { Text } = Typography;
 
@@ -53,6 +55,7 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      render: (email: string, record) => <Link to={personPath(record.id)}>{email}</Link>,
       sorter: (a, b) => (a.email || '').localeCompare(b.email || ''),
     },
     {
@@ -108,13 +111,7 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
               okText="Approve"
               onConfirm={() => act('approve', email)}
             >
-              <Button
-                type="primary"
-                size="small"
-                icon={<CheckOutlined />}
-                aria-label={`Approve ${email}`}
-                disabled={rowDisabled}
-              >
+              <Button size="small" icon={<CheckOutlined />} aria-label={`Approve ${email}`} disabled={rowDisabled}>
                 {isPhone ? null : 'Approve'}
               </Button>
             </Popconfirm>
@@ -126,7 +123,14 @@ const PendingAdminsTable: React.FC<PendingAdminsTableProps> = ({ organizations, 
               okButtonProps={{ danger: true }}
               onConfirm={() => act('deny', email)}
             >
-              <Button danger size="small" icon={<CloseOutlined />} aria-label={`Deny ${email}`} disabled={rowDisabled}>
+              <Button
+                type="link"
+                danger
+                size="small"
+                icon={<CloseOutlined />}
+                aria-label={`Deny ${email}`}
+                disabled={rowDisabled}
+              >
                 {isPhone ? null : 'Deny'}
               </Button>
             </Popconfirm>

@@ -184,7 +184,7 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
         size="large"
         variant="borderless"
         prefix={<SearchOutlined />}
-        placeholder="Jump to a page, course or user…"
+        placeholder="Find a person, a course or a page…"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -192,7 +192,7 @@ const JumpPalette: React.FC<JumpPaletteProps> = ({
         }}
         onKeyDown={onKeyDown}
         role="combobox"
-        aria-label="Jump to a page, course or user"
+        aria-label="Find a person, a course or a page"
         aria-expanded={true}
         aria-autocomplete="list"
         aria-controls="jump-results"

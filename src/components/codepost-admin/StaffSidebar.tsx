@@ -178,7 +178,7 @@ const StaffSidebar = ({
                   {bannerDirty && (
                     <>
                       <Badge dot color="#ffc53d" style={{ marginLeft: 8 }} />
-                      <Text style={{ marginLeft: 6, fontSize: 11, color: '#ffd666' }}>unsaved banner</Text>
+                      <Text style={{ marginLeft: 6, fontSize: 12, color: '#ffd666' }}>unsaved banner</Text>
                       <span className="sr-only">, the banner has unsaved edits</span>
                     </>
                   )}
@@ -191,12 +191,12 @@ const StaffSidebar = ({
 
       {/* The one keyboard path across users, courses and pages; Ctrl+K opens it too. */}
       <div style={{ padding: collapsed ? '8px 8px 0' : '8px 16px 0' }}>
-        <Tooltip title="Jump to a page, course or user (Ctrl+K)" placement="right">
+        <Tooltip title="Find a person, a course or a page (Ctrl+K)" placement="right">
           <Button
             size="small"
             icon={<SearchOutlined />}
             onClick={onJump}
-            aria-label="Jump to a page, course or user (Ctrl+K)"
+            aria-label="Find a person, a course or a page (Ctrl+K)"
             style={{
               width: '100%',
               background: 'rgba(255, 255, 255, 0.08)',
