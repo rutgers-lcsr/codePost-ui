@@ -234,16 +234,16 @@ const Dashboard = () => {
   // The banner editor reports unsaved edits here; in-app navigation away from it asks first (reload and
   // close get the browser's own prompt from the panel). Back/forward are not guarded.
   const bannerDirty = useRef(false);
+  const [bannerDirtyState, setBannerDirtyState] = useState(false);
   const onBannerDirtyChange = useCallback((dirty: boolean) => {
     bannerDirty.current = dirty;
+    setBannerDirtyState(dirty);
   }, []);
-  const guardedNavigate = useCallback(
-    (to: string) => {
-      if (!bannerDirty.current || to.startsWith(`${DASHBOARD_PATH}/${TAB_SLUGS.Banner}`)) {
-        navigate(to);
-        return;
-      }
-      Modal.confirm({
+  // Confirms come from the hook so they take the console's theme (static Modal.confirm renders outside it).
+  const [modal, modalHolder] = Modal.useModal();
+  const leaveBannerDialog = useCallback(
+    (onLeave: () => void, onStay?: () => void) =>
+      modal.confirm({
         title: 'Leave the banner without saving?',
         content: 'Your unsaved banner edits will be lost.',
         // Staying is the safe default: it holds focus (so Enter and Esc both keep the edits)
@@ -254,10 +254,43 @@ const Dashboard = () => {
         cancelButtonProps: { type: 'primary' },
         autoFocusButton: 'cancel',
         keyboard: true,
-        onOk: () => navigate(to),
-      });
+        onOk: onLeave,
+        onCancel: onStay,
+      }),
+    [modal],
+  );
+  // Browser Back while the banner has unsaved edits: BrowserRouter has no blocker, so a sentinel
+  // history entry turns the first Back into the same question. Stay re-arms it; Leave goes back for real.
+  useEffect(() => {
+    if (!bannerDirtyState) return;
+    const SENTINEL = { cpBannerGuard: true };
+    window.history.pushState(SENTINEL, '', window.location.href);
+    const onPop = () => {
+      if (!bannerDirty.current) return;
+      leaveBannerDialog(
+        () => {
+          bannerDirty.current = false;
+          window.history.back();
+        },
+        () => window.history.pushState(SENTINEL, '', window.location.href),
+      );
+    };
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // Clean again (saved or discarded): drop the sentinel so Back is one press.
+      if ((window.history.state as { cpBannerGuard?: boolean } | null)?.cpBannerGuard) window.history.back();
+    };
+  }, [bannerDirtyState, leaveBannerDialog]);
+  const guardedNavigate = useCallback(
+    (to: string) => {
+      if (!bannerDirty.current || to.startsWith(`${DASHBOARD_PATH}/${TAB_SLUGS.Banner}`)) {
+        navigate(to);
+        return;
+      }
+      leaveBannerDialog(() => navigate(to));
     },
-    [navigate],
+    [navigate, leaveBannerDialog],
   );
   const goTo = useCallback((tab: TabType) => guardedNavigate(`${DASHBOARD_PATH}/${TAB_SLUGS[tab]}`), [guardedNavigate]);
 
@@ -759,6 +792,7 @@ const Dashboard = () => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {modalHolder}
       <JumpPalette
         open={jumpOpen}
         onClose={() => setJumpOpen(false)}

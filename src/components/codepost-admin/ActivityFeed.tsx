@@ -1,6 +1,20 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Table, Tabs, Tag, Button, Card, Typography, Input, Select, Space, DatePicker, Image, Switch } from 'antd';
+import {
+  Table,
+  Tabs,
+  Tag,
+  Button,
+  Card,
+  Typography,
+  Input,
+  Select,
+  Space,
+  DatePicker,
+  Image,
+  Skeleton,
+  Switch,
+} from 'antd';
 import { ReloadOutlined, SearchOutlined, ClearOutlined, AuditOutlined, BarChartOutlined } from '@ant-design/icons';
 import type { SystemActivityResponse } from '../../api-client';
 import { systemApi } from '../../api-client/clients';
@@ -84,6 +98,7 @@ const ActivityFeed: React.FC = () => {
   type EventLogType = SystemActivityResponse['results'][number];
   const [logs, setLogs] = useState<EventLogType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadedOnce, setLoadedOnce] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
@@ -153,6 +168,7 @@ const ActivityFeed: React.FC = () => {
         console.error(e);
       } finally {
         setLoading(false);
+        setLoadedOnce(true);
       }
     },
     [],
@@ -585,6 +601,8 @@ const ActivityFeed: React.FC = () => {
         columns={columns}
         rowKey="id"
         loading={loading}
+        // Rows on their way look like rows, not like an empty log.
+        locale={!loadedOnce ? { emptyText: <Skeleton active title={false} paragraph={{ rows: 5 }} /> } : undefined}
         rowClassName={getRowClassName}
         pagination={{
           current: page,

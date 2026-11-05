@@ -171,34 +171,33 @@ const MaintenanceBannerPanel: React.FC<MaintenanceBannerPanelProps> = ({
   if (compact) {
     return (
       <Card size="small" style={{ height: '100%' }}>
-        <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-          <Space>
+        {/* Wraps instead of squeezing: "Banner" never breaks mid-word in a narrow tile. */}
+        <Flex vertical gap={6}>
+          <Flex align="center" gap={8} wrap>
             <NotificationOutlined />
-            <Text strong style={{ fontSize: 13 }}>
+            <Text strong style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
               Banner
             </Text>
             <Tag color={state.color} style={state.key === 'off' ? OFF_TAG : undefined}>
               {state.label}
             </Tag>
-          </Space>
-          <Space size={4}>
-            {state.key !== 'off' && saved?.message && (
-              <Text type="secondary" ellipsis style={{ maxWidth: 200, fontSize: 12 }}>
-                {saved.message}
-              </Text>
-            )}
-            {state.key === 'off' && (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                No banner showing
-              </Text>
-            )}
             {onOpenDetails && (
-              <Button type="link" size="small" onClick={onOpenDetails}>
+              <Button type="link" size="small" style={{ marginLeft: 'auto', padding: 0 }} onClick={onOpenDetails}>
                 Manage
               </Button>
             )}
-          </Space>
-        </Space>
+          </Flex>
+          {state.key !== 'off' && saved?.message && (
+            <Text type="secondary" ellipsis style={{ fontSize: 12 }}>
+              {saved.message}
+            </Text>
+          )}
+          {state.key === 'off' && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              No banner showing
+            </Text>
+          )}
+        </Flex>
       </Card>
     );
   }

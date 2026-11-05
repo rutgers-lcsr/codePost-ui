@@ -55,7 +55,8 @@ const OVERALL_CONFIG: Record<
 > = {
   [OverallEnum.Ok]: { color: '#52c41a', text: 'Healthy', badge: 'success', summary: 'Every check passed.' },
   [OverallEnum.Degraded]: {
-    color: '#fa8c16',
+    // orange-ink (6.5:1 on white); antd's orange-6 is 2.4:1 at this size.
+    color: '#ad4e00',
     text: 'Degraded',
     badge: 'warning',
     summary: 'The platform is up, but something needs attention.',
@@ -260,7 +261,7 @@ const CheckRow: React.FC<CheckRowProps> = ({ checkKey, icon, name, check, unavai
       <Space style={{ marginLeft: 'auto' }}>
         {row?.detail && !failing && (
           <Tooltip title={row.detail} placement="topRight">
-            <InfoCircleOutlined style={{ color: '#fa8c16', fontSize: '13px' }} />
+            <InfoCircleOutlined style={{ color: '#ad4e00', fontSize: '13px' }} />
           </Tooltip>
         )}
         <Badge status={badgeStatus} text={<Text style={{ fontSize: '12px' }}>{labelText}</Text>} />
