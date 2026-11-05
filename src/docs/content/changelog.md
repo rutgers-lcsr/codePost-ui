@@ -36,7 +36,13 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ### Changed: the staff console has five destinations
 
-- The sidebar is **Overview**, **Organizations**, **Courses**, **Users**, **Platform** and, below a divider,
+- The landing page is an **Inbox**: what is waiting for you (a failing health check with its next step, admin
+  access requests you can approve or deny right there, a banner that is showing, no safe deploy window), then
+  what is fine, then the platform in one line of linked totals. The sidebar entry counts what is waiting.
+- **People** (the old Users page) keeps its People, Course admins and Requests tabs and filters by role and
+  idleness instead of showing six tiles; the Inbox's totals link straight to a filter.
+- **Courses** absorbs Organizations as a filter and a **By organization** tab.
+- The sidebar is **Inbox**, **People**, **Courses**, **Platform** and, below a divider,
   **Tools**. **Platform** holds Health, Activity, Autograding and the Deploy calendar as tabs; **Tools** holds the
   Banner, AI usage, the API reference and the Prompt lab. Each tab has its own address
   (`/dashboard/platform/activity`, `/dashboard/tools/api`), the Users tabs too (`/dashboard/users/requests`), and
