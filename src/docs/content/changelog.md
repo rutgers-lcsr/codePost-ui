@@ -37,9 +37,9 @@ Stay up to date with new features, improvements, and fixes in codePost.
 ### Changed: rows that say what to do next, one page for people, faults with a next step
 
 - Each assignment row shows at most one green button for the move it is waiting for: **Publish** on a draft,
-  **Assign graders** when a closed assignment has unclaimed submissions (the count joins the line under the
-  Stage badge), **Release feedback** once everything is graded and feedback is still hidden. Each opens the same
-  confirmation the Stage picker uses. Quiet rows show no button.
+  **Release feedback** once everything is graded and feedback is still hidden. Each opens the same confirmation
+  the Stage picker uses. A closed assignment still being graded says how many submissions are waiting in the
+  grading queue under its badge; graders claim those themselves, so there is no button for it.
 - Staff console: **Course Admins** and **Admin Requests** are tabs on the **Users** page (People, Course admins,
   Requests). The old links redirect there and the sidebar badge sits on Users.
 - **System Health**: a failing check shows a **Next** line (what to look at, on which machine) and a **Means**
@@ -82,13 +82,13 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - The sidebar opens expanded, with labels, on a first visit. Collapsing it is still remembered per browser.
 - The filter bar keeps **Search** and **Status** inline; the other filters sit behind **More filters**, which
   shows how many are active.
-- A banner above the table counts unclaimed submissions that still need a grader.
+- A banner above the table counts submissions waiting in the grading queue.
 - Quizzes, Course Files, Gradebook and Course Settings now use the same page frame (breadcrumb, title,
   actions on the right) as the other sections.
 - Icon-only buttons in the rosters, submission tables and the header have accessible names.
 - The course landing page says, per active course, whether submissions are waiting for a grader. Its counts
   sit in one line under the greeting instead of a row of tiles.
-- The unclaimed-submissions banner links straight to **Submissions by Grader**.
+- The grading-queue banner links straight to **Submissions by Grader**.
 - The sidebar is a little wider, so **Environment & Tests** no longer truncates.
 - A **Skip to content** link leads keyboard users past the sidebar. The rubric, environment and delete row
   actions and **Download grades** are single tab stops (they used to be a link wrapping a button).
