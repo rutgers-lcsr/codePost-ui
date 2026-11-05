@@ -46,6 +46,15 @@ Stay up to date with new features, improvements, and fixes in codePost.
   key, URL, model, rates) keeps a **Save connection** button so it is never half-saved.
 - Renaming a course no longer reloads the page; the settings page follows the course to its new address.
 
+### Improved: staff console loading, labels and the banner guard
+
+- Users and Admin Requests show skeleton rows while their first page loads instead of an empty table under a spinner.
+- "Inactive" reads "idle 90+ days" (same definition); Active Courses shows a denominator only once a course is
+  archived; the sidebar says **Course Admins** and **Admin Requests**; an organization's slug appears only when it
+  differs from its name; the Overview banner card says "No banner showing".
+- Leaving the banner with unsaved edits: **Stay** is the focused primary button, **Leave** the quiet red one, and
+  Esc keeps the edits.
+
 ### Improved: Admin console navigation and the assignments overview
 
 - The sidebar opens expanded, with labels, on a first visit. Collapsing it is still remembered per browser.
