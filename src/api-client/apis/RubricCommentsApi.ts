@@ -21,7 +21,7 @@ export interface CommentsRetrieveRequest {
 }
 
 export interface CreateRequest {
-  rubricComment: Omit<RubricComment, 'id'>;
+  rubricComment: Omit<RubricComment, 'id' | 'isApplied'>;
 }
 
 export interface DestroyRequest {
@@ -34,7 +34,7 @@ export interface FeedbackScoreRetrieveRequest {
 
 export interface PartialUpdateRequest {
   id: number;
-  patchedRubricComment?: Omit<PatchedRubricComment, 'id'>;
+  patchedRubricComment?: Omit<PatchedRubricComment, 'id' | 'isApplied'>;
 }
 
 export interface RetrieveRequest {
@@ -43,7 +43,7 @@ export interface RetrieveRequest {
 
 export interface UpdateRequest {
   id: number;
-  rubricComment: Omit<RubricComment, 'id'>;
+  rubricComment: Omit<RubricComment, 'id' | 'isApplied'>;
 }
 
 /**

@@ -2772,6 +2772,12 @@ export interface BatchCapabilitiesResponseResultsValue {
    * @type {boolean}
    * @memberof BatchCapabilitiesResponseResultsValue
    */
+  editUnappliedRubricComments?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof BatchCapabilitiesResponseResultsValue
+   */
   editAssignment?: boolean;
   /**
    *
@@ -3254,6 +3260,12 @@ export interface CapabilitiesResponseCapabilitiesMap {
    * @memberof CapabilitiesResponseCapabilitiesMap
    */
   generatePersonalizedQuizQuestions?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof CapabilitiesResponseCapabilitiesMap
+   */
+  editUnappliedRubricComments?: boolean;
   /**
    *
    * @type {boolean}
@@ -9990,6 +10002,12 @@ export interface PatchedRubricComment {
    * @memberof PatchedRubricComment
    */
   name?: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedRubricComment
+   */
+  readonly isApplied?: boolean | null;
 }
 /**
  *
@@ -13383,6 +13401,12 @@ export interface RubricComment {
    * @memberof RubricComment
    */
   name?: string | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof RubricComment
+   */
+  readonly isApplied: boolean | null;
 }
 /**
  *

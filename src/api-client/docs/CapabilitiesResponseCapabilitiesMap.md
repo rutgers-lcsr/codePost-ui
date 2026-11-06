@@ -22,6 +22,7 @@ Map of capability keys to boolean values.
 | `gradeQuiz`                         | boolean |
 | `generateAiQuizQuestions`           | boolean |
 | `generatePersonalizedQuizQuestions` | boolean |
+| `editUnappliedRubricComments`       | boolean |
 | `editAssignment`                    | boolean |
 | `copyAssignment`                    | boolean |
 | `viewAssignment`                    | boolean |

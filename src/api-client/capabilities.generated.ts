@@ -19,6 +19,7 @@ export type Capability =
   | 'grade_quiz'
   | 'generate_ai_quiz_questions'
   | 'generate_personalized_quiz_questions'
+  | 'edit_unapplied_rubric_comments'
   | 'edit_assignment'
   | 'copy_assignment'
   | 'view_assignment'
@@ -80,6 +81,8 @@ export const CAPABILITY_DESCRIPTIONS: Record<Capability, string> = {
     "Request AI-suggested quiz questions for a question bank or an existing question (requires the course's quiz_generation AI feature to be on).",
   generate_personalized_quiz_questions:
     "Author per-student AI-generated quiz question sections — generated from the student's submission when they submit, or right away for prompts that don't use the submission (requires the course's personalized_quiz_generation AI feature to be on).",
+  edit_unapplied_rubric_comments:
+    "Add rubric comments and edit those no grading comment uses yet; never delete (graders need the course's graders-can-edit-rubric setting).",
   edit_assignment: 'Modify assignment settings including name, deadlines, point values, and visibility.',
   copy_assignment: "Duplicate an assignment's configuration, rubric, and test cases to another course.",
   view_assignment: 'View the assignment and its associated submissions.',
