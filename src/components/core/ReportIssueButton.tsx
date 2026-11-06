@@ -209,7 +209,8 @@ const ReportIssueButton = () => {
       <button
         style={{
           position: 'fixed',
-          bottom: 20,
+          // A page with a fixed bottom nav (the phone grader console) sets --cp-bottom-nav.
+          bottom: 'calc(20px + var(--cp-bottom-nav, 0px))',
           right: 20,
           zIndex: 9999,
           display: 'flex',

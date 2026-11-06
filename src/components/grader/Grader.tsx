@@ -12,7 +12,7 @@ import { SettingOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 
 /* other library imports */
-import { Link, Route, Routes } from 'react-router';
+import { Link, Route, Routes, useLocation } from 'react-router';
 
 import CPLayoutAdmin from '../admin/other/CPLayoutAdmin';
 
@@ -55,9 +55,27 @@ const Grader: React.FC<IComponentProps> = (props) => {
 
   const [showConversionModal, setShowConversionModal] = useState<boolean>(false);
 
+  // The tab says where you are: tabs pile up when grading opens in new ones.
+  const location = useLocation();
   useEffect(() => {
-    document.title = 'codePost - Grader Console';
-  }, []);
+    const [panelSlug, assignmentSlug] = location.pathname.split('/').slice(4);
+    const panelNames: Record<string, string> = {
+      my_submissions: 'Claimed by Me',
+      my_sections: 'My Sections',
+      all_submissions: 'All Submissions',
+      regrades: 'Regrade Requests',
+      rubrics: 'Rubrics',
+      quizzes: 'Quiz Grading',
+    };
+    const parts = [
+      panelNames[panelSlug ?? ''] && assignmentSlug
+        ? `${panelNames[panelSlug]}: ${decodeURIComponent(assignmentSlug)}`
+        : panelNames[panelSlug ?? ''],
+      currentCourse?.name,
+      'codePost Grader Console',
+    ].filter(Boolean);
+    document.title = parts.join(' · ');
+  }, [location.pathname, currentCourse]);
 
   /* Helper functions */
   const handleLogout = () => {

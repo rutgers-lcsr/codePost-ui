@@ -29,6 +29,7 @@ import { openSubmission } from '../../../other/AdminUtils';
 
 import { CodePostDate } from '../../../../utils/CodepostDate';
 import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
+import { GREEN_TAG, ORANGE_TAG } from '../../../../../theme/tagStyles';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -281,7 +282,7 @@ const RegradesTable = (props: IRegradesTableProps) => {
           <Text style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>{submission.questionText}</Text>
         </Space>
       ),
-      statusTag: isClosed ? <Tag color="green">Closed</Tag> : <Tag color="orange">Open</Tag>,
+      statusTag: isClosed ? <Tag style={GREEN_TAG}>Closed</Tag> : <Tag style={ORANGE_TAG}>Open</Tag>,
       statusSort: isClosed ? 'Closed' : 'Open',
       responder: submission.questionResponder ?? '',
       responderSort: submission.questionResponder ?? '',
@@ -402,8 +403,8 @@ const RegradesTable = (props: IRegradesTableProps) => {
         </CPButton>
         <span style={{ marginLeft: 'auto', fontSize: 13, color: '#666' }}>
           {regradeSubmissions.length} request{regradeSubmissions.length !== 1 ? 's' : ''} &middot;{' '}
-          <Text style={{ color: '#fa8c16' }}>{openCount} open</Text> &middot;{' '}
-          <Text style={{ color: '#52c41a' }}>{closedCount} closed</Text>
+          <Text style={{ color: ORANGE_TAG.color }}>{openCount} open</Text> &middot;{' '}
+          <Text style={{ color: GREEN_TAG.color }}>{closedCount} closed</Text>
         </span>
       </div>
       <Table

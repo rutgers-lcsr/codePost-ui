@@ -136,6 +136,7 @@ const getViewIcon = (
  * Sorts null grades first, then unfinalized submissions, then by grade ascending
  */
 const sortByGrade = (a: GradeInfo, b: GradeInfo): number => {
+  if (a.grade === null && b.grade === null) return 0;
   if (a.grade === null) return -1;
   if (b.grade === null) return 1;
   if (!a.isFinalized) return -1;
@@ -175,7 +176,13 @@ const formatGradeText = (
  * Format grader text based on submission state
  */
 const formatGraderText = (grader: string | null | undefined): string | React.ReactElement => {
-  return grader ? grader : <Text style={{ color: 'rgba(0, 0, 0, 0.3)' }}>Unclaimed</Text>;
+  return grader ? (
+    grader
+  ) : (
+    <Text type="secondary" italic>
+      Unclaimed
+    </Text>
+  );
 };
 
 /**

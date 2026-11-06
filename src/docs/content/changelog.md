@@ -280,6 +280,23 @@ Stay up to date with new features, improvements, and fixes in codePost.
   lists assignments with open requests first and shows a dash for one that failed to load. Rubrics has its
   own sidebar icon.
 
+### Added: Grade next
+
+- **Grade next** on Claimed by Me claims one submission from the queue and opens it in the grading page in one
+  step (a new tab from codePost, the same tab when embedded). **Claim** still takes a number for batches and
+  now says what it did ("Claimed 3 submissions, at the top of your list"). Unfinalized rows come first, and an
+  **All / Unfinalized / Finalized** switch above the list replaces the hidden column filter.
+- The sidebar's panel links always reach the panel's table: opening an assignment no longer pins every panel to
+  it (the open assignment still carries over when you switch to All Submissions or Rubrics for it). My Sections
+  names the section and how many students it has, says when it has none, and links each assignment. All
+  Submissions lists 20 per page like Claimed by Me. The browser tab says where you are ("Claimed by Me: Lab 3 ·
+  CS101 · codePost Grader Console").
+- A queue count that fails to load says "Queue count unavailable" with Retry instead of disappearing. A page your
+  role lacks has the same card and heading as the other panels. Regrade open/closed counts and the Open/Closed
+  tags use the readable tints. On the phone, "In queue" no longer appears twice on a card, "Done" means you
+  finished something there ("Nothing to do" otherwise), due dates show the year when it is not this year, and
+  the Report an issue button sits above the bottom navigation.
+
 ---
 
 ## v4.3.0 — Instructor Agents, Quiz Workflow & Section Staffing

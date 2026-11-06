@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftOutlined,
   BookOutlined,
@@ -59,7 +59,9 @@ function hasWork(a: Assignment): boolean {
 function formatDueDate(date: string | null | undefined): string {
   if (!date) return 'No due date';
   const d = new Date(date);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  // The year only when it is not this year.
+  const year = d.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' as const } : {};
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', ...year });
 }
 
 function getGreeting(): string {
@@ -114,7 +116,7 @@ const CourseDetail: React.FC<{
           <Statistic
             title="Your unfinalized"
             value={totalMyUnfinalized}
-            valueStyle={{ fontSize: 18, color: totalMyUnfinalized > 0 ? '#fa8c16' : undefined }}
+            valueStyle={{ fontSize: 18, color: totalMyUnfinalized > 0 ? ORANGE_TAG.color : undefined }}
           />
           <Statistic title="Your finalized" value={totalMyFinalized} valueStyle={{ fontSize: 18 }} />
           <Statistic title="In queue" value={totalInQueue} valueStyle={{ fontSize: 18 }} />
@@ -170,9 +172,14 @@ const CourseDetail: React.FC<{
                       ) : queue !== undefined && queue > 0 ? (
                         <Tag>{queue} in queue</Tag>
                       ) : mine !== undefined && queue !== undefined ? (
-                        <Tag style={GREEN_TAG} icon={<CheckCircleFilled aria-hidden />}>
-                          Done
-                        </Tag>
+                        // "Done" only when you finished something; otherwise there was nothing here.
+                        (assignment.myFinalizedCount ?? 0) > 0 ? (
+                          <Tag style={GREEN_TAG} icon={<CheckCircleFilled aria-hidden />}>
+                            Done
+                          </Tag>
+                        ) : (
+                          <Tag>Nothing to do</Tag>
+                        )
                       ) : null}
                     </Flex>
 
@@ -211,7 +218,8 @@ const CourseDetail: React.FC<{
                         <Text type="secondary" style={{ fontSize: 12 }}>
                           {assignment.myFinalizedCount} finalized by you
                         </Text>
-                        {queue !== undefined && (
+                        {/* The queue line only when the tag above does not already say it */}
+                        {queue !== undefined && mine !== undefined && mine > 0 && (
                           <Text type="secondary" style={{ fontSize: 12 }}>
                             {queue} in queue
                           </Text>
@@ -243,6 +251,14 @@ const CourseDetail: React.FC<{
 
 const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, userEmail, user, onLogout }) => {
   const [activeTab, setActiveTab] = useState<MobileTab>('home');
+
+  // Tell fixed-bottom chrome (the Report an issue button) to sit above the bottom nav.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--cp-bottom-nav', '56px');
+    return () => {
+      document.documentElement.style.removeProperty('--cp-bottom-nav');
+    };
+  }, []);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
 
   // Only greet by name when the email local part looks like a name (netIDs like "mk1800" read oddly)

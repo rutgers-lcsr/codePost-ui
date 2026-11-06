@@ -19,6 +19,7 @@ import { Link, useLocation } from 'react-router';
 import { CLIENT_URL } from '../../config';
 
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
+import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 
 interface IProps {
   collapsed: boolean;
@@ -40,12 +41,18 @@ const GraderNav: React.FC<IProps> = (props) => {
   const assignment = location.pathname.replace(props.baseURL, '').split('/')[2] || '';
 
   const getPath = (target: string) => {
-    // Only persist assignment for panels that support it clearly
-    if (assignment && ['my_submissions', 'all_submissions', 'rubrics'].includes(target)) {
+    // Switching panels keeps the open assignment (same assignment, other view); the link
+    // for the panel you are already on goes to its index table.
+    const onThisPanel = location.pathname.includes(`/${target}/`);
+    if (assignment && !onThisPanel && ['my_submissions', 'all_submissions', 'rubrics'].includes(target)) {
       return `${props.baseURL}/${target}/${assignment}`;
     }
     return `${props.baseURL}/${target}`;
   };
+
+  // Every index redirects to the remembered assignment; a sidebar click means "show me
+  // the panel", so it forgets it first (a link that carries the assignment re-stores it).
+  const forgetAssignment = () => LOCAL_SETTINGS.defaultAssignment.setter(0);
 
   const openLink = (url: string) => {
     const w = window.open(url, '_blank');
@@ -73,7 +80,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '0',
             icon: <ContainerOutlined />,
-            label: <Link to={getPath('my_submissions')}>Claimed by Me</Link>,
+            label: (
+              <Link to={getPath('my_submissions')} onClick={forgetAssignment}>
+                Claimed by Me
+              </Link>
+            ),
           },
         ]
       : []),
@@ -82,7 +93,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '1',
             icon: <ClusterOutlined />,
-            label: <Link to={`${props.baseURL}/my_sections`}>My Sections</Link>,
+            label: (
+              <Link to={`${props.baseURL}/my_sections`} onClick={forgetAssignment}>
+                My Sections
+              </Link>
+            ),
           },
         ]
       : []),
@@ -91,7 +106,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '2',
             icon: <InboxOutlined />,
-            label: <Link to={getPath('all_submissions')}>All Submissions</Link>,
+            label: (
+              <Link to={getPath('all_submissions')} onClick={forgetAssignment}>
+                All Submissions
+              </Link>
+            ),
           },
         ]
       : []),
@@ -100,7 +119,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '3',
             icon: <MessageOutlined />,
-            label: <Link to={`${props.baseURL}/regrades`}>Regrade Requests</Link>,
+            label: (
+              <Link to={`${props.baseURL}/regrades`} onClick={forgetAssignment}>
+                Regrade Requests
+              </Link>
+            ),
           },
         ]
       : []),
@@ -109,7 +132,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '4',
             icon: <ProfileOutlined />,
-            label: <Link to={getPath('rubrics')}>Rubrics</Link>,
+            label: (
+              <Link to={getPath('rubrics')} onClick={forgetAssignment}>
+                Rubrics
+              </Link>
+            ),
           },
         ]
       : []),
@@ -118,7 +145,11 @@ const GraderNav: React.FC<IProps> = (props) => {
           {
             key: '5',
             icon: <FormOutlined />,
-            label: <Link to={`${props.baseURL}/quizzes`}>Quiz Grading</Link>,
+            label: (
+              <Link to={`${props.baseURL}/quizzes`} onClick={forgetAssignment}>
+                Quiz Grading
+              </Link>
+            ),
           },
         ]
       : []),

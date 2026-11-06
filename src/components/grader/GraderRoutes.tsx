@@ -19,6 +19,8 @@ import RubricOverview from '../admin/assignments/rubric/RubricOverview';
 import { encodeForRoute } from '../core/URLutils';
 import { useLocation, useParams } from 'react-router';
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
+import { Breadcrumb, Result } from 'antd';
+import CPAdminDetail from '../admin/other/CPAdminDetail';
 
 interface LegacyRouteProps {
   match: { params: Record<string, string | undefined>; url: string; path: string; isExact: boolean };
@@ -60,16 +62,27 @@ const NoPanel: FC<{ firstPanel: string | null }> = ({ firstPanel }) => {
   const splat = useParams()['*'] ?? '';
   const base = location.pathname.slice(0, location.pathname.length - splat.length);
   return (
-    <div style={{ padding: 24 }}>
-      <p>You don&apos;t have access to this page in this course.</p>
-      {firstPanel ? (
-        <Link to={`${base}${firstPanel}`}>
-          Go to {firstPanel === 'my_submissions' ? 'Claimed by Me' : 'your first panel'}
-        </Link>
-      ) : (
-        <p>Nothing to grade in this course yet.</p>
-      )}
-    </div>
+    <CPAdminDetail
+      goBack={null}
+      breadcrumbs={<Breadcrumb items={[{ title: 'Not available' }]} />}
+      title={<div style={{ letterSpacing: '-0.3px' }}>Not available</div>}
+      actions={[]}
+      content={
+        <Result
+          status="403"
+          title="You don't have access to this page in this course."
+          subTitle={firstPanel ? 'Ask a course admin if you need it.' : 'Nothing to grade in this course yet.'}
+          extra={
+            firstPanel ? (
+              <Link to={`${base}${firstPanel}`}>
+                Go to {firstPanel === 'my_submissions' ? 'Claimed by Me' : 'your first panel'}
+              </Link>
+            ) : undefined
+          }
+        />
+      }
+      gutterSize={0}
+    />
   );
 };
 

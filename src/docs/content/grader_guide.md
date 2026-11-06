@@ -19,8 +19,11 @@ This guide helps graders and TAs work efficiently in codePost while staying alig
 
 ## Core grading workflow
 
-1. Open **Submissions** and filter to your queue.
-2. Open a submission in **Code Console**.
+1. Open **Claimed by Me** and pick the assignment. The table shows, per assignment, how many of your claims are
+   unfinalized, how many you finalized, and how many submissions wait in the queue.
+2. Press **Grade next** to claim one submission from the queue and open it in the **Code Console**, or **Claim**
+   several at once (set the number next to it) and open them from your list, where each student name is a link.
+   **Unfinalized** above the list shows what is left.
 3. Review files and add inline comments.
 4. Apply rubric items for consistent scoring.
 5. Review test/output panels as needed.
@@ -183,8 +186,8 @@ the student submits, so you only ever see the responses that genuinely need a hu
 
 > [!IMPORTANT]
 > Graders can grade quizzes by default — if a **Quiz Grading** item appears in your grader
-> navigation, you have access. Some courses restrict it: the instructor turns off *Graders Can
-> Grade Quizzes* and grants the **Quiz Grader** role per grader in Roster → Graders. If you don't
+> navigation, you have access. Some courses restrict it: the instructor turns off _Graders Can
+> Grade Quizzes_ and grants the **Quiz Grader** role per grader in Roster → Graders. If you don't
 > see the nav item, ask your instructor for that role.
 
 To grade:

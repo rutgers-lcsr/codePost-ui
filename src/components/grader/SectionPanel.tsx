@@ -7,12 +7,14 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Select } from 'antd';
+import { Alert, Select, Typography } from 'antd';
 
 /* other library imports */
 
 /* codePost imports */
+import { Link } from 'react-router';
 import { Course } from '../../api-client';
+import { encodeForLink } from '../core/URLutils';
 import { sectionsApi } from '../../api-client/clients';
 import { AssignmentType, SectionType, SubmissionInfoType } from '../../types/models';
 
@@ -53,7 +55,9 @@ class SectionPanel extends React.Component<IProps, IState> {
   }
 
   public componentDidUpdate(oldProps: IProps, _prevState: IState) {
-    if (oldProps.assignments !== this.props.assignments) {
+    // The assignments array is a new reference on every refetch; reload only for a new set.
+    const ids = (list: AssignmentType[]) => list.map((a) => a.id).join(',');
+    if (ids(oldProps.assignments) !== ids(this.props.assignments)) {
       this.loadSubmissions(this.props.assignments, this.state.activeSection);
     }
   }
@@ -120,7 +124,14 @@ class SectionPanel extends React.Component<IProps, IState> {
       const list = assignment.id in submissions ? submissions[assignment.id] : [];
       const numFinalized = list.filter((sub) => sub.isFinalized).length;
       return {
-        assignment: assignment.name,
+        key: assignment.id,
+        assignment: (
+          <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+            <Typography.Text strong className="text-link">
+              {assignment.name}
+            </Typography.Text>
+          </Link>
+        ),
         submissions: list.length,
         finalized: numFinalized,
         missing: this.state.activeSection.students.length - list.length,
@@ -133,7 +144,27 @@ class SectionPanel extends React.Component<IProps, IState> {
       };
     });
 
-    let selectContent = <div />;
+    // Which section the table is about, always; the picker only when there is a choice.
+    const section = this.state.activeSection;
+    const studentCount = section?.students?.length ?? 0;
+    let selectContent = (
+      <Typography.Text strong>
+        Section {section?.name}
+        <Typography.Text type="secondary">
+          {' '}
+          · {studentCount} student{studentCount === 1 ? '' : 's'}
+        </Typography.Text>
+      </Typography.Text>
+    );
+    const notice =
+      section && studentCount === 0 && !this.state.isLoading ? (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`Section ${section.name} has no students yet, so there is nothing to grade here.`}
+        />
+      ) : null;
     if (this.props.sections.length > 1) {
       const menuItems = this.props.sections.map((section) => {
         return (
@@ -167,8 +198,9 @@ class SectionPanel extends React.Component<IProps, IState> {
         data={data}
         columns={columns}
         isLoading={this.state.isLoading}
+        notice={notice}
         actions={[selectContent]}
-        title="My sections"
+        title="My Sections"
         sections={this.props.sections}
         email={this.props.graderEmail}
       />
