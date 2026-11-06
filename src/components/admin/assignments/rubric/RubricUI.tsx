@@ -395,7 +395,7 @@ const RubricUI = ({
       >
         Save
       </CPButton>,
-    ];
+    ].filter(Boolean);
 
     const addRubricCategory = () => {
       helpers.addRubricCategory(undefined);

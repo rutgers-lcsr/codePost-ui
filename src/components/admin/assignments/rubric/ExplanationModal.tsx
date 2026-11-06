@@ -11,6 +11,8 @@ interface IProps {
   onCancel: () => void;
   onSave: (draft?: string) => void;
   extra?: React.ReactElement;
+  /** View-only: the text cannot be edited and there is nothing to save. */
+  readOnly?: boolean;
 }
 
 const ExplanationModal = (props: IProps) => {
@@ -25,7 +27,14 @@ const ExplanationModal = (props: IProps) => {
   };
 
   return (
-    <Modal open={true} okText="Save" title={props.title} onCancel={props.onCancel} onOk={onSave}>
+    <Modal
+      open={true}
+      okText="Save"
+      title={props.title}
+      onCancel={props.onCancel}
+      onOk={onSave}
+      footer={props.readOnly ? null : undefined}
+    >
       {props.extra}
       <Tabs
         defaultActiveKey="1"
@@ -37,6 +46,7 @@ const ExplanationModal = (props: IProps) => {
               <Input.TextArea
                 defaultValue={draft}
                 onChange={onChange}
+                readOnly={props.readOnly}
                 placeholder="Use this space to write an explanation for students (Markdown)"
                 autoSize={{ minRows: 10, maxRows: 12 }}
               />

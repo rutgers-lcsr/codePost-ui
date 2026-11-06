@@ -58,6 +58,10 @@ interface IProps {
 /* Component
 /**********************************************************************************************************************/
 
+// A limited grader may edit a new (unsaved) comment or one no grading comment uses; an applied comment
+// (or one whose status is unknown, null) is read-only, including its explanation and instructions.
+const isLocked = (limitedEdit: boolean, c: RubricComment) => limitedEdit && c.id > 0 && c.isApplied !== false;
+
 const RubricCategoryUI: React.FC<{
   props: IRubricCategoryManagerProps & IProps;
   state: IRubricCategoryManagerState;
@@ -93,9 +97,7 @@ const RubricCategoryUI: React.FC<{
         /* Accessors and Handlers */
         const currentComment = thisComment || rubricComment;
         const currentPointDelta = currentComment.pointDelta;
-        // A limited grader may edit a new (unsaved) comment or one no grading comment uses; an applied
-        // comment (or one whose status is unknown, null) is read-only.
-        const locked = limitedEdit && currentComment.id > 0 && currentComment.isApplied !== false;
+        const locked = isLocked(limitedEdit, currentComment);
 
         // Handlers
         const onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -179,7 +181,11 @@ const RubricCategoryUI: React.FC<{
                           color: currentComment.explanation ? '#1890ff' : '#8c8c8c',
                         }}
                       >
-                        {currentComment.explanation ? 'Edit Explanation' : 'Add Explanation'}
+                        {locked
+                          ? 'View Explanation'
+                          : currentComment.explanation
+                            ? 'Edit Explanation'
+                            : 'Add Explanation'}
                       </Button>
                       {currentComment.explanation && !locked && (
                         <Button
@@ -210,7 +216,11 @@ const RubricCategoryUI: React.FC<{
                           color: currentComment.instructionText ? '#faad14' : '#8c8c8c',
                         }}
                       >
-                        {currentComment.instructionText ? 'Edit Instructions' : 'Add Instructions'}
+                        {locked
+                          ? 'View Instructions'
+                          : currentComment.instructionText
+                            ? 'Edit Instructions'
+                            : 'Add Instructions'}
                       </Button>
                       {currentComment.instructionText && !locked && (
                         <Button
@@ -481,7 +491,12 @@ const RubricCategoryUI: React.FC<{
                         />
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} disabled={limitedEdit} />
+                        <Switch
+                          size="small"
+                          checked={state.atMostOnce}
+                          onChange={toggleAtMostOnce}
+                          disabled={limitedEdit}
+                        />
                         <span style={{ fontSize: '13px', color: '#595959' }}>Apply at most once</span>
                       </div>
                     </div>
@@ -562,6 +577,7 @@ const RubricCategoryUI: React.FC<{
 
       {activeComment ? (
         <ExplanationModal
+          readOnly={isLocked(limitedEdit, activeComment)}
           title={activeComment.text || ''}
           startText={activeComment[activeField] || ''}
           onCancel={() => {
@@ -574,6 +590,7 @@ const RubricCategoryUI: React.FC<{
                 Use as template:{' '}
                 <Switch
                   defaultChecked={activeComment.templateTextOn}
+                  disabled={isLocked(limitedEdit, activeComment)}
                   onChange={() =>
                     helpers.updateRubricComment(activeComment.id, 'templateTextOn', !activeComment.templateTextOn)
                   }
