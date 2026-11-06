@@ -28,6 +28,11 @@ course.students.add(student2)
 course.allowGradersToEditRubric = True
 course.save()
 grader = User.objects.get(username='grader_basic')
+# The specs' rubric editor. createtestusers only enrols it in courses that already exist, and the
+# global setup runs it before create_demo_course, so on a fresh DB it is in no course at all.
+rubric_editor = User.objects.get(username='grader_rubric')
+course.graders.add(grader, rubric_editor)
+course.rubricEditors.add(rubric_editor)
 
 def make(name, **extra):
     return Assignment.objects.create(course=course, name=name, points=Decimal('100'), sortKey=900,
