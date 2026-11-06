@@ -271,12 +271,16 @@ const Comments: React.FC<ICommentsCoreProps & ICommentsEditProps> = (props) => {
     document.addEventListener('keydown', handleKeyPress);
     document.addEventListener('pdf-loaded', setCommentPlacementsStable);
 
+    // Cleared on cleanup: a late call would navigate a user who already left back to the console,
+    // and a re-run must not leave an earlier timer armed.
+    let scrolledTimer: ReturnType<typeof setTimeout> | undefined;
     if (props.scrollToCommentID !== undefined) {
       jumpToComment(props.scrollToCommentID);
-      setTimeout(() => onScrolledToCommentRef.current?.(), 1000);
+      scrolledTimer = setTimeout(() => onScrolledToCommentRef.current?.(), 1000);
     }
 
     return () => {
+      clearTimeout(scrolledTimer);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleCursor);
       document.removeEventListener('keydown', handleKeyPress);
