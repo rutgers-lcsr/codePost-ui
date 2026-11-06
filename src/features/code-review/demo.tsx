@@ -165,6 +165,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: 'Always handle empty collections before recursive decomposition.',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
     {
       id: 12,
@@ -175,6 +176,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: 'Initialize running max from first element, not from 0.',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
   ],
   2: [
@@ -187,6 +189,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: '',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
     {
       id: 22,
@@ -197,6 +200,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: '',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
   ],
   3: [
@@ -209,6 +213,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: 'Pass an index argument to avoid repeatedly allocating sub-lists.',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
     {
       id: 32,
@@ -219,6 +224,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: '',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
   ],
   4: [
@@ -231,6 +237,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: 'Check if head itself matches before walking the rest of the list.',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
     {
       id: 42,
@@ -241,6 +248,7 @@ const demoRubricComments: IRubricCategoryToRubricCommentsMap = {
       explanation: 'Guard against head == null before accessing head.data.',
       instructionText: '',
       templateTextOn: false,
+      isApplied: null,
     },
   ],
 };
