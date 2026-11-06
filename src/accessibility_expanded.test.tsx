@@ -17,7 +17,7 @@ import ManageAssignments from './components/admin/assignments/ManageAssignments'
 import Dashboard from './components/codepost-admin/Dashboard';
 
 import { mockOrganization, mockCourse as mockCourseBase, mockUser as mockUserBase, makeAssignment } from './test-utils';
-import { organizationsApi, coursesApi, usersApi, registrationApi, systemApi } from './api-client/clients';
+import { organizationsApi, coursesApi, usersApi, registrationApi, systemApi, dashboardApi } from './api-client/clients';
 
 const mockCourse = mockCourseBase;
 const mockAssignment = makeAssignment();
@@ -234,6 +234,8 @@ describe.sequential('Expanded Accessibility Audit', () => {
     vi.mocked(registrationApi.emailPasswordResetCreate).mockResolvedValue({ success: true } as never);
 
     vi.mocked(systemApi.healthRetrieve).mockResolvedValue({ database: 'Connected', celery: 'Running' } as never);
+    // The health model fetches the shared acknowledgement on every check; a refusal reads as "unknown".
+    vi.mocked(dashboardApi.healthAckRetrieve).mockRejectedValue(new Error('no acknowledgement') as never);
   });
 
   it('should have no violations on User Settings page', async () => {
