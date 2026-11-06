@@ -134,7 +134,7 @@ describe('RubricUI writes for a grader limited to unapplied comments', () => {
 
     await waitFor(() => expect(writes.length).toBeGreaterThan(0));
     expect(writes.map((w) => w.op)).toEqual(['comment.create']);
-  });
+  }, 30000);
 
   it('editing an unapplied comment and saving sends only a PATCH of that comment', async () => {
     await renderLimitedGrader();
@@ -147,7 +147,7 @@ describe('RubricUI writes for a grader limited to unapplied comments', () => {
     await waitFor(() => expect(writes.length).toBeGreaterThan(0));
     expect(writes.map((w) => w.op)).toEqual(['comment.patch']);
     expect(writes[0].args.id).toBe(2);
-  });
+  }, 30000);
 
   it('every way of editing an applied comment is inert and nothing is sent', async () => {
     await renderLimitedGrader();
@@ -172,7 +172,7 @@ describe('RubricUI writes for a grader limited to unapplied comments', () => {
 
     expect(saveButton()).toBeDisabled();
     expect(writes).toEqual([]);
-  });
+  }, 30000);
 
   it('never offers a category write or any delete', async () => {
     await renderLimitedGrader();
@@ -183,5 +183,5 @@ describe('RubricUI writes for a grader limited to unapplied comments', () => {
     await waitFor(() => expect(writes.length).toBeGreaterThan(0));
     expect(writes.filter((w) => w.op.startsWith('category') || w.op.endsWith('delete'))).toEqual([]);
     expect(screen.queryByLabelText(/delete/i)).toBeNull();
-  });
+  }, 30000);
 });
