@@ -4,6 +4,7 @@
  * These static methods handle comment state management, rubric comment linking, grade calculation, and file filtering.
  */
 
+import queryString from 'query-string';
 import type { AssignmentType, CommentType, SubmissionTestType, TestCaseType } from '../../types/models';
 import { SUPPORT_URL } from '../../config';
 import { CommentIO, UiComment } from '../../utils/comments';
@@ -15,6 +16,13 @@ import { ICommentToRubricCommentMap, IFileToCommentsMap, IRubricCategoryToRubric
 import { fileTypeRegistry } from './formats';
 import { compareRubricCategories, compareRubricComments } from '../../components/admin/assignments/rubric/RubricUtils';
 import { LOCAL_SETTINGS } from '../../components/utils/LocalSettings';
+
+/** The comment id in a ?comment=<id> search string, or undefined. Never NaN: the Comments panel
+ *  scrolls (and re-arms a navigate) for anything that is not undefined. */
+export const commentIdFromSearch = (search: string): number | undefined => {
+  const id = parseInt(queryString.parse(search).comment as string, 10);
+  return Number.isNaN(id) ? undefined : id;
+};
 
 /**********************************************************************************************************************/
 /* Comment State Management

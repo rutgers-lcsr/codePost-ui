@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import * as React from 'react';
-import queryString from 'query-string';
+import { commentIdFromSearch } from '../codeConsoleUtils';
 import { useLocation } from 'react-router';
 import { Empty, Tag } from 'antd';
 
@@ -484,7 +484,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
         {...(!props.inDemoMode
           ? {
               allRubricComments: Object.values(props.rubricComments).flat(),
-              scrollToCommentID: parseInt(queryString.parse(location.search).comment as string),
+              scrollToCommentID: commentIdFromSearch(location.search),
               onScrolledToComment: props.handleScrolledToComment,
             }
           : {})}
@@ -518,7 +518,7 @@ export function useConsoleLayout(props: UseConsoleLayoutProps): ConsoleLayout | 
         rubricCategories={props.rubricCategories}
         {...(!props.inDemoMode
           ? {
-              scrollToCommentID: parseInt(queryString.parse(location.search).comment as string),
+              scrollToCommentID: commentIdFromSearch(location.search),
               onScrolledToComment: props.handleScrolledToComment,
             }
           : {})}
