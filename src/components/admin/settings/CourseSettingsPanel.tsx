@@ -69,6 +69,7 @@ type SettingKey =
   | 'emailNewUsers'
   | 'anonymousGradingDefault'
   | 'gradersCanGradeQuizzes'
+  | 'allowGradersToEditRubric'
   | 'archived';
 
 const ALL_SECTIONS: SectionDef[] = [
@@ -473,6 +474,7 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
   const emailNewUsers = Form.useWatch('emailNewUsers', form);
   const anonymousGradingDefault = Form.useWatch('anonymousGradingDefault', form);
   const gradersCanGradeQuizzes = Form.useWatch('gradersCanGradeQuizzes', form);
+  const allowGradersToEditRubric = Form.useWatch('allowGradersToEditRubric', form);
   const archived = Form.useWatch('archived', form);
 
   const settingsData = [
@@ -514,6 +516,15 @@ const SettingsForm: React.FC<IFormProps> = (props) => {
         'grading per-grader via the Quiz Grader role on the Graders roster page.',
       enabled: gradersCanGradeQuizzes ?? thisCourse.gradersCanGradeQuizzes ?? true,
       initialValue: thisCourse.gradersCanGradeQuizzes ?? true,
+    },
+    {
+      key: 'allowGradersToEditRubric',
+      title: 'Allow Graders to Edit Rubric',
+      description:
+        'Graders can add rubric comments and edit ones not yet used in grading. They cannot delete ' +
+        'comments or change categories.',
+      enabled: allowGradersToEditRubric ?? thisCourse.allowGradersToEditRubric ?? false,
+      initialValue: thisCourse.allowGradersToEditRubric ?? false,
     },
     {
       key: 'archived',
