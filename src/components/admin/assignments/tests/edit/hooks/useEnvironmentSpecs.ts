@@ -114,6 +114,9 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
         setRequirements(props.env.requirements ?? '');
         setAutoDetect(props.env.autoDetect ?? true);
         setEnvVars(envVarsFromServer);
+        // The server keeps the last build's log; without this an instructor who reloads the
+        // page (or opens a failed environment) sees "No logs available".
+        setBuildLogs(props.env.buildLogs ?? '');
         return;
       }
 
