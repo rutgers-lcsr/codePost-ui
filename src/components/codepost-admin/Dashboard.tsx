@@ -744,8 +744,7 @@ const Dashboard = () => {
           collapsedWidth={collapsedWidth}
           onCollapse={onCollapse}
           currentPage={currentPage}
-          isLoading={isLoading}
-          counts={{ courses: stats.totalCourses, people: stats.totalUniqueUsers, pendingRequests: pendingCount }}
+          pendingRequests={pendingCount}
           openItems={isLoading ? 0 : openItems}
           bannerDirty={bannerDirtyState}
           onNavigate={(page) => {

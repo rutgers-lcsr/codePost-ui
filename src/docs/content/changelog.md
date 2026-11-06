@@ -58,7 +58,8 @@ Stay up to date with new features, improvements, and fixes in codePost.
   Approve and a red Deny link, so an access grant never gets a solid green button per row. The email on an Inbox
   or Requests row opens the person. The banner's "who sees this" sentence sits with its switch; Courses shows
   Assignments and Sections as plain counts; the search box has one name everywhere ("Find a person, a course or
-  a page").
+  a page"). The sidebar counts only what someone acts on (the Inbox and admin requests); the People and Courses
+  totals live on the Inbox.
 
 ### Changed: rows that say what to do next, one page for people, faults with a next step
 

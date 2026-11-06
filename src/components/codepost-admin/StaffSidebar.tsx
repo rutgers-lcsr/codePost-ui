@@ -15,7 +15,7 @@ import { Badge, Button, Divider, Layout, Menu, Tooltip, Typography } from 'antd'
 import { Link } from 'react-router';
 
 import CPLogo from '../core/CPLogo';
-import { countLabel, type StaffPage } from './staffRoutes';
+import type { StaffPage } from './staffRoutes';
 
 const { Text } = Typography;
 const { Sider } = Layout;
@@ -32,9 +32,8 @@ interface StaffSidebarProps {
   collapsedWidth: number;
   onCollapse: (next: boolean, type: 'clickTrigger' | 'responsive') => void;
   currentPage: StaffPage;
-  /** Counts are left off the labels until the first load answers. */
-  isLoading: boolean;
-  counts: { courses: number; people: number; pendingRequests: number };
+  /** Admin requests waiting under People: read out on its entry, since the Inbox badge counts them in. */
+  pendingRequests: number;
   /** Items waiting on the Inbox: the badge on its entry. */
   openItems: number;
   /** The banner editor has unsaved edits: the Tools entry says so, so the leave guard is never a surprise. */
@@ -50,8 +49,7 @@ const StaffSidebar = ({
   collapsedWidth,
   onCollapse,
   currentPage,
-  isLoading,
-  counts,
+  pendingRequests,
   openItems,
   bannerDirty,
   onNavigate,
@@ -144,20 +142,17 @@ const StaffSidebar = ({
             {
               key: 'People',
               icon: <UserOutlined />,
+              // Totals live on the Inbox; the sidebar counts only what someone acts on.
               label: (
                 <span>
-                  {countLabel('People', isLoading ? undefined : counts.people)}
-                  {counts.pendingRequests > 0 && (
-                    <span className="sr-only">, {counts.pendingRequests} admin requests waiting</span>
+                  People
+                  {pendingRequests > 0 && (
+                    <span className="sr-only">, {pendingRequests} admin requests waiting</span>
                   )}
                 </span>
               ),
             },
-            {
-              key: 'Courses',
-              icon: <BookOutlined />,
-              label: countLabel('Courses', isLoading ? undefined : counts.courses),
-            },
+            { key: 'Courses', icon: <BookOutlined />, label: 'Courses' },
             // Health, activity, autograding and the deploy calendar: what the platform is doing.
             { key: 'Platform', icon: <ClusterOutlined />, label: 'Platform' },
             { type: 'divider', style: { borderColor: 'rgba(255,255,255,0.1)', margin: '8px 16px' } },
