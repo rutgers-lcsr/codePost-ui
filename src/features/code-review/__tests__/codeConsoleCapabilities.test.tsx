@@ -359,6 +359,16 @@ describe('Code Console capability-based rendering', () => {
       });
     });
 
+    it('grader with only edit_unapplied_rubric_comments gets a link to the grader rubric page', async () => {
+      seedCaps(COURSE_KEY, { ...GRADER_CAPS, edit_unapplied_rubric_comments: true });
+      const { getByRole, findByText } = renderMenu();
+
+      await userEvent.click(getByRole('img', { hidden: true }));
+
+      const link = (await findByText(/Open rubric$/)).closest('a');
+      expect(link?.getAttribute('href')).toMatch(/^\/grader\/.+\/rubrics\//);
+    });
+
     it('student sees neither "Claim" nor "Edit Rubric"', async () => {
       seedCaps(COURSE_KEY, STUDENT_CAPS);
       const { getByRole, queryByText } = renderMenu();

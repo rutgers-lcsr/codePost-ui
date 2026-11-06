@@ -862,6 +862,10 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
     courseId ? selectCaps(s, `course:${courseId}`).edit_rubric : undefined,
   );
 
+  const capEditUnappliedRubric = usePermissionsStore((s) =>
+    courseId ? selectCaps(s, `course:${courseId}`).edit_unapplied_rubric_comments : undefined,
+  );
+
   const canClaimSubmissions = capClaimSubmissions ?? false;
   const canEditRubricInAdmin = capEditRubric ?? false;
 
@@ -918,6 +922,25 @@ export const HeaderMenu = (props: IHeaderMenuProps) => {
                 <PlusCircleOutlined /> Claim another submission{' '}
                 <span style={{ color: '#ccc' }}>[{osControlKey()} shift u]</span>
               </span>
+            ),
+            style: itemStyle,
+            className: 'header-menu',
+          },
+        ]
+      : []),
+    // Graders who may only add/edit unapplied comments use the rubric page in the Grader Console.
+    ...(!canEditRubricInAdmin && capEditUnappliedRubric && props.course
+      ? [
+          {
+            key: 'rubric-grader',
+            label: (
+              <Link
+                to={`/grader/${encodeForLink(props.course.name)}/${encodeForLink(
+                  props.course.period,
+                )}/rubrics/${encodeForLink(props.assignment.name)}`}
+              >
+                <EditOutlined /> Open rubric
+              </Link>
             ),
             style: itemStyle,
             className: 'header-menu',

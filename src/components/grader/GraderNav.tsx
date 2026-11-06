@@ -33,7 +33,7 @@ const GraderNav: React.FC<IProps> = (props) => {
   const location = useLocation();
   const courseCaps = useCourseCapabilities(props.courseId);
   const showAllSubmissions = !!courseCaps.manage_regrades;
-  const showRubrics = !!courseCaps.edit_rubric;
+  const showRubrics = !!courseCaps.edit_rubric || !!courseCaps.edit_unapplied_rubric_comments;
   const showQuizGrading = !!courseCaps.grade_quiz;
   const panel = location.pathname.replace(props.baseURL, '').split('/')[1] || '';
 

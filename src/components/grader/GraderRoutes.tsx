@@ -84,7 +84,7 @@ interface GraderRoutesProps {
 const GraderRoutes: FC<GraderRoutesProps> = ({ currentCourse, assignments, user, localSectionsLed, someRegrades }) => {
   const courseCaps = useCourseCapabilities(currentCourse?.id);
   const showAllSubmissions = !!courseCaps.manage_regrades;
-  const showRubrics = !!courseCaps.edit_rubric;
+  const showRubrics = !!courseCaps.edit_rubric || !!courseCaps.edit_unapplied_rubric_comments;
   const showQuizGrading = !!courseCaps.grade_quiz;
 
   // The first panel this grader has, in sidebar order: the course root lands there, and a

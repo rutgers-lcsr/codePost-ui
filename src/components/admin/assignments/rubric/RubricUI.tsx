@@ -48,6 +48,7 @@ import { tooltips } from '../../../core/tooltips';
 import styles from './RubricSideBar.module.css';
 import { DIRECTION } from '../../../../types/common';
 import { compareRubricCategories, compareRubricComments } from './RubricUtils';
+import { useAssignmentCapabilities, useCourseCapabilities } from '../../../../stores/usePermissionsStore';
 
 interface IRubricUIProps extends IRubricManagerProps {
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -69,6 +70,13 @@ const RubricUI = ({
   helpers: IRubricManagerHelpers;
 }) => {
   const { rubricCategories, rubricComments, loadComplete } = state;
+
+  // Graders who may only add comments and edit unapplied ones (no edit_rubric at the course or, for
+  // collaborative rubrics, the assignment) get the add/edit-only view: no category or delete controls.
+  const courseCaps = useCourseCapabilities(props.assignment.course);
+  const assignmentCaps = useAssignmentCapabilities(props.assignment.id);
+  const limitedEdit =
+    courseCaps.edit_unapplied_rubric_comments === true && !courseCaps.edit_rubric && !assignmentCaps.edit_rubric;
 
   /* settings modal display */
   const [settingsOpen, setSettingsOpen] = React.useState(false);
@@ -337,14 +345,16 @@ const RubricUI = ({
       <CPButton key="0" cpType="secondary" icon={<SettingOutlined />} onClick={() => setSettingsOpen(!settingsOpen)}>
         Settings
       </CPButton>,
-      <RubricFileUpload
-        key="2"
-        assignment={props.assignment}
-        rubricComments={state.rubricComments}
-        rubricCategories={state.rubricCategories}
-        onRubricUpload={helpers.replaceRubric}
-        isDisabled={false}
-      />,
+      !limitedEdit && (
+        <RubricFileUpload
+          key="2"
+          assignment={props.assignment}
+          rubricComments={state.rubricComments}
+          rubricCategories={state.rubricCategories}
+          onRubricUpload={helpers.replaceRubric}
+          isDisabled={false}
+        />
+      ),
       <RubricFileDownload
         key="download"
         assignment={props.assignment}
@@ -352,14 +362,16 @@ const RubricUI = ({
         rubricCategories={state.rubricCategories}
         isDisabled={false}
       />,
-      <MergeRubricCommentsDialog
-        key="3"
-        isDisabled={false}
-        rubricCategories={state.rubricCategories}
-        rubricComments={state.rubricComments}
-        assignment={props.assignment}
-        reloadRubric={helpers.loadAssignmentRubric}
-      />,
+      !limitedEdit && (
+        <MergeRubricCommentsDialog
+          key="3"
+          isDisabled={false}
+          rubricCategories={state.rubricCategories}
+          rubricComments={state.rubricComments}
+          assignment={props.assignment}
+          reloadRubric={helpers.loadAssignmentRubric}
+        />
+      ),
       <CPButton
         key="0"
         onClick={helpers.resetRubric}
@@ -419,9 +431,17 @@ const RubricUI = ({
           <div className={styles.sidebarContainer}>
             <div className={styles.sidebarHeader}>
               <span className={styles.sidebarTitle}>Categories</span>
-              <Tooltip title="Add new category">
-                <Button size="small" type="primary" icon={<PlusOutlined />} onClick={addRubricCategory} />
-              </Tooltip>
+              {!limitedEdit && (
+                <Tooltip title="Add new category">
+                  <Button
+                    size="small"
+                    type="primary"
+                    aria-label="Add new category"
+                    icon={<PlusOutlined />}
+                    onClick={addRubricCategory}
+                  />
+                </Tooltip>
+              )}
             </div>
 
             <ul className={styles.sidebarList}>
@@ -436,51 +456,54 @@ const RubricUI = ({
                     <div className={styles.sidebarItemContent}>
                       {cat.name || <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Untitled</span>}
                     </div>
-                    <div className={styles.sidebarItemActions}>
-                      <Tooltip title="Move Up">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<CaretUpOutlined style={{ fontSize: 10 }} />}
-                          disabled={index === 0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            helpers.moveCategory(cat, DIRECTION.Up);
+                    {!limitedEdit && (
+                      <div className={styles.sidebarItemActions}>
+                        <Tooltip title="Move Up">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<CaretUpOutlined style={{ fontSize: 10 }} />}
+                            disabled={index === 0}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              helpers.moveCategory(cat, DIRECTION.Up);
+                            }}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Move Down">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<CaretDownOutlined style={{ fontSize: 10 }} />}
+                            disabled={index === sortedCategories.length - 1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              helpers.moveCategory(cat, DIRECTION.Down);
+                            }}
+                          />
+                        </Tooltip>
+                        <Popconfirm
+                          title="Delete category?"
+                          onConfirm={(e) => {
+                            e?.stopPropagation();
+                            helpers.deleteRubricCategory(cat);
                           }}
-                        />
-                      </Tooltip>
-                      <Tooltip title="Move Down">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<CaretDownOutlined style={{ fontSize: 10 }} />}
-                          disabled={index === sortedCategories.length - 1}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            helpers.moveCategory(cat, DIRECTION.Down);
-                          }}
-                        />
-                      </Tooltip>
-                      <Popconfirm
-                        title="Delete category?"
-                        onConfirm={(e) => {
-                          e?.stopPropagation();
-                          helpers.deleteRubricCategory(cat);
-                        }}
-                        onCancel={(e) => e?.stopPropagation()}
-                        okText="Yes"
-                        cancelText="No"
-                        placement="right"
-                      >
-                        <Button
-                          type="text"
-                          danger
-                          size="small"
-                          icon={<DeleteOutlined style={{ fontSize: 10 }} />}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </Popconfirm>
-                    </div>
+                          onCancel={(e) => e?.stopPropagation()}
+                          okText="Yes"
+                          cancelText="No"
+                          placement="right"
+                        >
+                          <Button
+                            type="text"
+                            danger
+                            size="small"
+                            aria-label="Delete category"
+                            icon={<DeleteOutlined style={{ fontSize: 10 }} />}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </Popconfirm>
+                      </div>
+                    )}
                   </li>
                 );
               })}
@@ -542,15 +565,21 @@ const RubricUI = ({
               >
                 {({ propz, statez, helperz }: IRubricCategoryManagerParams) => {
                   return (
-                    <RubricCategoryUI props={{ ...propz, baseURL: props.baseURL }} state={statez} helpers={helperz} />
+                    <RubricCategoryUI
+                      props={{ ...propz, baseURL: props.baseURL, limitedEdit }}
+                      state={statez}
+                      helpers={helperz}
+                    />
                   );
                 }}
               </RubricCategoryManager>
             ) : (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Select or create a category to get started">
-                <Button type="primary" onClick={addRubricCategory}>
-                  Create Category
-                </Button>
+                {!limitedEdit && (
+                  <Button type="primary" onClick={addRubricCategory}>
+                    Create Category
+                  </Button>
+                )}
               </Empty>
             )}
           </div>
@@ -599,9 +628,11 @@ const RubricUI = ({
               }}
               description={<span>No rubric created for this assignment yet</span>}
             >
-              <CPButton cpType="primary" onClick={addRubricCategory}>
-                Create a category
-              </CPButton>
+              {!limitedEdit && (
+                <CPButton cpType="primary" onClick={addRubricCategory}>
+                  Create a category
+                </CPButton>
+              )}
             </Empty>
           }
           breadcrumbs={<Breadcrumb items={[...props.breadcrumbs, { title: props.assignment.name }]} />}

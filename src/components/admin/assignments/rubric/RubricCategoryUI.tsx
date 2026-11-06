@@ -13,6 +13,7 @@ import {
   UserOutlined,
   LikeOutlined,
   DislikeOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 
 import { Button, Empty, Input, Spin, Tag, Switch, Divider, Space } from 'antd';
@@ -49,6 +50,8 @@ const { TextArea } = Input;
 
 interface IProps {
   baseURL: string;
+  /** Grader who may only add comments and edit unapplied ones: no delete, no category edits. */
+  limitedEdit?: boolean;
 }
 
 /**********************************************************************************************************************/
@@ -71,6 +74,7 @@ const RubricCategoryUI: React.FC<{
     showInstructions,
   } = props;
   const { rubricComments: stateRubricComments, atMostOnce } = state;
+  const limitedEdit = !!props.limitedEdit;
 
   const [activeComment, setActiveComment] = useState<RubricComment | undefined>(undefined);
   const [activeField, setActiveField] = useState<'explanation' | 'instructionText'>('explanation');
@@ -89,6 +93,9 @@ const RubricCategoryUI: React.FC<{
         /* Accessors and Handlers */
         const currentComment = thisComment || rubricComment;
         const currentPointDelta = currentComment.pointDelta;
+        // A limited grader may edit a new (unsaved) comment or one no grading comment uses; an applied
+        // comment (or one whose status is unknown, null) is read-only.
+        const locked = limitedEdit && currentComment.id > 0 && currentComment.isApplied !== false;
 
         // Handlers
         const onChangeText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -138,6 +145,7 @@ const RubricCategoryUI: React.FC<{
               <TextArea
                 autoSize
                 value={currentComment.text || ''}
+                disabled={locked}
                 onChange={onChangeText}
                 onBlur={saveComment}
                 variant="borderless"
@@ -154,7 +162,7 @@ const RubricCategoryUI: React.FC<{
               {/* Metadata Row for Explanations/Instructions within the card content flow */}
               {(showExplanations || showInstructions) && (
                 <div style={{ marginTop: '8px', display: 'flex', gap: '12px' }}>
-                  {showExplanations && (
+                  {showExplanations && !(locked && !currentComment.explanation) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Button
                         size="small"
@@ -173,7 +181,7 @@ const RubricCategoryUI: React.FC<{
                       >
                         {currentComment.explanation ? 'Edit Explanation' : 'Add Explanation'}
                       </Button>
-                      {currentComment.explanation && (
+                      {currentComment.explanation && !locked && (
                         <Button
                           type="text"
                           danger
@@ -185,7 +193,7 @@ const RubricCategoryUI: React.FC<{
                       )}
                     </div>
                   )}
-                  {showInstructions && (
+                  {showInstructions && !(locked && !currentComment.instructionText) && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Button
                         size="small"
@@ -204,7 +212,7 @@ const RubricCategoryUI: React.FC<{
                       >
                         {currentComment.instructionText ? 'Edit Instructions' : 'Add Instructions'}
                       </Button>
-                      {currentComment.instructionText && (
+                      {currentComment.instructionText && !locked && (
                         <Button
                           type="text"
                           danger
@@ -277,20 +285,28 @@ const RubricCategoryUI: React.FC<{
 
               {/* 3. Points Badge */}
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <CPPointInput value={currentPointDelta} size="small" onChange={onChangePointDelta} disabled={false} />
+                <CPPointInput value={currentPointDelta} size="small" onChange={onChangePointDelta} disabled={locked} />
               </div>
-              {/* 4. Delete Action */}
-              <CPTooltip title={tooltips.admin.rubric.deleteComment}>
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={deleteComment}
-                  style={{ color: '#bfbfbf', transition: 'color 0.2s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = '#ff4d4f')}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = '#bfbfbf')}
-                />
-              </CPTooltip>
+              {/* 4. Delete Action (never offered to limited graders; the API refuses it) */}
+              {!limitedEdit && (
+                <CPTooltip title={tooltips.admin.rubric.deleteComment}>
+                  <Button
+                    type="text"
+                    danger
+                    aria-label="Delete criterion"
+                    icon={<DeleteOutlined />}
+                    onClick={deleteComment}
+                    style={{ color: '#bfbfbf', transition: 'color 0.2s' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ff4d4f')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = '#bfbfbf')}
+                  />
+                </CPTooltip>
+              )}
+              {locked && (
+                <CPTooltip title="Already used in grading">
+                  <LockOutlined aria-label="Already used in grading" role="img" style={{ color: '#8c8c8c' }} />
+                </CPTooltip>
+              )}
             </div>
           </div>
         );
@@ -304,6 +320,7 @@ const RubricCategoryUI: React.FC<{
       showExplanations,
       showInstructions,
       commentFeedbackOn,
+      limitedEdit,
     ],
   );
 
@@ -369,6 +386,7 @@ const RubricCategoryUI: React.FC<{
               value={state.name}
               onChange={helpers.changeName}
               onBlur={helpers.saveCategory}
+              disabled={limitedEdit}
               ref={helpers.nameInput}
               placeholder="Category Name"
               size="large"
@@ -428,7 +446,7 @@ const RubricCategoryUI: React.FC<{
                           value={state.pointLimit !== null ? -state.pointLimit : undefined}
                           size="default"
                           onChange={setVal}
-                          disabled={false}
+                          disabled={limitedEdit}
                           step={1}
                         />
                         <CPTooltip title="Clear point limit">
@@ -438,7 +456,7 @@ const RubricCategoryUI: React.FC<{
                             onClick={clearPointLimit}
                             // helpers object is stable across renders
                             onBlur={helpers.saveCategory}
-                            disabled={state.pointLimit === null}
+                            disabled={limitedEdit || state.pointLimit === null}
                             style={{ color: state.pointLimit === null ? 'transparent' : '#bfbfbf' }}
                           />
                         </CPTooltip>
@@ -463,7 +481,7 @@ const RubricCategoryUI: React.FC<{
                         />
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} />
+                        <Switch size="small" checked={state.atMostOnce} onChange={toggleAtMostOnce} disabled={limitedEdit} />
                         <span style={{ fontSize: '13px', color: '#595959' }}>Apply at most once</span>
                       </div>
                     </div>
@@ -495,6 +513,7 @@ const RubricCategoryUI: React.FC<{
                     onChange={helpers.changeHelpText}
                     // helpers object is stable across renders
                     onBlur={helpers.saveCategory}
+                    disabled={limitedEdit}
                     autoSize={{ minRows: 2, maxRows: 6 }}
                     placeholder="Enter instructions or guidance for graders using this category..."
                     style={{
