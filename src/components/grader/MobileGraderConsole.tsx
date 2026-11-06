@@ -10,7 +10,6 @@ import {
   InboxOutlined,
   LogoutOutlined,
   SettingOutlined,
-  WarningOutlined,
 } from '@ant-design/icons';
 import { Avatar, Button, Card, Empty, Flex, Progress, Segmented, Spin, Statistic, Tag, Typography } from 'antd';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
@@ -20,6 +19,7 @@ import { Assignment } from '../../types/common';
 import { useAssignmentsQuery } from '../admin/hooks/useAssignmentsQuery';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import { clickableProps } from '../core/clickable';
+import { sortByWork } from './GraderUtils';
 import styles from './MobileGraderConsole.module.scss';
 
 const { Title, Text } = Typography;
@@ -41,11 +41,18 @@ type MobileTab = 'home' | 'courses' | 'settings';
 /* Helpers                                                                   */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-function getGradingProgress(a: Assignment): number {
+/** Course-wide grading progress; only course admins receive the counts, so null otherwise. */
+function getGradingProgress(a: Assignment): number | null {
+  if (typeof a.submissions_finalized_count !== 'number') return null;
   const total =
     (a.submissions_finalized_count ?? 0) + (a.submissions_inprogress_count ?? 0) + (a.submissions_unclaimed_count ?? 0);
   if (total === 0) return 0;
-  return Math.round(((a.submissions_finalized_count ?? 0) / total) * 100);
+  return Math.round((a.submissions_finalized_count / total) * 100);
+}
+
+/** What is left for this grader on an assignment: their unfinalized claims, or the queue. */
+function hasWork(a: Assignment): boolean {
+  return (a.myUnfinalizedCount ?? 0) > 0 || (a.queueLength ?? 0) > 0;
 }
 
 function formatDueDate(date: string | null | undefined): string {
@@ -73,14 +80,15 @@ const CourseDetail: React.FC<{
   const [filter, setFilter] = useState<'all' | 'active' | 'done'>('all');
 
   const filteredAssignments = useMemo(() => {
-    if (filter === 'all') return assignments;
-    if (filter === 'done') return assignments.filter((a) => getGradingProgress(a) === 100);
-    return assignments.filter((a) => getGradingProgress(a) < 100);
+    const ordered = sortByWork(assignments);
+    if (filter === 'all') return ordered;
+    if (filter === 'done') return ordered.filter((a) => !hasWork(a));
+    return ordered.filter(hasWork);
   }, [assignments, filter]);
 
-  const totalUnclaimed = assignments.reduce((sum, a) => sum + (a.submissions_unclaimed_count ?? 0), 0);
-  const totalInProgress = assignments.reduce((sum, a) => sum + (a.submissions_inprogress_count ?? 0), 0);
-  const totalFinalized = assignments.reduce((sum, a) => sum + (a.submissions_finalized_count ?? 0), 0);
+  const totalInQueue = assignments.reduce((sum, a) => sum + (a.queueLength ?? 0), 0);
+  const totalMyUnfinalized = assignments.reduce((sum, a) => sum + (a.myUnfinalizedCount ?? 0), 0);
+  const totalMyFinalized = assignments.reduce((sum, a) => sum + (a.myFinalizedCount ?? 0), 0);
 
   return (
     <div className={styles.scrollContent}>
@@ -99,16 +107,16 @@ const CourseDetail: React.FC<{
         </div>
       </Flex>
 
-      {/* Quick stats */}
+      {/* The grader's own numbers: what they still owe, what they finished, what waits. */}
       <Card size="small" style={{ marginBottom: 16 }}>
         <Flex justify="space-around">
           <Statistic
-            title="Unclaimed"
-            value={totalUnclaimed}
-            valueStyle={{ fontSize: 18, color: totalUnclaimed > 0 ? '#fa8c16' : undefined }}
+            title="Your unfinalized"
+            value={totalMyUnfinalized}
+            valueStyle={{ fontSize: 18, color: totalMyUnfinalized > 0 ? '#fa8c16' : undefined }}
           />
-          <Statistic title="In Progress" value={totalInProgress} valueStyle={{ fontSize: 18 }} />
-          <Statistic title="Finalized" value={totalFinalized} valueStyle={{ fontSize: 18, color: '#52c41a' }} />
+          <Statistic title="Your finalized" value={totalMyFinalized} valueStyle={{ fontSize: 18 }} />
+          <Statistic title="In queue" value={totalInQueue} valueStyle={{ fontSize: 18 }} />
         </Flex>
       </Card>
 
@@ -119,7 +127,7 @@ const CourseDetail: React.FC<{
         onChange={(val) => setFilter(val as 'all' | 'active' | 'done')}
         options={[
           { label: `All (${assignments.length})`, value: 'all' },
-          { label: 'Active', value: 'active' },
+          { label: 'To do', value: 'active' },
           { label: 'Done', value: 'done' },
         ]}
         style={{ marginBottom: 16 }}
@@ -138,7 +146,8 @@ const CourseDetail: React.FC<{
           <AnimatePresence>
             {filteredAssignments.map((assignment, idx) => {
               const progress = getGradingProgress(assignment);
-              const unclaimed = assignment.submissions_unclaimed_count ?? 0;
+              const mine = assignment.myUnfinalizedCount;
+              const queue = assignment.queueLength;
 
               return (
                 <motion.div
@@ -153,15 +162,15 @@ const CourseDetail: React.FC<{
                       <Text strong style={{ fontSize: 14 }}>
                         {assignment.name}
                       </Text>
-                      {progress === 100 ? (
+                      {mine !== undefined && mine > 0 ? (
+                        <Tag color="warning">{mine} unfinalized</Tag>
+                      ) : queue !== undefined && queue > 0 ? (
+                        <Tag color="processing">{queue} in queue</Tag>
+                      ) : mine !== undefined && queue !== undefined ? (
                         <Tag color="success" icon={<CheckCircleFilled />}>
                           Done
                         </Tag>
-                      ) : unclaimed > 0 ? (
-                        <Tag color="warning">{unclaimed} unclaimed</Tag>
-                      ) : (
-                        <Tag color="processing">In Progress</Tag>
-                      )}
+                      ) : null}
                     </Flex>
 
                     <Flex gap={12} style={{ marginTop: 6, marginBottom: 10 }}>
@@ -173,36 +182,39 @@ const CourseDetail: React.FC<{
                       </Text>
                     </Flex>
 
-                    {/* Progress bar */}
-                    <Flex justify="space-between" style={{ marginBottom: 2 }}>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        Grading progress
-                      </Text>
-                      <Text strong style={{ fontSize: 11 }}>
-                        {progress}%
-                      </Text>
-                    </Flex>
-                    <Progress
-                      percent={progress}
-                      showInfo={false}
-                      size="small"
-                      status={progress === 100 ? 'success' : 'active'}
-                    />
+                    {/* Course-wide progress: only course admins receive those counts */}
+                    {progress !== null && (
+                      <>
+                        <Flex justify="space-between" style={{ marginBottom: 2 }}>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            Grading progress
+                          </Text>
+                          <Text strong style={{ fontSize: 12 }}>
+                            {progress}%
+                          </Text>
+                        </Flex>
+                        <Progress
+                          percent={progress}
+                          showInfo={false}
+                          size="small"
+                          status={progress === 100 ? 'success' : 'active'}
+                        />
+                      </>
+                    )}
 
-                    {/* Breakdown */}
-                    <Flex gap={12} style={{ marginTop: 6 }}>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        {assignment.submissions_finalized_count ?? 0} finalized
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 11 }}>
-                        {assignment.submissions_inprogress_count ?? 0} in progress
-                      </Text>
-                      {unclaimed > 0 && (
-                        <Text type="warning" style={{ fontSize: 11 }}>
-                          <WarningOutlined /> {unclaimed} unclaimed
+                    {/* The grader's own breakdown */}
+                    {assignment.myFinalizedCount !== undefined && (
+                      <Flex gap={12} style={{ marginTop: 6 }}>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {assignment.myFinalizedCount} finalized by you
                         </Text>
-                      )}
-                    </Flex>
+                        {queue !== undefined && (
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {queue} in queue
+                          </Text>
+                        )}
+                      </Flex>
+                    )}
                   </Card>
                 </motion.div>
               );
@@ -252,17 +264,9 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
         </Title>
         <Text type="secondary">
           {activeCourses.length} active course{activeCourses.length === 1 ? '' : 's'}
+          {archivedCourses.length > 0 && `, ${archivedCourses.length} archived`}
         </Text>
       </div>
-
-      {/* Stats */}
-      <Card size="small" style={{ marginBottom: 20 }}>
-        <Flex justify="space-around">
-          <Statistic title="Courses" value={courses.length} valueStyle={{ fontSize: 20 }} />
-          <Statistic title="Active" value={activeCourses.length} valueStyle={{ fontSize: 20, color: '#1677ff' }} />
-          <Statistic title="Archived" value={archivedCourses.length} valueStyle={{ fontSize: 20 }} />
-        </Flex>
-      </Card>
 
       {/* Course list for quick access */}
       {activeCourses.length > 0 ? (

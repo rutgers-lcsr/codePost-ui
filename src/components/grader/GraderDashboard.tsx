@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { BookOutlined, FolderOutlined, InboxOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Card, Empty, Flex, Input, Statistic, Tag, Typography } from 'antd';
+import { Button, Card, Empty, Flex, Input, Tag, Typography } from 'antd';
 import { motion } from 'motion/react';
 
 import { Course } from '../../api-client';
@@ -19,19 +19,7 @@ const { Title, Text } = Typography;
 
 interface GraderDashboardProps {
   courses: Course[];
-  userEmail: string;
   defaultPanel: (course: Course) => string;
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* Helpers                                                                   */
-/* ────────────────────────────────────────────────────────────────────────── */
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
 }
 
 /* ────────────────────────────────────────────────────────────────────────── */
@@ -40,7 +28,7 @@ function getGreeting(): string {
 
 const VISIBLE_PERIOD_COUNT = 4;
 
-const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, defaultPanel }) => {
+const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, defaultPanel }) => {
   const [searchText, setSearchText] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
   const [showAllPeriods, setShowAllPeriods] = useState(false);
@@ -48,9 +36,6 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
   useEffect(() => {
     LOCAL_SETTINGS.defaultCourse.setter(0);
   }, []);
-
-  const firstName = userEmail.split('@')[0].split('.')[0];
-  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   /* ── Unique periods, sorted newest-first ────────────────────────────── */
 
@@ -79,7 +64,7 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
 
   /* ── Organize courses ────────────────────────────────────────────────── */
 
-  const { activeCourses, archivedCourses, totalAssignments } = useMemo(() => {
+  const { activeCourses, archivedCourses } = useMemo(() => {
     const sortCourses = (a: Course, b: Course) => {
       const nameCompare = a.name.localeCompare(b.name);
       return nameCompare !== 0 ? nameCompare : a.period.localeCompare(b.period);
@@ -88,12 +73,7 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
     const active = courses.filter((c) => !c.archived).sort(sortCourses);
     const archived = courses.filter((c) => c.archived).sort(sortCourses);
 
-    let totalAssignments = 0;
-    for (const course of active) {
-      totalAssignments += course.assignments?.length ?? 0;
-    }
-
-    return { activeCourses: active, archivedCourses: archived, totalAssignments };
+    return { activeCourses: active, archivedCourses: archived };
   }, [courses]);
 
   /* ── Filter courses by search + period ───────────────────────────────── */
@@ -142,31 +122,17 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
 
   return (
     <div className={styles.dashboard}>
-      {/* ── Greeting ────────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 36 }}>
+      {/* ── Heading: the page is the course list, so it says so (no greeting
+          derived from the email local part, no decorative counters) ─────── */}
+      <div style={{ marginBottom: 28 }}>
         <Title level={2} style={{ margin: 0, fontSize: 28 }}>
-          {getGreeting()}, {displayName}
+          Your courses
         </Title>
         <Text type="secondary" style={{ fontSize: 15 }}>
           {activeCourses.length} active course{activeCourses.length === 1 ? '' : 's'}
-          {archivedCourses.length > 0 && `, ${archivedCourses.length} archived`}
+          {archivedCourses.length > 0 && `, ${archivedCourses.length} archived`}. Open one to claim and grade.
         </Text>
       </div>
-
-      {/* ── Summary stats ───────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <Card style={{ marginBottom: 32, padding: '8px 0' }}>
-          <Flex justify="space-around" wrap="wrap" gap={24}>
-            <Statistic title="Active courses" value={activeCourses.length} valueStyle={{ color: '#198665' }} />
-            <Statistic title="Assignments" value={totalAssignments} valueStyle={{ color: '#1677ff' }} />
-            <Statistic title="Archived" value={archivedCourses.length} />
-          </Flex>
-        </Card>
-      </motion.div>
 
       {/* ── Filter bar ────────────────────────────────────────────────── */}
       {(courses.length > 5 || sortedPeriods.length > 1) && (
@@ -213,12 +179,6 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, userEmail, d
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
         >
-          <Flex align="center" gap={8} style={{ marginBottom: 12 }}>
-            <Title level={3} style={{ margin: 0, fontSize: 16 }}>
-              Your Courses
-            </Title>
-            <Tag>{filteredActive.length}</Tag>
-          </Flex>
           <div className={styles.courseGrid}>
             {filteredActive.map((course, i) => (
               <motion.div

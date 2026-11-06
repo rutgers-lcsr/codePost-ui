@@ -97,7 +97,7 @@ const GraderDashboardOrRedirect: React.FC<IGraderManagerProps> = (props) => {
     <div id="Grader">
       <CPLayoutAdmin
         header={header}
-        detail={<GraderDashboard courses={initialCourses} userEmail={user.email!} defaultPanel={getDefaultPanel} />}
+        detail={<GraderDashboard courses={initialCourses} defaultPanel={getDefaultPanel} />}
         navigation={() => null}
         hasSider={false}
         role={USER_TYPE.GRADER}

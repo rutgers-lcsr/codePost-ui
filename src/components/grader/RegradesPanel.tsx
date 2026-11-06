@@ -7,7 +7,7 @@
 import * as React from 'react';
 
 /* antd imports */
-import { Switch, Typography } from 'antd';
+import { Alert, Button, Switch, Typography } from 'antd';
 
 /* other library imports */
 import { Link } from 'react-router';
@@ -41,7 +41,11 @@ interface IState {
   submissionsByAssignment: { [id: number]: AnonymousSubmissionInfoType[] };
   isLoading: boolean;
   viewAll: boolean;
+  /** Assignments whose regrade list failed to load this round. */
+  failedCount: number;
 }
+
+const assignmentIds = (assignments: AssignmentType[]) => assignments.map((a) => a.id).join(',');
 
 class RegradesPanel extends React.Component<IProps, IState> {
   public constructor(props: IProps) {
@@ -50,6 +54,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
       submissionsByAssignment: {},
       isLoading: true,
       viewAll: false,
+      failedCount: 0,
     };
   }
 
@@ -58,13 +63,15 @@ class RegradesPanel extends React.Component<IProps, IState> {
   }
 
   public componentDidUpdate(oldProps: IProps) {
-    if (oldProps.assignments !== this.props.assignments) {
-      this.loadSubmissions(this.props.assignments, this.props.user.email);
+    // The assignments array is a new reference on every refetch; only a different set
+    // of assignments is a reason to fan out the per-assignment requests again.
+    if (assignmentIds(oldProps.assignments) !== assignmentIds(this.props.assignments)) {
+      this.loadSubmissions(this.props.assignments, this.state.viewAll ? undefined : this.props.user.email);
     }
   }
 
   public loadSubmissions = (assignments: AssignmentType[], grader?: string) => {
-    this.setState({ isLoading: true }, () => {
+    this.setState({ isLoading: true, failedCount: 0 }, () => {
       const promises = assignments.map(async (assn) => {
         try {
           const response = await assignmentsApi.submissionsListRaw({
@@ -76,14 +83,17 @@ class RegradesPanel extends React.Component<IProps, IState> {
           return Array.isArray(data) ? data : (data?.results ?? []);
         } catch (error) {
           console.error(error);
-          return [];
+          return null;
         }
       });
 
       Promise.all(promises).then((lists) => {
         const mapper: { [id: number]: AnonymousSubmissionInfoType[] } = {};
+        let failedCount = 0;
         for (const list of lists) {
-          if (list.length > 0) {
+          if (list === null) {
+            failedCount += 1;
+          } else if (list.length > 0) {
             // Check if list elements have assignment property
             const firstSub = list[0];
             if (firstSub && firstSub.assignment) {
@@ -91,7 +101,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
             }
           }
         }
-        this.setState({ submissionsByAssignment: mapper, isLoading: false });
+        this.setState({ submissionsByAssignment: mapper, isLoading: false, failedCount });
       });
     });
   };
@@ -163,6 +173,28 @@ class RegradesPanel extends React.Component<IProps, IState> {
       };
     });
 
+    const { failedCount } = this.state;
+    const notice =
+      failedCount > 0 ? (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`Couldn't load regrade requests for ${failedCount} assignment${failedCount === 1 ? '' : 's'}.`}
+          description="The counts below leave those assignments out."
+          action={
+            <Button
+              size="small"
+              onClick={() =>
+                this.loadSubmissions(this.props.assignments, this.state.viewAll ? undefined : this.props.user.email)
+              }
+            >
+              Retry
+            </Button>
+          }
+        />
+      ) : null;
+
     const viewToggle = (
       <RegradeViewAllToggle
         courseId={this.props.course.id}
@@ -180,6 +212,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
         columns={columns}
         data={data}
         isLoading={this.state.isLoading}
+        notice={notice}
         title="Regrade Requests"
       />
     );

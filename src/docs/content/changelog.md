@@ -32,7 +32,7 @@ Stay up to date with new features, improvements, and fixes in codePost.
 
 ---
 
-## Unreleased — Admin & Staff console refinements
+## Unreleased — Admin, Staff & Grader console refinements
 
 ### Changed: the staff console has five destinations
 
@@ -246,6 +246,25 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - **Staff console**: acknowledging a System Health problem is now shared by all staff (it says who and when),
   not kept per browser. Leaving the banner editor with unsaved edits asks first, from the sidebar, the jump box
   or a reload.
+
+### Fixed: the grader console counts what is yours
+
+- **Claimed by Me** and **All Submissions** showed 0 / 0 / 0 for every assignment unless you were a course
+  admin: the tables read admin-only fields. Every assignment now carries the grader's own numbers (unfinalized,
+  finalized, in queue), the tables lead with **Unfinalized** and list the assignments with work first, and a
+  count the server did not send shows as a dash, never as a zero. The same numbers drive the phone console's
+  course cards, which say "3 unfinalized" or "12 in queue" instead of a course-wide progress bar graders never
+  had the data for.
+- Student names on **Claimed by Me** and **All Submissions** are real links, so middle-click and Ctrl+click
+  open the grading page in a new tab. The Grade column filters to unfinalized rows. The claim amount box has a
+  name for screen readers.
+- Unclaiming a finalized submission says so ("Unclaim this finalized submission?", a red Unclaim and
+  unfinalize), and each Unclaim button is announced with its student.
+- Regrade Requests and the All Submissions detail say when a load failed, with Retry, instead of showing an
+  empty table; Regrade Requests no longer refetches every assignment on each parent refresh.
+- The grader landing page is "Your courses" with the course cards (no counters, no greeting built from your
+  email). Quiz Grading uses the same card and breadcrumb as the other panels, My Sections lost an empty "Zoom
+  in" column, phone navigation labels are 12px, and "Up to date" is plain text rather than a pale green tag.
 
 ---
 

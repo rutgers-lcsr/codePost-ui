@@ -17,6 +17,7 @@ import { AssignmentType } from '../../types/models';
 import { sortAssignments } from '../../utils/assignments';
 
 import MySubmissionsPanelDetail from './MySubmissionsPanelDetail';
+import { CallerCounts, countCell, sortByWork } from './GraderUtils';
 
 import GraderPanelBuilder from './GraderPanel';
 
@@ -31,16 +32,23 @@ interface IProps {
   graderEmail: string;
 }
 
+/** The staff payload: the caller's queue counts, plus the course-wide mean for course admins. */
+type AssignmentRow = AssignmentType & CallerCounts & { stats_mean?: number | null };
+
 const MySubmissionsPanel: React.FC<IProps> = (props) => {
   const centerAlign: alignType = 'center';
+  const rows = props.assignments as AssignmentRow[];
+  // Graders never receive the course-wide mean; the column exists only when a row carries it.
+  const hasMean = rows.some((a) => typeof a.stats_mean === 'number');
+
   const columns = [
     {
       title: 'Assignment',
       dataIndex: 'assignment',
     },
     {
-      title: 'Claimed',
-      dataIndex: 'claimed',
+      title: 'Unfinalized',
+      dataIndex: 'unfinalized',
       align: centerAlign,
     },
     {
@@ -49,52 +57,28 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
       align: centerAlign,
     },
     {
-      title: 'Unfinalized',
-      dataIndex: 'unfinalized',
+      title: 'In queue',
+      dataIndex: 'queue',
       align: centerAlign,
     },
-    {
-      title: 'Avg. Grade',
-      dataIndex: 'grade',
-      align: centerAlign,
-    },
+    ...(hasMean ? [{ title: 'Avg. grade', dataIndex: 'grade', align: centerAlign }] : []),
   ];
 
-  const data = sortAssignments(props.assignments).map((assignment) => {
-    const assignmentStats = assignment as AssignmentType & {
-      submissions_count?: number;
-      submissions_finalized_count?: number;
-      stats_mean?: number;
-    };
-
-    // Calculate unfinalized based on claimed and finalized counts
-    // logic assumed: submissions_count = total claimed?
-    // In admin panel: claimed = inprogress + finalized
-    // In assignment.ts type definition: submissions_count is generic count, submissions_finalized_count.
-    // Let's assume for My Submissions: submissions_count = Total Claimed.
-
-    const claimed = assignmentStats.submissions_count || 0;
-    const finalized = assignmentStats.submissions_finalized_count || 0;
-    const unfinalized = claimed - finalized;
-
-    return {
-      key: assignment.id,
-      assignment: (
-        <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
-          <Typography.Text strong className="text-link">
-            {assignment.name}
-          </Typography.Text>
-        </Link>
-      ),
-      claimed: <Typography.Text strong>{claimed}</Typography.Text>,
-      finalized: <Typography.Text strong>{finalized}</Typography.Text>,
-      unfinalized: <Typography.Text strong>{unfinalized}</Typography.Text>,
-      grade:
-        assignmentStats.stats_mean && assignmentStats.submissions_count && assignmentStats.submissions_count > 0
-          ? `${assignmentStats.stats_mean.toFixed(1)}/${assignment.points}`
-          : '--',
-    };
-  });
+  const data = sortByWork(sortAssignments(rows)).map((assignment) => ({
+    key: assignment.id,
+    assignment: (
+      <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+        <Typography.Text strong className="text-link">
+          {assignment.name}
+        </Typography.Text>
+      </Link>
+    ),
+    unfinalized: <Typography.Text strong>{countCell(assignment.myUnfinalizedCount)}</Typography.Text>,
+    finalized: countCell(assignment.myFinalizedCount),
+    queue: countCell(assignment.queueLength),
+    grade:
+      typeof assignment.stats_mean === 'number' ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}` : '--',
+  }));
 
   return (
     <SubmissionsPanel
@@ -104,7 +88,7 @@ const MySubmissionsPanel: React.FC<IProps> = (props) => {
       assignments={props.assignments}
       course={props.course}
       actions={[]}
-      title="Claimed by me"
+      title="Claimed by Me"
       graderEmail={props.graderEmail}
       data={data}
       columns={columns}

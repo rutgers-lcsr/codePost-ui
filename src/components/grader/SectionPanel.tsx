@@ -90,11 +90,6 @@ class SectionPanel extends React.Component<IProps, IState> {
     const centerAlign: alignType = 'center';
     const columns = [
       {
-        title: 'Zoom in',
-        dataIndex: 'zoom',
-        align: centerAlign,
-      },
-      {
         title: 'Assignment',
         dataIndex: 'assignment',
       },

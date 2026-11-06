@@ -215,4 +215,21 @@ const formatSub = (
 /* Exports
 /**********************************************************************************************************************/
 
+/** The caller's queue counts a staff assignment payload carries (see types/common Assignment). */
+export interface CallerCounts {
+  queueLength?: number;
+  myFinalizedCount?: number;
+  myUnfinalizedCount?: number;
+}
+
+/** Work first: the caller's unfinalized claims, then the queue, then the course order (stable sort). */
+export const sortByWork = <T extends CallerCounts>(ordered: T[]): T[] =>
+  [...ordered].sort(
+    (a, b) => (b.myUnfinalizedCount ?? 0) - (a.myUnfinalizedCount ?? 0) || (b.queueLength ?? 0) - (a.queueLength ?? 0),
+  );
+
+/** A count the API sent, or a dash — never a zero it did not send. */
+export const countCell = (n: number | undefined): React.ReactNode =>
+  typeof n === 'number' ? n : <Typography.Text type="secondary">—</Typography.Text>;
+
 export { formatSub, getViewIcon, sortByGrade };

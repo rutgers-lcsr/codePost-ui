@@ -9,13 +9,13 @@
 // role granted in Roster → Graders).
 import * as React from 'react';
 
-import { Empty, Flex, Space, Table, Tag, Typography } from 'antd';
-
-import { LeftOutlined } from '@ant-design/icons';
+import { Breadcrumb, Empty, Flex, Space, Table, Tag, Typography } from 'antd';
 
 import { useQueries } from '@tanstack/react-query';
 
+import CPAdminDetail from '../admin/other/CPAdminDetail';
 import CPButton from '../core/CPButton';
+import { clickableProps } from '../core/clickable';
 import { quizzesApi } from '../../api-client/clients';
 import { Course, Quiz } from '../../api-client';
 import { quizKeys } from '../../lib/queryKeys';
@@ -24,7 +24,7 @@ import { useCourseQuizzes } from '../admin/quizzes/queries';
 import GeneratedReviewPanel from '../admin/quizzes/GeneratedReviewPanel';
 import QuizGradingView from '../admin/quizzes/QuizGradingView';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
   const { data: quizzes = [], isLoading } = useCourseQuizzes(course.id);
@@ -94,11 +94,8 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
       render: (_: unknown, q: Quiz) => {
         const count = pendingByQuiz.get(q.id ?? -1);
         if (count == null) return <Text type="secondary">—</Text>;
-        return count > 0 ? (
-          <Tag color="gold">{count} to grade</Tag>
-        ) : (
-          <Tag color="green">Up to date</Tag>
-        );
+        // Work gets a tag; "nothing to do" is plain text, not a low-contrast green pill.
+        return count > 0 ? <Tag color="gold">{count} to grade</Tag> : <Text type="secondary">Up to date</Text>;
       },
     },
     {
@@ -109,11 +106,7 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
         if (!reviewable(q)) return <Text type="secondary">—</Text>;
         const count = reviewPendingByQuiz.get(q.id ?? -1);
         if (count == null) return <Text type="secondary">—</Text>;
-        return count > 0 ? (
-          <Tag color="gold">{count} to review</Tag>
-        ) : (
-          <Tag color="green">Reviewed</Tag>
-        );
+        return count > 0 ? <Tag color="gold">{count} to review</Tag> : <Text type="secondary">Reviewed</Text>;
       },
     },
     {
@@ -127,7 +120,12 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
               Review questions
             </CPButton>
           )}
-          <CPButton cpType="primary" small onClick={() => setView({ quiz: q, mode: 'grade' })} data-testid="grader-open-grading">
+          <CPButton
+            cpType="primary"
+            small
+            onClick={() => setView({ quiz: q, mode: 'grade' })}
+            data-testid="grader-open-grading"
+          >
             Grade
           </CPButton>
         </Space>
@@ -135,43 +133,52 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
     },
   ];
 
+  // The same card-and-breadcrumb chrome as the other grader panels. The root crumb goes
+  // back to the list, like the assignment panels' first crumb.
+  const rootCrumb = {
+    title: view ? (
+      <span style={{ cursor: 'pointer' }} {...clickableProps(() => setView(null))}>
+        Quiz Grading
+      </span>
+    ) : (
+      'Quiz Grading'
+    ),
+  };
+
   // Picking a quiz swaps the list for the shared grading (or question-review) view;
   // unmounting on back resets its selection state.
   if (view) {
     return (
-      <div style={{ padding: 24, maxWidth: 1000 }}>
-        <Flex align="center" gap={8} style={{ marginBottom: 16 }}>
-          <CPButton cpType="link" small icon={<LeftOutlined />} onClick={() => setView(null)}>
-            All quizzes
-          </CPButton>
-          <Title level={2} style={{ margin: 0, fontSize: 20 }}>
-            {view.mode === 'grade' ? 'Grading' : 'Question review'} — {view.quiz.title}
-          </Title>
-        </Flex>
-        {view.mode === 'grade' ? (
-          <QuizGradingView quiz={view.quiz} active />
-        ) : (
-          <GeneratedReviewPanel
-            quiz={view.quiz}
-            courseId={course.id!}
-            active
-            adminActions={isCourseAdminViewer}
-          />
-        )}
-      </div>
+      <CPAdminDetail
+        goBack={null}
+        breadcrumbs={<Breadcrumb items={[rootCrumb, { title: view.quiz.title }]} />}
+        title={
+          <div style={{ letterSpacing: '-0.3px' }}>
+            {`${view.mode === 'grade' ? 'Grading' : 'Question review'}: ${view.quiz.title}`}
+          </div>
+        }
+        actions={[]}
+        content={
+          view.mode === 'grade' ? (
+            <QuizGradingView quiz={view.quiz} active />
+          ) : (
+            <GeneratedReviewPanel quiz={view.quiz} courseId={course.id!} active adminActions={isCourseAdminViewer} />
+          )
+        }
+        gutterSize={0}
+      />
     );
   }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1000 }}>
-      <Title level={2} style={{ fontSize: 20 }}>Quiz Grading</Title>
-      <Text type="secondary">
-        Published quizzes in this course. Open one to review submitted attempts and grade essay and
-        code responses. Quizzes with per-student AI-generated questions also offer question review —
-        edit and publish each student&apos;s set before their quiz opens.
-      </Text>
-      <div style={{ marginTop: 16 }}>
-        {!isLoading && published.length === 0 ? (
+    <CPAdminDetail
+      goBack={null}
+      breadcrumbs={<Breadcrumb items={[rootCrumb]} />}
+      title={<div style={{ letterSpacing: '-0.3px' }}>Quiz Grading</div>}
+      titleInfo="Published quizzes in this course. Open one to review submitted attempts and grade essay and code responses. Quizzes with per-student AI-generated questions also offer question review: edit and publish each student's set before their quiz opens."
+      actions={[]}
+      content={
+        !isLoading && published.length === 0 ? (
           <Empty description="No published quizzes in this course yet." image={Empty.PRESENTED_IMAGE_SIMPLE} />
         ) : (
           <Table
@@ -183,9 +190,10 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
             pagination={false}
             data-testid="grader-quizzes-table"
           />
-        )}
-      </div>
-    </div>
+        )
+      }
+      gutterSize={0}
+    />
   );
 };
 

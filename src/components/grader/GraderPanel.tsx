@@ -36,6 +36,8 @@ interface IParentProps {
   isLoading: boolean;
   data: Record<string, unknown>[];
   columns: TableProps<Record<string, unknown>>['columns'];
+  /** Rendered above the index table: a failed load must not look like empty data. */
+  notice?: React.ReactNode;
 }
 
 interface IDetailProps {
@@ -71,6 +73,7 @@ const IndexRouteElement = ({
   columns,
   data,
   isLoading,
+  notice,
 }: {
   assignments: AssignmentType[];
   breadcrumbs: Array<{ title: React.ReactNode }>;
@@ -79,6 +82,7 @@ const IndexRouteElement = ({
   columns: TableProps<Record<string, unknown>>['columns'];
   data: Record<string, unknown>[];
   isLoading: boolean;
+  notice?: React.ReactNode;
 }) => {
   const storedID = LOCAL_SETTINGS.defaultAssignment.getter();
   const matchedAssignment = assignments.find((assn) => assn.id === storedID);
@@ -91,7 +95,12 @@ const IndexRouteElement = ({
       goBack={null}
       title={<div style={{ letterSpacing: '-0.3px' }}>{title}</div>}
       actions={actions}
-      content={<Table columns={columns} dataSource={data} loading={isLoading} size="middle" />}
+      content={
+        <>
+          {notice}
+          <Table columns={columns} dataSource={data} loading={isLoading} size="middle" />
+        </>
+      }
       gutterSize={0}
     />
   );
@@ -146,6 +155,7 @@ function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.Compo
               columns={props.columns}
               data={data}
               isLoading={props.isLoading}
+              notice={props.notice}
             />
           }
         />

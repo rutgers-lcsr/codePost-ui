@@ -14,9 +14,11 @@ import { AssignmentType } from '../../types/models';
 import { Typography } from 'antd';
 import { Link } from 'react-router';
 import { encodeForLink } from '../core/URLutils';
+import { sortAssignments } from '../../utils/assignments';
 
 import ViewAllDetailPanel from './ViewAllDetailPanel';
 import GraderPanelBuilder from './GraderPanel';
+import { CallerCounts, countCell, sortByWork } from './GraderUtils';
 
 type alignType = 'left' | 'right' | 'center';
 const ViewAllShell = GraderPanelBuilder(ViewAllDetailPanel);
@@ -28,63 +30,57 @@ interface IProps {
   course: Course;
 }
 
+/** The staff payload: the caller's queue counts; course admins also get the course-wide summary. */
+type AssignmentRow = AssignmentType &
+  CallerCounts & {
+    submissions_inprogress_count?: number;
+    submissions_finalized_count?: number;
+    stats_mean?: number | null;
+  };
+
 class ViewAllPanel extends React.Component<IProps> {
   public render() {
     const centerAlign: alignType = 'center';
+    const rows = this.props.assignments as AssignmentRow[];
+    // Only course admins receive course-wide counts; graders see the queue alone rather
+    // than zeros the API never sent.
+    const hasSummary = rows.some((a) => typeof a.submissions_finalized_count === 'number');
+    const hasMean = rows.some((a) => typeof a.stats_mean === 'number');
+
     const columns = [
       {
         title: 'Assignment',
         dataIndex: 'assignment',
       },
       {
-        title: 'Claimed',
-        dataIndex: 'claimed',
+        title: 'In queue',
+        dataIndex: 'queue',
         align: centerAlign,
       },
-      {
-        title: 'Finalized',
-        dataIndex: 'finalized',
-        align: centerAlign,
-      },
-      {
-        title: 'Avg. Grade',
-        dataIndex: 'grade',
-        align: centerAlign,
-      },
+      ...(hasSummary
+        ? [
+            { title: 'In progress', dataIndex: 'inProgress', align: centerAlign },
+            { title: 'Finalized', dataIndex: 'finalized', align: centerAlign },
+          ]
+        : []),
+      ...(hasMean ? [{ title: 'Avg. grade', dataIndex: 'grade', align: centerAlign }] : []),
     ];
 
-    const data = this.props.assignments.map((assignment) => {
-      const assignmentStats = assignment as AssignmentType & {
-        submissions_inprogress_count?: number;
-        submissions_finalized_count?: number;
-        stats_mean?: number;
-      };
-
-      return {
-        key: assignment.id,
-        assignment: (
-          <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
-            <Typography.Text strong className="text-link">
-              {assignment.name}
-            </Typography.Text>
-          </Link>
-        ),
-        claimed: (
-          <Typography.Text strong>
-            {assignmentStats.submissions_inprogress_count && assignmentStats.submissions_finalized_count
-              ? assignmentStats.submissions_inprogress_count + assignmentStats.submissions_finalized_count
-              : 0}
+    const data = sortByWork(sortAssignments(rows)).map((assignment) => ({
+      key: assignment.id,
+      assignment: (
+        <Link to={`${encodeForLink(assignment.name)}`} className="text-link">
+          <Typography.Text strong className="text-link">
+            {assignment.name}
           </Typography.Text>
-        ),
-        finalized: <Typography.Text strong>{assignmentStats.submissions_finalized_count || 0}</Typography.Text>,
-        grade:
-          assignmentStats.stats_mean &&
-          assignmentStats.submissions_finalized_count &&
-          assignmentStats.submissions_finalized_count > 0
-            ? `${assignmentStats.stats_mean.toFixed(1)}/${assignment.points}`
-            : '--',
-      };
-    });
+        </Link>
+      ),
+      queue: <Typography.Text strong>{countCell(assignment.queueLength)}</Typography.Text>,
+      inProgress: countCell(assignment.submissions_inprogress_count),
+      finalized: countCell(assignment.submissions_finalized_count),
+      grade:
+        typeof assignment.stats_mean === 'number' ? `${assignment.stats_mean.toFixed(1)}/${assignment.points}` : '--',
+    }));
 
     return (
       <ViewAllShell
@@ -94,7 +90,7 @@ class ViewAllPanel extends React.Component<IProps> {
         assignments={this.props.assignments}
         breadcrumbs={[]}
         actions={[]}
-        title="View All"
+        title="All Submissions"
         data={data}
         columns={columns}
         isLoading={false}

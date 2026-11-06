@@ -33,6 +33,11 @@ export type Assignment = Omit<AssignmentGenerated, 'environment' | 'files' | 'fi
   stats_mean?: number;
   stats_max?: number;
   stats_min?: number;
+  /** The caller's grading-queue counts, on every staff payload (bulk and per-id): what
+   *  Claim draws from, and what the caller has claimed. Absent for students. */
+  queueLength?: number;
+  myFinalizedCount?: number;
+  myUnfinalizedCount?: number;
   mean?: number | null;
   median?: number | null;
   created?: string;

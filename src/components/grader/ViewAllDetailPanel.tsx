@@ -7,16 +7,11 @@
 
 /* ant imports */
 import type { SelectProps } from 'antd';
-import { Breadcrumb, Select, Switch, Table, Typography } from 'antd';
+import { Alert, Breadcrumb, Button, Select, Switch, Table, Typography } from 'antd';
 
 import { Course } from '../../api-client';
 import { assignmentsApi, coursesApi } from '../../api-client/clients';
-import {
-  AnonymousSubmissionInfoType,
-  AssignmentType,
-  SubmissionHistoryType,
-  SubmissionInfoType,
-} from '../../types/models';
+import { AssignmentType, SubmissionHistoryType, SubmissionInfoType } from '../../types/models';
 
 import CPTooltip from '../core/CPTooltip';
 import { tooltips } from '../core/tooltips';
@@ -27,7 +22,6 @@ import { compare } from '../utils/SortUtils';
 
 import { Component } from 'react';
 import CPAdminDetail from '../admin/other/CPAdminDetail';
-import Link from 'antd/es/typography/Link';
 
 type alignType = 'left' | 'right' | 'center';
 
@@ -48,6 +42,8 @@ interface IViewAllState {
   isLoading: boolean;
   viewsBySubmission: { [submissionID: number]: { [student: string]: string } };
   showStudentEmails: boolean;
+  /** What failed to load this round, by name; the table must not pass for empty data. */
+  loadErrors: string[];
 }
 
 interface ITableRow extends ISubDataBasic {
@@ -64,6 +60,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
     viewsBySubmission: {},
     isLoading: true,
     showStudentEmails: false,
+    loadErrors: [],
   };
 
   public async initialLoad() {
@@ -71,7 +68,9 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       isLoading: true,
       submissions: [],
       viewsBySubmission: {},
+      loadErrors: [],
     });
+    const loadErrors: string[] = [];
 
     try {
       const submissionsResponse = await assignmentsApi.submissionsList({ id: this.props.assignment.id });
@@ -81,6 +80,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       this.onLoadNewSubmissions(submissions);
     } catch (error) {
       console.error('Failed to load submissions', error);
+      loadErrors.push('the submissions');
     }
 
     try {
@@ -89,18 +89,19 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       this.onLoadNewHistories(histories);
     } catch (error) {
       console.error('Failed to load submission histories', error);
+      loadErrors.push('who has viewed what');
     }
 
     try {
       const roster = await coursesApi.rosterRetrieve({ id: this.props.course.id });
       this.setState({
         graders: (roster.graders ?? []).filter((grader): grader is string => Boolean(grader)),
-        isLoading: false,
       });
     } catch (error) {
       console.error('Failed to load roster', error);
-      this.setState({ isLoading: false });
+      loadErrors.push('the grader list');
     }
+    this.setState({ isLoading: false, loadErrors });
   }
 
   public componentDidMount() {
@@ -240,24 +241,18 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
      /* Event handlers
      /**********************************************************************************/
 
-    const openGradePage = (submission: AnonymousSubmissionInfoType) => {
-      if (localStorage.getItem('source') === 'codePost') {
-        window.open(`/code/${submission.id}`);
-      } else {
-        window.open(`/code/${submission.id}`, '_blank');
-      }
-    };
     const data = filteredSubs.map((sub) => {
       const students = showingEmails ? sub.students.join(', ') : String(sub.id);
       return {
         ...formatSub(sub, this.props.assignment),
         key: sub.id,
         student: (
-          <Link onClick={() => openGradePage(sub)}>
+          // A real link (new tab, as before), so middle-click and Ctrl+click work too.
+          <a href={`/code/${sub.id}`} target="_blank" rel="noopener" className="text-link">
             <Typography.Text strong className="text-link">
               {students}
             </Typography.Text>
-          </Link>
+          </a>
         ),
         viewIcon: <div>{getViewIcon(sub, this.state.viewsBySubmission)}</div>,
       };
@@ -300,8 +295,22 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       </div>
     );
 
+    const { loadErrors } = this.state;
     const content = (
       <div>
+        {loadErrors.length > 0 && (
+          <Alert
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={`Couldn't load ${loadErrors.join(', ')} for this assignment.`}
+            action={
+              <Button size="small" onClick={() => this.initialLoad()}>
+                Retry
+              </Button>
+            }
+          />
+        )}
         {graderSelect}
         <Table columns={columns} dataSource={data} loading={this.state.isLoading} size="middle" />
       </div>
@@ -311,7 +320,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       <CPAdminDetail
         breadcrumbs={<Breadcrumb items={[...this.props.breadcrumbs, { title: this.props.assignment.name }]} />}
         goBack={null}
-        title={<span style={{ letterSpacing: '-0.3px' }}>{`All submissions: ${this.props.assignment.name}`}</span>}
+        title={<span style={{ letterSpacing: '-0.3px' }}>{`All Submissions: ${this.props.assignment.name}`}</span>}
         actions={[anonymousToggle]}
         content={content}
         gutterSize={0}

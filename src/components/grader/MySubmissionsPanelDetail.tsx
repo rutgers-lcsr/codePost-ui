@@ -39,7 +39,6 @@ import {
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 import CPButton from '../core/CPButton';
 import CPTooltip from '../core/CPTooltip';
-import { clickableProps } from '../core/clickable';
 import { tooltips } from '../core/tooltips';
 
 import { compare } from '../utils/SortUtils';
@@ -265,10 +264,10 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       }
 
       if (submission) {
-        queryClient.setQueryData(
-          submissionsQueryKey,
-          (old: AnonymousSubmissionInfoType[] | undefined) => [...(old ?? []), ...submission],
-        );
+        queryClient.setQueryData(submissionsQueryKey, (old: AnonymousSubmissionInfoType[] | undefined) => [
+          ...(old ?? []),
+          ...submission,
+        ]);
       }
 
       return submission;
@@ -283,9 +282,8 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         patchedSubmission: { grader: null, isFinalized: false },
       });
 
-      queryClient.setQueryData(
-        submissionsQueryKey,
-        (old: AnonymousSubmissionInfoType[] | undefined) => (old ?? []).filter((sub) => sub.id !== released.id),
+      queryClient.setQueryData(submissionsQueryKey, (old: AnonymousSubmissionInfoType[] | undefined) =>
+        (old ?? []).filter((sub) => sub.id !== released.id),
       );
 
       return released;
@@ -313,13 +311,9 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
   /* Event handlers
   /**********************************************************************************/
 
-  const openGradePage = useCallback((submission: AnonymousSubmissionInfoType) => {
-    if (localStorage.getItem('source') === 'codePost') {
-      window.open(`/code/${submission.id}`);
-    } else {
-      window.open(`/code/${submission.id}`, '_self');
-    }
-  }, []);
+  // The grading page opens in a new tab from codePost itself and in the same tab when
+  // embedded (Code in Place sets no source).
+  const gradeTarget = localStorage.getItem('source') === 'codePost' ? '_blank' : '_self';
 
   const handleSelect = useCallback(
     (sectionID: string) => {
@@ -404,6 +398,7 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
               max={MAX_CLAIM_AMOUNT}
               value={claimAmount}
               onChange={(value) => setClaimAmount(value || DEFAULT_CLAIM_AMOUNT)}
+              aria-label="How many submissions to claim"
               style={{ width: 60 }}
             />
           </Space.Compact>
@@ -518,6 +513,12 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
             { grade: b.grade, isFinalized: b.isFinalized },
           );
         },
+        // The column filter is the "what is left" view: unfinalized rows only.
+        filters: [
+          { text: 'Unfinalized', value: 'unfinalized' },
+          { text: 'Finalized', value: 'finalized' },
+        ],
+        onFilter: (value: unknown, row: ITableRow) => (value === 'finalized') === !!row.isFinalized,
         align: centerAlign,
       },
       {
@@ -554,23 +555,37 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         ...formatSub(sub, assignment),
         key: sub.id,
         student: (
-          // span + clickableProps (not a bare href-less <a>) so the grade link is
-          // keyboard-focusable and announced as a button.
-          <span {...clickableProps(() => openGradePage(sub))} className="text-link" style={{ cursor: 'pointer' }}>
+          // A real link, so middle-click, Ctrl+click and "open in new tab" all work.
+          <a
+            href={`/code/${sub.id}`}
+            target={gradeTarget}
+            rel={gradeTarget === '_blank' ? 'noopener' : undefined}
+            className="text-link"
+          >
             <Typography.Text strong className="text-link">
               {students}
             </Typography.Text>
-          </span>
+          </a>
         ),
         release: (
           <Popconfirm
-            title="Are you sure you want to unclaim this submission?"
+            title={sub.isFinalized ? 'Unclaim this finalized submission?' : 'Unclaim this submission?'}
+            description={
+              sub.isFinalized
+                ? 'It goes back to the queue and is no longer finalized. Your comments stay on it.'
+                : 'It goes back to the queue. Your comments stay on it.'
+            }
             onConfirm={() => onSubmissionRelease(sub as SubmissionType)}
             okText={sub.isFinalized ? 'Unclaim and unfinalize' : 'Unclaim'}
+            okButtonProps={{ danger: true }}
             cancelText="Cancel"
             placement="left"
           >
-            <Button shape="circle" icon={<MinusCircleTwoTone twoToneColor="#eb2f96" />} />
+            <Button
+              shape="circle"
+              aria-label={`Unclaim submission ${students}`}
+              icon={<MinusCircleTwoTone twoToneColor="#eb2f96" />}
+            />
           </Popconfirm>
         ),
       };
