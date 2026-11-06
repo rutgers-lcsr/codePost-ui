@@ -248,7 +248,14 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
         key: sub.id,
         student: (
           // A real link (new tab, as before), so middle-click and Ctrl+click work too.
-          <a href={`/code/${sub.id}`} target="_blank" rel="noopener" className="text-link">
+          <a
+            href={`/code/${sub.id}`}
+            target="_blank"
+            rel="noopener"
+            aria-label={`Open submission ${students}${sub.isFinalized ? ' (finalized)' : ''}`}
+            title="Opens the grading page in a new tab"
+            className="text-link"
+          >
             <Typography.Text strong className="text-link">
               {students}
             </Typography.Text>
@@ -262,7 +269,12 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
     const anonymousToggle = assignment.anonymousGrading ? (
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         <span>Reveal students:</span>
-        <Switch defaultChecked={showingEmails} onChange={this.toggleShowStudentEmails} key="toggleShowStudents" />
+        <Switch
+          aria-label="Reveal students"
+          defaultChecked={showingEmails}
+          onChange={this.toggleShowStudentEmails}
+          key="toggleShowStudents"
+        />
       </div>
     ) : (
       <div />
@@ -272,6 +284,7 @@ class ViewAllDetailPanel extends Component<IViewAllProps, IViewAllState> {
       <div style={{ marginBottom: 20 }}>
         <Select
           placeholder="Filter by grader..."
+          aria-label="Filter by grader"
           mode="multiple"
           onSelect={this.handleSelect}
           onDeselect={this.handleDeselect}

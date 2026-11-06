@@ -13,7 +13,7 @@ import type { TableProps } from 'antd';
 
 /* other library imports */
 
-import { Navigate, Route, Routes, useNavigate } from 'react-router';
+import { Link, Navigate, Route, Routes } from 'react-router';
 
 /* codePost imports */
 import CPAdminDetail from '../admin/other/CPAdminDetail';
@@ -22,7 +22,6 @@ import { Course } from '../../api-client';
 import { AssignmentType } from '../../types/models';
 
 import { encodeForLink, encodeForRoute } from '../core/URLutils';
-import { clickableProps } from '../core/clickable';
 import { LOCAL_SETTINGS } from '../utils/LocalSettings';
 import { usePermissionsStore } from '../../stores/usePermissionsStore';
 
@@ -98,7 +97,14 @@ const IndexRouteElement = ({
       content={
         <>
           {notice}
-          <Table columns={columns} dataSource={data} loading={isLoading} size="middle" />
+          {/* A course has a dozen or two assignments: one page, so the totals are in view. */}
+          <Table
+            columns={columns}
+            dataSource={data}
+            loading={isLoading}
+            size="middle"
+            pagination={data.length > 25 ? { pageSize: 25 } : false}
+          />
         </>
       }
       gutterSize={0}
@@ -108,20 +114,14 @@ const IndexRouteElement = ({
 
 function GraderPanelBuilder<T extends IDetailProps>(DetailComponent: React.ComponentType<T>) {
   const BuiltGraderPanel = (props: IParentProps & T) => {
-    const navigate = useNavigate();
-
-    // In v6, simple back navigation to index or explicit path
-    const back = () => {
-      LOCAL_SETTINGS.defaultAssignment.setter(0);
-      navigate('..', { relative: 'path' });
-    };
-
+    // A real link back to the index (focus ring, middle-click); it also forgets the stored
+    // assignment so the index does not redirect straight back.
     const breadcrumbs = [
       {
         title: (
-          <span style={{ cursor: 'pointer' }} {...clickableProps(back)}>
+          <Link to=".." relative="path" onClick={() => LOCAL_SETTINGS.defaultAssignment.setter(0)}>
             {props.title}
-          </span>
+          </Link>
         ),
       },
     ];

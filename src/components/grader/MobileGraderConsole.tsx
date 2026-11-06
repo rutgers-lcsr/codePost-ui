@@ -20,6 +20,7 @@ import { useAssignmentsQuery } from '../admin/hooks/useAssignmentsQuery';
 import { renderRoleSwitcher } from '../core/MobileRoleSwitcher';
 import { clickableProps } from '../core/clickable';
 import { sortByWork } from './GraderUtils';
+import { GREEN_TAG, ORANGE_TAG } from '../../theme/tagStyles';
 import styles from './MobileGraderConsole.module.scss';
 
 const { Title, Text } = Typography;
@@ -123,6 +124,7 @@ const CourseDetail: React.FC<{
       {/* Filter */}
       <Segmented
         block
+        size="large"
         value={filter}
         onChange={(val) => setFilter(val as 'all' | 'active' | 'done')}
         options={[
@@ -162,12 +164,13 @@ const CourseDetail: React.FC<{
                       <Text strong style={{ fontSize: 14 }}>
                         {assignment.name}
                       </Text>
+                      {/* Tinted tags from the theme (antd's presets are 2.6–3.5:1 at 12px). */}
                       {mine !== undefined && mine > 0 ? (
-                        <Tag color="warning">{mine} unfinalized</Tag>
+                        <Tag style={ORANGE_TAG}>{mine} unfinalized</Tag>
                       ) : queue !== undefined && queue > 0 ? (
-                        <Tag color="processing">{queue} in queue</Tag>
+                        <Tag>{queue} in queue</Tag>
                       ) : mine !== undefined && queue !== undefined ? (
-                        <Tag color="success" icon={<CheckCircleFilled />}>
+                        <Tag style={GREEN_TAG} icon={<CheckCircleFilled aria-hidden />}>
                           Done
                         </Tag>
                       ) : null}
@@ -246,8 +249,10 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
   const localPart = userEmail.split('@')[0].split('.')[0];
   const displayName = /^[a-z]+$/i.test(localPart) ? localPart.charAt(0).toUpperCase() + localPart.slice(1) : null;
 
-  const activeCourses = useMemo(() => courses.filter((c) => !c.archived), [courses]);
-  const archivedCourses = useMemo(() => courses.filter((c) => c.archived), [courses]);
+  // Same order as the desktop course list.
+  const byName = (a: Course, b: Course) => a.name.localeCompare(b.name) || a.period.localeCompare(b.period);
+  const activeCourses = useMemo(() => courses.filter((c) => !c.archived).sort(byName), [courses]);
+  const archivedCourses = useMemo(() => courses.filter((c) => c.archived).sort(byName), [courses]);
   const selectedCourse = courses.find((c) => c.id === selectedCourseId);
 
   /* ── Home ────────────────────────────────────────────────────────────── */
@@ -297,7 +302,9 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
                       {course.period}
                     </Text>
                   </div>
-                  <Tag>{(course.assignments ?? []).length} assignments</Tag>
+                  <Tag>
+                    {(course.assignments ?? []).length} assignment{(course.assignments ?? []).length === 1 ? '' : 's'}
+                  </Tag>
                 </Flex>
               </Card>
             ))}
@@ -342,7 +349,9 @@ const MobileGraderConsole: React.FC<MobileGraderConsoleProps> = ({ courses, user
                       {course.period}
                     </Text>
                   </div>
-                  <Tag>{(course.assignments ?? []).length} assignments</Tag>
+                  <Tag>
+                    {(course.assignments ?? []).length} assignment{(course.assignments ?? []).length === 1 ? '' : 's'}
+                  </Tag>
                 </Flex>
               </Card>
             </motion.div>

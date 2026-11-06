@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import { FC, lazy } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router';
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router';
 
 import { Course, Section } from '../../api-client';
 import type { UserType } from '../../types/models';
@@ -52,6 +52,27 @@ const RoutePropsWrapper = ({ render }: { render: (props: LegacyRouteProps) => Re
   return render({ match, location, history });
 };
 
+/** A panel this role lacks (stale bookmark, shared link): say so, and link to the first one
+ *  it has. The link is absolute: inside a splat route a relative "my_submissions" would
+ *  resolve under the unknown segment (…/rubrics/my_submissions). */
+const NoPanel: FC<{ firstPanel: string | null }> = ({ firstPanel }) => {
+  const location = useLocation();
+  const splat = useParams()['*'] ?? '';
+  const base = location.pathname.slice(0, location.pathname.length - splat.length);
+  return (
+    <div style={{ padding: 24 }}>
+      <p>You don&apos;t have access to this page in this course.</p>
+      {firstPanel ? (
+        <Link to={`${base}${firstPanel}`}>
+          Go to {firstPanel === 'my_submissions' ? 'Claimed by Me' : 'your first panel'}
+        </Link>
+      ) : (
+        <p>Nothing to grade in this course yet.</p>
+      )}
+    </div>
+  );
+};
+
 interface GraderRoutesProps {
   currentCourse: Course;
   assignments: Assignment[];
@@ -60,21 +81,28 @@ interface GraderRoutesProps {
   someRegrades: boolean;
 }
 
-const GraderRoutes: FC<GraderRoutesProps> = ({
-  currentCourse,
-  assignments,
-  user,
-  localSectionsLed,
-  someRegrades,
-}) => {
+const GraderRoutes: FC<GraderRoutesProps> = ({ currentCourse, assignments, user, localSectionsLed, someRegrades }) => {
   const courseCaps = useCourseCapabilities(currentCourse?.id);
   const showAllSubmissions = !!courseCaps.manage_regrades;
   const showRubrics = !!courseCaps.edit_rubric;
   const showQuizGrading = !!courseCaps.grade_quiz;
 
+  // The first panel this grader has, in sidebar order: the course root lands there, and a
+  // panel the role lacks (stale bookmark, shared link) says so instead of rendering nothing.
+  const firstPanel =
+    (currentCourse.activateQueue && 'my_submissions') ||
+    (localSectionsLed.length > 0 && 'my_sections') ||
+    (showAllSubmissions && 'all_submissions') ||
+    (someRegrades && 'regrades') ||
+    (showRubrics && 'rubrics') ||
+    (showQuizGrading && 'quizzes') ||
+    null;
+  const noPanel = <NoPanel firstPanel={firstPanel} />;
+
   return (
     <Routes>
-      <Route index element={<div>Select a panel from the navigation</div>} />
+      <Route index element={firstPanel ? <Navigate to={firstPanel} replace /> : noPanel} />
+      <Route path="*" element={noPanel} />
       {currentCourse.activateQueue && (
         <Route
           key="my_submissions"

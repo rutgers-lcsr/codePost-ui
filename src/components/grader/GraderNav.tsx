@@ -7,6 +7,7 @@ import {
   FormOutlined,
   InboxOutlined,
   MessageOutlined,
+  ProfileOutlined,
   PushpinOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
@@ -107,7 +108,7 @@ const GraderNav: React.FC<IProps> = (props) => {
       ? [
           {
             key: '4',
-            icon: <ContainerOutlined />, // Using Container (or similar) or Edit
+            icon: <ProfileOutlined />,
             label: <Link to={getPath('rubrics')}>Rubrics</Link>,
           },
         ]

@@ -568,3 +568,11 @@ tr.drop-over-upward td {
 td.draggable {
   cursor: move;
 }
+
+/* Keyboard focus antd leaves invisible: sortable table headers are tab stops with
+   outline: none, and a number input only recolours its border. Same ring as buttons. */
+.ant-table-thead > tr > th.ant-table-column-has-sorters:focus-visible,
+.cp-claim-controls .ant-input-number:focus-within {
+  outline: 3px solid #198665;
+  outline-offset: -3px;
+}

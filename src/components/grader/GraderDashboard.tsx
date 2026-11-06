@@ -163,7 +163,7 @@ const GraderDashboard: React.FC<GraderDashboardProps> = ({ courses, defaultPanel
                 </Tag.CheckableTag>
               ))}
               {!showAllPeriods && hiddenPeriodCount > 0 && (
-                <Button type="link" size="small" onClick={() => setShowAllPeriods(true)}>
+                <Button size="small" onClick={() => setShowAllPeriods(true)}>
                   +{hiddenPeriodCount} older
                 </Button>
               )}

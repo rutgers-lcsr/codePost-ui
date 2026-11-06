@@ -9,10 +9,10 @@ import { Link } from 'react-router';
 
 /* antd imports */
 import {
+  Alert,
   Breadcrumb,
   Button,
   Divider,
-  Dropdown,
   Empty,
   InputNumber,
   Popconfirm,
@@ -22,12 +22,13 @@ import {
   Table,
   Tag,
   Typography,
+  message,
 } from 'antd';
 
 /* antd icons */
 import {
   CloseCircleOutlined,
-  FilterOutlined,
+  FilterFilled,
   InboxOutlined,
   InfoCircleOutlined,
   MinusCircleTwoTone,
@@ -50,6 +51,7 @@ import { AnonymousSubmissionInfoType, AssignmentType, SectionType, SubmissionTyp
 import { ADMIN } from '../../routes';
 import { BUTTON_STATE } from '../../types/common';
 import { withQueryParams } from '../../utils/apiClient';
+import { apiErrorMessageAsync } from '../../lib/apiError';
 import { useCourseCapabilities } from '../../stores/usePermissionsStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { graderKeys } from '../../lib/queryKeys';
@@ -72,11 +74,6 @@ interface ITableRow extends ISubDataBasic {
   key: number;
   student: string | number | React.ReactElement;
   releaseIcon?: React.ReactElement;
-}
-
-enum FILTER_TYPE {
-  NONE,
-  BY_SECTION,
 }
 
 interface IProps {
@@ -128,29 +125,26 @@ const loadSections = async (course: Course, isAdmin: boolean): Promise<SectionTy
   }
 };
 
+// Throws on failure: the query's error state renders a retry, where an empty list would
+// read as "nothing claimed".
 const loadSubmissions = async (
   currentAssignment: AssignmentType,
   user: string,
 ): Promise<AnonymousSubmissionInfoType[]> => {
-  try {
-    const submissionsApiWithQuery = withQueryParams(assignmentsApi, {
-      grader: user,
-      compact: 1,
-    });
+  const submissionsApiWithQuery = withQueryParams(assignmentsApi, {
+    grader: user,
+    compact: 1,
+  });
 
-    const response = await submissionsApiWithQuery.submissionsListRaw({ id: currentAssignment.id });
-    const data = (await response.raw.json()) as unknown;
+  const response = await submissionsApiWithQuery.submissionsListRaw({ id: currentAssignment.id });
+  const data = (await response.raw.json()) as unknown;
 
-    if (Array.isArray(data)) {
-      return data as AnonymousSubmissionInfoType[];
-    }
-
-    return ((data as { results?: AnonymousSubmissionInfoType[] } | undefined)?.results ??
-      []) as AnonymousSubmissionInfoType[];
-  } catch (error) {
-    console.error(error);
-    return [];
+  if (Array.isArray(data)) {
+    return data as AnonymousSubmissionInfoType[];
   }
+
+  return ((data as { results?: AnonymousSubmissionInfoType[] } | undefined)?.results ??
+    []) as AnonymousSubmissionInfoType[];
 };
 
 const getSectionParameters = (sections: SectionType[]): Array<SectionType | undefined> => {
@@ -169,17 +163,22 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
   // State
   const [currentSections, setCurrentSections] = useState<SectionType[]>([]);
   const [buttonState, setButtonState] = useState<BUTTON_STATE>(BUTTON_STATE.Active);
-  const [filterType, setFilterType] = useState<FILTER_TYPE>(FILTER_TYPE.NONE);
   const [showStudentEmails, setShowStudentEmails] = useState<boolean>(false);
   const [claimAmount, setClaimAmount] = useState<number>(DEFAULT_CLAIM_AMOUNT);
 
   // Submissions query with 15s polling
   const submissionsQueryKey = graderKeys.submissions(assignment.id, graderEmail);
-  const { data: submissions = [], isLoading: isLoadingSubmissions } = useQuery({
+  const {
+    data: submissions = [],
+    isLoading: isLoadingSubmissions,
+    isError: submissionsFailed,
+    refetch: refetchSubmissions,
+  } = useQuery({
     queryKey: submissionsQueryKey,
     queryFn: () => loadSubmissions(assignment, graderEmail),
     refetchInterval: LOADING_INTERVAL,
     refetchIntervalInBackground: false,
+    retry: 1,
   });
 
   const canViewSubmissionInfo = submissions.length > 0 ? typeof submissions[0].students !== 'undefined' : false;
@@ -297,11 +296,13 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
   const getAnotherSubmission = useCallback(async () => {
     setButtonState(BUTTON_STATE.Loading);
-    const claimedSubmission = await claimSubmission(assignment.id, currentSections, claimAmount);
-    if (!claimedSubmission) {
-      setButtonState(BUTTON_STATE.Inactive);
-    } else {
+    try {
+      const claimedSubmission = await claimSubmission(assignment.id, currentSections, claimAmount);
+      setButtonState(claimedSubmission ? BUTTON_STATE.Active : BUTTON_STATE.Inactive);
+    } catch (e) {
+      // Nothing was claimed; the button must not stay spinning.
       setButtonState(BUTTON_STATE.Active);
+      message.error((await apiErrorMessageAsync(e)) ?? 'Could not claim a submission. Try again.');
     }
     // Update queue length after claiming
     updateQueueLength();
@@ -346,15 +347,11 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     [currentSections, updateQueueLength],
   );
 
-  const handleSetFilterType = useCallback(
-    (newFilterType: FILTER_TYPE) => {
-      setFilterType(newFilterType);
-      setCurrentSections([]);
-      // Update queue length when filter type changes
-      updateQueueLength();
-    },
-    [updateQueueLength],
-  );
+  const clearSections = useCallback(() => {
+    setCurrentSections([]);
+    setButtonState(BUTTON_STATE.Active);
+    updateQueueLength();
+  }, [updateQueueLength]);
 
   const toggleShowStudentEmails = useCallback(() => {
     setShowStudentEmails((prev) => !prev);
@@ -362,10 +359,15 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
 
   const onSubmissionRelease = useCallback(
     (sub: SubmissionType) => {
-      releaseSubmission(sub).then(() => {
-        setButtonState(BUTTON_STATE.Active);
-        updateQueueLength();
-      });
+      releaseSubmission(sub)
+        .then(() => {
+          setButtonState(BUTTON_STATE.Active);
+          updateQueueLength();
+        })
+        .catch(async (e: unknown) => {
+          // The row stays claimed; say why.
+          message.error((await apiErrorMessageAsync(e)) ?? 'Could not unclaim the submission. Try again.');
+        });
     },
     [releaseSubmission, updateQueueLength],
   );
@@ -381,13 +383,13 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     switch (buttonState) {
       case BUTTON_STATE.Active: {
         claimButton = (
-          <Space.Compact>
+          <Space.Compact className="cp-claim-controls">
             <CPTooltip title={tooltips.grader.mySubmissions.claim} hideThisOnHideTips={true}>
               <CPButton
                 cpType="primary"
-                icon={<PlusCircleOutlined />}
+                icon={<PlusCircleOutlined aria-hidden />}
                 onClick={getAnotherSubmission}
-                fallbackIcon={<PlusCircleOutlined />}
+                fallbackIcon={<PlusCircleOutlined aria-label="Claim" />}
                 style={{ display: 'inline-block' }}
               >
                 Claim
@@ -409,8 +411,8 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         claimButton = (
           <CPButton
             cpType="disabled"
-            icon={<InboxOutlined />}
-            fallbackIcon={<InboxOutlined />}
+            icon={<InboxOutlined aria-hidden />}
+            fallbackIcon={<InboxOutlined aria-label="Queue empty" />}
             style={{ display: 'inline-block' }}
           >
             Queue empty
@@ -419,12 +421,12 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         refreshButton = (
           <CPButton
             cpType="secondary"
-            icon={<RedoOutlined />}
+            icon={<RedoOutlined aria-hidden />}
             onClick={() => {
               setButtonState(BUTTON_STATE.Active);
               updateQueueLength();
             }}
-            fallbackIcon={<RedoOutlined />}
+            fallbackIcon={<RedoOutlined aria-label="Refresh" />}
           >
             Refresh
           </CPButton>
@@ -441,12 +443,18 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
       }
     }
 
-    // Queue length display
+    // Queue length display; a live region, so the count's changes are announced.
     const queueLengthDisplay =
       queueLength !== null ? (
-        <Tag color="blue" icon={<InfoCircleOutlined />} style={{ borderRadius: 4, fontWeight: 500, fontSize: 12 }}>
-          {isLoadingQueueLength ? 'Loading...' : `${queueLength} in queue`}
-        </Tag>
+        <span aria-live="polite">
+          <Tag
+            color="blue"
+            icon={<InfoCircleOutlined aria-hidden />}
+            style={{ borderRadius: 4, fontWeight: 500, fontSize: 12 }}
+          >
+            {isLoadingQueueLength ? 'Loading...' : `${queueLength} in queue`}
+          </Tag>
+        </span>
       ) : null;
 
     return (
@@ -458,45 +466,70 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
     );
   }, [buttonState, claimAmount, getAnotherSubmission, queueLength, isLoadingQueueLength, updateQueueLength]);
 
+  // The section filter is the select itself (a one-item "Filter ▸ By section" menu was a
+  // wasted click); it exists only when the course has sections.
   const renderFilterComponent = useMemo(() => {
-    switch (filterType) {
-      case FILTER_TYPE.NONE: {
-        const filterMenuItems = [
-          {
-            key: 'by-section',
-            label: 'By section',
-            onClick: () => handleSetFilterType(FILTER_TYPE.BY_SECTION),
-          },
-        ];
-        return (
-          <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
-            <Dropdown menu={{ items: filterMenuItems }} trigger={['click']}>
-              <Button icon={<FilterOutlined />}>Filter</Button>
-            </Dropdown>
-          </CPTooltip>
-        );
-      }
-      case FILTER_TYPE.BY_SECTION: {
-        return (
-          <Space size="small">
-            <SelectSection
-              sections={sections}
-              currentSections={currentSections}
-              onSelect={handleSelect}
-              onDeselect={handleDeselect}
-              disabled={isLoadingSubmissions}
-            />
-            <CloseCircleOutlined onClick={() => handleSetFilterType(FILTER_TYPE.NONE)} />
-          </Space>
-        );
-      }
+    if (sections.length === 0) {
+      return null;
     }
-  }, [filterType, sections, currentSections, handleSelect, handleDeselect, isLoadingSubmissions, handleSetFilterType]);
+    return (
+      <Space size="small">
+        <CPTooltip title={tooltips.grader.mySubmissions.filter} hideThisOnHideTips={true}>
+          <SelectSection
+            sections={sections}
+            currentSections={currentSections}
+            onSelect={handleSelect}
+            onDeselect={handleDeselect}
+            disabled={isLoadingSubmissions}
+          />
+        </CPTooltip>
+        {currentSections.length > 0 && (
+          <Button
+            type="text"
+            size="small"
+            aria-label="Clear section filter"
+            icon={<CloseCircleOutlined aria-hidden />}
+            onClick={clearSections}
+          />
+        )}
+      </Space>
+    );
+  }, [sections, currentSections, handleSelect, handleDeselect, isLoadingSubmissions, clearSections]);
+
+  // One toolbar for every state (list, empty, failed).
+  const toolbar = (
+    <Space size="middle" align="center" wrap>
+      {assignment.anonymousGrading && canViewSubmissionInfo && (
+        <Space size="small">
+          <span>Reveal students:</span>
+          <Switch aria-label="Reveal students" checked={showStudentEmails} onChange={toggleShowStudentEmails} />
+        </Space>
+      )}
+      <Divider orientation="vertical" />
+      {renderClaimControls}
+      {renderFilterComponent}
+    </Space>
+  );
 
   let content: React.ReactNode;
   let actions: Array<React.ReactNode> = [];
 
-  if (submissions.length > 0 || isLoadingSubmissions) {
+  if (submissionsFailed) {
+    actions = [toolbar];
+    content = (
+      <Alert
+        type="error"
+        showIcon
+        message="Couldn't load your claimed submissions."
+        description="Your claims are untouched; this page just couldn't read them."
+        action={
+          <Button size="small" onClick={() => refetchSubmissions()}>
+            Retry
+          </Button>
+        }
+      />
+    );
+  } else if (submissions.length > 0 || isLoadingSubmissions) {
     const centerAlign: alignType = 'center';
     const columns = [
       {
@@ -518,6 +551,10 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
           { text: 'Unfinalized', value: 'unfinalized' },
           { text: 'Finalized', value: 'finalized' },
         ],
+        // The trigger takes its name from the icon; antd's default reads "filter".
+        filterIcon: (filtered: boolean) => (
+          <FilterFilled aria-label="Filter by grade status" style={{ color: filtered ? '#198665' : undefined }} />
+        ),
         onFilter: (value: unknown, row: ITableRow) => (value === 'finalized') === !!row.isFinalized,
         align: centerAlign,
       },
@@ -560,6 +597,8 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
             href={`/code/${sub.id}`}
             target={gradeTarget}
             rel={gradeTarget === '_blank' ? 'noopener' : undefined}
+            aria-label={`Open submission ${students}${sub.isFinalized ? ' (finalized)' : ''}`}
+            title={gradeTarget === '_blank' ? 'Opens the grading page in a new tab' : undefined}
             className="text-link"
           >
             <Typography.Text strong className="text-link">
@@ -590,21 +629,6 @@ const MySubmissionsPanelDetail: React.FC<IProps> = ({ assignment, course, grader
         ),
       };
     });
-
-    // Consolidate actions into a single toolbar for better spacing control
-    const toolbar = (
-      <Space size="middle" align="center" wrap>
-        {assignment.anonymousGrading && canViewSubmissionInfo && (
-          <Space size="small">
-            <span>Reveal students:</span>
-            <Switch checked={showStudentEmails} onChange={toggleShowStudentEmails} />
-          </Space>
-        )}
-        <Divider orientation="vertical" />
-        {renderClaimControls}
-        {renderFilterComponent}
-      </Space>
-    );
 
     actions = [toolbar];
     content = (
@@ -669,7 +693,13 @@ interface ISelectSectionProps {
   disabled: boolean;
 }
 
-export const SelectSection: React.FC<ISelectSectionProps> = ({ sections, onSelect, onDeselect, disabled }) => {
+export const SelectSection: React.FC<ISelectSectionProps> = ({
+  sections,
+  currentSections,
+  onSelect,
+  onDeselect,
+  disabled,
+}) => {
   const selectorItems = useMemo(
     () =>
       sections.map((section) => (
@@ -687,9 +717,11 @@ export const SelectSection: React.FC<ISelectSectionProps> = ({ sections, onSelec
   return (
     <Select
       placeholder="Filter by section"
+      aria-label="Filter by section"
       mode="multiple"
-      onSelect={onSelect}
-      onDeselect={onDeselect}
+      value={currentSections.map((section) => section.id)}
+      onSelect={(value) => onSelect(String(value))}
+      onDeselect={(value) => onDeselect(String(value))}
       style={{ width: 250 }}
       disabled={disabled}
     >

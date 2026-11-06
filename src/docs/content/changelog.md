@@ -265,6 +265,20 @@ Stay up to date with new features, improvements, and fixes in codePost.
 - The grader landing page is "Your courses" with the course cards (no counters, no greeting built from your
   email). Quiz Grading uses the same card and breadcrumb as the other panels, My Sections lost an empty "Zoom
   in" column, phone navigation labels are 12px, and "Up to date" is plain text rather than a pale green tag.
+- A failed load of your claimed list says so, with Retry, instead of "No submissions yet"; a failed Claim or
+  Unclaim reports the server's reason and the Claim button recovers. The section filter is the select itself
+  (no one-item Filter menu), with a named Clear button. The summary tables show every assignment on one page
+  (no "1 2" paging for a dozen rows). The course root opens your first panel, and a panel your role lacks
+  says so instead of rendering a blank page.
+- Screen readers: Claim, Queue empty and Refresh no longer read their icon's name ("plus-circle Claim"); the
+  Grade column's filter is "Filter by grade status"; student links read "Open submission …" and say when a
+  tab opens; the queue count announces its changes; Quiz Grading's buttons name their quiz; the grader filter
+  and Reveal students controls have names. Sortable table headers and the claim amount box show a focus ring.
+- Contrast: "Unfinalized"/"Unclaimed" grade cells, the "+N older" button, the "Attached" tag and the phone's
+  course tags and active tab label all clear WCAG AA. The phone console's Back button and filter are bigger
+  targets, it pluralises "1 assignment", and lists courses in the same order as the desktop. Regrade Requests
+  lists assignments with open requests first and shows a dash for one that failed to load. Rubrics has its
+  own sidebar icon.
 
 ---
 

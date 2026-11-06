@@ -16,6 +16,7 @@ import { Link } from 'react-router';
 import { assignmentsApi } from '../../api-client/clients';
 import { Course } from '../../api-client';
 import { AnonymousSubmissionInfoType, AssignmentType, UserType } from '../../types/models';
+import { countCell } from './GraderUtils';
 
 import RegradesDetailPanel from './RegradesDetailPanel';
 
@@ -42,7 +43,7 @@ interface IState {
   isLoading: boolean;
   viewAll: boolean;
   /** Assignments whose regrade list failed to load this round. */
-  failedCount: number;
+  failedIds: number[];
 }
 
 const assignmentIds = (assignments: AssignmentType[]) => assignments.map((a) => a.id).join(',');
@@ -54,7 +55,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
       submissionsByAssignment: {},
       isLoading: true,
       viewAll: false,
-      failedCount: 0,
+      failedIds: [],
     };
   }
 
@@ -71,7 +72,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
   }
 
   public loadSubmissions = (assignments: AssignmentType[], grader?: string) => {
-    this.setState({ isLoading: true, failedCount: 0 }, () => {
+    this.setState({ isLoading: true, failedIds: [] }, () => {
       const promises = assignments.map(async (assn) => {
         try {
           const response = await assignmentsApi.submissionsListRaw({
@@ -80,28 +81,25 @@ class RegradesPanel extends React.Component<IProps, IState> {
             grader: grader,
           });
           const data = await response.raw.json();
-          return Array.isArray(data) ? data : (data?.results ?? []);
+          const list = (Array.isArray(data) ? data : (data?.results ?? [])) as AnonymousSubmissionInfoType[];
+          return { id: assn.id, list };
         } catch (error) {
           console.error(error);
-          return null;
+          return { id: assn.id, list: null };
         }
       });
 
-      Promise.all(promises).then((lists) => {
+      Promise.all(promises).then((results) => {
         const mapper: { [id: number]: AnonymousSubmissionInfoType[] } = {};
-        let failedCount = 0;
-        for (const list of lists) {
+        const failedIds: number[] = [];
+        for (const { id, list } of results) {
           if (list === null) {
-            failedCount += 1;
-          } else if (list.length > 0) {
-            // Check if list elements have assignment property
-            const firstSub = list[0];
-            if (firstSub && firstSub.assignment) {
-              mapper[firstSub.assignment] = list;
-            }
+            failedIds.push(id);
+          } else {
+            mapper[id] = list;
           }
         }
-        this.setState({ submissionsByAssignment: mapper, isLoading: false, failedCount });
+        this.setState({ submissionsByAssignment: mapper, isLoading: false, failedIds });
       });
     });
   };
@@ -144,7 +142,8 @@ class RegradesPanel extends React.Component<IProps, IState> {
     ];
 
     const submissions = this.state.submissionsByAssignment;
-    const data = this.props.assignments.map((assignment) => {
+    const failed = new Set(this.state.failedIds);
+    const rows = this.props.assignments.map((assignment) => {
       const list = assignment.id in submissions ? submissions[assignment.id] : [];
       const regradeSubmissions = list.filter((submission: AnonymousSubmissionInfoType) => {
         return (
@@ -165,15 +164,18 @@ class RegradesPanel extends React.Component<IProps, IState> {
             </Typography.Text>
           </Link>
         ),
-        regrades: regradeSubmissions.length,
-        total: regradeSubmissions.length,
-        open: openCount,
-        closed: regradeSubmissions.length - openCount,
+        // A failed load reads as unknown, never as zero requests.
+        total: failed.has(assignment.id) ? countCell(undefined) : regradeSubmissions.length,
+        open: failed.has(assignment.id) ? countCell(undefined) : openCount,
+        closed: failed.has(assignment.id) ? countCell(undefined) : regradeSubmissions.length - openCount,
+        openCount,
         key: assignment.id,
       };
     });
+    // Open requests first (stable: course order within ties).
+    const data = [...rows].sort((a, b) => b.openCount - a.openCount);
 
-    const { failedCount } = this.state;
+    const failedCount = this.state.failedIds.length;
     const notice =
       failedCount > 0 ? (
         <Alert
@@ -181,7 +183,7 @@ class RegradesPanel extends React.Component<IProps, IState> {
           showIcon
           style={{ marginBottom: 16 }}
           message={`Couldn't load regrade requests for ${failedCount} assignment${failedCount === 1 ? '' : 's'}.`}
-          description="The counts below leave those assignments out."
+          description="Those rows show a dash instead of a count."
           action={
             <Button
               size="small"

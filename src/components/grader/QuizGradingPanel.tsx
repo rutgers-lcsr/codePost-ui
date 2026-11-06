@@ -9,13 +9,13 @@
 // role granted in Roster → Graders).
 import * as React from 'react';
 
-import { Breadcrumb, Empty, Flex, Space, Table, Tag, Typography } from 'antd';
+import { Breadcrumb, Button, Empty, Flex, Space, Table, Tag, Typography } from 'antd';
 
 import { useQueries } from '@tanstack/react-query';
 
 import CPAdminDetail from '../admin/other/CPAdminDetail';
 import CPButton from '../core/CPButton';
-import { clickableProps } from '../core/clickable';
+import { GREEN_TAG } from '../../theme/tagStyles';
 import { quizzesApi } from '../../api-client/clients';
 import { Course, Quiz } from '../../api-client';
 import { quizKeys } from '../../lib/queryKeys';
@@ -83,7 +83,7 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
       render: (_: unknown, q: Quiz) => (
         <Flex align="center" gap={8}>
           <Text strong>{q.title}</Text>
-          {q.assignment != null && <Tag color="green">Attached</Tag>}
+          {q.assignment != null && <Tag style={GREEN_TAG}>Attached</Tag>}
         </Flex>
       ),
     },
@@ -116,7 +116,12 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
       render: (_: unknown, q: Quiz) => (
         <Space>
           {reviewable(q) && (
-            <CPButton small onClick={() => setView({ quiz: q, mode: 'review' })} data-testid="grader-open-review">
+            <CPButton
+              small
+              onClick={() => setView({ quiz: q, mode: 'review' })}
+              aria-label={`Review questions for ${q.title}`}
+              data-testid="grader-open-review"
+            >
               Review questions
             </CPButton>
           )}
@@ -124,6 +129,7 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
             cpType="primary"
             small
             onClick={() => setView({ quiz: q, mode: 'grade' })}
+            aria-label={`Grade ${q.title}`}
             data-testid="grader-open-grading"
           >
             Grade
@@ -137,9 +143,9 @@ const QuizGradingPanel: React.FC<{ course: Course }> = ({ course }) => {
   // back to the list, like the assignment panels' first crumb.
   const rootCrumb = {
     title: view ? (
-      <span style={{ cursor: 'pointer' }} {...clickableProps(() => setView(null))}>
+      <Button type="link" size="small" style={{ padding: 0, height: 'auto' }} onClick={() => setView(null)}>
         Quiz Grading
-      </span>
+      </Button>
     ) : (
       'Quiz Grading'
     ),

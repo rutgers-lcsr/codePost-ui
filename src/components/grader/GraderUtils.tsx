@@ -155,16 +155,17 @@ const formatGradeText = (
     return <Text style={{ fontVariantNumeric: 'tabular-nums' }}>{gradeDisplay}</Text>;
   }
 
+  // Secondary text (the theme's 0.6 alpha clears AA); the old 0.45 / 0.3 alphas did not.
   if (sub.grader) {
     return (
-      <Text strong style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+      <Text strong type="secondary">
         Unfinalized
       </Text>
     );
   }
 
   return (
-    <Text strong style={{ color: 'rgba(0, 0, 0, 0.3)' }}>
+    <Text type="secondary" italic>
       Unclaimed
     </Text>
   );
