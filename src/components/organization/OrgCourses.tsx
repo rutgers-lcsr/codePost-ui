@@ -6,7 +6,8 @@ import { coursesApi } from '../../api-client/clients';
 import { PAGE_SIZE_OPTIONS } from '../utils/LocalSettings';
 import useDefaultPageSize from '../utils/useDefaultPageSize';
 import { ColumnsType } from 'antd/es/table';
-import { EditOutlined, SearchOutlined, CopyOutlined, RedoOutlined } from '@ant-design/icons';
+import { EditOutlined, SearchOutlined, CopyOutlined, RedoOutlined, TeamOutlined } from '@ant-design/icons';
+import OrgCourseRoster from './OrgCourseRoster';
 
 // Common US timezones
 const TIMEZONES = [
@@ -30,6 +31,7 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
   const [searchText, setSearchText] = React.useState('');
   const [pageSize, setPageSize] = useDefaultPageSize();
   const [editingCourse, setEditingCourse] = React.useState<Course | null>(null);
+  const [rosterCourse, setRosterCourse] = React.useState<Course | null>(null);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [form] = Form.useForm();
@@ -141,9 +143,14 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
-          Edit
-        </Button>
+        <Space>
+          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
+          <Button icon={<TeamOutlined />} size="small" onClick={() => setRosterCourse(record)}>
+            Roster
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -264,6 +271,8 @@ const OrgCourses: React.FC<IProps> = ({ courses, loading, onRefresh }) => {
           <Tabs items={tabItems} />
         </Form>
       </Modal>
+
+      <OrgCourseRoster course={rosterCourse} onClose={() => setRosterCourse(null)} />
     </Card>
   );
 };
