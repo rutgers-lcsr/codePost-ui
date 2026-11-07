@@ -29,11 +29,21 @@ test.describe('password login', () => {
 
     await page.reload();
     await expect(page.getByPlaceholder('Email address')).toHaveCount(0);
+    // In no course yet: Home says so instead of showing an empty role list.
+    await expect(page.getByText("You're not enrolled in any course yet")).toBeVisible();
 
+    // Opening /logout directly used to re-run the logout forever (blank page, endless
+    // "Maximum update depth exceeded"); it must sign out once and land on the start page.
+    const loops: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.text().includes('Maximum update depth')) loops.push(msg.text());
+    });
     await page.goto('/logout');
     await expect.poll(() => page.evaluate(() => localStorage.getItem('token'))).toBeNull();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/');
     await page.goto('/login');
     await expect(page.getByPlaceholder('Email address')).toBeVisible();
+    expect(loops).toEqual([]);
   });
 
   test('refuses a wrong password and stores no token', async ({ page }) => {

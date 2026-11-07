@@ -117,6 +117,22 @@ test.describe('roster PATCH', () => {
     });
   }
 
+  test('org staff see the roster from the organization console', async ({ page }) => {
+    await signIn(page, seed.tokens[seed.emails.orgOwn]);
+    await page.goto('/organization/courses');
+    await page
+      .getByRole('row', { name: /GB Grades/ })
+      .getByRole('button', { name: 'Roster' })
+      .click();
+
+    const drawer = page.getByRole('dialog').filter({ hasText: 'Roster — GB Grades' });
+    await expect(drawer.getByText(seed.emails.s1, { exact: true })).toBeVisible();
+    await drawer.getByRole('tab', { name: /^Graders/ }).click();
+    await expect(drawer.getByText(seed.emails.grader, { exact: true })).toBeVisible();
+    await drawer.getByRole('tab', { name: /^Course Admins/ }).click();
+    await expect(drawer.getByText(seed.emails.admin, { exact: true })).toBeVisible();
+  });
+
   test('org staff of another organization cannot read or edit the roster', async ({ request }) => {
     const token = seed.tokens[seed.emails.orgForeign];
     const url = `${API_URL}/courses/${seed.courses.grades}/roster/`;
