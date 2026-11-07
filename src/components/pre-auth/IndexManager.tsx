@@ -7,7 +7,7 @@
 import * as React from 'react';
 
 /* other library imports */
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 
 import ForgotPasswordForm from './ForgotPasswordForm';
 import LoginForm from './LoginForm';
@@ -18,8 +18,6 @@ import ValidateInvite from '../student/ValidateInvite';
 import ChangeLog from './ChangeLog';
 import JoinSignup from './JoinSignup';
 import { SignUpManager } from './SignUpManager';
-
-import Logout from '../core/Logout';
 
 import { User } from '../../api-client';
 import { ADMIN, CODE, CODE_DEMO, GRADER, STUDENT } from '../../routes';
@@ -102,7 +100,10 @@ class IndexManager extends React.Component<IndexManagerProps> {
             }
           />
 
-          <Route path="/logout" element={<Logout handleLogout={this.props.handleLogout} />} />
+          {/* Signed out already, so there is nothing to do but leave. Running handleLogout here
+              too re-armed App's toRedirect <Navigate>, which remounted this tree on /logout
+              and looped ("Maximum update depth exceeded") right after a sign-out. */}
+          <Route path="/logout" element={<Navigate to="/" replace />} />
 
           <Route
             path="/login/:orgShortname"
