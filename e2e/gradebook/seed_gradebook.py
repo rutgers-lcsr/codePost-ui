@@ -41,7 +41,8 @@ admin = User.objects.get(username='course_admin_only')
 grader = User.objects.get(username='grader_basic')
 superuser = User.objects.filter(is_superuser=True).first()
 other_admin = user('gb_other_admin@dev.edu', canModifyRosters=True, canCreateCourses=True)
-orgstaff_own = user('gb_orgstaff_own@dev.edu', isOrgStaff=True, canModifyRosters=True)
+# canModifyRosters off on purpose: being org staff must force it back on (Profile.save).
+orgstaff_own = user('gb_orgstaff_own@dev.edu', isOrgStaff=True, canModifyRosters=False)
 orgstaff_foreign = user('gb_orgstaff_foreign@gbother.edu', org=other_org, isOrgStaff=True,
                         canModifyRosters=True)
 students = [user(f'gb_s{i}@dev.edu') for i in range(1, 9)]

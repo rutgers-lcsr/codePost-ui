@@ -98,15 +98,14 @@ test.describe('roster PATCH', () => {
     ['a superuser who is not a course admin', 'superuser'],
     ['org staff of the course organization', 'orgOwn'],
   ] as const) {
-    // Org staff who are not course admins get 403 from the view's own gate: manage_roster is
-    // admin-only (capabilities.py), so they never reach the fixed serializer. Whether org staff
-    // should manage rosters is a product decision; reported, not changed.
-    const run = key === 'orgOwn' ? test.fixme : test;
-    run(`${who} can add a student`, async ({ request }) => {
+    // Neither is a course admin; org staff (a plain grader here, seeded with canModifyRosters
+    // off, which being org staff forces back on) read and edit the roster with their own token.
+    test(`${who} can add a student`, async ({ request }) => {
       const token = key === 'superuser' ? seed.tokens.superuser : seed.tokens[seed.emails.orgOwn];
       const roster = await request.get(`${API_URL}/courses/${seed.courses.grades}/roster/`, {
-        headers: auth(seed.tokens.course_admin),
+        headers: auth(token),
       });
+      expect(roster.status(), await roster.text()).toBe(200);
       const students: string[] = (await roster.json()).students;
       const newStudent = key === 'superuser' ? seed.emails.newStudent : 'gb_new_student2@dev.edu';
       const resp = await request.patch(`${API_URL}/courses/${seed.courses.grades}/roster/`, {
@@ -117,6 +116,16 @@ test.describe('roster PATCH', () => {
       expect((await resp.json()).students).toContain(newStudent);
     });
   }
+
+  test('org staff of another organization cannot read or edit the roster', async ({ request }) => {
+    const token = seed.tokens[seed.emails.orgForeign];
+    const url = `${API_URL}/courses/${seed.courses.grades}/roster/`;
+    expect((await request.get(url, { headers: auth(token) })).status()).toBe(403);
+    const resp = await request.patch(url, { headers: auth(token), data: { students: [] } });
+    expect(resp.status()).toBe(403);
+    const after = await request.get(url, { headers: auth(seed.tokens.course_admin) });
+    expect((await after.json()).students.length).toBeGreaterThan(0);
+  });
 });
 
 test.describe('serializers', () => {
