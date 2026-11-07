@@ -1,8 +1,8 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 
 import * as React from 'react';
-import { AuditOutlined, TeamOutlined } from '@ant-design/icons';
-import { Card, Flex, Typography } from 'antd';
+import { AuditOutlined, InboxOutlined, TeamOutlined } from '@ant-design/icons';
+import { Card, Empty, Flex, Typography } from 'antd';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { PiStudentFill, PiChalkboardTeacherFill } from 'react-icons/pi';
@@ -119,15 +119,34 @@ const Home = (props: IProps) => {
           <Title level={2} style={{ margin: 0 }}>
             {getGreeting()}, {getDisplayName(props.user)}
           </Title>
-          <Text type="secondary">Select a role to continue</Text>
+          {consoles.length > 0 && <Text type="secondary">Select a role to continue</Text>}
         </div>
 
+        {/* ── No role at all: not enrolled anywhere yet ─────────────────── */}
+        {consoles.length === 0 && (
+          <Empty
+            image={<InboxOutlined style={{ fontSize: 48, color: '#bbb' }} />}
+            description={
+              <div>
+                <Text strong style={{ fontSize: 16 }}>
+                  You're not enrolled in any course yet
+                </Text>
+                <br />
+                <Text type="secondary">Use your course's invite link or ask your instructor to add you.</Text>
+              </div>
+            }
+            style={{ padding: '48px 0' }}
+          />
+        )}
+
         {/* ── Console cards ─────────────────────────────────────────────── */}
-        <Flex align="center" gap={8} style={{ marginBottom: 16 }}>
-          <Title level={5} style={{ margin: 0 }}>
-            Your Roles
-          </Title>
-        </Flex>
+        {consoles.length > 0 && (
+          <Flex align="center" gap={8} style={{ marginBottom: 16 }}>
+            <Title level={5} style={{ margin: 0 }}>
+              Your Roles
+            </Title>
+          </Flex>
+        )}
 
         <div className={styles.consoleGrid}>
           {consoles.map((item, i) => (
