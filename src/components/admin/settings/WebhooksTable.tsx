@@ -313,11 +313,15 @@ const WebhooksTable: React.FC<IWebhooksTableProps> = ({ webhooks, course }) => {
 
   return (
     <div>
-      <Dropdown menu={{ items: menuItems, onClick: handleAdd }}>
-        <Button type="primary" style={{ marginBottom: 16 }}>
-          Add a new webhook <DownOutlined />
-        </Button>
-      </Dropdown>
+      {/* The settings card has no side padding: inset the button so it lines up with the column text,
+          while the table keeps the card's full width (it is already wide for the card). */}
+      <div style={{ padding: '16px 16px 0' }}>
+        <Dropdown menu={{ items: menuItems, onClick: handleAdd }}>
+          <Button type="primary" style={{ marginBottom: 16 }}>
+            Add a new webhook <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
       <Table
         scroll={{ x: 'max-content' }}
         components={components}
