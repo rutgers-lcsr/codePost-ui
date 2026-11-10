@@ -794,8 +794,8 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
       dataIndex: 'actions',
       key: 'actions',
       align: 'right' as alignType,
-      // Fixed to what the icons and a next-action button need, so a wide screen does not strand them.
-      width: isCompact ? undefined : 340,
+      // Fixed to what the icons need, so a wide screen does not strand them; compact is the one menu button.
+      width: isCompact ? 48 : 300,
     },
   ];
 
@@ -1172,18 +1172,23 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         const queued = `${unclaimed} in the queue`;
         caption = caption ? `${caption} · ${queued}` : queued.charAt(0).toUpperCase() + queued.slice(1);
       }
-      const nextActionButton = nextAction ? (
-        <Tooltip title={nextAction.title}>
-          <Button
-            type="primary"
-            size="small"
-            icon={nextAction.icon}
-            onClick={nextAction.run}
-            aria-label={`${nextAction.label} for ${assignment.name}`}
-          >
-            {nextAction.label}
-          </Button>
-        </Tooltip>
+      // A link under the stage chip it moves, not a filled button among the action icons: those stay
+      // one uniform row, and the move sits beside the state it changes.
+      const nextActionLink = nextAction ? (
+        <div style={{ marginTop: 2 }}>
+          <Tooltip title={nextAction.title}>
+            <Button
+              type="link"
+              size="small"
+              icon={nextAction.icon}
+              onClick={nextAction.run}
+              aria-label={`${nextAction.label} for ${assignment.name}`}
+              style={{ padding: 0, height: 'auto', fontSize: 12 }}
+            >
+              {nextAction.label}
+            </Button>
+          </Tooltip>
+        </div>
       ) : null;
 
       return {
@@ -1251,6 +1256,7 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
                 {caption}
               </Text>
             )}
+            {nextActionLink}
           </div>
         ),
         progress: (
@@ -1302,7 +1308,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
         ),
         actions: isCompact ? (
           <Space size={6}>
-            {nextActionButton}
             <Dropdown
               menu={{
                 items: [
@@ -1371,7 +1376,6 @@ const AssignmentsTable: React.FC<IManageAssignmentsProps> = (props) => {
           </Space>
         ) : (
           <Space size={6}>
-            {nextActionButton}
             {canEditAssignment && (
               <Tooltip title="Configure assignment">
                 <Dropdown menu={{ items: configItems }} trigger={['click']}>
