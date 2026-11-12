@@ -27,6 +27,7 @@ import type {
   EnvironmentConvertToManualRequest,
   EnvironmentConvertToManualResponse,
   EnvironmentEjectResponse,
+  EnvironmentPackageRequest,
   EnvironmentPreviewRequest,
   EnvironmentRollbackRequest,
   EnvironmentRollbackResponse,
@@ -77,6 +78,12 @@ export interface EnvironmentsCreateRequest {
     | 'successfulRuns'
     | 'totalRuns'
     | 'successRate'
+    | 'packageListSupported'
+    | 'packages'
+    | 'excludedPackages'
+    | 'pendingPackages'
+    | 'imageOutOfDate'
+    | 'rebuildScheduled'
   >;
 }
 
@@ -90,6 +97,11 @@ export interface EnvironmentsDockerfileRetrieveRequest {
 
 export interface EnvironmentsEjectRetrieveRequest {
   id: number;
+}
+
+export interface EnvironmentsPackagesCreateRequest {
+  id: number;
+  environmentPackageRequest: EnvironmentPackageRequest;
 }
 
 export interface EnvironmentsPartialUpdateRequest {
@@ -107,6 +119,12 @@ export interface EnvironmentsPartialUpdateRequest {
     | 'successfulRuns'
     | 'totalRuns'
     | 'successRate'
+    | 'packageListSupported'
+    | 'packages'
+    | 'excludedPackages'
+    | 'pendingPackages'
+    | 'imageOutOfDate'
+    | 'rebuildScheduled'
   >;
 }
 
@@ -153,6 +171,12 @@ export interface EnvironmentsUpdateRequest {
     | 'successfulRuns'
     | 'totalRuns'
     | 'successRate'
+    | 'packageListSupported'
+    | 'packages'
+    | 'excludedPackages'
+    | 'pendingPackages'
+    | 'imageOutOfDate'
+    | 'rebuildScheduled'
   >;
 }
 
@@ -715,6 +739,76 @@ export class AutograderApi extends runtime.BaseAPI {
    */
   async environmentsList(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Environment>> {
     const response = await this.environmentsListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Add, remove or restore one package of an auto-detect environment.  add pins a requirement line (a name, optionally with a version), remove excludes a package whatever detected or learned it, restore lifts that exclusion. The image is rebuilt shortly after; several changes in a row become one build.
+   */
+  async environmentsPackagesCreateRaw(
+    requestParameters: EnvironmentsPackagesCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<Environment>> {
+    if (requestParameters['id'] == null) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter "id" was null or undefined when calling environmentsPackagesCreate().',
+      );
+    }
+
+    if (requestParameters['environmentPackageRequest'] == null) {
+      throw new runtime.RequiredError(
+        'environmentPackageRequest',
+        'Required parameter "environmentPackageRequest" was null or undefined when calling environmentsPackagesCreate().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined || this.configuration.password !== undefined)
+    ) {
+      headerParameters['Authorization'] =
+        'Basic ' + btoa(this.configuration.username + ':' + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // tokenAuth authentication
+    }
+
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters['Authorization'] = await this.configuration.apiKey('Authorization'); // courseKeyAuth authentication
+    }
+
+    let urlPath = `/autograder/environments/{id}/packages/`;
+    urlPath = urlPath.replace(`{${'id'}}`, encodeURIComponent(String(requestParameters['id'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'POST',
+        headers: headerParameters,
+        query: queryParameters,
+        body: requestParameters['environmentPackageRequest'],
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response);
+  }
+
+  /**
+   * Add, remove or restore one package of an auto-detect environment.  add pins a requirement line (a name, optionally with a version), remove excludes a package whatever detected or learned it, restore lifts that exclusion. The image is rebuilt shortly after; several changes in a row become one build.
+   */
+  async environmentsPackagesCreate(
+    requestParameters: EnvironmentsPackagesCreateRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<Environment> {
+    const response = await this.environmentsPackagesCreateRaw(requestParameters, initOverrides);
     return await response.value();
   }
 

@@ -5051,6 +5051,42 @@ export interface Environment {
    * @memberof Environment
    */
   readonly successRate: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Environment
+   */
+  readonly packageListSupported: boolean;
+  /**
+   *
+   * @type {Array<EnvironmentPackage>}
+   * @memberof Environment
+   */
+  readonly packages: Array<EnvironmentPackage>;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof Environment
+   */
+  readonly excludedPackages: Array<string>;
+  /**
+   *
+   * @type {Array<EnvironmentPendingPackage>}
+   * @memberof Environment
+   */
+  readonly pendingPackages: Array<EnvironmentPendingPackage>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Environment
+   */
+  readonly imageOutOfDate: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Environment
+   */
+  readonly rebuildScheduled: boolean;
 }
 
 /**
@@ -5241,6 +5277,117 @@ export interface EnvironmentEjectResponse {
    */
   runTestsPy: string;
 }
+/**
+ *
+ * @export
+ * @interface EnvironmentPackage
+ */
+export interface EnvironmentPackage {
+  /**
+   *
+   * @type {string}
+   * @memberof EnvironmentPackage
+   */
+  name: string;
+  /**
+   * The requirement line, e.g. numpy==1.26.4
+   * @type {string}
+   * @memberof EnvironmentPackage
+   */
+  requirement: string;
+  /**
+   *
+   * @type {EnvironmentPackageOriginEnum}
+   * @memberof EnvironmentPackage
+   */
+  origin: EnvironmentPackageOriginEnum;
+}
+
+/**
+ * * `add` - Add
+ * * `remove` - Remove
+ * * `restore` - Restore
+ * @export
+ * @enum {string}
+ */
+export enum EnvironmentPackageActionEnum {
+  Add = 'add',
+  Remove = 'remove',
+  Restore = 'restore',
+}
+
+/**
+ * * `detected` - Detected
+ * * `learned` - Learned
+ * * `pinned` - Pinned
+ * @export
+ * @enum {string}
+ */
+export enum EnvironmentPackageOriginEnum {
+  Detected = 'detected',
+  Learned = 'learned',
+  Pinned = 'pinned',
+}
+
+/**
+ *
+ * @export
+ * @interface EnvironmentPackageRequest
+ */
+export interface EnvironmentPackageRequest {
+  /**
+   *
+   * @type {EnvironmentPackageActionEnum}
+   * @memberof EnvironmentPackageRequest
+   */
+  action: EnvironmentPackageActionEnum;
+  /**
+   * The package name; when adding, optionally with a version (numpy==1.26.4).
+   * @type {string}
+   * @memberof EnvironmentPackageRequest
+   */
+  requirement: string;
+}
+
+/**
+ *
+ * @export
+ * @interface EnvironmentPendingPackage
+ */
+export interface EnvironmentPendingPackage {
+  /**
+   *
+   * @type {string}
+   * @memberof EnvironmentPendingPackage
+   */
+  name: string;
+  /**
+   * Distinct submissions whose run needed the package
+   * @type {number}
+   * @memberof EnvironmentPendingPackage
+   */
+  count: number;
+  /**
+   *
+   * @type {EnvironmentPendingPackageStatusEnum}
+   * @memberof EnvironmentPendingPackage
+   */
+  status: EnvironmentPendingPackageStatusEnum;
+}
+
+/**
+ * * `counting` - Counting
+ * * `not_found` - Not Found
+ * * `build_failed` - Build Failed
+ * @export
+ * @enum {string}
+ */
+export enum EnvironmentPendingPackageStatusEnum {
+  Counting = 'counting',
+  NotFound = 'not_found',
+  BuildFailed = 'build_failed',
+}
+
 /**
  *
  * @export
@@ -8488,6 +8635,42 @@ export interface PatchedEnvironment {
    * @memberof PatchedEnvironment
    */
   readonly successRate?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedEnvironment
+   */
+  readonly packageListSupported?: boolean;
+  /**
+   *
+   * @type {Array<EnvironmentPackage>}
+   * @memberof PatchedEnvironment
+   */
+  readonly packages?: Array<EnvironmentPackage>;
+  /**
+   *
+   * @type {Array<string>}
+   * @memberof PatchedEnvironment
+   */
+  readonly excludedPackages?: Array<string>;
+  /**
+   *
+   * @type {Array<EnvironmentPendingPackage>}
+   * @memberof PatchedEnvironment
+   */
+  readonly pendingPackages?: Array<EnvironmentPendingPackage>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedEnvironment
+   */
+  readonly imageOutOfDate?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof PatchedEnvironment
+   */
+  readonly rebuildScheduled?: boolean;
 }
 
 /**

@@ -52,9 +52,11 @@ export class Api {
 
 /** Run python in the API's Django shell (same SQLite DB the server uses). */
 export function manage(code: string): string {
+  // settings.py picks MySQL when DB_HOSTNAME is present at all, even empty: drop the key.
+  const { DB_HOSTNAME: _mysql, ...env } = process.env;
   return execFileSync(PYTHON, ['manage.py', 'shell', '-c', code], {
     cwd: API_DIR,
-    env: { ...process.env, DEBUG: 'TRUE', DB_HOSTNAME: '' },
+    env: { ...env, DEBUG: 'TRUE' },
     encoding: 'utf8',
   });
 }

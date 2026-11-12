@@ -13,6 +13,7 @@ All URIs are relative to *http://localhost*
 | [**environmentsDockerfileRetrieve**](AutograderApi.md#environmentsdockerfileretrieve)       | **GET** /autograder/environments/{id}/dockerfile/                    |             |
 | [**environmentsEjectRetrieve**](AutograderApi.md#environmentsejectretrieve)                 | **GET** /autograder/environments/{id}/eject/                         |             |
 | [**environmentsList**](AutograderApi.md#environmentslist)                                   | **GET** /autograder/environments/                                    |             |
+| [**environmentsPackagesCreate**](AutograderApi.md#environmentspackagescreate)               | **POST** /autograder/environments/{id}/packages/                     |             |
 | [**environmentsPartialUpdate**](AutograderApi.md#environmentspartialupdate)                 | **PATCH** /autograder/environments/{id}/                             |             |
 | [**environmentsPreviewCreate**](AutograderApi.md#environmentspreviewcreate)                 | **POST** /autograder/environments/{id}/preview/                      |             |
 | [**environmentsRetrieve**](AutograderApi.md#environmentsretrieve)                           | **GET** /autograder/environments/{id}/                               |             |
@@ -680,6 +681,84 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 | ----------- | ----------- | ---------------- |
 | **200**     |             | -                |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+## environmentsPackagesCreate
+
+> Environment environmentsPackagesCreate(id, environmentPackageRequest)
+
+Add, remove or restore one package of an auto-detect environment. add pins a requirement line (a name, optionally with a version), remove excludes a package whatever detected or learned it, restore lifts that exclusion. The image is rebuilt shortly after; several changes in a row become one build.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AutograderApi,
+} from '';
+import type { EnvironmentsPackagesCreateRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const config = new Configuration({
+    // To configure HTTP basic authorization: basicAuth
+    username: "YOUR USERNAME",
+    password: "YOUR PASSWORD",
+    // To configure API key authorization: tokenAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: cookieAuth
+    apiKey: "YOUR API KEY",
+    // To configure API key authorization: courseKeyAuth
+    apiKey: "YOUR API KEY",
+  });
+  const api = new AutograderApi(config);
+
+  const body = {
+    // number | A unique integer value identifying this environment.
+    id: 56,
+    // EnvironmentPackageRequest
+    environmentPackageRequest: ...,
+  } satisfies EnvironmentsPackagesCreateRequest;
+
+  try {
+    const data = await api.environmentsPackagesCreate(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+| Name                          | Type                                                      | Description                                          | Notes                     |
+| ----------------------------- | --------------------------------------------------------- | ---------------------------------------------------- | ------------------------- |
+| **id**                        | `number`                                                  | A unique integer value identifying this environment. | [Defaults to `undefined`] |
+| **environmentPackageRequest** | [EnvironmentPackageRequest](EnvironmentPackageRequest.md) |                                                      |                           |
+
+### Return type
+
+[**Environment**](Environment.md)
+
+### Authorization
+
+[basicAuth](../README.md#basicAuth), [tokenAuth](../README.md#tokenAuth), [cookieAuth](../README.md#cookieAuth), [courseKeyAuth](../README.md#courseKeyAuth)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`, `application/x-www-form-urlencoded`, `multipart/form-data`
+- **Accept**: `application/json`
+
+### HTTP response details
+
+| Status code | Description                                                                 | Response headers |
+| ----------- | --------------------------------------------------------------------------- | ---------------- |
+| **200**     |                                                                             | -                |
+| **400**     | Not a package that can be added, or not an auto-detect Python/R environment | -                |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

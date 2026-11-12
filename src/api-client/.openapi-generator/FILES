@@ -176,6 +176,12 @@ docs/EnvironmentCleanupResponse.md
 docs/EnvironmentConvertToManualRequest.md
 docs/EnvironmentConvertToManualResponse.md
 docs/EnvironmentEjectResponse.md
+docs/EnvironmentPackage.md
+docs/EnvironmentPackageActionEnum.md
+docs/EnvironmentPackageOriginEnum.md
+docs/EnvironmentPackageRequest.md
+docs/EnvironmentPendingPackage.md
+docs/EnvironmentPendingPackageStatusEnum.md
 docs/EnvironmentPreviewRequest.md
 docs/EnvironmentRollbackRequest.md
 docs/EnvironmentRollbackResponse.md

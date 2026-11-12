@@ -60,6 +60,7 @@ const ERROR_CATEGORY_LABELS: Record<string, string> = {
   compile_error: 'Compile Error',
   runtime_error: 'Runtime Error',
   marker_extraction: 'Marker Extraction',
+  memory_limit: 'Memory Limit',
   infra: 'Infrastructure',
   unknown: 'Unknown',
 };
@@ -70,6 +71,7 @@ const ERROR_CATEGORY_TAG_COLORS: Record<string, string> = {
   compile_error: 'geekblue',
   runtime_error: 'red',
   marker_extraction: 'magenta',
+  memory_limit: 'gold',
   infra: 'volcano',
   unknown: 'default',
 };
