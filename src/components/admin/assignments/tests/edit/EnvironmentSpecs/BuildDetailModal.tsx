@@ -22,6 +22,12 @@ import { sanitizeHtml } from '../../../../../../utils/sanitize';
 
 /**********************************************************************************************************************/
 
+// DESIGN.md: page-grey, line-soft, brand-green-vibrant; secondary text on the dark log surface.
+const PAGE_GREY = '#f2f2f2';
+const LINE_SOFT = 'rgba(0, 0, 0, 0.1)';
+const BRAND_GREEN_VIBRANT = '#48cc98';
+const LOG_SECONDARY = 'rgba(255, 255, 255, 0.7)';
+
 interface IProps {
   inProgress: boolean;
   isSuccess: boolean | null;
@@ -74,8 +80,7 @@ export const BuildDetailModal = (props: IProps) => {
     <div
       style={{
         backgroundColor: '#1e1e1e',
-        borderRadius: '6px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        borderRadius: '4px',
         overflow: 'hidden',
         fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace",
         display: 'flex',
@@ -93,17 +98,13 @@ export const BuildDetailModal = (props: IProps) => {
           borderBottom: '1px solid #333',
         }}
       >
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f56' }} />
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27c93f' }} />
-        </div>
-        <div style={{ color: '#aaa', fontSize: '12px' }}>build.log</div>
-        <Tooltip title="Copy Logs">
+        <div style={{ color: LOG_SECONDARY, fontSize: '12px' }}>build.log</div>
+        <Tooltip title="Copy logs">
           <Button
             type="text"
             size="small"
-            icon={<CopyOutlined style={{ color: '#aaa' }} />}
+            aria-label="Copy logs"
+            icon={<CopyOutlined style={{ color: LOG_SECONDARY }} />}
             onClick={() => {
               navigator.clipboard.writeText(props.logs);
             }}
@@ -131,7 +132,7 @@ export const BuildDetailModal = (props: IProps) => {
         />
         {props.inProgress && (
           <div style={{ marginTop: 10 }}>
-            <span style={{ color: '#4caf50' }}>➜</span> <span className="cursor-blink">_</span>
+            <span style={{ color: BRAND_GREEN_VIBRANT }}>$</span> <span className="cursor-blink">_</span>
           </div>
         )}
       </div>
@@ -141,9 +142,9 @@ export const BuildDetailModal = (props: IProps) => {
   const renderDockerfile = () => (
     <div
       style={{
-        backgroundColor: '#f6f8fa',
-        border: '1px solid #d0d7de',
-        borderRadius: '6px',
+        backgroundColor: PAGE_GREY,
+        border: `1px solid ${LINE_SOFT}`,
+        borderRadius: '4px',
         padding: '16px',
         height: '500px',
         overflow: 'auto',
@@ -191,7 +192,7 @@ export const BuildDetailModal = (props: IProps) => {
       open={props.open}
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '16px', fontWeight: 600 }}>Environment Build</span>
+          <span style={{ fontSize: '15px', fontWeight: 600 }}>Environment Build</span>
           {statusBadge}
         </div>
       }

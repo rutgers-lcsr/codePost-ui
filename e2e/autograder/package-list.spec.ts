@@ -61,7 +61,8 @@ test('the panel lists the package detected from the instructor file, built into 
   await expect(page.getByText('From your files and tests')).toBeVisible();
   await expect(page.getByTestId('env-package').filter({ hasText: DETECTED })).toBeVisible();
   await expect(page.getByRole('button', { name: 'History (1)' })).toBeVisible();
-  await expect(page.getByText('The image does not match this package list')).toHaveCount(0);
+  await expect(page.getByText('The image does not match the package list')).toHaveCount(0);
+  await expect(page.getByText('Ready', { exact: true })).toBeVisible();
 });
 
 test('a misspelled package is refused with the reason', async ({ page }) => {
@@ -95,9 +96,9 @@ test('rolling back to version 1 restores its image and keeps the added package o
   await page.goto(editUrl);
   await page.getByRole('button', { name: 'History (2)' }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByText('Version 2')).toBeVisible();
+  await expect(dialog.getByText('Version 2', { exact: true })).toBeVisible();
   await expect(dialog.getByText(`+ ${ADDED}`)).toBeVisible();
-  await dialog.getByRole('button', { name: 'Rollback to this version' }).click();
+  await dialog.getByRole('button', { name: 'Roll back to version 1' }).click();
 
   await expect(page.getByText('Removed by you. These stay out of the image until you restore them.')).toBeVisible({
     timeout: 120_000,

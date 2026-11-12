@@ -10,7 +10,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Breadcrumb, Button, Empty, Skeleton, Tabs, Typography, message } from 'antd';
 
 /* other library imports */
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 /* codePost object imports */
 import { assignmentsApi, assignmentFilesApi, autograderApi } from '../../../../../api-client/clients';
@@ -244,10 +244,12 @@ export const TestingSetup = (props: IProps) => {
           <Empty
             description={
               <>
-                <Typography.Title level={5} style={{ marginBottom: 4 }}>
+                <Typography.Title level={2} style={{ fontSize: 16, marginBottom: 4 }}>
                   This assignment has no environment
                 </Typography.Title>
-                <Typography.Text type="secondary">
+                <Typography.Text
+                  style={{ color: 'rgba(0, 0, 0, 0.6)', display: 'block', maxWidth: 560, margin: '0 auto' }}
+                >
                   An environment is only needed to run student code or tests. One is created for you when you upload
                   assignment files. Assignments without code, such as PDF submissions, do not need one.
                 </Typography.Text>
@@ -301,8 +303,13 @@ export const TestingSetup = (props: IProps) => {
   );
 
   const actions = [
-    <Button key="view-results" type="primary">
-      <Link to={location.pathname.replace(/\/edit.*$/, '/results')}>View results</Link>
+    // One control: a link inside a button was two tab stops, and Enter on the first did nothing.
+    <Button
+      key="view-results"
+      type="primary"
+      onClick={() => navigate(location.pathname.replace(/\/edit.*$/, '/results'))}
+    >
+      View results
     </Button>,
   ];
 

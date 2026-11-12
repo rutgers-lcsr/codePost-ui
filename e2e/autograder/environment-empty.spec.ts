@@ -38,7 +38,7 @@ test('the page explains there is no environment and lets the instructor create o
 
   await empty.getByRole('button', { name: 'Set up an environment' }).click();
   await expect(page.getByText('Environment Configuration')).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByText('Auto-Detect Enabled')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Packages (0)' })).toBeVisible();
   await expect(empty).toHaveCount(0);
 
   const assignment = await admin.call('GET', `/assignments/${assignmentId}/`);

@@ -8,11 +8,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   CheckCircleOutlined,
+  ClockCircleOutlined,
   CloseCircleOutlined,
+  ExclamationCircleOutlined,
   SyncOutlined,
   BuildOutlined,
   CodeOutlined,
-  RobotOutlined,
   EyeOutlined,
   SearchOutlined,
   DeleteOutlined,
@@ -21,6 +22,7 @@ import {
 /* library imports */
 import {
   Button,
+  Divider,
   Drawer,
   Radio,
   Select,
@@ -29,7 +31,6 @@ import {
   Typography,
   Card,
   Tag,
-  Result,
   Alert,
   Space,
   message,
@@ -37,11 +38,13 @@ import {
   Input,
 } from 'antd';
 import type { RadioChangeEvent } from 'antd';
+import { Link } from 'react-router';
 
 /* codePost object imports */
 
 import { BuildDetailModal } from './EnvironmentSpecs/BuildDetailModal';
 import { AutoDetectStatus } from './EnvironmentSpecs/AutoDetectStatus';
+import { STATUS_LABEL, buildLogTail, environmentStatus } from './EnvironmentSpecs/environmentStatus';
 import { EnvironmentShellWidget } from '../../assignments/EnvironmentShellWidget';
 
 /* codePost component imports */
@@ -55,7 +58,8 @@ import type { ScannedFile } from './utils/scanners';
 
 import locale from './utils/languageLocale';
 
-import themeVars from '../../../../../styles/abstracts/_theme.js';
+import { apiErrorMessageAsync } from '../../../../../lib/apiError';
+import { GREEN_TAG, ORANGE_TAG } from '../../../../../theme/tagStyles';
 
 import Editor from '../../../../../lib/monaco';
 import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client/index.js';
@@ -63,6 +67,11 @@ import { autograderApi } from '../../../../../api-client/clients.js';
 import { AssignmentType } from '../../../../../types/models';
 
 const { Option } = Select;
+
+// DESIGN.md: ink-secondary and line-soft.
+const INK_SECONDARY = 'rgba(0, 0, 0, 0.6)';
+const LINE_SOFT = 'rgba(0, 0, 0, 0.1)';
+const sectionTitle = { fontSize: 16, marginTop: 0, marginBottom: 8 };
 
 /**********************************************************************************************************************/
 
@@ -101,7 +110,6 @@ export const EnvironmentSpecs = (props: IProps) => {
     setAutoDetect,
     buildInProgress,
     buildLogs,
-    buildIsSuccess,
     buildDockerfile,
     stateRef,
     scanForManifests,
@@ -116,10 +124,39 @@ export const EnvironmentSpecs = (props: IProps) => {
   const [previewContent, setPreviewContent] = useState('');
   const [newEnvKey, setNewEnvKey] = useState('');
   const [newEnvVal, setNewEnvVal] = useState('');
+  const [rebuilding, setRebuilding] = useState(false);
   const hasAssignmentFiles = (props.currentAssignment?.files?.length || 0) > 0;
 
   const envId = props.env?.id;
   const hasEnv = Boolean(props.env);
+
+  // One status for the header badge and the notice under it.
+  const status = props.env ? environmentStatus(props.env, buildInProgress) : null;
+
+  // A build this page did not start (a queued or automatic rebuild) reports through the
+  // environment itself, so keep it fresh until that build lands.
+  const waitingOnServer = !buildInProgress && (status === 'building' || status === 'queued');
+  const { reloadEnv } = props;
+  useEffect(() => {
+    if (!waitingOnServer) return undefined;
+    const timer = setInterval(reloadEnv, 5000);
+    return () => clearInterval(timer);
+  }, [waitingOnServer, reloadEnv]);
+
+  // Rebuild the image from the saved configuration, without the reset that Update & Build does.
+  const rebuildNow = async () => {
+    if (!props.env) return;
+    setRebuilding(true);
+    try {
+      await autograderApi.environmentsBuildPartialUpdate({ id: props.env.id, patchedEnvironmentBuildRequest: {} });
+      message.success('Rebuild started.');
+      reloadEnv();
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e)) || 'Could not start the rebuild.');
+    } finally {
+      setRebuilding(false);
+    }
+  };
 
   // Helper to normalize family names consistently
   const getLanguageFamily = useCallback((lang: string) => {
@@ -377,11 +414,11 @@ export const EnvironmentSpecs = (props: IProps) => {
   const selectTemplate = (
     <div style={{ display: 'flex', gap: 10 }}>
       <Select
+        aria-label="Language"
         placeholder="Select Language"
         value={currentFamily || undefined}
         onChange={onFamilyChange}
         style={{ width: 200 }}
-        size="large"
       >
         {Object.keys(languageFamilyMap).map((family) => (
           <Option key={family} value={family}>
@@ -392,11 +429,11 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       {currentVersions.length > 1 && (
         <Select
+          aria-label="Language version"
           placeholder="Version"
           value={language || undefined}
           onChange={onLanguageChange}
           style={{ width: 150 }}
-          size="large"
         >
           {currentVersions.map((v) => (
             <Option key={v.key} value={v.key}>
@@ -408,8 +445,8 @@ export const EnvironmentSpecs = (props: IProps) => {
       <Tooltip
         title={`Scan for ${locale[language || 'python-3.12']?.dependencyFile || 'manifest'} files in the assignment`}
       >
-        <Button icon={<SearchOutlined />} onClick={() => scanForManifests(true)} size="large">
-          Scan for Manifests
+        <Button icon={<SearchOutlined />} onClick={() => scanForManifests(true)}>
+          Detect packages from files
         </Button>
       </Tooltip>
     </div>
@@ -506,53 +543,42 @@ export const EnvironmentSpecs = (props: IProps) => {
   };
 
   const envVarsInput = (
-    <div style={{ padding: 10 }}>
-      <Alert
-        title="These variables will be available to the student code at runtime."
-        type="info"
-        showIcon
-        style={{ marginBottom: 15 }}
-      />
+    <div>
+      <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
+        Available to student code when it runs.
+      </Typography.Paragraph>
 
       {Object.entries(envVars).map(([k, v]) => (
         <div key={k} style={{ display: 'flex', marginBottom: 8, gap: 10 }}>
-          <Input value={k} disabled style={{ width: '30%' }} />
+          <Input value={k} disabled aria-label="Variable name" style={{ width: '30%' }} />
           <Input
             value={v}
             onChange={(e) => updateEnvVarVal(k, e.target.value)}
             style={{ flex: 1 }}
             placeholder="Value"
+            aria-label={`Value of ${k}`}
           />
-          <Button danger icon={<DeleteOutlined />} onClick={() => removeEnvVar(k)} />
+          <Button icon={<DeleteOutlined />} aria-label={`Remove ${k}`} onClick={() => removeEnvVar(k)} />
         </div>
       ))}
 
-      <div
-        style={{
-          display: 'flex',
-          marginTop: 15,
-          gap: 10,
-          alignItems: 'center',
-          borderTop: '1px solid #eee',
-          paddingTop: 15,
-        }}
-      >
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', maxWidth: 720 }}>
         <Input
           placeholder="NEW_VAR_NAME"
+          aria-label="New variable name"
           value={newEnvKey}
           onChange={(e) => setNewEnvKey(e.target.value.toUpperCase())}
           style={{ width: '30%' }}
         />
         <Input
           placeholder="Value"
+          aria-label="New variable value"
           value={newEnvVal}
           onChange={(e) => setNewEnvVal(e.target.value)}
           style={{ flex: 1 }}
           onPressEnter={addEnvVar}
         />
-        <Button type="primary" onClick={addEnvVar}>
-          Add
-        </Button>
+        <Button onClick={addEnvVar}>Add variable</Button>
       </div>
     </div>
   );
@@ -566,23 +592,23 @@ export const EnvironmentSpecs = (props: IProps) => {
   // Logic: Use Manifest tab as default if available.
   const DEFAULT_TAB = manifestTab ? '1' : '2';
 
-  const compileTextPlaceholder = '#!/bin/bash\n# This script runs before each test execution inside the Docker container.\n# Assignment files are read-only. Write new files to /work or /tmp.\n';
+  const compileTextPlaceholder =
+    '#!/bin/bash\n# This script runs before each test execution inside the Docker container.\n# Assignment files are read-only. Write new files to /work or /tmp.\n';
 
   const showAfterCreation = (
     <Card
       title={
         <span>
-          <CodeOutlined /> Pre Runscript
+          <CodeOutlined /> Pre-run script
           <CPTooltip
-            title="Runs a script before running the code. In case you need to modify something before running the rest of the code. (Might not work in some docker containers)"
+            title="A shell script that runs inside the container before each run, for example to compile or move files. It may not work in some custom images."
             infoIcon={true}
-            style={{ marginLeft: 16 }}
+            iconStyle={{ marginLeft: 8 }}
           />
         </span>
       }
-      style={{ marginTop: 20 }}
-      extra={<Typography.Text type="secondary">Runs before execution {'Shell'}</Typography.Text>}
-      variant="borderless"
+      style={{ marginTop: 24 }}
+      extra={<span style={{ color: INK_SECONDARY }}>Shell script, runs before each run</span>}
     >
       <CodeWindow
         language={'shell'}
@@ -596,57 +622,130 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   // ****************** RENDER HELPERS ******************
 
-  let statusBadge = (
-    <Tag icon={<CloseCircleOutlined />} color="default">
-      Not Configured
+  const openLogs = () => setShowLogsModal(true);
+
+  const STATUS_TAG: Record<string, { icon: React.ReactNode; style?: React.CSSProperties; color?: string }> = {
+    building: { icon: <SyncOutlined spin />, color: 'processing' },
+    queued: { icon: <ClockCircleOutlined />, color: 'processing' },
+    failed: { icon: <CloseCircleOutlined />, color: 'error' },
+    outOfDate: { icon: <ExclamationCircleOutlined />, style: ORANGE_TAG },
+    ready: { icon: <CheckCircleOutlined />, style: GREEN_TAG },
+    waiting: { icon: <ClockCircleOutlined /> },
+    notBuilt: { icon: <ClockCircleOutlined /> },
+  };
+  const statusBadge = status && (
+    <Tag icon={STATUS_TAG[status].icon} color={STATUS_TAG[status].color} style={STATUS_TAG[status].style}>
+      {STATUS_LABEL[status]}
     </Tag>
   );
 
-  if (buildInProgress) {
-    statusBadge = (
-      <Tag icon={<SyncOutlined spin />} color="processing">
-        Building...
-      </Tag>
-    );
-  } else if (buildIsSuccess === true) {
-    statusBadge = (
-      <Tag
-        icon={<CheckCircleOutlined />}
-        color="success"
-        style={{ cursor: 'pointer' }}
-        onClick={() => setShowLogsModal(true)}
-      >
-        Build Successful
-      </Tag>
-    );
-  } else if (buildIsSuccess === false) {
-    if (buildLogs && buildLogs.includes('Reset for Auto-Detection')) {
-      statusBadge = (
-        <Tag icon={<SyncOutlined />} color="processing">
-          Waiting for Auto-Detect
-        </Tag>
-      );
-    } else {
-      statusBadge = (
-        <Tag
-          icon={<CloseCircleOutlined />}
-          color="error"
-          style={{ cursor: 'pointer' }}
-          onClick={() => setShowLogsModal(true)}
-        >
-          Build Failed
-        </Tag>
-      );
+  const lastBuilt = props.env.lastBuilt
+    ? new Date(props.env.lastBuilt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    : null;
+
+  // While this page drives a build the hook streams its log; otherwise the environment has it.
+  const currentLogs = buildInProgress ? buildLogs : props.env.buildLogs || buildLogs;
+  const failureTail = status === 'failed' ? buildLogTail(currentLogs) : '';
+
+  // The same status as the badge, said in full with what to do about it.
+  const statusNotice = (() => {
+    switch (status) {
+      case 'building':
+        return (
+          <Alert
+            type="info"
+            showIcon
+            icon={<SyncOutlined spin />}
+            title="Building the image"
+            description="This usually takes a minute or two. Runs that start now wait for the new image."
+            action={
+              <Button size="small" onClick={openLogs}>
+                View build logs
+              </Button>
+            }
+          />
+        );
+      case 'queued':
+        return (
+          <Alert
+            type="info"
+            showIcon
+            title="A rebuild is queued"
+            description="It starts on its own shortly, so several changes become one build."
+          />
+        );
+      case 'failed':
+        return (
+          <Alert
+            type="error"
+            showIcon
+            title="The last build failed"
+            description={
+              <>
+                {props.env.imageName
+                  ? 'Runs still use the previous image. The end of the build log:'
+                  : 'There is no image to run student code in yet. The end of the build log:'}
+                {failureTail && (
+                  <pre
+                    style={{
+                      margin: '8px 0 0',
+                      padding: 8,
+                      maxHeight: 160,
+                      overflow: 'auto',
+                      fontSize: 12,
+                      whiteSpace: 'pre-wrap',
+                      background: 'rgba(0, 0, 0, 0.04)',
+                      borderRadius: 4,
+                    }}
+                  >
+                    {failureTail}
+                  </pre>
+                )}
+              </>
+            }
+            action={
+              <Button size="small" onClick={openLogs}>
+                View build logs
+              </Button>
+            }
+          />
+        );
+      case 'outOfDate':
+        return (
+          <Alert
+            type="warning"
+            showIcon
+            title="The image does not match the package list"
+            description="Until it is rebuilt, each run installs the missing packages itself, which is slow. A rebuild takes a minute or two, and runs that start meanwhile wait for it."
+            action={
+              <Button size="small" onClick={rebuildNow} loading={rebuilding}>
+                Rebuild now
+              </Button>
+            }
+          />
+        );
+      case 'waiting':
+        return (
+          <Alert
+            type="info"
+            showIcon
+            title="Nothing to detect from yet"
+            description="Upload assignment files, or wait for the first submission. The language and packages are detected from them and the image is built."
+          />
+        );
+      case 'notBuilt':
+        return (
+          <Alert
+            type="info"
+            showIcon
+            title="No image has been built yet"
+            description="Student code runs in the plain language image until one is built. Update & Build builds it now."
+          />
+        );
+      default:
+        return null;
     }
-  } else if (props.env) {
-    // Existing env but no recent build info in session vertical
-    // Use lastBuilt if available or just say "Ready"
-    statusBadge = (
-      <Tag icon={<CheckCircleOutlined />} color="default">
-        Ready
-      </Tag>
-    );
-  }
+  })();
 
   //************ 1B. ENVIRONMENT -  STRATEGY SELECTION
   // Grouping Build Type and Base Image logic into a clearer "Strategy" selector
@@ -667,44 +766,35 @@ export const EnvironmentSpecs = (props: IProps) => {
   };
 
   const strategySelector = (
-    <div style={{ marginBottom: 20 }}>
-      <Typography.Title level={5}>
-        1. Environment Strategy
-        <CPTooltip
-          title="Choose between a pre-configured environment (Managed) or a fully custom Dockerfile."
-          infoIcon={true}
-          style={{ marginLeft: 8 }}
-        />
+    <div style={{ marginBottom: 24 }}>
+      <Typography.Title level={3} id="env-strategy-heading" style={sectionTitle}>
+        Strategy
       </Typography.Title>
-      <Radio.Group onChange={onStrategyChange} value={buildType === 'default' ? 'default' : 'custom'}>
-        <Radio.Button value="default" style={{ width: 150, textAlign: 'center' }}>
-          Managed
-        </Radio.Button>
-        <Radio.Button value="custom" style={{ width: 150, textAlign: 'center' }}>
-          Custom Dockerfile
-        </Radio.Button>
+      <Radio.Group
+        aria-labelledby="env-strategy-heading"
+        onChange={onStrategyChange}
+        value={buildType === 'default' ? 'default' : 'custom'}
+      >
+        <Radio.Button value="default">Managed</Radio.Button>
+        <Radio.Button value="custom">Custom Dockerfile</Radio.Button>
       </Radio.Group>
-      <div style={{ marginTop: 8 }}>
-        {buildType === 'default' ? (
-          <Typography.Text type="secondary">
-            Pre-built environments for common languages. Easy to configure.
-          </Typography.Text>
-        ) : (
-          <Typography.Text type="secondary">Full control via Dockerfile. For advanced users.</Typography.Text>
-        )}
+      <div style={{ marginTop: 8, color: INK_SECONDARY }}>
+        {buildType === 'default'
+          ? 'Pick a language and list its packages. codePost writes the Dockerfile.'
+          : 'You write the Dockerfile commands yourself. For instructors who know Docker.'}
       </div>
     </div>
   );
 
   //************ 2. MANAGED CONFIGURATION
   const managedConfig = (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>{selectTemplate}</div>
-
-      <Typography.Title level={5}>
-        2. Configuration
-        <CPTooltip title="Manage dependencies and packages." infoIcon={true} style={{ marginLeft: 8 }} />
+    <div>
+      <Typography.Title level={3} style={sectionTitle}>
+        Language and packages
       </Typography.Title>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 16 }}>
+        {selectTemplate}
+      </div>
       <Tabs
         defaultActiveKey={DEFAULT_TAB}
         type="card"
@@ -715,10 +805,13 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   //************ 3. CUSTOM CONFIGURATION
   const customConfig = (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ marginBottom: 20 }}>
-        <Typography.Text strong>Base Image Logic: </Typography.Text>
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <Typography.Text strong id="env-base-image-label">
+          Base image:{' '}
+        </Typography.Text>
         <Radio.Group
+          aria-labelledby="env-base-image-label"
           onChange={(e) => changeBuildType(e.target.value)}
           value={buildType === 'ubuntu' || buildType === 'alpine' ? buildType : 'ubuntu'}
         >
@@ -728,14 +821,13 @@ export const EnvironmentSpecs = (props: IProps) => {
       </div>
 
       <Alert
-        title={`You are in Custom Mode. The detected overrides will be appended to the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
+        title={`The commands below are added on top of the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
         type="info"
         showIcon
         style={{ marginBottom: 15 }}
         action={
           <Button
             size="small"
-            type="primary"
             onClick={() => {
               // Load template
               const isAlpine = buildType === 'alpine';
@@ -750,13 +842,15 @@ export const EnvironmentSpecs = (props: IProps) => {
           </Button>
         }
       />
-      <Typography.Title level={5}>Additional Dockerfile Commands</Typography.Title>
+      <Typography.Title level={3} style={sectionTitle}>
+        Additional Dockerfile commands
+      </Typography.Title>
       {customDockerInput}
     </div>
   );
 
   const manualConfiguration = (
-    <div style={{ marginTop: 20 }}>
+    <div>
       {strategySelector}
 
       {buildType === 'default' ? managedConfig : customConfig}
@@ -764,125 +858,133 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   const autoDetectView = (
-    <div style={{ padding: '20px 0' }}>
-      <div style={{ textAlign: 'center' }}>
-        <Result
-          icon={<RobotOutlined style={{ color: themeVars.theme.brandPrimary }} />}
-          title="Auto-Detect Enabled"
-          subTitle="We will automatically detect the language and dependencies from student submissions."
-          extra={[
-            <div key="desc" style={{ maxWidth: 500, margin: '0 auto', textAlign: 'left', color: 'rgba(0,0,0,0.65)' }}>
-              <ul style={{ listStyleType: 'circle' }}>
-                <li>
-                  Submissions with <b>.py</b> files will trigger Python environment.
-                </li>
-                <li>
-                  Submissions with <b>pkg.json</b> or <b>requirements.txt</b> will auto-install dependencies.
-                </li>
-                <li>
-                  <b>Note:</b> You can still define a Runscript below.
-                </li>
-              </ul>
-            </div>,
-          ]}
+    <div>
+      {autoDetectStatusPanel || (
+        <Alert
+          type="info"
+          showIcon
+          title="Save to switch to Auto-Detect"
+          description="After you save, codePost detects the language and packages and lists them here."
         />
-      </div>
+      )}
 
-      {/* Environment Variables (available in both modes) */}
-      <Card
-        title="Runtime Environment Variables"
-        style={{ marginTop: 20, textAlign: 'left', maxWidth: 700, margin: '20px auto' }}
-      >
+      <Divider style={{ margin: '24px 0' }} />
+
+      <section aria-labelledby="env-vars-heading">
+        <Typography.Title level={3} id="env-vars-heading" style={sectionTitle}>
+          Environment variables
+        </Typography.Title>
         {envVarsInput}
-      </Card>
-
-      {/* Auto-Detect Status Panel moved below Env Vars as requested */}
-      {autoDetectStatusPanel}
+      </section>
     </div>
   );
 
   return (
-    <div style={{ padding: 20, backgroundColor: '#f0f2f5', minHeight: '100%' }}>
+    <div style={{ padding: '8px 0 24px' }}>
       {/* Header Section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 12,
+          marginBottom: 16,
+        }}
+      >
         <div>
-          <Typography.Title level={4} style={{ marginBottom: 5 }}>
+          <Typography.Title level={2} style={{ fontSize: 20, marginTop: 0, marginBottom: 6 }}>
             Environment Configuration
           </Typography.Title>
-          <Space>
-            Status: {statusBadge}
-            {buildIsSuccess === false && (
-              <Button size="small" type="link" onClick={() => setShowLogsModal(true)}>
-                View Logs
-              </Button>
-            )}
+          <Space size={8} wrap>
+            {statusBadge}
+            {lastBuilt && <span style={{ color: INK_SECONDARY }}>Last built {lastBuilt}</span>}
           </Space>
         </div>
-        <Space>
-          <Button type="default" size="large" onClick={() => setShowLogsModal(true)} icon={<BuildOutlined />}>
+        <Space wrap>
+          <Button onClick={openLogs} icon={<BuildOutlined />}>
             Build Logs
           </Button>
-
-          <Button icon={<EyeOutlined />} onClick={() => setPreviewVisible(true)} size="large">
-            Preview
-          </Button>
-          <Button
-            type="default"
-            size="large"
-            onClick={() => saveEnv(false)}
-            loading={buildInProgress}
-            disabled={!isDirty()}
-          >
-            Save Changes
-          </Button>
-          <Button type="primary" size="large" onClick={() => saveEnv(true)} loading={buildInProgress}>
-            {props.env ? 'Update & Build' : 'Create & Build'}
-          </Button>
+          <Tooltip title="The Dockerfile these settings produce">
+            <Button icon={<EyeOutlined />} onClick={() => setPreviewVisible(true)}>
+              Preview
+            </Button>
+          </Tooltip>
+          <Tooltip title="Save these settings without rebuilding the image">
+            <Button onClick={() => saveEnv(false)} loading={buildInProgress} disabled={!isDirty()}>
+              Save Changes
+            </Button>
+          </Tooltip>
+          <Tooltip title="Save these settings and rebuild the image now">
+            <Button type="primary" onClick={() => saveEnv(true)} loading={buildInProgress}>
+              {props.env ? 'Update & Build' : 'Create & Build'}
+            </Button>
+          </Tooltip>
         </Space>
       </div>
 
-      {/* Main Configuration Card */}
-      <Card variant="borderless" style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 20, borderBottom: '1px solid #f0f0f0' }}>
-          <span style={{ marginRight: 15, fontWeight: 600, fontSize: 16 }}>Mode:</span>
-          <Radio.Group
-            value={autoDetect ? 'auto' : 'manual'}
-            onChange={(e) => onAutoDetectChange(e.target.value === 'auto')}
-            buttonStyle="solid"
-          >
-            <Radio.Button value="auto">Auto-Detect</Radio.Button>
-            <Radio.Button value="manual">Manual Configuration</Radio.Button>
-          </Radio.Group>
+      {/* What state the image is in, and what to do about it. Announced when it changes. */}
+      <div aria-live="polite" style={{ marginBottom: statusNotice ? 20 : 0 }}>
+        {statusNotice}
+      </div>
 
-          {autoDetect && (
-            <Tag color="blue" style={{ marginLeft: 15 }}>
-              Recommended
-            </Tag>
-          )}
-        </div>
+      {/* Mode */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 12,
+          paddingBottom: 16,
+          marginBottom: 20,
+          borderBottom: `1px solid ${LINE_SOFT}`,
+        }}
+      >
+        <span id="env-mode-label" style={{ fontWeight: 600 }}>
+          Mode
+        </span>
+        <Radio.Group
+          aria-labelledby="env-mode-label"
+          value={autoDetect ? 'auto' : 'manual'}
+          onChange={(e) => onAutoDetectChange(e.target.value === 'auto')}
+          buttonStyle="solid"
+        >
+          <Radio.Button value="auto">Auto-Detect</Radio.Button>
+          <Radio.Button value="manual">Manual Configuration</Radio.Button>
+        </Radio.Group>
+        <span style={{ color: INK_SECONDARY, flex: '1 1 360px' }}>
+          {autoDetect
+            ? 'Student code runs in an image: a saved copy of the language and its packages. codePost works out both from your files, your tests and what student code needs when it runs.'
+            : 'Student code runs in an image: a saved copy of the language and its packages. You choose the language and list every package yourself.'}{' '}
+          <Link to="/docs/instructor-environment-testing" target="_blank" rel="noreferrer">
+            How environments work
+          </Link>
+        </span>
+      </div>
 
-        {autoDetect ? autoDetectView : manualConfiguration}
-      </Card>
+      {autoDetect ? autoDetectView : manualConfiguration}
 
       {/* Runscript Section */}
       {props.env ? showAfterCreation : null}
 
       {/* Environment Shell */}
       {props.env ? (
-        <EnvironmentShellWidget
-          environmentId={props.env.id}
-          hasAssignmentFiles={hasAssignmentFiles}
-          assignmentId={props.currentAssignment?.id}
-        />
+        <div style={{ marginTop: 24 }}>
+          <EnvironmentShellWidget
+            environmentId={props.env.id}
+            hasAssignmentFiles={hasAssignmentFiles}
+            assignmentId={props.currentAssignment?.id}
+          />
+        </div>
       ) : null}
 
       {/* Modals */}
       <BuildDetailModal
         open={showLogsModal}
         onClose={() => setShowLogsModal(false)}
-        inProgress={buildInProgress}
-        isSuccess={buildIsSuccess}
-        logs={buildLogs}
+        inProgress={status === 'building'}
+        isSuccess={status === 'failed' ? false : props.env.buildStatus === 2 ? true : null}
+        logs={currentLogs}
         dockerfile={buildDockerfile}
       />
 

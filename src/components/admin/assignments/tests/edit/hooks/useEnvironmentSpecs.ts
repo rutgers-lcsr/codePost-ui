@@ -227,6 +227,7 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
                 if (props.reloadEnv) props.reloadEnv();
               } else {
                 message.error('Build failed. Check logs.');
+                if (props.reloadEnv) props.reloadEnv();
               }
             } else {
               // Update logs while building
