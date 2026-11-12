@@ -87,8 +87,10 @@ describe('OrgCourseRoster', () => {
   it('opens from the Roster button on the organization courses list', async () => {
     rosterRetrieve.mockResolvedValue(roster);
     render(<OrgCourses courses={[course]} loading={false} onRefresh={() => {}} />);
-    fireEvent.click(screen.getByRole('button', { name: /roster/i }));
-    expect(await screen.findByText('amy@dev.edu')).toBeInTheDocument();
+    // A text query: a role query over the antd table is slow in jsdom, and on a loaded CI runner
+    // it used up the default 5 s on its own.
+    fireEvent.click(screen.getByText('Roster').closest('button') as HTMLElement);
+    expect(await screen.findByText('amy@dev.edu', {}, { timeout: 10000 })).toBeInTheDocument();
     expect(rosterRetrieve).toHaveBeenCalledWith({ id: 42 });
-  });
+  }, 30000);
 });

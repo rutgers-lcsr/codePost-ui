@@ -1,6 +1,6 @@
 // Copyright © 2026 Rutgers, the State University of New Jersey. All rights reserved except as defined by the Rutgers Non-Commercial License, included with this software.
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { MemoryRouter } from 'react-router';
@@ -89,14 +89,26 @@ describe.each([
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
     const { updateAssignment } = renderTable();
 
+    // A confirm opened by an earlier test outlives it in jsdom and no longer takes clicks.
+    // Finding the title by text returns as soon as that old one matches, before this test's confirm
+    // has rendered (seen on a loaded CI runner), so wait for the dialog that is new since the click.
+    const stale = new Set(document.querySelectorAll('.ant-modal-confirm'));
     await userEvent.click(await screen.findByLabelText('Publish for Lab Preview', {}, { timeout: 10000 }));
-    // antd renders the title twice (a hidden one names the dialog), and a confirm opened by an earlier
-    // test outlives it in jsdom, so take the newest visible title. An old dialog would call the earlier
-    // test's updateAssignment, so this cannot pass by accident.
-    const titles = await screen.findAllByText('Publish this assignment?', { selector: '.ant-modal-confirm-title' });
+    const dialog = await waitFor(
+      () => {
+        const fresh = Array.from(document.querySelectorAll<HTMLElement>('.ant-modal-confirm')).filter(
+          (d) => !stale.has(d),
+        );
+        expect(fresh).toHaveLength(1);
+        return fresh[0];
+      },
+      { timeout: 10000 },
+    );
+    expect(
+      within(dialog).getByText('Publish this assignment?', { selector: '.ant-modal-confirm-title' }),
+    ).toBeInTheDocument();
     expect(updateAssignment).not.toHaveBeenCalled();
 
-    const dialog = titles[titles.length - 1].closest('.ant-modal-confirm') as HTMLElement;
     await userEvent.click(within(dialog).getByText('Publish', { selector: 'button span' }));
     expect(updateAssignment).toHaveBeenCalledWith({ id: preview.id, state: AssignmentStateEnum.Published });
   }, 30000);
