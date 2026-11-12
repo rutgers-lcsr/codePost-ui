@@ -50,3 +50,13 @@ export const buildLogTail = (logs: string | undefined, lines = 6): string =>
     .filter(Boolean)
     .slice(-lines)
     .join('\n');
+
+/** Whether the viewer asked the system for less motion: spinning status icons hold still. */
+export const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** How the page's Ctrl+M hint names the key on this platform. */
+export const TAB_TOGGLE_KEY =
+  typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? 'Ctrl+Shift+M' : 'Ctrl+M';

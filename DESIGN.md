@@ -18,6 +18,7 @@ colors:
   ink-secondary: "rgba(0, 0, 0, 0.6)"
   ink-disabled: "rgba(0, 0, 0, 0.3)"
   line: "rgba(0, 0, 0, 0.2)"
+  line-control: "rgba(0, 0, 0, 0.45)"
   line-soft: "rgba(0, 0, 0, 0.1)"
   danger-red: "#cf1322"
   danger-red-hover: "#a8071a"
@@ -124,6 +125,8 @@ components:
   input:
     backgroundColor: "{colors.surface-white}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.line-control}"
+    placeholderColor: "{colors.ink-secondary}"
     rounded: "{rounded.sm}"
     height: "32px"
   nav-item-selected:
@@ -185,7 +188,9 @@ A single green against neutral blacks and greys, with semantic hues kept separat
 - **Surface White** (#ffffff): cards, tables, modals, inputs.
 - **Ink** (rgba(0,0,0,.8)) for body text, **Ink Heading** (.9) for headings, **Ink Secondary** (.6) for
   descriptions, hints and timestamps (5.7:1), **Ink Disabled** (.3) for disabled text only.
-- **Line** (rgba(0,0,0,.2)) for input borders and **Line Soft** (.1) for dividers and card borders.
+- **Line** (rgba(0,0,0,.2)) for general borders, **Line Control** (.45) for the edge of inputs, selects,
+  radios and checkboxes (3.4:1, the only thing showing where the control is), and **Line Soft** (.1) for
+  dividers and card borders. Placeholders use Ink Secondary.
 - On the dark chrome, text is white at .85 (menu items) and .6 (overlines); never grey hex values.
 
 ### Semantic

@@ -35,9 +35,8 @@ test.beforeAll(async () => {
     `from core.models import Environment; Environment.objects.filter(pk=${envId}).update(` +
       'detected_requirements="", learned_packages=[], pinned_packages=[], excluded_packages=[], ' +
       'convergence_stats={}, image_history=[], current_build_version=1, built_requirements=None, ' +
-      'rebuild_scheduled_at=None)',
+      'rebuild_scheduled_at=None, image_name=None, build_status=0)',
   );
-  await admin.call('PATCH', `/autograder/environments/${envId}/`, { autoDetect: true });
 
   // Detection (and the build it starts) runs inside the upload request, Celery being eager.
   await admin.call('POST', '/assignmentFiles/', {
@@ -96,11 +95,10 @@ test('rolling back to version 1 restores its image and keeps the added package o
   await page.goto(editUrl);
   await page.getByRole('button', { name: 'History (2)' }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByText('Version 2', { exact: true })).toBeVisible();
-  await expect(dialog.getByText(`+ ${ADDED}`)).toBeVisible();
+  await expect(dialog.getByText(`Version 2: added ${ADDED}`)).toBeVisible();
   await dialog.getByRole('button', { name: 'Roll back to version 1' }).click();
 
-  await expect(page.getByText('Removed by you. These stay out of the image until you restore them.')).toBeVisible({
+  await expect(page.getByText('Kept out of the image until you restore them.')).toBeVisible({
     timeout: 120_000,
   });
   await expect(page.getByText('Packages (1)', { exact: true })).toBeVisible();
@@ -112,4 +110,31 @@ test('rolling back to version 1 restores its image and keeps the added package o
   expect(after.imageName).toBe(before.imageHistory[0].image_name);
   expect(after.imageOutOfDate).toBe(false);
   expect(after.currentBuildVersion).toBe(1);
+});
+
+test('a failed build offers the way back, and taking it clears the failure', async ({ page }) => {
+  // A package added after version 1 was built broke the next build (state set directly: a real
+  // failing build would need a package that installs nowhere).
+  manage(
+    `from core.models import Environment; Environment.objects.filter(pk=${envId}).update(` +
+      "build_status=3, pinned_packages=['nosuchpkg==9'], " +
+      "requirements='nosuchpkg==9\\n" +
+      DETECTED +
+      "', " +
+      "build_logs='Step 7/15 : RUN pip install -r requirements.txt\\nERROR: No matching distribution found for nosuchpkg==9')",
+  );
+
+  await page.goto(editUrl);
+  await expect(page.getByText('The last build failed')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText('ERROR: No matching distribution found for nosuchpkg==9')).toBeVisible();
+  await expect(page.getByText('Build failed', { exact: true })).toBeVisible();
+
+  await page.getByRole('alert').getByRole('button', { name: 'Roll back to version 1' }).click();
+  await expect(page.getByText('Ready', { exact: true })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByText('The last build failed')).toHaveCount(0);
+
+  const after = await env();
+  expect(after.requirements).toBe(DETECTED);
+  expect(after.buildStatus).toBe(2);
+  expect(after.excludedPackages.sort()).toEqual([ADDED, 'nosuchpkg'].sort());
 });

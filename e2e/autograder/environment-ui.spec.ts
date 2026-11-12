@@ -29,7 +29,7 @@ test('instructor sees the environment as Ready and can open its build logs', asy
   await page.goto(editUrl());
   await expect(page.getByRole('heading', { name: 'Environment Configuration' })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText('Ready', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Build Logs' }).click();
+  await page.getByRole('button', { name: 'Build logs' }).click();
   await expect(page.getByRole('dialog').getByText(/Step \d+\/\d+|Successfully built|Starting build/).first()).toBeVisible();
 });
 

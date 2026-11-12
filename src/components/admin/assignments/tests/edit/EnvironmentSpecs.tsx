@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   CheckCircleOutlined,
@@ -29,7 +29,6 @@ import {
   Skeleton,
   Tabs,
   Typography,
-  Card,
   Tag,
   Alert,
   Space,
@@ -43,23 +42,29 @@ import { Link } from 'react-router';
 /* codePost object imports */
 
 import { BuildDetailModal } from './EnvironmentSpecs/BuildDetailModal';
-import { AutoDetectStatus } from './EnvironmentSpecs/AutoDetectStatus';
-import { STATUS_LABEL, buildLogTail, environmentStatus } from './EnvironmentSpecs/environmentStatus';
+import { AutoDetectStatus, type VersionEntry } from './EnvironmentSpecs/AutoDetectStatus';
+import {
+  STATUS_LABEL,
+  TAB_TOGGLE_KEY,
+  buildLogTail,
+  environmentStatus,
+  prefersReducedMotion,
+} from './EnvironmentSpecs/environmentStatus';
 import { EnvironmentShellWidget } from '../../assignments/EnvironmentShellWidget';
 
 /* codePost component imports */
 import { CodeWindow } from './utils/CodeWindow';
-import CPTooltip from '../../../../core/CPTooltip';
 
 /* codePost util imports */
 import { languages } from './utils/languageUtils';
-import { useEnvironmentSpecs } from './hooks/useEnvironmentSpecs';
+import { dictionariesEqual, useEnvironmentSpecs } from './hooks/useEnvironmentSpecs';
 import type { ScannedFile } from './utils/scanners';
 
 import locale from './utils/languageLocale';
 
 import { apiErrorMessageAsync } from '../../../../../lib/apiError';
 import { GREEN_TAG, ORANGE_TAG } from '../../../../../theme/tagStyles';
+import { INK_SECONDARY, LINE_SOFT, NEUTRAL_BACKGROUND } from '../../../../../theme/tokens';
 
 import Editor from '../../../../../lib/monaco';
 import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client/index.js';
@@ -68,10 +73,15 @@ import { AssignmentType } from '../../../../../types/models';
 
 const { Option } = Select;
 
-// DESIGN.md: ink-secondary and line-soft.
-const INK_SECONDARY = 'rgba(0, 0, 0, 0.6)';
-const LINE_SOFT = 'rgba(0, 0, 0, 0.1)';
-const sectionTitle = { fontSize: 16, marginTop: 0, marginBottom: 8 };
+// DESIGN.md "title": 15px, 600.
+const sectionTitle = { fontSize: 15, marginTop: 0, marginBottom: 8 };
+
+/** The code editors keep Tab for indenting, so say how to get out of them without a mouse. */
+const EditorKeyboardHint = () => (
+  <div style={{ fontSize: 12, color: INK_SECONDARY, marginTop: 4 }}>
+    Tab indents inside the editor. Press {TAB_TOGGLE_KEY} to make Tab move to the next control instead.
+  </div>
+);
 
 /**********************************************************************************************************************/
 
@@ -111,6 +121,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     buildInProgress,
     buildLogs,
     buildDockerfile,
+    setBuildDockerfile,
     stateRef,
     scanForManifests,
     saveEnv,
@@ -125,10 +136,11 @@ export const EnvironmentSpecs = (props: IProps) => {
   const [newEnvKey, setNewEnvKey] = useState('');
   const [newEnvVal, setNewEnvVal] = useState('');
   const [rebuilding, setRebuilding] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [showScript, setShowScript] = useState(Boolean(props.env?.compileText?.trim()));
+  const rootRef = useRef<HTMLDivElement>(null);
+  const preRunRef = useRef<HTMLDivElement>(null);
   const hasAssignmentFiles = (props.currentAssignment?.files?.length || 0) > 0;
-
-  const envId = props.env?.id;
-  const hasEnv = Boolean(props.env);
 
   // One status for the header badge and the notice under it.
   const status = props.env ? environmentStatus(props.env, buildInProgress) : null;
@@ -143,7 +155,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     return () => clearInterval(timer);
   }, [waitingOnServer, reloadEnv]);
 
-  // Rebuild the image from the saved configuration, without the reset that Update & Build does.
+  // Rebuild the image from the saved configuration.
   const rebuildNow = async () => {
     if (!props.env) return;
     setRebuilding(true);
@@ -157,6 +169,41 @@ export const EnvironmentSpecs = (props: IProps) => {
       setRebuilding(false);
     }
   };
+
+  // The way back from a change that broke the build: the package list of a version that built.
+  const restoreVersion = async (version: number) => {
+    if (!props.env) return;
+    setRestoring(true);
+    try {
+      await autograderApi.environmentsRollbackCreate({
+        environmentId: props.env.id,
+        environmentRollbackRequest: { version },
+      });
+      message.success(`Back on version ${version} and its package list.`);
+      reloadEnv();
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e)) || 'Could not roll back.');
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  // The Dockerfile tab of the build modal: the hook only learns it when a build finishes in this
+  // session, so ask for it when the modal opens on an environment built earlier.
+  const environmentId = props.env?.id;
+  useEffect(() => {
+    if (!showLogsModal || buildDockerfile || environmentId === undefined) return;
+    let cancelled = false;
+    autograderApi
+      .environmentsBuildStatusRetrieve({ id: environmentId })
+      .then((buildStatus) => {
+        if (!cancelled) setBuildDockerfile(buildStatus.dockerfile || '');
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [showLogsModal, buildDockerfile, environmentId, setBuildDockerfile]);
 
   // Helper to normalize family names consistently
   const getLanguageFamily = useCallback((lang: string) => {
@@ -207,31 +254,20 @@ export const EnvironmentSpecs = (props: IProps) => {
   const currentFamily = getLanguageFamily(language || '');
   const currentVersions = currentFamily && languageFamilyMap[currentFamily] ? languageFamilyMap[currentFamily] : [];
 
+  const envVarsDirty = !props.env || !dictionariesEqual(envVars, props.env.envVars || {});
+
   const isDirty = () => {
     if (!props.env) return true;
-    const currentRunInstructions = dependencies;
-    const initialRunInstructions = props.env.dockerRunInstructions.join('\n');
-
+    if (autoDetect !== props.env.autoDetect || envVarsDirty) return true;
+    // Auto-Detect owns the language and packages; the fields below are only edited in manual mode.
+    if (autoDetect) return false;
     return (
       language !== props.env.language ||
       buildType !== props.env.buildType ||
-      currentRunInstructions !== initialRunInstructions ||
+      dependencies !== props.env.dockerRunInstructions.join('\n') ||
       customDockerfile !== props.env.dockerfile ||
-      requirements !== (props.env.requirements || '') ||
-      autoDetect !== props.env.autoDetect ||
-      !dictionariesEqual(envVars, props.env.envVars || {})
+      requirements !== (props.env.requirements || '')
     );
-  };
-
-  const dictionariesEqual = (a: Record<string, string>, b: Record<string, string>) => {
-    const aKeys = Object.keys(a).sort();
-    const bKeys = Object.keys(b).sort();
-    if (aKeys.length !== bKeys.length) return false;
-    for (let i = 0; i < aKeys.length; i++) {
-      const key = aKeys[i];
-      if (key !== bKeys[i] || a[key] !== b[key]) return false;
-    }
-    return true;
   };
 
   // Preview Logic
@@ -265,21 +301,22 @@ export const EnvironmentSpecs = (props: IProps) => {
     }
   }, [previewVisible, fetchPreview]);
 
-  // Keyboard shortcut for Save (Ctrl+S / Cmd+S)
+  // Keyboard shortcut for Save (Ctrl+S / Cmd+S). The tab stays mounted while another one is
+  // open, and the pre-run script editor has its own Ctrl+S, so this one answers only for what
+  // is on screen and unsaved. saveEnv reports the outcome itself.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        message.loading({ content: 'Saving...', key: 'save_shortcut' });
-        saveEnv(false).then(() => {
-          message.success({ content: 'Saved via shortcut', key: 'save_shortcut' });
-        });
-      }
+      if (!((e.ctrlKey || e.metaKey) && e.key === 's')) return;
+      const root = rootRef.current;
+      if (!root || root.offsetParent === null) return;
+      if (preRunRef.current?.contains(e.target as Node)) return;
+      e.preventDefault();
+      if (isDirty()) void saveEnv(false);
     };
     // Use capture phase to intercept Ctrl+S before Monaco Editor consumes it
     window.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
-  }, [saveEnv]);
+  });
 
   const saveCompileText = async (newText: string) => {
     await props.updateCompileText(newText);
@@ -298,58 +335,6 @@ export const EnvironmentSpecs = (props: IProps) => {
       document.body.removeChild(a);
     }
   };
-
-  // Run on mount
-  useEffect(() => {
-    scanForManifests(false);
-  }, [envId, scanForManifests]);
-
-  /******************************* API / State Change Functions ****************************/
-
-  useEffect(() => {
-    if (props.env) {
-      // Only set these if they aren't already set, or if we switched environments
-
-      // check for values in environment, console.log error
-      if (props.env.language) {
-        setLanguage(props.env.language);
-      } else {
-        console.error(`Environment ${props.env.id} is missing language`);
-      }
-      if (props.env.dockerRunInstructions) {
-        setDependencies(props.env.dockerRunInstructions.join('\n'));
-      } else {
-        console.error(`Environment ${props.env.id} is missing dockerRunInstructions`);
-      }
-      if (props.env.buildType) {
-        setBuildType(props.env.buildType);
-      } else {
-        console.error(`Environment ${props.env.id} is missing buildType`);
-      }
-      if (props.env.dockerfile !== undefined && props.env.dockerfile !== null) {
-        setCustomDockerfile(props.env.dockerfile);
-      } else {
-        console.error(`Environment ${props.env.id} is missing dockerfile`);
-      }
-      if (props.env.requirements !== undefined && props.env.requirements !== null) {
-        setRequirements(props.env.requirements);
-      } else {
-        console.error(`Environment ${props.env.id} is missing requirements`);
-      }
-      if (props.env.autoDetect !== undefined && props.env.autoDetect !== null) {
-        setAutoDetect(props.env.autoDetect);
-      } else {
-        console.error(`Environment ${props.env.id} is missing autoDetect`);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.env?.id]);
-
-  useEffect(() => {
-    if (!hasEnv && language) {
-      // Logic for new environment creation immediate save (if applicable)
-    }
-  }, [hasEnv, language]);
 
   /******************************* UI Helpers ****************************/
 
@@ -412,7 +397,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   //************ 1A. ENVIRONMENT -  SELECT TEMPLATE
   const selectTemplate = (
-    <div style={{ display: 'flex', gap: 10 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       <Select
         aria-label="Language"
         placeholder="Select Language"
@@ -445,7 +430,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       <Tooltip
         title={`Scan for ${locale[language || 'python-3.12']?.dependencyFile || 'manifest'} files in the assignment`}
       >
-        <Button icon={<SearchOutlined />} onClick={() => scanForManifests(true)}>
+        <Button icon={<SearchOutlined aria-hidden />} onClick={() => scanForManifests(true)}>
           Detect packages from files
         </Button>
       </Tooltip>
@@ -459,25 +444,31 @@ export const EnvironmentSpecs = (props: IProps) => {
   //************ 2. ADVANCED CONFIGURATION
 
   const dependenciesInput = (
-    <Editor
-      height="250px"
-      defaultLanguage="shell"
-      value={dependencies}
-      onChange={onDependenciesChange}
-      theme="vs-dark"
-      options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
-    />
+    <>
+      <Editor
+        height="250px"
+        defaultLanguage="shell"
+        value={dependencies}
+        onChange={onDependenciesChange}
+        theme="vs-dark"
+        options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
+      />
+      <EditorKeyboardHint />
+    </>
   );
 
   const customDockerInput = props.env && (
-    <Editor
-      height="300px"
-      defaultLanguage="dockerfile"
-      value={customDockerfile}
-      onChange={onCustomDockerfileChange}
-      theme="vs-dark"
-      options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
-    />
+    <>
+      <Editor
+        height="300px"
+        defaultLanguage="dockerfile"
+        value={customDockerfile}
+        onChange={onCustomDockerfileChange}
+        theme="vs-dark"
+        options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
+      />
+      <EditorKeyboardHint />
+    </>
   );
 
   const manifestTab = depConfig
@@ -486,7 +477,9 @@ export const EnvironmentSpecs = (props: IProps) => {
         label: depConfig.dependencyFile, // e.g. "Project Dependencies (pom.xml)"? User said "Manifest" defaults.
         children: (
           <>
-            <Alert title={depConfig.dependencyHelp} type="info" showIcon style={{ marginBottom: 10 }} />
+            <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
+              {depConfig.dependencyHelp}
+            </Typography.Paragraph>
             <Editor
               height="250px"
               defaultLanguage={depConfig.dependencyMode || 'text'}
@@ -495,6 +488,7 @@ export const EnvironmentSpecs = (props: IProps) => {
               theme="vs-dark"
               options={{ minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 10 } }}
             />
+            <EditorKeyboardHint />
           </>
         ),
       }
@@ -502,15 +496,12 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const systemTab = {
     key: '2',
-    label: 'System Packages',
+    label: 'System packages',
     children: (
       <>
-        <Alert
-          title="Install system-level packages (e.g. via apt-get or apk)."
-          type="info"
-          showIcon
-          style={{ marginBottom: 10 }}
-        />
+        <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
+          System-level packages to install, for example with apt-get or apk.
+        </Typography.Paragraph>
         {dependenciesInput}
       </>
     ),
@@ -523,7 +514,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       message.warning('Key cannot be empty');
       return;
     }
-    if (envVars[newEnvKey.trim()]) {
+    if (newEnvKey.trim() in envVars) {
       message.warning('Key already exists');
       return;
     }
@@ -545,11 +536,11 @@ export const EnvironmentSpecs = (props: IProps) => {
   const envVarsInput = (
     <div>
       <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
-        Available to student code when it runs.
+        Available to student code when it runs. Changes here take effect after Save changes.
       </Typography.Paragraph>
 
       {Object.entries(envVars).map(([k, v]) => (
-        <div key={k} style={{ display: 'flex', marginBottom: 8, gap: 10 }}>
+        <div key={k} style={{ display: 'flex', marginBottom: 8, gap: 8, maxWidth: 720 }}>
           <Input value={k} disabled aria-label="Variable name" style={{ width: '30%' }} />
           <Input
             value={v}
@@ -558,11 +549,11 @@ export const EnvironmentSpecs = (props: IProps) => {
             placeholder="Value"
             aria-label={`Value of ${k}`}
           />
-          <Button icon={<DeleteOutlined />} aria-label={`Remove ${k}`} onClick={() => removeEnvVar(k)} />
+          <Button icon={<DeleteOutlined aria-hidden />} aria-label={`Remove ${k}`} onClick={() => removeEnvVar(k)} />
         </div>
       ))}
 
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', maxWidth: 720 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', maxWidth: 720 }}>
         <Input
           placeholder="NEW_VAR_NAME"
           aria-label="New variable name"
@@ -585,7 +576,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const envVarsTab = {
     key: '4',
-    label: 'Environment Variables',
+    label: 'Environment variables',
     children: envVarsInput,
   };
 
@@ -596,42 +587,42 @@ export const EnvironmentSpecs = (props: IProps) => {
     '#!/bin/bash\n# This script runs before each test execution inside the Docker container.\n# Assignment files are read-only. Write new files to /work or /tmp.\n';
 
   const showAfterCreation = (
-    <Card
-      title={
-        <span>
-          <CodeOutlined /> Pre-run script
-          <CPTooltip
-            title="A shell script that runs inside the container before each run, for example to compile or move files. It may not work in some custom images."
-            infoIcon={true}
-            iconStyle={{ marginLeft: 8 }}
+    <section aria-labelledby="env-prerun-heading" ref={preRunRef}>
+      <Typography.Title level={3} id="env-prerun-heading" style={sectionTitle}>
+        <CodeOutlined aria-hidden /> Pre-run script
+      </Typography.Title>
+      <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
+        A shell script that runs inside the container before each run, for example to compile or move files. It may not
+        work in some custom images.
+      </Typography.Paragraph>
+      {showScript ? (
+        <>
+          <CodeWindow
+            language={'shell'}
+            code={(props.env && props.env.compileText) || compileTextPlaceholder}
+            name={'bash.sh'}
+            onSave={saveCompileText}
+            height={'200px'}
           />
-        </span>
-      }
-      style={{ marginTop: 24 }}
-      extra={<span style={{ color: INK_SECONDARY }}>Shell script, runs before each run</span>}
-    >
-      <CodeWindow
-        language={'shell'}
-        code={(props.env && props.env.compileText) || compileTextPlaceholder}
-        name={'bash.sh'}
-        onSave={saveCompileText}
-        height={'200px'}
-      />
-    </Card>
+          <EditorKeyboardHint />
+        </>
+      ) : (
+        <Button onClick={() => setShowScript(true)}>Add a pre-run script</Button>
+      )}
+    </section>
   );
-
-  // ****************** RENDER HELPERS ******************
 
   const openLogs = () => setShowLogsModal(true);
 
+  const spin = !prefersReducedMotion();
   const STATUS_TAG: Record<string, { icon: React.ReactNode; style?: React.CSSProperties; color?: string }> = {
-    building: { icon: <SyncOutlined spin />, color: 'processing' },
-    queued: { icon: <ClockCircleOutlined />, color: 'processing' },
-    failed: { icon: <CloseCircleOutlined />, color: 'error' },
-    outOfDate: { icon: <ExclamationCircleOutlined />, style: ORANGE_TAG },
-    ready: { icon: <CheckCircleOutlined />, style: GREEN_TAG },
-    waiting: { icon: <ClockCircleOutlined /> },
-    notBuilt: { icon: <ClockCircleOutlined /> },
+    building: { icon: <SyncOutlined aria-hidden spin={spin} />, color: 'processing' },
+    queued: { icon: <ClockCircleOutlined aria-hidden />, color: 'processing' },
+    failed: { icon: <CloseCircleOutlined aria-hidden />, color: 'error' },
+    outOfDate: { icon: <ExclamationCircleOutlined aria-hidden />, style: ORANGE_TAG },
+    ready: { icon: <CheckCircleOutlined aria-hidden />, style: GREEN_TAG },
+    waiting: { icon: <ClockCircleOutlined aria-hidden /> },
+    notBuilt: { icon: <ClockCircleOutlined aria-hidden /> },
   };
   const statusBadge = status && (
     <Tag icon={STATUS_TAG[status].icon} color={STATUS_TAG[status].color} style={STATUS_TAG[status].style}>
@@ -639,6 +630,7 @@ export const EnvironmentSpecs = (props: IProps) => {
     </Tag>
   );
 
+  // last_built is only stamped by a build that succeeded.
   const lastBuilt = props.env.lastBuilt
     ? new Date(props.env.lastBuilt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
     : null;
@@ -647,7 +639,21 @@ export const EnvironmentSpecs = (props: IProps) => {
   const currentLogs = buildInProgress ? buildLogs : props.env.buildLogs || buildLogs;
   const failureTail = status === 'failed' ? buildLogTail(currentLogs) : '';
 
-  // The same status as the badge, said in full with what to do about it.
+  // The version whose image is in use, and whether the package list has moved on since it was
+  // built: if so, that change is what a failed build tripped on, and going back to it is the fix.
+  const versions: VersionEntry[] = props.env.imageHistory || [];
+  const inUse = versions[versions.map((entry) => entry.image_name).lastIndexOf(props.env.imageName || '')];
+  const canGoBack =
+    props.env.autoDetect && Boolean(inUse) && (inUse.requirements || '') !== (props.env.requirements || '');
+
+  const dirty = isDirty();
+  const viewLogsButton = (
+    <Button size="small" onClick={openLogs}>
+      View build logs
+    </Button>
+  );
+
+  // The same status as the badge, said in full, with the one thing to do about it.
   const statusNotice = (() => {
     switch (status) {
       case 'building':
@@ -655,14 +661,10 @@ export const EnvironmentSpecs = (props: IProps) => {
           <Alert
             type="info"
             showIcon
-            icon={<SyncOutlined spin />}
+            icon={<SyncOutlined aria-hidden spin={spin} />}
             title="Building the image"
-            description="This usually takes a minute or two. Runs that start now wait for the new image."
-            action={
-              <Button size="small" onClick={openLogs}>
-                View build logs
-              </Button>
-            }
+            description="Usually a minute or two. Runs that start now wait for it."
+            action={viewLogsButton}
           />
         );
       case 'queued':
@@ -683,10 +685,18 @@ export const EnvironmentSpecs = (props: IProps) => {
             description={
               <>
                 {props.env.imageName
-                  ? 'Runs still use the previous image. The end of the build log:'
-                  : 'There is no image to run student code in yet. The end of the build log:'}
+                  ? 'Runs still use the previous image. '
+                  : 'There is no image to run student code in yet. '}
+                {canGoBack
+                  ? `The package list changed after version ${inUse.version} was built. Rolling back restores that list.`
+                  : 'If the cause looks temporary, such as a network error, build again.'}
                 {failureTail && (
                   <pre
+                    // A scrolling region has to be reachable without a mouse.
+                    role="region"
+                    // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                    tabIndex={0}
+                    aria-label="End of the build log"
                     style={{
                       margin: '8px 0 0',
                       padding: 8,
@@ -694,7 +704,7 @@ export const EnvironmentSpecs = (props: IProps) => {
                       overflow: 'auto',
                       fontSize: 12,
                       whiteSpace: 'pre-wrap',
-                      background: 'rgba(0, 0, 0, 0.04)',
+                      background: NEUTRAL_BACKGROUND,
                       borderRadius: 4,
                     }}
                   >
@@ -704,9 +714,18 @@ export const EnvironmentSpecs = (props: IProps) => {
               </>
             }
             action={
-              <Button size="small" onClick={openLogs}>
-                View build logs
-              </Button>
+              <Space direction="vertical" size={8} style={{ alignItems: 'stretch' }}>
+                {canGoBack ? (
+                  <Button size="small" type="primary" loading={restoring} onClick={() => restoreVersion(inUse.version)}>
+                    Roll back to version {inUse.version}
+                  </Button>
+                ) : (
+                  <Button size="small" type="primary" loading={rebuilding} onClick={rebuildNow}>
+                    Build again
+                  </Button>
+                )}
+                {viewLogsButton}
+              </Space>
             }
           />
         );
@@ -716,9 +735,9 @@ export const EnvironmentSpecs = (props: IProps) => {
             type="warning"
             showIcon
             title="The image does not match the package list"
-            description="Until it is rebuilt, each run installs the missing packages itself, which is slow. A rebuild takes a minute or two, and runs that start meanwhile wait for it."
+            description="Each run installs the missing packages itself, which is slow. Rebuilding takes a minute or two."
             action={
-              <Button size="small" onClick={rebuildNow} loading={rebuilding}>
+              <Button size="small" type="primary" onClick={rebuildNow} loading={rebuilding}>
                 Rebuild now
               </Button>
             }
@@ -739,7 +758,12 @@ export const EnvironmentSpecs = (props: IProps) => {
             type="info"
             showIcon
             title="No image has been built yet"
-            description="Student code runs in the plain language image until one is built. Update & Build builds it now."
+            description="Student code runs in the plain language image until one is built."
+            action={
+              <Button size="small" type="primary" onClick={rebuildNow} loading={rebuilding}>
+                Build now
+              </Button>
+            }
           />
         );
       default:
@@ -774,6 +798,7 @@ export const EnvironmentSpecs = (props: IProps) => {
         aria-labelledby="env-strategy-heading"
         onChange={onStrategyChange}
         value={buildType === 'default' ? 'default' : 'custom'}
+        buttonStyle="solid"
       >
         <Radio.Button value="default">Managed</Radio.Button>
         <Radio.Button value="custom">Custom Dockerfile</Radio.Button>
@@ -824,7 +849,7 @@ export const EnvironmentSpecs = (props: IProps) => {
         title={`The commands below are added on top of the ${buildType === 'alpine' ? 'Alpine' : 'Ubuntu'} base image.`}
         type="info"
         showIcon
-        style={{ marginBottom: 15 }}
+        style={{ marginBottom: 16 }}
         action={
           <Button
             size="small"
@@ -838,7 +863,7 @@ export const EnvironmentSpecs = (props: IProps) => {
               setCustomDockerfile(content);
             }}
           >
-            Reset to Template
+            Reset to template
           </Button>
         }
       />
@@ -872,7 +897,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       <section aria-labelledby="env-vars-heading">
         <Typography.Title level={3} id="env-vars-heading" style={sectionTitle}>
-          Environment variables
+          Environment variables{' '}
+          {envVarsDirty && <Tag style={{ ...ORANGE_TAG, marginInlineStart: 8, fontWeight: 400 }}>Not saved yet</Tag>}
         </Typography.Title>
         {envVarsInput}
       </section>
@@ -880,7 +906,7 @@ export const EnvironmentSpecs = (props: IProps) => {
   );
 
   return (
-    <div style={{ padding: '8px 0 24px' }}>
+    <div ref={rootRef} style={{ padding: '8px 0 24px' }}>
       {/* Header Section */}
       <div
         style={{
@@ -893,40 +919,47 @@ export const EnvironmentSpecs = (props: IProps) => {
         }}
       >
         <div>
-          <Typography.Title level={2} style={{ fontSize: 20, marginTop: 0, marginBottom: 6 }}>
+          <Typography.Title level={2} style={{ fontSize: 20, marginTop: 0, marginBottom: 8 }}>
             Environment Configuration
           </Typography.Title>
           <Space size={8} wrap>
             {statusBadge}
-            {lastBuilt && <span style={{ color: INK_SECONDARY }}>Last built {lastBuilt}</span>}
+            {lastBuilt && (
+              <span style={{ color: INK_SECONDARY }}>
+                {status === 'failed' ? 'Last successful build' : 'Built'} {lastBuilt}
+              </span>
+            )}
           </Space>
         </div>
         <Space wrap>
-          <Button onClick={openLogs} icon={<BuildOutlined />}>
-            Build Logs
+          {dirty && <Tag style={{ ...ORANGE_TAG, marginInlineEnd: 0 }}>Unsaved changes</Tag>}
+          <Button onClick={openLogs} icon={<BuildOutlined aria-hidden />}>
+            Build logs
           </Button>
           <Tooltip title="The Dockerfile these settings produce">
-            <Button icon={<EyeOutlined />} onClick={() => setPreviewVisible(true)}>
+            <Button icon={<EyeOutlined aria-hidden />} onClick={() => setPreviewVisible(true)}>
               Preview
             </Button>
           </Tooltip>
-          <Tooltip title="Save these settings without rebuilding the image">
-            <Button onClick={() => saveEnv(false)} loading={buildInProgress} disabled={!isDirty()}>
-              Save Changes
+          <Tooltip title="Save these settings. The image is not rebuilt.">
+            <Button onClick={() => saveEnv(false)} loading={buildInProgress} disabled={!dirty}>
+              Save changes
             </Button>
           </Tooltip>
-          <Tooltip title="Save these settings and rebuild the image now">
-            <Button type="primary" onClick={() => saveEnv(true)} loading={buildInProgress}>
-              {props.env ? 'Update & Build' : 'Create & Build'}
+          {/* One verb for building. It leads only when there is something to save: a notice
+              above owns the primary action when the image itself needs attention. */}
+          <Tooltip
+            title={dirty ? 'Save these settings, then rebuild the image' : 'Rebuild the image from the saved settings'}
+          >
+            <Button type={dirty ? 'primary' : 'default'} onClick={() => saveEnv(true)} loading={buildInProgress}>
+              {dirty ? 'Save and rebuild' : 'Rebuild'}
             </Button>
           </Tooltip>
         </Space>
       </div>
 
-      {/* What state the image is in, and what to do about it. Announced when it changes. */}
-      <div aria-live="polite" style={{ marginBottom: statusNotice ? 20 : 0 }}>
-        {statusNotice}
-      </div>
+      {/* What state the image is in, and the one thing to do about it. The notice is an alert, so it is announced. */}
+      <div style={{ marginBottom: statusNotice ? 24 : 0 }}>{statusNotice}</div>
 
       {/* Mode */}
       <div
@@ -936,7 +969,7 @@ export const EnvironmentSpecs = (props: IProps) => {
           alignItems: 'center',
           gap: 12,
           paddingBottom: 16,
-          marginBottom: 20,
+          marginBottom: 24,
           borderBottom: `1px solid ${LINE_SOFT}`,
         }}
       >
@@ -950,7 +983,7 @@ export const EnvironmentSpecs = (props: IProps) => {
           buttonStyle="solid"
         >
           <Radio.Button value="auto">Auto-Detect</Radio.Button>
-          <Radio.Button value="manual">Manual Configuration</Radio.Button>
+          <Radio.Button value="manual">Manual configuration</Radio.Button>
         </Radio.Group>
         <span style={{ color: INK_SECONDARY, flex: '1 1 360px' }}>
           {autoDetect
@@ -964,8 +997,9 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       {autoDetect ? autoDetectView : manualConfiguration}
 
-      {/* Runscript Section */}
-      {props.env ? showAfterCreation : null}
+      {/* Pre-run script */}
+      <Divider style={{ margin: '24px 0' }} />
+      {showAfterCreation}
 
       {/* Environment Shell */}
       {props.env ? (
@@ -990,7 +1024,7 @@ export const EnvironmentSpecs = (props: IProps) => {
 
       {/* Dockerfile Preview Drawer */}
       <Drawer
-        title="Parsed Dockerfile Preview"
+        title="Dockerfile preview"
         placement="right"
         width={720}
         onClose={() => setPreviewVisible(false)}
@@ -1002,13 +1036,10 @@ export const EnvironmentSpecs = (props: IProps) => {
         }
       >
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Alert
-            title="This is a preview of the Dockerfile that will be generated based on your current settings."
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-          <div style={{ flex: 1, border: '1px solid #d9d9d9' }}>
+          <Typography.Paragraph style={{ color: INK_SECONDARY }}>
+            The Dockerfile codePost would build from the settings on the page, saved or not.
+          </Typography.Paragraph>
+          <div style={{ flex: 1, border: `1px solid ${LINE_SOFT}` }}>
             <Editor
               language="dockerfile"
               theme="vs-light"

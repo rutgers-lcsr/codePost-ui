@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
 import { Breadcrumb, Button, Empty, Skeleton, Tabs, Typography, message } from 'antd';
@@ -118,16 +118,12 @@ export const TestingSetup = (props: IProps) => {
 
   // ************************** Environment function **************************
 
-  const reloadEnv = async () => {
-    if (env) {
-      const newEnv = await autograderApi.environmentsRetrieve({
-        id: env.id,
-      });
-
-      // HACK: mutate to avoid propagating reference change through children
-      setEnv(newEnv);
-    }
-  };
+  // Stable while the environment is the same one: the Environment tab polls with it.
+  const envId = env?.id;
+  const reloadEnv = useCallback(async () => {
+    if (envId === undefined) return;
+    setEnv(await autograderApi.environmentsRetrieve({ id: envId }));
+  }, [envId]);
 
   const updateEnv = async (
     language: string,
@@ -251,7 +247,8 @@ export const TestingSetup = (props: IProps) => {
                   style={{ color: 'rgba(0, 0, 0, 0.6)', display: 'block', maxWidth: 560, margin: '0 auto' }}
                 >
                   An environment is only needed to run student code or tests. One is created for you when you upload
-                  assignment files. Assignments without code, such as PDF submissions, do not need one.
+                  assignment files. Assignments without code, such as PDF submissions, do not need one. Setting one up
+                  here starts in Auto-Detect, and you can change that afterwards.
                 </Typography.Text>
               </>
             }

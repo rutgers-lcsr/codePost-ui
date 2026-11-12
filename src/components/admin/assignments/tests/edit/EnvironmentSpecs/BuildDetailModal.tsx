@@ -19,13 +19,12 @@ import {
 import { AnsiUp } from 'ansi-up';
 import { Editor } from '../../../../../../lib/monaco';
 import { sanitizeHtml } from '../../../../../../utils/sanitize';
+import { BRAND_GREEN_VIBRANT, LINE_SOFT, PAGE_GREY } from '../../../../../../theme/tokens';
+import { prefersReducedMotion } from './environmentStatus';
 
 /**********************************************************************************************************************/
 
-// DESIGN.md: page-grey, line-soft, brand-green-vibrant; secondary text on the dark log surface.
-const PAGE_GREY = '#f2f2f2';
-const LINE_SOFT = 'rgba(0, 0, 0, 0.1)';
-const BRAND_GREEN_VIBRANT = '#48cc98';
+// Secondary text on the dark log surface.
 const LOG_SECONDARY = 'rgba(255, 255, 255, 0.7)';
 
 interface IProps {
@@ -55,24 +54,24 @@ export const BuildDetailModal = (props: IProps) => {
   let statusBadge;
   if (props.inProgress) {
     statusBadge = (
-      <Tag icon={<SyncOutlined spin />} color="processing">
-        Building...
+      <Tag icon={<SyncOutlined aria-hidden spin={!prefersReducedMotion()} />} color="processing">
+        Building
       </Tag>
     );
   } else if (props.isSuccess) {
     statusBadge = (
-      <Tag icon={<CheckCircleOutlined />} color="success">
-        Build Successful
+      <Tag icon={<CheckCircleOutlined aria-hidden />} color="success">
+        Last build succeeded
       </Tag>
     );
   } else if (props.isSuccess === false) {
     statusBadge = (
-      <Tag icon={<CloseCircleOutlined />} color="error">
-        Build Failed
+      <Tag icon={<CloseCircleOutlined aria-hidden />} color="error">
+        Build failed
       </Tag>
     );
   } else {
-    statusBadge = <Tag>Ready</Tag>;
+    statusBadge = <Tag>Not built</Tag>;
   }
 
   // Terminal Component
@@ -104,7 +103,7 @@ export const BuildDetailModal = (props: IProps) => {
             type="text"
             size="small"
             aria-label="Copy logs"
-            icon={<CopyOutlined style={{ color: LOG_SECONDARY }} />}
+            icon={<CopyOutlined aria-hidden style={{ color: LOG_SECONDARY }} />}
             onClick={() => {
               navigator.clipboard.writeText(props.logs);
             }}
@@ -113,6 +112,11 @@ export const BuildDetailModal = (props: IProps) => {
       </div>
       <div
         id="buildLogs-body"
+        // A scrolling log has to be reachable without a mouse.
+        role="log"
+        aria-label="Build log"
+        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={0}
         style={{
           flexGrow: 1,
           padding: '12px',
@@ -132,7 +136,7 @@ export const BuildDetailModal = (props: IProps) => {
         />
         {props.inProgress && (
           <div style={{ marginTop: 10 }}>
-            <span style={{ color: BRAND_GREEN_VIBRANT }}>$</span> <span className="cursor-blink">_</span>
+            <span style={{ color: BRAND_GREEN_VIBRANT }}>$</span> _
           </div>
         )}
       </div>
@@ -171,7 +175,7 @@ export const BuildDetailModal = (props: IProps) => {
       key: 'logs',
       label: (
         <span>
-          <CodeOutlined /> Build Logs
+          <CodeOutlined aria-hidden /> Build log
         </span>
       ),
       children: renderTerminal(),
@@ -180,7 +184,7 @@ export const BuildDetailModal = (props: IProps) => {
       key: 'dockerfile',
       label: (
         <span>
-          <FileTextOutlined /> Dockerfile
+          <FileTextOutlined aria-hidden /> Dockerfile
         </span>
       ),
       children: renderDockerfile(),
@@ -192,7 +196,7 @@ export const BuildDetailModal = (props: IProps) => {
       open={props.open}
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 600 }}>Environment Build</span>
+          <span style={{ fontSize: '15px', fontWeight: 600 }}>Environment build</span>
           {statusBadge}
         </div>
       }
@@ -213,8 +217,8 @@ export const BuildDetailModal = (props: IProps) => {
       <div style={{ marginTop: 16 }}>
         {!props.inProgress && props.isSuccess && (
           <Alert
-            title="Build Completed Successfully"
-            description="Your environment is ready to use. You can now close this window."
+            title="The last build succeeded"
+            description="This is the log of the image now in use. Changes made since then show on the page as Out of date."
             type="success"
             showIcon
             style={{ marginBottom: 16 }}
@@ -222,8 +226,8 @@ export const BuildDetailModal = (props: IProps) => {
         )}
         {!props.inProgress && props.isSuccess === false && (
           <Alert
-            title="Build Failed"
-            description="Please check the logs below for error details."
+            title="The last build failed"
+            description="The reason is at the end of the log below."
             type="error"
             showIcon
             style={{ marginBottom: 16 }}

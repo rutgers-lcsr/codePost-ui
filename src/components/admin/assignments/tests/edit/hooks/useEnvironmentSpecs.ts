@@ -34,6 +34,17 @@ interface EnvironmentSpecsProps {
   solutions?: ScannedFile[];
 }
 
+export const dictionariesEqual = (a: Record<string, string>, b: Record<string, string>) => {
+  const aKeys = Object.keys(a).sort();
+  const bKeys = Object.keys(b).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  for (let i = 0; i < aKeys.length; i++) {
+    const key = aKeys[i];
+    if (key !== bKeys[i] || a[key] !== b[key]) return false;
+  }
+  return true;
+};
+
 export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguage: LanguageEnum) => {
   const [language, setLanguage] = useState<LanguageEnum | 'other'>(initialLanguage);
   const [buildType, setBuildType] = useState<BuildTypeEnum>(BuildTypeEnum.Default);
@@ -84,17 +95,6 @@ export const useEnvironmentSpecs = (props: EnvironmentSpecsProps, initialLanguag
       envVars,
     };
   }, [language, buildType, dependencies, customDockerfile, requirements, autoDetect, envVars]);
-
-  const dictionariesEqual = (a: Record<string, string>, b: Record<string, string>) => {
-    const aKeys = Object.keys(a).sort();
-    const bKeys = Object.keys(b).sort();
-    if (aKeys.length !== bKeys.length) return false;
-    for (let i = 0; i < aKeys.length; i++) {
-      const key = aKeys[i];
-      if (key !== bKeys[i] || a[key] !== b[key]) return false;
-    }
-    return true;
-  };
 
   // Initial Data Load (and env id changes)
   useEffect(() => {

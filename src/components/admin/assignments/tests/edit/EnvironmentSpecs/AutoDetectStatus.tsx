@@ -3,11 +3,12 @@
  * AutoDetectStatus Component
  *
  * The packages of an auto-detect environment and the history of its image:
- * - the packages built into the image, grouped by where each came from, with add, remove and restore
+ * - a box to add packages, then the packages built into the image by where each came from,
+ *   with remove and restore
  * - packages student runs needed that are still being counted, or were refused
  * - version, last build and run counts in one line
- * - version history with what each build changed, and rollback
- * - cleanup and convert to manual
+ * - version history named by what each build changed, with roll back and switch
+ * - clean up images and convert to manual
  *
  * The state of the image itself (building, out of date, failed) is shown by the page, not here.
  */
@@ -18,6 +19,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   HistoryOutlined,
+  InfoCircleOutlined,
   SyncOutlined,
   CheckCircleOutlined,
   CloseOutlined,
@@ -33,15 +35,22 @@ import {
 import { autograderApi } from '../../../../../../api-client/clients.js';
 import { apiErrorMessageAsync } from '../../../../../../lib/apiError';
 import { GREEN_TAG, ORANGE_TAG } from '../../../../../../theme/tagStyles';
-import themeVars from '../../../../../../styles/abstracts/_theme.js';
-import CPTooltip from '../../../../../core/CPTooltip';
+import {
+  BRAND_GREEN_DEEP,
+  BRAND_GREEN_WASH,
+  DANGER_RED_HOVER,
+  INK,
+  INK_SECONDARY,
+  PAGE_GREY,
+} from '../../../../../../theme/tokens';
+import { prefersReducedMotion } from './environmentStatus';
 
 interface AutoDetectStatusProps {
   environment: EnvironmentType;
   onRefresh: () => void;
 }
 
-interface VersionEntry {
+export interface VersionEntry {
   version: number;
   image_name: string;
   requirements: string;
@@ -70,12 +79,6 @@ const BUILD_REASONS: Record<string, string> = {
   'one-time rebuild': 'Rebuilt to match its package list',
 };
 
-// DESIGN.md: ink-secondary, brand-green-wash, page-grey. Secondary text here sits on white.
-const INK_SECONDARY = 'rgba(0, 0, 0, 0.6)';
-const GREEN_WASH = 'rgba(25, 134, 101, 0.1)';
-const PAGE_GREY = '#f2f2f2';
-
-const groupLabel: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: INK_SECONDARY, marginBottom: 4 };
 const chip: React.CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -84,12 +87,25 @@ const chip: React.CSSProperties = {
   borderRadius: 4,
   fontSize: 12,
   fontWeight: 500,
-  background: GREEN_WASH,
-  color: themeVars.theme.green8,
+  background: BRAND_GREEN_WASH,
+  color: BRAND_GREEN_DEEP,
 };
-const plainChip: React.CSSProperties = { ...chip, paddingRight: 8, background: PAGE_GREY, color: 'rgba(0, 0, 0, 0.8)' };
+const plainChip: React.CSSProperties = { ...chip, paddingRight: 8, background: PAGE_GREY, color: INK };
 
-const requirementLines = (requirements: string | undefined) =>
+// One row per kind of package: what it is on the left, the packages on the right.
+const rows: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 260px) minmax(0, 1fr)',
+  columnGap: 16,
+  rowGap: 12,
+  alignItems: 'start',
+  margin: 0,
+};
+const rowLabel: React.CSSProperties = { margin: 0, fontSize: 12, fontWeight: 500, color: INK, lineHeight: '24px' };
+const rowNote: React.CSSProperties = { display: 'block', fontWeight: 400, color: INK_SECONDARY, lineHeight: 1.5 };
+const rowValue: React.CSSProperties = { margin: 0, minWidth: 0 };
+
+export const requirementLines = (requirements: string | undefined) =>
   (requirements || '')
     .split('\n')
     .map((line) => line.trim())
@@ -100,9 +116,23 @@ const SINGLE_REQUIREMENT =
   /^[A-Za-z0-9][A-Za-z0-9._-]*(\[[A-Za-z0-9,._-]+\])?((==|>=|<=|~=|!=|<|>)[A-Za-z0-9.*+!_-]+)?$/;
 
 /** "numpy pandas" is two packages; "numpy >= 1.26, < 3" is one. */
-const splitRequirements = (text: string): string[] => {
+export const splitRequirements = (text: string): string[] => {
   const parts = text.split(/\s+/).filter(Boolean);
   return parts.length > 1 && parts.every((part) => SINGLE_REQUIREMENT.test(part)) ? parts : [text.trim()];
+};
+
+const listed = (items: string[]) =>
+  items.length > 4 ? `${items.slice(0, 4).join(', ')} and ${items.length - 4} more` : items.join(', ');
+
+/** What a build changed against the one before it, in words: the name instructors pick a version by. */
+export const versionChange = (entry: VersionEntry, previous: VersionEntry | undefined): string => {
+  const lines = requirementLines(entry.requirements);
+  if (!previous) return lines.length ? `first build, with ${listed(lines)}` : 'first build, no packages';
+  const before = requirementLines(previous.requirements);
+  const added = lines.filter((line) => !before.includes(line));
+  const removed = before.filter((line) => !lines.includes(line));
+  const parts = [added.length ? `added ${listed(added)}` : '', removed.length ? `removed ${listed(removed)}` : ''];
+  return parts.filter(Boolean).join('; ') || 'same packages as the version before';
 };
 
 const formatBuilt = (iso: string | null | undefined) =>
@@ -119,6 +149,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
   const excluded = environment.excludedPackages || [];
   const pending = environment.pendingPackages || [];
   const currentIndex = history.map((entry) => entry.image_name).lastIndexOf(environment.imageName || '');
+  const previous = currentIndex >= 1 ? history[currentIndex - 1] : null;
   const totalRuns = environment.totalRuns || 0;
 
   const changePackage = (action: EnvironmentPackageActionEnum, requirement: string) =>
@@ -197,7 +228,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       'Could not remove the package',
     );
 
-  const handleRollback = (version?: number) =>
+  const handleRollback = (version: number) =>
     runAction(
       'rollback',
       () =>
@@ -205,7 +236,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
           environmentId: environment.id,
           environmentRollbackRequest: { version },
         }),
-      version ? `Now using version ${version}.` : 'Rolled back to the previous version.',
+      `Now using version ${version}.`,
       'Could not switch versions',
     );
 
@@ -225,57 +256,19 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
       'Conversion failed',
     );
 
-  const rollbackBlocked =
-    history.length < 2
-      ? 'There is no earlier version yet. Each successful build is kept as one.'
-      : currentIndex < 1
-        ? 'The oldest kept version is already in use. Open History to switch to a newer one.'
-        : null;
-
+  const counting = pending.filter((pkg) => pkg.status === EnvironmentPendingPackageStatusEnum.Counting);
   const refused = pending.filter((pkg) => pkg.status !== EnvironmentPendingPackageStatusEnum.Counting);
 
   const packageList = (
     <div>
-      {packages.length === 0 && (
-        <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 12 }}>
-          Nothing beyond the base {environment.language} image yet. Packages your files, tests or students need are
-          added here.
-        </Typography.Paragraph>
-      )}
-      {ORIGIN_GROUPS.map(({ origin, label }) => {
-        const group = packages.filter((pkg) => pkg.origin === origin);
-        if (group.length === 0) return null;
-        return (
-          <div key={origin} style={{ marginBottom: 12 }}>
-            <div style={groupLabel}>{label}</div>
-            <Space wrap size={[6, 6]}>
-              {group.map((pkg) => (
-                <span key={pkg.name} style={chip} data-testid="env-package">
-                  {pkg.requirement}
-                  <Button
-                    type="text"
-                    size="small"
-                    aria-label={`Remove ${pkg.name}`}
-                    icon={<CloseOutlined style={{ fontSize: 10 }} />}
-                    loading={actionLoading === `package:${pkg.name}`}
-                    style={{ width: 24, height: 24, color: themeVars.theme.green8 }}
-                    onClick={() => handleRemove(pkg.name)}
-                  />
-                </span>
-              ))}
-            </Space>
-          </div>
-        );
-      })}
-
-      <div style={{ maxWidth: 480, marginTop: 4 }}>
+      <div style={{ maxWidth: 480, marginBottom: 20 }}>
         <Space.Compact style={{ width: '100%' }}>
           <Input
             aria-label="Package to add"
             aria-describedby="env-package-help"
             aria-invalid={Boolean(addError)}
             status={addError ? 'error' : undefined}
-            placeholder="scipy"
+            placeholder="e.g. scikit-learn"
             value={newPackage}
             onChange={(e) => {
               setNewPackage(e.target.value);
@@ -284,8 +277,7 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
             onPressEnter={handleAddPackages}
           />
           <Button
-            type="primary"
-            icon={<PlusOutlined />}
+            icon={<PlusOutlined aria-hidden />}
             onClick={handleAddPackages}
             loading={actionLoading === 'add'}
             disabled={!newPackage.trim()}
@@ -296,70 +288,115 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         <div
           id="env-package-help"
           role={addError ? 'alert' : undefined}
-          style={{ fontSize: 12, marginTop: 4, color: addError ? '#a8071a' : INK_SECONDARY }}
+          style={{ fontSize: 12, marginTop: 4, color: addError ? DANGER_RED_HOVER : INK_SECONDARY }}
         >
-          {addError ||
-            'A package name, with a version if you need one: numpy==1.26.4. Separate several with spaces. The image rebuilds once, shortly after.'}
+          {addError || 'Add a version if you need one: numpy==1.26.4. Separate several packages with spaces.'}
         </div>
       </div>
 
-      {excluded.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <div style={groupLabel}>Removed by you. These stay out of the image until you restore them.</div>
-          <Space wrap size={[12, 6]}>
-            {excluded.map((name) => (
-              <Space key={name} size={4}>
-                <span style={plainChip}>{name}</span>
-                <Button
-                  size="small"
-                  aria-label={`Restore ${name}`}
-                  loading={actionLoading === `package:${name}`}
-                  onClick={() => handleRestore(name)}
-                >
-                  Restore
-                </Button>
-              </Space>
-            ))}
-          </Space>
-        </div>
+      {packages.length === 0 && excluded.length === 0 && pending.length === 0 && (
+        <Typography.Paragraph style={{ color: INK_SECONDARY, marginBottom: 0 }}>
+          Nothing beyond the base {environment.language} image yet. Packages your files, tests or students need appear
+          here.
+        </Typography.Paragraph>
       )}
 
-      {pending.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <div style={groupLabel}>
-            Installed while student code ran. A package joins the image once {LEARN_THRESHOLD} submissions need it.
-          </div>
-          <Space wrap size={[6, 6]}>
-            {pending.map((pkg) => {
-              if (pkg.status === EnvironmentPendingPackageStatusEnum.NotFound) {
-                return (
-                  <Tag key={pkg.name} style={ORANGE_TAG}>
-                    {pkg.name}: not on the package index
+      <dl style={rows}>
+        {ORIGIN_GROUPS.map(({ origin, label }) => {
+          const group = packages.filter((pkg) => pkg.origin === origin);
+          if (group.length === 0) return null;
+          return (
+            <React.Fragment key={origin}>
+              <dt style={rowLabel}>{label}</dt>
+              <dd style={rowValue}>
+                <Space wrap size={[6, 6]}>
+                  {group.map((pkg) => (
+                    <span key={pkg.name} style={chip} data-testid="env-package">
+                      {pkg.requirement}
+                      <Button
+                        type="text"
+                        size="small"
+                        aria-label={`Remove ${pkg.name}`}
+                        icon={<CloseOutlined aria-hidden style={{ fontSize: 10 }} />}
+                        loading={actionLoading === `package:${pkg.name}`}
+                        style={{ width: 24, height: 24, color: BRAND_GREEN_DEEP }}
+                        onClick={() => handleRemove(pkg.name)}
+                      />
+                    </span>
+                  ))}
+                </Space>
+              </dd>
+            </React.Fragment>
+          );
+        })}
+
+        {excluded.length > 0 && (
+          <>
+            <dt style={rowLabel}>
+              Removed by you
+              <span style={rowNote}>Kept out of the image until you restore them.</span>
+            </dt>
+            <dd style={rowValue}>
+              <Space wrap size={[12, 6]}>
+                {excluded.map((name) => (
+                  <Space key={name} size={4}>
+                    <span style={plainChip}>{name}</span>
+                    <Button
+                      size="small"
+                      aria-label={`Restore ${name}`}
+                      loading={actionLoading === `package:${name}`}
+                      onClick={() => handleRestore(name)}
+                    >
+                      Restore
+                    </Button>
+                  </Space>
+                ))}
+              </Space>
+            </dd>
+          </>
+        )}
+
+        {counting.length > 0 && (
+          <>
+            <dt style={rowLabel}>
+              Installed during student runs
+              <span style={rowNote}>Joins the image once {LEARN_THRESHOLD} submissions need it.</span>
+            </dt>
+            <dd style={rowValue}>
+              <Space wrap size={[6, 6]}>
+                {counting.map((pkg) => (
+                  <span key={pkg.name} style={plainChip}>
+                    {pkg.name}: {pkg.count} of {LEARN_THRESHOLD}
+                  </span>
+                ))}
+              </Space>
+            </dd>
+          </>
+        )}
+
+        {refused.length > 0 && (
+          <>
+            <dt style={rowLabel}>
+              Left out
+              <span style={rowNote}>
+                Not on the index is usually a misspelled import. Failed to install: add it yourself to try again.
+              </span>
+            </dt>
+            <dd style={rowValue}>
+              <Space wrap size={[6, 6]}>
+                {refused.map((pkg) => (
+                  <Tag key={pkg.name} style={{ ...ORANGE_TAG, marginInlineEnd: 0 }}>
+                    {pkg.name}:{' '}
+                    {pkg.status === EnvironmentPendingPackageStatusEnum.NotFound
+                      ? 'not on the package index'
+                      : 'failed to install'}
                   </Tag>
-                );
-              }
-              if (pkg.status === EnvironmentPendingPackageStatusEnum.BuildFailed) {
-                return (
-                  <Tag key={pkg.name} style={ORANGE_TAG}>
-                    {pkg.name}: failed to install
-                  </Tag>
-                );
-              }
-              return (
-                <span key={pkg.name} style={plainChip}>
-                  {pkg.name}: {pkg.count} of {LEARN_THRESHOLD} submissions
-                </span>
-              );
-            })}
-          </Space>
-          {refused.length > 0 && (
-            <div style={{ fontSize: 12, marginTop: 4, color: INK_SECONDARY }}>
-              A package that is not on the index is usually a misspelled import in student code. One that failed to
-              install was left out so the build could finish; add it yourself to try it again.
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </Space>
+            </dd>
+          </>
+        )}
+      </dl>
     </div>
   );
 
@@ -375,6 +412,11 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         background: PAGE_GREY,
         borderRadius: 4,
       }}
+      // A scrolling region has to be reachable without a mouse.
+      role="region"
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      aria-label="Detected dependency manifest"
     >
       {environment.requirements}
     </pre>
@@ -390,14 +432,15 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
     environment.imageName && formatBuilt(environment.lastBuilt) ? `Built ${formatBuilt(environment.lastBuilt)}` : null,
     totalRuns > 0 ? `${totalRuns} runs, ${environment.successRate || 0}% passed` : 'No runs yet',
   ].filter(Boolean);
+  const runsNote = 'A run is one executed file, so one submission can count as several runs.';
 
   return (
     <section aria-labelledby="env-packages-heading">
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <Typography.Title level={3} id="env-packages-heading" style={{ fontSize: 16, margin: 0 }}>
+        <Typography.Title level={3} id="env-packages-heading" style={{ fontSize: 15, margin: 0 }}>
           {environment.packageListSupported ? `Packages (${packages.length})` : 'Dependencies'}
         </Typography.Title>
-        <Button size="small" icon={<HistoryOutlined />} onClick={() => setHistoryVisible(true)}>
+        <Button size="small" icon={<HistoryOutlined aria-hidden />} onClick={() => setHistoryVisible(true)}>
           History ({history.length})
         </Button>
       </div>
@@ -406,18 +449,23 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
         data-testid="env-summary"
       >
         {summary.join(' · ')}
-        <CPTooltip
-          title="A run is one executed file, so one submission can count as several runs."
-          infoIcon={true}
-          iconStyle={{ marginLeft: 8 }}
-        />
+        {/* A button, so the note is reachable by keyboard and not for mouse users only. */}
+        <Tooltip title={runsNote} trigger={['hover', 'focus']}>
+          <Button
+            type="text"
+            size="small"
+            aria-label={runsNote}
+            icon={<InfoCircleOutlined aria-hidden />}
+            style={{ marginLeft: 4, color: INK_SECONDARY }}
+          />
+        </Tooltip>
       </div>
 
       {/* Pending Convergence Alert */}
       {environment.convergencePending && (
         <Alert
           type="warning"
-          icon={<SyncOutlined spin />}
+          icon={<SyncOutlined aria-hidden spin={!prefersReducedMotion()} />}
           title="Convergence Pending"
           description="Environment was auto-updated. Validating with new submissions..."
           style={{ marginBottom: 12 }}
@@ -426,26 +474,21 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
 
       {environment.packageListSupported ? packageList : manifestSummary}
 
-      {/* Admin Actions */}
-      <Space wrap style={{ marginTop: 24 }}>
-        <Popconfirm
-          title="Roll back to the previous version?"
-          description="This restores the previous image and its package list. Packages added since are moved to Removed by you."
-          onConfirm={() => handleRollback()}
-          okText="Roll back"
-          cancelText="Cancel"
-          disabled={Boolean(rollbackBlocked)}
-        >
-          <Tooltip title={rollbackBlocked}>
-            <Button
-              icon={<RollbackOutlined />}
-              loading={actionLoading === 'rollback'}
-              disabled={Boolean(rollbackBlocked)}
-            >
-              Roll back
+      {/* Rare actions, kept quiet. Versions live in History; the way back from the last change is here. */}
+      <Space wrap size={8} style={{ marginTop: 24 }}>
+        {previous && (
+          <Popconfirm
+            title={`Roll back to version ${previous.version}?`}
+            description="This restores that version's image and package list. Packages added since are moved to Removed by you."
+            onConfirm={() => handleRollback(previous.version)}
+            okText="Roll back"
+            cancelText="Cancel"
+          >
+            <Button size="small" icon={<RollbackOutlined aria-hidden />} loading={actionLoading === 'rollback'}>
+              Roll back to version {previous.version}
             </Button>
-          </Tooltip>
-        </Popconfirm>
+          </Popconfirm>
+        )}
 
         <Popconfirm
           title="Clean up old images?"
@@ -454,27 +497,27 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
           okText="Clean up"
           cancelText="Cancel"
         >
-          <Button icon={<DeleteOutlined />} loading={actionLoading === 'cleanup'}>
+          <Button size="small" icon={<DeleteOutlined aria-hidden />} loading={actionLoading === 'cleanup'}>
             Clean up images
           </Button>
         </Popconfirm>
 
         <Popconfirm
           title="Convert to manual configuration?"
-          description="Auto-detect stops. You keep the current package list and manage it yourself from then on."
+          description="Auto-detect stops. You keep the current package list and image, and manage the list yourself from then on. You can switch back, which detects everything again."
           onConfirm={handleConvertToManual}
           okText="Convert"
           cancelText="Cancel"
         >
-          <Button icon={<EditOutlined />} loading={actionLoading === 'convert'}>
-            Convert to Manual
+          <Button size="small" icon={<EditOutlined aria-hidden />} loading={actionLoading === 'convert'}>
+            Convert to manual
           </Button>
         </Popconfirm>
       </Space>
 
       {/* Version History Modal */}
       <Modal
-        title="Version History"
+        title="Version history"
         open={historyVisible}
         onCancel={() => setHistoryVisible(false)}
         footer={null}
@@ -491,58 +534,35 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
                   entry.total_runs && entry.total_runs > 0
                     ? Math.round(((entry.successful_runs || 0) / entry.total_runs) * 100)
                     : null;
-                const lines = requirementLines(entry.requirements);
-                const before = idx > 0 ? requirementLines(history[idx - 1].requirements) : null;
-                const added = before ? lines.filter((line) => !before.includes(line)) : [];
-                const removed = before ? before.filter((line) => !lines.includes(line)) : [];
 
                 return {
                   color: entry.status === 'success' ? 'green' : entry.status === 'failed' ? 'red' : 'blue',
-                  dot: isCurrent ? <CheckCircleOutlined /> : undefined,
+                  dot: isCurrent ? <CheckCircleOutlined aria-hidden /> : undefined,
                   children: (
                     <div>
-                      <Space>
-                        <strong>Version {entry.version}</strong>
+                      <Space wrap size={8}>
+                        <strong>
+                          Version {entry.version}: {versionChange(entry, history[idx - 1])}
+                        </strong>
                         {isCurrent && <Tag style={GREEN_TAG}>In use</Tag>}
                         {entry.status === 'failed' && <Tag color="error">Failed</Tag>}
                       </Space>
                       <div style={{ color: INK_SECONDARY, fontSize: 12 }}>
-                        Built {formatBuilt(entry.built_at)}
-                        {entry.reason && BUILD_REASONS[entry.reason] ? `. ${BUILD_REASONS[entry.reason]}.` : ''}
+                        {[
+                          `Built ${formatBuilt(entry.built_at)}`,
+                          entry.reason && BUILD_REASONS[entry.reason],
+                          entrySuccessRate !== null &&
+                            `${entrySuccessRate}% of ${entry.total_runs} runs had passed when it was built`,
+                        ]
+                          .filter(Boolean)
+                          .join('. ')}
+                        .
                       </div>
-                      <div style={{ fontSize: 12, marginTop: 4 }}>
-                        {lines.length === 0
-                          ? 'No packages'
-                          : `${lines.length} ${lines.length === 1 ? 'package' : 'packages'}`}
-                        {before && added.length === 0 && removed.length === 0 && ', same as the version before'}
-                      </div>
-                      {(added.length > 0 || removed.length > 0) && (
-                        <Space wrap size={[4, 4]} style={{ marginTop: 4 }}>
-                          {added.map((line) => (
-                            <Tag key={`+${line}`} style={GREEN_TAG}>
-                              + {line}
-                            </Tag>
-                          ))}
-                          {removed.map((line) => (
-                            <Tag key={`-${line}`} style={ORANGE_TAG}>
-                              − {line}
-                            </Tag>
-                          ))}
-                        </Space>
-                      )}
-                      {!before && lines.length > 0 && (
-                        <div style={{ fontSize: 12, color: INK_SECONDARY }}>{lines.join(', ')}</div>
-                      )}
-                      {entrySuccessRate !== null && (
-                        <div style={{ fontSize: 12 }}>
-                          Success rate when built: {entrySuccessRate}% ({entry.successful_runs}/{entry.total_runs} runs)
-                        </div>
-                      )}
                       {!isCurrent && (
                         <div style={{ marginTop: 8 }}>
                           <Button
                             size="small"
-                            icon={<RollbackOutlined />}
+                            icon={<RollbackOutlined aria-hidden />}
                             onClick={() => {
                               handleRollback(entry.version);
                               setHistoryVisible(false);

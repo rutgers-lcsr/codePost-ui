@@ -8,6 +8,11 @@ import { colors } from './colors';
  * This configuration is used by the ConfigProvider in index.tsx
  * All colors are imported from ./colors.ts for consistency
  */
+// The edge of a control a user types into or picks from. The general border (neutralBorder,
+// 0.2 alpha) is 1.6:1 on white, under the 3:1 WCAG asks of a boundary that is the only thing
+// showing where an input is. 0.45 alpha is 3.4:1 on white and 3.3:1 on the page grey.
+const CONTROL_BORDER = 'rgba(0, 0, 0, 0.45)';
+
 const themeConfig: ThemeConfig = {
   token: {
     fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
@@ -34,7 +39,8 @@ const themeConfig: ThemeConfig = {
     // antd uses this (not colorTextSecondary) for <Text type="secondary">, pending Steps titles, etc.
     // Its default (0.45 alpha, #8c8c8c) is only 3.4:1 on white; 0.6 alpha clears WCAG AA.
     colorTextDescription: colors.neutralSecondaryText,
-    colorTextPlaceholder: 'rgba(0, 0, 0, 0.45)',
+    // Placeholders are text: the old 0.45 alpha was 3.4:1 on white. 0.6 (ink-secondary) is 5.7:1.
+    colorTextPlaceholder: colors.neutralSecondaryText,
     colorTextDisabled: 'rgba(0, 0, 0, 0.25)',
     fontSize: 14,
     borderRadius: 4,
@@ -116,6 +122,7 @@ const themeConfig: ThemeConfig = {
       inkBarColor: '#198665',
     },
     Input: {
+      colorBorder: CONTROL_BORDER,
       addonBg: '#f5f5f5',
       hoverBorderColor: '#198665',
       activeBorderColor: '#198665',
@@ -123,7 +130,12 @@ const themeConfig: ThemeConfig = {
       activeBg: '#ffffff',
       activeShadow: '0 0 0 2px rgba(25, 134, 101, 0.2)',
     },
+    InputNumber: { colorBorder: CONTROL_BORDER },
+    DatePicker: { colorBorder: CONTROL_BORDER },
+    Radio: { colorBorder: CONTROL_BORDER },
+    Checkbox: { colorBorder: CONTROL_BORDER },
     Select: {
+      colorBorder: CONTROL_BORDER,
       selectorBg: '#ffffff',
       hoverBorderColor: '#198665',
       activeBorderColor: '#198665',
