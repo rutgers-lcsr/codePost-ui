@@ -7,7 +7,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
-import { Breadcrumb, Button, Skeleton, Tabs, Typography } from 'antd';
+import { Breadcrumb, Button, Empty, Skeleton, Tabs, Typography, message } from 'antd';
 
 /* other library imports */
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -29,7 +29,8 @@ import { TestManager } from './manager/TestManager';
 /* codePost util imports */
 import { fetchEnvironment } from '../../../../core/testFetchUtils';
 
-import { AssignmentFile, Environment } from '../../../../../api-client';
+import { AssignmentFile, BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client';
+import { apiErrorMessageAsync } from '../../../../../lib/apiError';
 import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
 
 /**********************************************************************************************************************/
@@ -54,7 +55,9 @@ export const TestingSetup = (props: IProps) => {
   const [env, setEnv] = useState<Environment | undefined>(undefined);
   const [helperFiles, setHelperFiles] = useState<AssignmentFile[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  // Starts true: "no environment" is only known once the first fetch has answered.
+  const [loading, setLoading] = useState(true);
+  const [creatingEnv, setCreatingEnv] = useState(false);
 
   // Check permissions: Admin or Course Admin
   const courseCaps = useCourseCapabilities(props.currentAssignment.course);
@@ -68,8 +71,13 @@ export const TestingSetup = (props: IProps) => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const currEnv = await fetchEnvironment(props.currentAssignment);
-      setEnv(currEnv);
+      try {
+        const currEnv = await fetchEnvironment(props.currentAssignment);
+        setEnv(currEnv);
+      } catch (e) {
+        console.error('Failed to fetch environment', e);
+        setEnv(undefined);
+      }
 
       // Fetch helper files
       // Fetch helper files
@@ -178,6 +186,20 @@ export const TestingSetup = (props: IProps) => {
     }
   };
 
+  // An assignment has no environment until assignment files are uploaded (auto-detect creates
+  // it then), and one that never runs code (PDF only) never needs one. Creating it here starts
+  // from auto-detect, the same state an uploaded file would have produced.
+  const createEnvironment = async () => {
+    setCreatingEnv(true);
+    try {
+      await updateEnv(LanguageEnum.Python312, '', '', BuildTypeEnum.Default, '', true, {});
+    } catch (e) {
+      message.error((await apiErrorMessageAsync(e)) || 'Could not create the environment');
+    } finally {
+      setCreatingEnv(false);
+    }
+  };
+
   const updateCompileText = async (val: string) => {
     if (env) {
       const payload: EnvironmentPatchPayload = {
@@ -213,9 +235,31 @@ export const TestingSetup = (props: IProps) => {
           loading={loading}
           helpers={helperFiles}
         />
-      ) : (
+      ) : loading ? (
         <div style={{ padding: '24px 32px' }}>
           <Skeleton active paragraph={{ rows: 10 }} />
+        </div>
+      ) : (
+        <div style={{ padding: '48px 32px' }} data-testid="environment-empty">
+          <Empty
+            description={
+              <>
+                <Typography.Title level={5} style={{ marginBottom: 4 }}>
+                  This assignment has no environment
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  An environment is only needed to run student code or tests. One is created for you when you upload
+                  assignment files. Assignments without code, such as PDF submissions, do not need one.
+                </Typography.Text>
+              </>
+            }
+          >
+            {isCourseAdmin && (
+              <Button type="primary" onClick={createEnvironment} loading={creatingEnv}>
+                Set up an environment
+              </Button>
+            )}
+          </Empty>
         </div>
       ),
     },
