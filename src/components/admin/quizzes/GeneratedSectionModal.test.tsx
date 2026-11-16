@@ -112,7 +112,7 @@ const variables = [
 // async queries the same headroom, or a slow render fails the query before the test times out.
 const WAIT = { timeout: 10_000 };
 
-describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
+describe('GeneratedSectionModal — Test prompt', { timeout: 30_000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(quizzesApi.promptVariablesList).mockResolvedValue([] as any);
@@ -192,7 +192,7 @@ describe('GeneratedSectionModal — Test prompt', { timeout: 15_000 }, () => {
   });
 });
 
-describe('GeneratedSectionModal — fallback prompt', { timeout: 15_000 }, () => {
+describe('GeneratedSectionModal — fallback prompt', { timeout: 30_000 }, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(quizzesApi.promptVariablesList).mockResolvedValue(variables as any);

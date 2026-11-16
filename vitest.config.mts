@@ -34,6 +34,9 @@ export default defineConfig({
     // suite. If you re-disable it for speed, expect to fix that cross-file state sharing.
     isolate: true,
     maxWorkers: '75%',
+    // The CI runner is shared with other workflows. When they overlap the suite runs at about
+    // half speed and vitest's 5s default fails tests that are only slow, not broken.
+    testTimeout: 20_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
