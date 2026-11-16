@@ -69,6 +69,15 @@ describe('EnvironmentShellWidget connection messages', () => {
     vi.unstubAllEnvs();
   });
 
+  it('takes no room for the terminal until a session is started', async () => {
+    render(<EnvironmentShellWidget environmentId={5} hasAssignmentFiles />);
+    expect(screen.queryByRole('textbox', { name: 'Shell terminal' })).toBeNull();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    });
+    expect(screen.getByRole('textbox', { name: 'Shell terminal' })).toBeTruthy();
+  });
+
   it('reports a connection error without echoing the socket URL', async () => {
     const ws = await startShell();
     act(() => ws.onerror?.());

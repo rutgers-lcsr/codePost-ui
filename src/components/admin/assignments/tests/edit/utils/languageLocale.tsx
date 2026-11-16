@@ -330,13 +330,13 @@ const locale: Record<string, LanguageLocaleEntry> = {
     installCmd: 'apt-get -y install',
     environment: (
       <span>
-        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/ubuntu/">ubuntu:18.04</a> base
+        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/ubuntu/">ubuntu:24.04</a> base
         image.
       </span>
     ),
     pseudoterminal: (
       <span>
-        [Running on Linux | <a href="https://hub.docker.com/_/ubuntu/">ubuntu:18.04</a>]
+        [Running on Linux | <a href="https://hub.docker.com/_/ubuntu/">ubuntu:24.04</a>]
       </span>
     ),
   },
@@ -346,13 +346,13 @@ const locale: Record<string, LanguageLocaleEntry> = {
     installCmd: 'apk add',
     environment: (
       <span>
-        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a> base
+        Run on a Linux server in a container built from <a href="https://hub.docker.com/_/alpine/">alpine:3.24</a> base
         image.
       </span>
     ),
     pseudoterminal: (
       <span>
-        [Running on Linux | <a href="https://hub.docker.com/_/alpine/">alpine:3.7</a>]
+        [Running on Linux | <a href="https://hub.docker.com/_/alpine/">alpine:3.24</a>]
       </span>
     ),
   },

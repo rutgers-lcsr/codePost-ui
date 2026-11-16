@@ -314,6 +314,14 @@
   // ─── Header ─────────────────────────────────────────────────────────────────
   &__header {
     background: #fff;
+    // In a narrow window the account controls wrap to a second row: grow with them
+    // instead of letting that row spill over the page below.
+    height: auto;
+    min-height: 64px;
+    // Below the small-screen breakpoint, trade the wide side padding for room to stay on one row.
+    @media (max-width: 1000px) {
+      padding-inline: 24px;
+    }
     box-shadow:
       0 1px 0 0 rgba(0, 21, 41, 0.06),
       0 4px 16px 0 rgba(0, 21, 41, 0.04);
@@ -486,6 +494,12 @@
       color: $neutralDisable;
     }
   }
+}
+
+// Breadcrumb links are click targets: 24px is the WCAG 2.2 minimum (antd's default is 22px).
+.ant-breadcrumb .ant-breadcrumb-link a {
+  height: 24px;
+  line-height: 24px;
 }
 
 .layout--standard-console {

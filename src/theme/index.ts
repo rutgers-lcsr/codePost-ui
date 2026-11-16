@@ -132,7 +132,8 @@ const themeConfig: ThemeConfig = {
     },
     InputNumber: { colorBorder: CONTROL_BORDER },
     DatePicker: { colorBorder: CONTROL_BORDER },
-    Radio: { colorBorder: CONTROL_BORDER },
+    // The selected solid button keeps the brand green on hover: antd's lighter hover green is 3.7:1 under white text.
+    Radio: { colorBorder: CONTROL_BORDER, buttonSolidCheckedHoverBg: '#198665' },
     Checkbox: { colorBorder: CONTROL_BORDER },
     Select: {
       colorBorder: CONTROL_BORDER,

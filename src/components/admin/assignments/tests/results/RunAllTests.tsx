@@ -46,7 +46,8 @@ const RunAllTests = (props: IProps) => {
   const testCases = Object.values(props.testCasesByCategory).flat();
   const hasSubmissions = props.numSubmissions > 0;
   const hasTestCases = testCases.length > 0;
-  const canRun = hasSubmissions && hasTestCases && props.numSubmissions;
+  // Without an environment there is nothing to run the tests in.
+  const canRun = hasSubmissions && hasTestCases && props.numSubmissions && Boolean(props.env);
   // ******************************************** State functions ************************************
 
   //   Callback for run progress

@@ -1579,7 +1579,7 @@ const EnvironmentEditorPanel: React.FC<{
                 <div style={{ marginBottom: 20 }}>
                   <Typography.Text strong>Base Image Logic: </Typography.Text>
                   <Radio.Group defaultValue="ubuntu">
-                    <Radio value="ubuntu">Ubuntu 18.04 (apt-get)</Radio>
+                    <Radio value="ubuntu">Ubuntu 24.04 (apt-get)</Radio>
                     <Radio value="alpine">Alpine Linux (apk)</Radio>
                   </Radio.Group>
                 </div>

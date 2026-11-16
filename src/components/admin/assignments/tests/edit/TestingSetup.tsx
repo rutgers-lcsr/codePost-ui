@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 
 /* antd imports */
 import { Breadcrumb, Button, Empty, Skeleton, Tabs, Typography, message } from 'antd';
@@ -24,7 +24,6 @@ import { AssignmentType, SubmissionInfoType, UserType } from '../../../../../typ
 /* codePost component imports */
 import CPAdminDetail from '../../../other/CPAdminDetail';
 import { EnvironmentSpecs } from './EnvironmentSpecs';
-import { TestManager } from './manager/TestManager';
 
 /* codePost util imports */
 import { fetchEnvironment } from '../../../../core/testFetchUtils';
@@ -32,6 +31,10 @@ import { fetchEnvironment } from '../../../../core/testFetchUtils';
 import { AssignmentFile, BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client';
 import { apiErrorMessageAsync } from '../../../../../lib/apiError';
 import { useCourseCapabilities } from '../../../../../stores/usePermissionsStore';
+import { INK_SECONDARY } from '../../../../../theme/tokens';
+
+// The test editor pulls in the code editor: load it when the Tests tab is first opened.
+const TestManager = lazy(() => import('./manager/TestManager').then((m) => ({ default: m.TestManager })));
 
 /**********************************************************************************************************************/
 
@@ -243,9 +246,7 @@ export const TestingSetup = (props: IProps) => {
                 <Typography.Title level={2} style={{ fontSize: 16, marginBottom: 4 }}>
                   This assignment has no environment
                 </Typography.Title>
-                <Typography.Text
-                  style={{ color: 'rgba(0, 0, 0, 0.6)', display: 'block', maxWidth: 560, margin: '0 auto' }}
-                >
+                <Typography.Text style={{ color: INK_SECONDARY, display: 'block', maxWidth: 560, margin: '0 auto' }}>
                   An environment is only needed to run student code or tests. One is created for you when you upload
                   assignment files. Assignments without code, such as PDF submissions, do not need one. Setting one up
                   here starts in Auto-Detect, and you can change that afterwards.
@@ -268,7 +269,11 @@ export const TestingSetup = (props: IProps) => {
     items.push({
       key: 'tests',
       label: 'Tests',
-      children: <TestManager assignment={props.currentAssignment} helpers={helperFiles} />,
+      children: (
+        <Suspense fallback={<Skeleton active />}>
+          <TestManager assignment={props.currentAssignment} helpers={helperFiles} />
+        </Suspense>
+      ),
     });
   }
 

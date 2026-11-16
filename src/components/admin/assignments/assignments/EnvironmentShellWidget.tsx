@@ -33,6 +33,9 @@ const terminalStyles: React.CSSProperties = {
   overflow: 'hidden',
 };
 
+// The terminal fits its rows to this height. It sits inside the padded frame so the fit is exact.
+const TERMINAL_HEIGHT = 360;
+
 const getErrorMessage = (err: unknown, fallback: string) => {
   if (err instanceof Error) return err.message;
   return fallback;
@@ -48,6 +51,8 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
   const fitAddonRef = React.useRef<FitAddon | null>(null);
   const [starting, setStarting] = React.useState(false);
   const [stopping, setStopping] = React.useState(false);
+  // The terminal takes no room until the first session: an idle one is an empty black box.
+  const [opened, setOpened] = React.useState(false);
   const [includeAssignmentFiles, setIncludeAssignmentFiles] = React.useState(true);
   const [runPreScript, setRunPreScript] = React.useState(false);
   // null until the assignment's datasets load; then the picker drives what mounts.
@@ -99,6 +104,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
   };
 
   React.useEffect(() => {
+    if (!opened) return;
     if (!terminalContainerRef.current) return;
     if (terminalInstanceRef.current) return;
 
@@ -125,8 +131,6 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
     // Fit terminal to container size
     fitAddon.fit();
 
-    term.writeln('Ready to connect...');
-
     terminalDataDisposableRef.current = term.onData((data: string) => {
       const ws = socketRef.current;
       if (ws && ws.readyState === WebSocket.OPEN) {
@@ -148,7 +152,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
       term.dispose();
       terminalInstanceRef.current = null;
     };
-  }, []);
+  }, [opened]);
 
   React.useEffect(() => {
     if (terminalInstanceRef.current && socket) {
@@ -165,6 +169,7 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
         message.error('Missing auth token. Please refresh and sign in again.');
         return;
       }
+      setOpened(true);
 
       const baseUrl = process.env.REACT_APP_API_URL!;
       const wsBase = baseUrl.replace(/^http/i, 'ws');
@@ -397,15 +402,18 @@ export const EnvironmentShellWidget: React.FC<IProps> = ({ environmentId, hasAss
             </div>
           )}
 
-          <div
-            style={terminalStyles}
-            ref={terminalContainerRef}
-            onMouseDown={() => terminalInstanceRef.current?.focus()}
-            onClick={() => terminalInstanceRef.current?.focus()}
-            tabIndex={0}
-            role="textbox"
-            aria-label="Shell terminal"
-          />
+          {opened && (
+            <div
+              style={terminalStyles}
+              onMouseDown={() => terminalInstanceRef.current?.focus()}
+              onClick={() => terminalInstanceRef.current?.focus()}
+              tabIndex={0}
+              role="textbox"
+              aria-label="Shell terminal"
+            >
+              <div ref={terminalContainerRef} style={{ height: TERMINAL_HEIGHT }} />
+            </div>
+          )}
         </Space>
       )}
     </Card>

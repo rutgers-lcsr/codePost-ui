@@ -537,8 +537,8 @@ export const AutoDetectStatus: React.FC<AutoDetectStatusProps> = ({ environment,
 
                 return {
                   color: entry.status === 'success' ? 'green' : entry.status === 'failed' ? 'red' : 'blue',
-                  dot: isCurrent ? <CheckCircleOutlined aria-hidden /> : undefined,
-                  children: (
+                  icon: isCurrent ? <CheckCircleOutlined aria-hidden /> : undefined,
+                  content: (
                     <div>
                       <Space wrap size={8}>
                         <strong>

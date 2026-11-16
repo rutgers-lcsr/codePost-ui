@@ -20,6 +20,7 @@ import { AnsiUp } from 'ansi-up';
 import { Editor } from '../../../../../../lib/monaco';
 import { sanitizeHtml } from '../../../../../../utils/sanitize';
 import { BRAND_GREEN_VIBRANT, LINE_SOFT, PAGE_GREY } from '../../../../../../theme/tokens';
+import { BLUE_TAG } from '../../../../../../theme/tagStyles';
 import { prefersReducedMotion } from './environmentStatus';
 
 /**********************************************************************************************************************/
@@ -54,7 +55,7 @@ export const BuildDetailModal = (props: IProps) => {
   let statusBadge;
   if (props.inProgress) {
     statusBadge = (
-      <Tag icon={<SyncOutlined aria-hidden spin={!prefersReducedMotion()} />} color="processing">
+      <Tag icon={<SyncOutlined aria-hidden spin={!prefersReducedMotion()} />} style={BLUE_TAG}>
         Building
       </Tag>
     );

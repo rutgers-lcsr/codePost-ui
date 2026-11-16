@@ -4,7 +4,7 @@
 /**********************************************************************************************************************/
 
 /* react imports */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   CheckCircleOutlined,
@@ -50,10 +50,8 @@ import {
   environmentStatus,
   prefersReducedMotion,
 } from './EnvironmentSpecs/environmentStatus';
-import { EnvironmentShellWidget } from '../../assignments/EnvironmentShellWidget';
 
 /* codePost component imports */
-import { CodeWindow } from './utils/CodeWindow';
 
 /* codePost util imports */
 import { languages } from './utils/languageUtils';
@@ -63,10 +61,28 @@ import type { ScannedFile } from './utils/scanners';
 import locale from './utils/languageLocale';
 
 import { apiErrorMessageAsync } from '../../../../../lib/apiError';
-import { GREEN_TAG, ORANGE_TAG } from '../../../../../theme/tagStyles';
+import { BLUE_TAG, GREEN_TAG, ORANGE_TAG } from '../../../../../theme/tagStyles';
 import { INK_SECONDARY, LINE_SOFT, NEUTRAL_BACKGROUND } from '../../../../../theme/tokens';
 
-import Editor from '../../../../../lib/monaco';
+import type { EditorProps } from '../../../../../lib/monaco';
+
+// The code editor and the terminal are large. Auto-detect mode shows neither until asked,
+// so each loads only when it is first on screen.
+const MonacoEditor = lazy(() => import('../../../../../lib/monaco'));
+const CodeWindow = lazy(() => import('./utils/CodeWindow').then((m) => ({ default: m.CodeWindow })));
+const EnvironmentShellWidget = lazy(() =>
+  import('../../assignments/EnvironmentShellWidget').then((m) => ({ default: m.EnvironmentShellWidget })),
+);
+
+const editorPlaceholder = (height: EditorProps['height']) => (
+  <div style={{ height: height ?? '100%', background: NEUTRAL_BACKGROUND }} />
+);
+
+const Editor = (props: EditorProps) => (
+  <Suspense fallback={editorPlaceholder(props.height)}>
+    <MonacoEditor {...props} />
+  </Suspense>
+);
 import { BuildTypeEnum, Environment, LanguageEnum } from '../../../../../api-client/index.js';
 import { autograderApi } from '../../../../../api-client/clients.js';
 import { AssignmentType } from '../../../../../types/models';
@@ -596,7 +612,7 @@ export const EnvironmentSpecs = (props: IProps) => {
         work in some custom images.
       </Typography.Paragraph>
       {showScript ? (
-        <>
+        <Suspense fallback={editorPlaceholder('200px')}>
           <CodeWindow
             language={'shell'}
             code={(props.env && props.env.compileText) || compileTextPlaceholder}
@@ -605,7 +621,7 @@ export const EnvironmentSpecs = (props: IProps) => {
             height={'200px'}
           />
           <EditorKeyboardHint />
-        </>
+        </Suspense>
       ) : (
         <Button onClick={() => setShowScript(true)}>Add a pre-run script</Button>
       )}
@@ -616,8 +632,8 @@ export const EnvironmentSpecs = (props: IProps) => {
 
   const spin = !prefersReducedMotion();
   const STATUS_TAG: Record<string, { icon: React.ReactNode; style?: React.CSSProperties; color?: string }> = {
-    building: { icon: <SyncOutlined aria-hidden spin={spin} />, color: 'processing' },
-    queued: { icon: <ClockCircleOutlined aria-hidden />, color: 'processing' },
+    building: { icon: <SyncOutlined aria-hidden spin={spin} />, style: BLUE_TAG },
+    queued: { icon: <ClockCircleOutlined aria-hidden />, style: BLUE_TAG },
     failed: { icon: <CloseCircleOutlined aria-hidden />, color: 'error' },
     outOfDate: { icon: <ExclamationCircleOutlined aria-hidden />, style: ORANGE_TAG },
     ready: { icon: <CheckCircleOutlined aria-hidden />, style: GREEN_TAG },
@@ -714,7 +730,7 @@ export const EnvironmentSpecs = (props: IProps) => {
               </>
             }
             action={
-              <Space direction="vertical" size={8} style={{ alignItems: 'stretch' }}>
+              <Space orientation="vertical" size={8} style={{ alignItems: 'stretch' }}>
                 {canGoBack ? (
                   <Button size="small" type="primary" loading={restoring} onClick={() => restoreVersion(inUse.version)}>
                     Roll back to version {inUse.version}
@@ -840,8 +856,8 @@ export const EnvironmentSpecs = (props: IProps) => {
           onChange={(e) => changeBuildType(e.target.value)}
           value={buildType === 'ubuntu' || buildType === 'alpine' ? buildType : 'ubuntu'}
         >
-          <Radio value={'ubuntu'}>Ubuntu 18.04 (apt-get)</Radio>
-          <Radio value={'alpine'}>Alpine Linux (apk)</Radio>
+          <Radio value={'ubuntu'}>Ubuntu 24.04 (apt-get)</Radio>
+          <Radio value={'alpine'}>Alpine Linux 3.24 (apk)</Radio>
         </Radio.Group>
       </div>
 
@@ -857,7 +873,7 @@ export const EnvironmentSpecs = (props: IProps) => {
               // Load template
               const isAlpine = buildType === 'alpine';
               const install = isAlpine ? 'apk add' : 'apt-get install -y';
-              const base = isAlpine ? 'alpine:3.11' : 'ubuntu:18.04';
+              const base = isAlpine ? 'alpine:3.24' : 'ubuntu:24.04';
 
               const content = `# Dockerfile template for Custom Build\n# Base Image: ${base} (inc. bash, python3, make)\n\nRUN ${install} git\n\n`;
               setCustomDockerfile(content);
@@ -1004,11 +1020,13 @@ export const EnvironmentSpecs = (props: IProps) => {
       {/* Environment Shell */}
       {props.env ? (
         <div style={{ marginTop: 24 }}>
-          <EnvironmentShellWidget
-            environmentId={props.env.id}
-            hasAssignmentFiles={hasAssignmentFiles}
-            assignmentId={props.currentAssignment?.id}
-          />
+          <Suspense fallback={null}>
+            <EnvironmentShellWidget
+              environmentId={props.env.id}
+              hasAssignmentFiles={hasAssignmentFiles}
+              assignmentId={props.currentAssignment?.id}
+            />
+          </Suspense>
         </div>
       ) : null}
 
@@ -1026,7 +1044,7 @@ export const EnvironmentSpecs = (props: IProps) => {
       <Drawer
         title="Dockerfile preview"
         placement="right"
-        width={720}
+        size={720}
         onClose={() => setPreviewVisible(false)}
         open={previewVisible}
         extra={

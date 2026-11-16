@@ -27,6 +27,11 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
+// The terminal library is large and only this one tab needs it.
+const EnvironmentShellWidget = React.lazy(() =>
+  import('./EnvironmentShellWidget').then((m) => ({ default: m.EnvironmentShellWidget })),
+);
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 import { AssignmentFeedbackStatusEnum, PromptTemplate, PromptVariable, Section } from '../../../../api-client';
@@ -39,7 +44,6 @@ import MarkdownField from '../../quizzes/MarkdownField';
 import AssignmentDataSetsForm from './AssignmentDataSetsForm';
 import StudentDataSetAssignmentsPanel from './StudentDataSetAssignmentsPanel';
 import AssignmentFilesForm from './AssignmentFilesForm';
-import { EnvironmentShellWidget } from './EnvironmentShellWidget';
 import { assignmentFilesApi, assignmentsApi, promptTypesApi } from '../../../../api-client/clients';
 import { AssignmentDataSetType, AssignmentFileType } from '../../../../types/models';
 import { getCourseAISettings } from '../../../../utils/aiService';
@@ -709,11 +713,13 @@ const CollectionCreateForm: React.FC<IFormProps> = (props) => {
               key: 'environment',
               children: (
                 <div style={tabPaneStyle}>
-                  <EnvironmentShellWidget
-                    environmentId={environmentId}
-                    hasAssignmentFiles={hasAssignmentFiles}
-                    assignmentId={assignment.id}
-                  />
+                  <React.Suspense fallback={null}>
+                    <EnvironmentShellWidget
+                      environmentId={environmentId}
+                      hasAssignmentFiles={hasAssignmentFiles}
+                      assignmentId={assignment.id}
+                    />
+                  </React.Suspense>
                 </div>
               ),
             },

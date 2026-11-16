@@ -92,23 +92,30 @@ export const TestingSummary = (props: IProps) => {
     const fetchData = async () => {
       if (props.currentAssignment) {
         setFetchLoading(true);
-        const [categories, casesByCategory] = (await fetchTestData(props.currentAssignment)) as [
-          TestCategoryType[],
-          TestCasesByCategory,
-        ];
-        setCategories(categories);
-        setTestCasesByCategory(casesByCategory);
-        const currEnv = await fetchEnvironment(props.currentAssignment);
-        setEnv(currEnv);
-        if (canManageTests) {
-          // Admin console, read paginated test results
-          fetchPaginatedResults();
-        } else {
-          // Section leader console, read tests by submission
-          const tests = await fetchTestsBySubmission(props.submissions);
-          setTestsBySubmission(tests);
+        try {
+          const [categories, casesByCategory] = (await fetchTestData(props.currentAssignment)) as [
+            TestCategoryType[],
+            TestCasesByCategory,
+          ];
+          setCategories(categories);
+          setTestCasesByCategory(casesByCategory);
+          // An assignment may have no environment (a PDF-only one, for example): env stays undefined.
+          const currEnv = await fetchEnvironment(props.currentAssignment);
+          setEnv(currEnv);
+          if (canManageTests) {
+            // Admin console, read paginated test results
+            fetchPaginatedResults();
+          } else {
+            // Section leader console, read tests by submission
+            const tests = await fetchTestsBySubmission(props.submissions);
+            setTestsBySubmission(tests);
+          }
+        } catch (e) {
+          console.error('Failed to load test results', e);
+        } finally {
+          // A failed fetch must not leave the table spinning forever.
+          setFetchLoading(false);
         }
-        setFetchLoading(false);
       }
     };
     fetchData();
