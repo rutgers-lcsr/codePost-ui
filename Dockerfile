@@ -29,7 +29,7 @@ ENV REACT_APP_VERSION=$REACT_APP_VERSION
 RUN npm run build:production && find build -name '*.map' -delete
 
 # Production stage
-FROM nginx:alpine AS production
+FROM nginx:1.31.9-alpine AS production
 
 # Install su-exec for dropping privileges in entrypoint
 RUN apk add --no-cache su-exec
