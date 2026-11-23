@@ -94,7 +94,7 @@ jobs:
 
       - name: Build container
         run: |
-          docker compose build
+          docker compose build --pull
 
       - name: Deploy container
         run: |
